@@ -24,7 +24,7 @@ package Operation_Interfaces is
    	-- have a fixed size so it can be not allocated inside a record.
    	type Any_Operation is access all Operation_Interface'Class;
 
-	--
+	-- Code to manage memory deallocation
  	procedure Free is new Unchecked_Deallocation (
       		Operation_Interface'Class,
 		Any_Operation

@@ -19,9 +19,12 @@ package Task_Pool is
 	procedure Init;
 
 private
+	-- Static thread Pool
 	Executor1 : Executor(1);
 	Executor2 : Executor(2);
 	Executor3 : Executor(3);
 	Executor4 : Executor(4);
+
 	-- type Executors_Vector is array(Integer range <>) of Executor();
+
 end Task_Pool;
