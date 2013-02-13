@@ -1,6 +1,6 @@
 with Railway.Train;use Railway.Train;
 
-package body Station is
+package body Railway.Station is
 
 	protected body Plattform is
 		entry Enter(Descriptor : in out Train_Descriptor) when Free = True is
@@ -16,4 +16,4 @@ package body Station is
 
 
 	
-end Station;
+end Railway.Station;

@@ -2,7 +2,7 @@
 -- File:
 --	operations.ads
 -- Created by:
---	Moreno Ambrosin
+--		Moreno Ambrosin
 --  	Mat.  : 1035635
 -- Date:
 -- 	09/02/2013
@@ -35,6 +35,7 @@ package Operations is
 	-- Method used as a contructor
 	--
 	function Operation(Name : String) return Operation_Type;
+	
 
 private
 	-- Private fields for Operation_Type

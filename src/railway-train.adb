@@ -1,6 +1,6 @@
 with Track_Container;
 with Ada.Text_IO;use Ada.Text_IO;
-with Station;
+with Railway.Station;
 
 package body Railway.Train is
 	

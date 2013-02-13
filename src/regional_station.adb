@@ -1,4 +1,4 @@
-with Station;use Station;
+with Railway.Station;use Railway.Station;
 with Railway.Train;use Railway.Train;
 
 package body Regional_Station is

@@ -1,6 +1,6 @@
 with Railway.Train;use Railway.Train;
 
-package Station is
+package Railway.Station is
 
 	---------------------------------- STATION INTERFACE --------------------------------------
 	type Station_Interface is interface;
@@ -25,4 +25,4 @@ package Station is
 	end Plattform;
 	
 	
-end Station;
+end Railway.Station;

@@ -2,7 +2,7 @@
 -- File:
 --	operations.adb
 -- Created by:
---	Moreno Ambrosin
+--		Moreno Ambrosin
 --  	Mat.  : 1035635
 -- Date:
 -- 	09/02/2013
