@@ -1,8 +1,7 @@
-with Ada.Numerics.Discrete_Random	;
+with Ada.Numerics.Discrete_Random;
+
 package Railway.Train is
 	
-	type Train_Descriptor;
-		
 	type Train_Descriptor is
 	record
 		ID 			: Integer;

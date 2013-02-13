@@ -2,7 +2,6 @@ with Railway.Train;use Railway.Train;
 
 package Railway.Track is
 	
-	
 	-- Mantains unique ID of currently travelling trains
 	type Train_Queue is array (Positive range <>) of Integer;
 	
