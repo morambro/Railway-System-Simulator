@@ -12,7 +12,6 @@ package body Railway.Train is
 				accept Initialize(Descr : Train_Descriptor) do
 					Current_Descriptor := Descr;
 				end;
-			or
 			
 				Max_Speed := Current_Descriptor.Speed;
 			
