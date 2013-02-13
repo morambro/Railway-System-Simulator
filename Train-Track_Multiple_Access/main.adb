@@ -1,6 +1,6 @@
 with Railway.Track; use Railway.Track;
 with Railway.Train; use Railway.Train;
-
+with Ada.Text_IO;use Ada.Text_IO;
 
 procedure Main is
 	Track_1 : Track;

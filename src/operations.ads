@@ -27,7 +27,7 @@ package Operations is
 	overriding procedure Do_Operation(O: in  Operation_Type);
 
 	--
-	-- Additive methods
+	-- Additional methods
 	--
 	procedure SetName(O: in out Operation_Type; S: String);
 

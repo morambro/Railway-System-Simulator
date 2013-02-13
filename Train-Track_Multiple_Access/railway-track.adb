@@ -15,6 +15,7 @@ package body Railway.Track is
 					Guard := true;
 				end if;
 				Put_Line("Train " & Integer'Image(T.ID) & " Leaves!");
+				Trains_Number := Trains_Number - 1;
 			else 
 				Put_Line("Train " & Integer'Image(T.ID) & " Cannot leave because it's not the first"); 
 				requeue Retry;
@@ -30,6 +31,7 @@ package body Railway.Track is
 				if(To_Add.Max_Speed > Curr_Max_Speed) then
 					Max_Speed := Curr_Max_Speed;
 				else 
+					Curr_Max_Speed := To_Add.Max_Speed;
 					Max_Speed := To_Add.Max_Speed;
 				end if;
 			end if;
@@ -52,6 +54,7 @@ package body Railway.Track is
 					Guard := true;
 				end if;
 				Put_Line("Train " & Integer'Image(T.ID) & " Leaves!");
+				Trains_Number := Trains_Number - 1;
 			else 
 				Put_Line("Train " & Integer'Image(T.ID) & " Cannot leave because it's not the first"); 
 				requeue Retry;
