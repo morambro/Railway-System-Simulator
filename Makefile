@@ -1,5 +1,5 @@
 default:
-	gnatmake -D out src/main.adb
+	gnatmake -gnat2012 -D out src/main.adb
 	
 clean:
 	rm out/*

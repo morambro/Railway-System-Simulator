@@ -2,17 +2,17 @@
 -- File:
 --	operations.ads
 -- Created by:
---		Moreno Ambrosin
+--	Moreno Ambrosin
 --  	Mat.  : 1035635
 -- Date:
 -- 	09/02/2013
 --==============================================================================
 
 with Ada.Strings.Unbounded;
-with Operation_Interfaces;use Operation_Interfaces;
+with Generic_Operation_Interface;use Generic_Operation_Interface;
 
 -- This package contains an implementation of generic Operation Interface
-package Operations is
+package Operation is
 
 	package US renames Ada.Strings.Unbounded;
 
@@ -35,9 +35,9 @@ package Operations is
 	-- Method used as a contructor
 	--
 	function Operation(Name : String) return Operation_Type;
-	
+
 	function NewOperation(Name : String) return Any_Operation;
-	
+
 
 private
 	-- Private fields for Operation_Type
@@ -46,4 +46,4 @@ private
 		Name : US.Unbounded_String;
 	end record;
 
-end Operations;
+end Operation;

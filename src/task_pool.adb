@@ -9,14 +9,13 @@
 --==============================================================================
 
 
-with Operation_Interfaces;use Operation_Interfaces;
+with Generic_Operation_Interface;use Generic_Operation_Interface;
 with Ada.Text_IO;use Ada.Text_IO;
-with Queues; use Queues;
 
 package body Task_Pool is
 
 	-- Queue used to manage Operations
-	Operations_Queue : Queue_Type;
+	-- Operations_Queue : Queue_Type;
 
 	task body Executor is
 		--Operation : Operation_Interface'Class := null;

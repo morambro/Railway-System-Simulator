@@ -12,7 +12,7 @@ with Unchecked_Deallocation;
 
 -- Package which defines an Interface to expose a unique method, to be invoked
 -- by worker tasks.
-package Operation_Interfaces is
+package Generic_Operation_Interface is
 
 	-- Operation Interface type declaration
 	type Operation_Interface is abstract tagged null record;
@@ -32,4 +32,4 @@ package Operation_Interfaces is
 
    	pragma Controlled (Any_Operation);
 
-end Operation_Interfaces;
+end Generic_Operation_Interface;

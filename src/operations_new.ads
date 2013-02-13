@@ -9,7 +9,7 @@
 --==============================================================================
 
 with Ada.Strings.Unbounded;
-with Operation_Interfaces;use Operation_Interfaces;
+with Generic_Operation_Interface;use Generic_Operation_Interface;
 
 package Operations_New is
 

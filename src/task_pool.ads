@@ -8,9 +8,14 @@
 -- 	09/02/2013
 --==============================================================================
 
-with Operation_Interfaces;use Operation_Interfaces;
+with Generic_Operation_Interface;use Generic_Operation_Interface;
+with Queue;
 
 package Task_Pool is
+
+	package Operations_Queue_Package is new Queue(Any_Operation);
+
+	Operations_Queue : Operations_Queue_Package.Queue_Type;
 
 	task type Executor(ID : Integer);
 

@@ -8,13 +8,14 @@
 -- 	09/02/2013
 --==============================================================================
 
-with Operation_Interfaces;use Operation_Interfaces;
-with Ada.Text_IO; use Ada.Text_IO;
-package body Queues is
+package body Queue is
 
 	protected body Queue_Type is
-
-		entry Pop(Item : out Any_Operation) when Head /= Null is
+	
+		--
+		-- Extracts the first Element from the queue and returns it via Item parameter (by reference)
+		--
+		entry Pop(Item : out Element) when Head /= Null is
 			ToReturn : Queue_Item_Ref := Head;
 		begin
 
@@ -30,7 +31,10 @@ package body Queues is
 
 		end Pop;
 
-		procedure Push(Item : Any_Operation) is
+		--
+		-- Adds a new Item in the queue
+		--
+		procedure Push(Item : Element) is
 			New_Elem : Queue_Item_Ref := new Queue_Item;
 		begin
 
@@ -49,7 +53,10 @@ package body Queues is
 
 
 		end Push;
-
+		
+		--
+		-- Returns the queue size (for Debugging purposes)
+		-- 
 		function GetSize return Integer is
 		begin
 			return Queue_Size;
@@ -57,4 +64,4 @@ package body Queues is
 
 	end Queue_Type;
 
-end Queues;
+end Queue;

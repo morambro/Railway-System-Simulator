@@ -2,7 +2,7 @@
 -- File:
 --	operations.adb
 -- Created by:
---		Moreno Ambrosin
+--	Moreno Ambrosin
 --  	Mat.  : 1035635
 -- Date:
 -- 	09/02/2013
@@ -11,7 +11,7 @@
 with Ada.Text_IO;
 with Ada.Strings.Unbounded;
 
-package body Operations is
+package body Operation is
 
 	use Ada.Text_IO;
 	--
@@ -31,7 +31,7 @@ package body Operations is
 		Op.SetName(Name);
 		return Op;
 	end;
-	
+
 	function NewOperation(Name : String) return Any_Operation is
 		Op : Any_Operation := new Operation_Type;
 	begin
@@ -45,4 +45,4 @@ package body Operations is
 	end;
 
 
-end Operations;
+end Operation;

@@ -8,11 +8,15 @@
 -- 	09/02/2013
 --==============================================================================
 
-with Operation_Interfaces;use Operation_Interfaces;
+--
+-- Declaration of a generic queue implementation of elements of type Element
+--
+generic type Element is private;
+package Queue is
 
-package Queues is
-
+	-- Queue Item's type
 	type Queue_Item is private;
+	-- Reference to an Item of the queue, to implement it as a List of arbitrary Length
 	type Queue_Item_Ref is access all Queue_Item;
 
 	--
@@ -23,11 +27,11 @@ package Queues is
 		-- Removes the first element from the Queue, and puts
 		-- it in Item parameter
 		--
-		entry Pop(Item : out Any_Operation);
+		entry Pop(Item : out Element);
 		--
 		-- Adds the given Item to the queue
 		--
-		procedure Push(Item : Any_Operation);
+		procedure Push(Item : Element);
 		--
 		-- Returns the current size of the queue
 		--
@@ -42,8 +46,8 @@ package Queues is
 private
 	type Queue_Item is
 	record
-		Item : Any_Operation;
+		Item : Element;
 		Next : Queue_Item_Ref ;
 	end record;
 
-end Queues;
+end Queue;

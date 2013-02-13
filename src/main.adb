@@ -8,11 +8,10 @@
 -- 	09/02/2013
 --==============================================================================
 
-with Operations;use Operations;
+with Operation;use Operation;
 with Operations_New;use Operations_New;
-with Operation_Interfaces;use Operation_Interfaces;
+with Generic_Operation_Interface;use Generic_Operation_Interface;
 with Task_Pool;
-with Queues;use Queues;
 with Railway.Track; use Railway.Track;
 with Railway.Train; use Railway.Train;
 with Ada.Text_IO;use Ada.Text_IO;
@@ -23,9 +22,6 @@ procedure Main is
 	-- Cobegin with Tasks In the Task Pool
 	use Task_Pool;
 
-	Op_Red1 : aliased Operation_Interface'Class := Operation(Name => "Lake");
-	Op_Red2 : Operation_Interface'Class := Operation(Name => "Gero");
-	Op_Red3 : Operation_Interface'Class := Operation(Name => "Wez");
 
 	Boh : Any_Operation := null;
 
@@ -34,8 +30,6 @@ procedure Main is
 	-- type Any_Refer is access all Operation_Interface'Class;
 	--
 	-- Prova : Any_Refer := Op_Red1'Access;
-
-	Queue : Queue_Type;
 
 	-- Item : Any_Operation;
 
