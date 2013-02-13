@@ -9,7 +9,7 @@ package Railway.Track is
 	protected type Track is
 		
 		entry Leave(T : Train_Descriptor);
-		entry Enter(To_Add : Train_Descriptor);
+		entry Enter(To_Add :  in out Train_Descriptor; Max_Speed : out Integer);
 	
 	private 
 	
@@ -21,6 +21,8 @@ package Railway.Track is
 		Guard : Boolean := false;
 		
 		Retry_Num : Integer := 0;
+		
+		Curr_Max_Speed : Integer := 200; 
 	
 	end Track;
 	

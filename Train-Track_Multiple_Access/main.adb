@@ -4,19 +4,21 @@ with Railway.Train; use Railway.Train;
 
 procedure Main is
 	Track_1 : Track;
-	TD1 : Train_Descriptor := (ID => 6);
-	TD2 : Train_Descriptor := (ID => 3);
-	TD3 : Train_Descriptor := (ID => 65);
-	TD4 : Train_Descriptor := (ID => 67);
-begin
-	Track_1.Enter(TD1);
-	Track_1.Enter(TD2);
-	Track_1.Enter(TD3);
-	Track_1.Enter(TD4);
+	TD1 : Train_Descriptor := (ID => 1,Speed => 50,Max_Speed => 100);
+	TD2 : Train_Descriptor := (ID => 2,Speed => 50,Max_Speed => 160);
+	TD3 : Train_Descriptor := (ID => 3,Speed => 50,Max_Speed => 120);
+	TD4 : Train_Descriptor := (ID => 4,Speed => 50,Max_Speed => 80);
 	
-	Track_1.Leave(TD2);
-	Track_1.Leave(TD1);
-	Track_1.Leave(TD4);
-	Track_1.Leave(TD3);
+	T1 : Train_Type;
+	T2 : Train_Type;
+	T3 : Train_Type;
+	T4 : Train_Type;
+	
+begin
+	
+	T1.Initialize(TD1);
+	T2.Initialize(TD2);
+	T3.Initialize(TD3);
+	T4.Initialize(TD4);
 	
 end Main;
