@@ -31,6 +31,13 @@ package body Operations is
 		Op.SetName(Name);
 		return Op;
 	end;
+	
+	function NewOperation(Name : String) return Any_Operation is
+		Op : Any_Operation := new Operation_Type;
+	begin
+		SetName(Operation_Type'Class(Op.all),Name);
+		return Op;
+	end;
 
 	procedure SetName(O: in out Operation_Type;S:String ) is
 	begin

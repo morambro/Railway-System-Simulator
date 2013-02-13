@@ -49,7 +49,7 @@ package body Passenger is
 		New_Passenger.Name 		:= Unbounded_Strings.To_Unbounded_String(Name);
 		New_Passenger.Surname 	:= Unbounded_Strings.To_Unbounded_String(Surname);
 		for I in 1..Operations_Number loop
-			New_Passenger.Operations(I) := new Operation_Type;
+			New_Passenger.Operations(I) := NewOperation(Name);
 		end loop;
 		return New_Passenger;
 	end;

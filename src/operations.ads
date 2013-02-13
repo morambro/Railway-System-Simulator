@@ -36,6 +36,8 @@ package Operations is
 	--
 	function Operation(Name : String) return Operation_Type;
 	
+	function NewOperation(Name : String) return Any_Operation;
+	
 
 private
 	-- Private fields for Operation_Type
