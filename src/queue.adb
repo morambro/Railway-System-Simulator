@@ -16,7 +16,7 @@ package body Queue is
 		-- Extracts the first Element from the queue and returns it via Item parameter (by reference)
 		--
 		entry Pop(Item : out Element) when Head /= Null is
-			ToReturn : Queue_Item_Ref := Head;
+			ToReturn : access Queue_Item := Head;
 		begin
 
 			Head := Head.Next;
@@ -35,7 +35,7 @@ package body Queue is
 		-- Adds a new Item in the queue
 		--
 		procedure Push(Item : Element) is
-			New_Elem : Queue_Item_Ref := new Queue_Item;
+			New_Elem : access Queue_Item := new Queue_Item;
 		begin
 
 			New_Elem.Next := Null;

@@ -8,8 +8,6 @@
 -- 	09/02/2013
 --==============================================================================
 
-with Operation;use Operation;
-with Operations_New;use Operations_New;
 with Generic_Operation_Interface;use Generic_Operation_Interface;
 with Task_Pool;
 with Railway.Track; use Railway.Track;
@@ -47,33 +45,34 @@ procedure Main is
 	T3 : Train_Type;
 	T4 : Train_Type;
 	
-	P : Passenger_Type := NewPassengerType(5,1,"Moreno","Ambrosin");
+	--P : aliased Passenger_Type := NewPassengerType(5,1,"Moreno","Ambrosin");
 
-	Operations : Passenger_Operations := P.GetOperations;
-
+	--Operations : Passenger_Operations := P.GetOperations;
+	
+	P2 : Passenger_Ref := NewPassenger(5,2,"Nicola","Geromel");
+	
 begin
 
-	Put_Line("Passenger Name = "& P.GetName);
-	Put_Line("Passenger Surname = "& P.GetSurname);
-	Put_Line("Passenger ID = "& Integer'Image(P.GetID));
+
+	Task_Pool.Init;
 	
-	for I in 1 .. Operations'Length loop
+	--Put_Line("Passenger Name = "& P.GetName);
+	--Put_Line("Passenger Surname = "& P.GetSurname);
+	--Put_Line("Passenger ID = "& Integer'Image(P.GetID));
+	
+	--for I in 1 .. Operations'Length loop
 		
-		Task_Pool.Execute(Operations(I));
+		--Task_Pool.Execute(Operations(I));
+		
+	--end loop;
+	
+	for I in 1 .. P2.GetOperations'Length loop
+		
+		Task_Pool.Execute(P2.GetOperations(I));
 		
 	end loop;
 	
 
-	Boh := new Operation_Type;
-
-	delay 3.0;
-
-	Task_Pool.Init;
-
-	Task_Pool.Execute(Boh);
-
-	Task_Pool.Execute(new Operation_Type_New);
-	
 	--T1.Initialize(TD1);
 	--T2.Initialize(TD2);
 	--T3.Initialize(TD3);

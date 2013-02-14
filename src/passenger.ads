@@ -25,7 +25,9 @@ package Passenger is
 		function GetSurname(P : Passenger_Type) return String;
 		function GetOperations(P : Passenger_Type) return Passenger_Operations;
 	
-	function NewPassengerType(Operations_Number : Positive; ID : Integer; Name : String; Surname : String) return Passenger_Type;
+	type Passenger_Ref is access all Passenger_Type;
+	
+	function NewPassenger(Operations_Number : Positive; ID : Integer; Name : String; Surname : String) return Passenger_Ref;
 	
 private 
 	
@@ -35,7 +37,5 @@ private
 		Surname 	: Unbounded_Strings.Unbounded_String;
 		Operations	: Passenger_Operations(1..Operation_Number);
 	end record;
-	
-	
 
 end Passenger;
