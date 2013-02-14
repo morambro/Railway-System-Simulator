@@ -17,19 +17,14 @@ package Task_Pool is
 
 	Operations_Queue : Operations_Queue_Package.Queue_Type;
 
-	task type Executor(ID : Integer);
+	task type Executor;--(ID : Integer);
 
 	procedure Execute(Operation : Any_Operation);
 
-	procedure Init;
-
-private
-	-- Static thread Pool
-	Executor1 : Executor(1);
-	Executor2 : Executor(2);
-	Executor3 : Executor(3);
-	Executor4 : Executor(4);
-
-	-- type Executors_Vector is array(Integer range <>) of Executor();
-
+	type Executors_Vector is array(Integer range <>) of Executor;
+	
+	type Task_Pool_Type(Pool_Dimension : Positive) is record
+		Executors : Executors_Vector(1..Pool_Dimension);
+	end record;
+	
 end Task_Pool;

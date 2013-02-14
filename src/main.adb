@@ -49,12 +49,11 @@ procedure Main is
 
 	--Operations : Passenger_Operations := P.GetOperations;
 	
+	Tasks : Task_Pool_Type(5);
+	
 	P2 : Passenger_Ref := NewPassenger(5,2,"Nicola","Geromel");
 	
 begin
-
-
-	Task_Pool.Init;
 	
 	--Put_Line("Passenger Name = "& P.GetName);
 	--Put_Line("Passenger Surname = "& P.GetSurname);

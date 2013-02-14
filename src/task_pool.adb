@@ -22,11 +22,14 @@ package body Task_Pool is
 		To_Execute : Any_Operation;
 	begin
 		loop
-			Put_Line("Task" & Integer'Image(ID) & " waits for an operation to Execute");
+			Put_Line("Task waits for an operation to Execute");
 			Operations_Queue.Pop(To_Execute);
-			Put_Line("Task" & Integer'Image(ID) & " has retrieved an Operation");
+			
+			Put_Line("Task retrieved an Operation");
+			
 			-- Right Here, I'm shure to have an Operation to Execute
 			To_Execute.Do_Operation;
+			
 			delay 2.0;
 
 			-- After Executing the Operation, Frees the memory
@@ -39,13 +42,5 @@ package body Task_Pool is
 	begin
 		Operations_Queue.Push(Operation);
 	end Execute;
-
-	procedure Init is
-		I : Integer := 0;
-	begin
-		while I < 4 loop
-			I := I + 1;
-		end loop;
-	end Init;
 
 end Task_Pool;
