@@ -7,9 +7,6 @@
 -- Date:
 -- 	09/02/2013
 --==============================================================================
-
-
-with Generic_Operation_Interface;use Generic_Operation_Interface;
 with Ada.Text_IO;use Ada.Text_IO;
 
 package body Task_Pool is

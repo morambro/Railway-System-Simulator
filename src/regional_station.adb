@@ -1,6 +1,3 @@
-with Railway.Station;use Railway.Station;
-with Railway.Train;use Railway.Train;
-
 package body Regional_Station is
 	
 	-- Definition of Inherited Methods --
@@ -14,4 +11,21 @@ package body Regional_Station is
 		Station.Plattforms(Plattform).Leave(Descriptor);
 	end Leave;
 		
+	-- 
+	-- Creates a new Station instance
+	-- @return: A reference of the new created Station
+	--
+	function NewRegionalStation(
+		Plattforms_Number : Positive;
+		Name : Positive) return Station_Ref 
+	is
+		Station : access Regional_Station_Type:= new Regional_Station_Type(Plattforms_Number);
+	begin
+		Station.Name := Name;
+		for I in Positive range 1..Plattforms_Number loop
+			Station.Plattforms(I) := new Plattform(I);
+		end loop;
+		return Station;
+	end;	
+	
 end Regional_Station; 

@@ -1,5 +1,3 @@
-with Generic_Operation_Interface; use Generic_Operation_Interface;
-with Passenger;use Passenger;
 
 package Passenger.Move_Operation is
 

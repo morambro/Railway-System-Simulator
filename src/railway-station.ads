@@ -6,9 +6,11 @@ package Railway.Station is
 	type Station_Interface is interface;
 
 		-- Station_Interface Methods
-		procedure Enter(Station : Station_Interface ; Descriptor : in out Train_Descriptor;Plattform : Integer) is abstract;
+		procedure Enter(Station : Station_Interface ; Descriptor : in out Train_Descriptor;Plattform : Integer) 
+		is abstract;
 	
-		procedure Leave(Station : Station_Interface ; Descriptor : in out Train_Descriptor;Plattform : Integer) is abstract;
+		procedure Leave(Station : Station_Interface ; Descriptor : in out Train_Descriptor;Plattform : Integer) 
+		is abstract;
 
 	-- End Of the Interface
 	

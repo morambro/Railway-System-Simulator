@@ -13,7 +13,6 @@ with Passenger.Move_Operation; use Passenger.Move_Operation;
 
 package body Passenger is
 
-
 	function GetID(P : Passenger_Type) return Integer is
 	begin
 		return P.ID;
@@ -37,15 +36,15 @@ package body Passenger is
 	--
 	-- Dynamic creation of a new Instance of class Passenger_Type
 	--
-	-- @return: A reference to the new created object 
+	-- @return: A reference to the new created object
 	--
 	function NewPassenger(
 			Operations_Number : Positive;
-			ID : Integer; 
+			ID : Integer;
 			Name : String;
-			Surname : String) return Passenger_Ref 
+			Surname : String) return access Passenger_Type
 	is
-		New_Passenger : Passenger_Ref := new Passenger_Type(Operations_Number);
+		New_Passenger : access Passenger_Type := new Passenger_Type(Operations_Number);
 	begin
 		New_Passenger.ID 		:= ID;
 		New_Passenger.Name 		:= Unbounded_Strings.To_Unbounded_String(Name);

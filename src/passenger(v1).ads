@@ -17,19 +17,23 @@ package Passenger is
 	
 	type Passenger_Operations is Array(Positive range <>) of Any_Operation;
 	
-	-- Passenger type declaration
-	type Passenger_Type is record
+	-- Passenger tagged type declaration
+	type Passenger_Type(Operation_Number : Positive) is tagged private;
+		
+		function GetID(P : Passenger_Type) 		return Integer;
+		function GetName(P : Passenger_Type) 	return String;
+		function GetSurname(P : Passenger_Type) return String;
+		function GetOperations(P : Passenger_Type) return Passenger_Operations;
+	
+	function NewPassenger(Operations_Number : Positive; ID : Integer; Name : String; Surname : String) return access Passenger_Type;
+	
+private 
+	
+	type Passenger_Type(Operation_Number : Positive) is tagged record
 		ID 			: Integer;
 		Name 		: Unbounded_Strings.Unbounded_String;
 		Surname 	: Unbounded_Strings.Unbounded_String;
+		Operations	: Passenger_Operations(1..Operation_Number);
 	end record;
 
-	type Passenger_Manager(Op : access Passenger_Operations) is record
-		Passenger 		: Passenger_Type;
-		Operations 		: access Passenger_Operations;
-		Next_Operation 	: Positive := 1;
-		-- It will contain
-		Destination 	: Positive := 1;
-	end record;	
-	
 end Passenger;
