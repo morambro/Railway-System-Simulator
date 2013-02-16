@@ -1,8 +1,8 @@
 with Ada.Text_IO;use Ada.Text_IO;
 
-package body Railway.Track is
+package body Track is
 	
-	protected body Track is 
+	protected body Track_Type is 
 		
 		entry Leave(T : Train_Descriptor) when true is
 		begin
@@ -61,7 +61,7 @@ package body Railway.Track is
 			end if;
 		end Retry;
 	
-	end Track;
+	end Track_Type;
 		
 	
-end Railway.Track;
+end Track;

@@ -1,6 +1,6 @@
 --==============================================================================
 -- File:
---	passenger.ads
+--	traveler.ads
 -- Created by:
 --		Moreno Ambrosin
 --  	Mat.  : 1035635
@@ -27,7 +27,6 @@ package Traveler is
 	type Traveler_Manager is record
 		Traveler 		: Traveler_Type;
 		Next_Operation 	: Positive := 1;
-		-- It will contain
 		Destination 	: Positive := 1;
 	end record;	
 	

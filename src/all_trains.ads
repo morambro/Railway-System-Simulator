@@ -1,4 +1,5 @@
-with Railway.Train;use Railway.Train;
+with Generic_Train;use Generic_Train;
+with Train;use Train;
 
 package All_Trains is
 	TD1 : Train_Descriptor := (ID => 1,Speed => 50,Max_Speed => 100);

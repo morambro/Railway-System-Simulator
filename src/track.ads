@@ -1,11 +1,11 @@
-with Railway.Train;use Railway.Train;
+with Train;use Train;
 
-package Railway.Track is
+package Track is
 	
 	-- Mantains unique ID of currently travelling trains
 	type Train_Queue is array (Positive range <>) of Integer;
 	
-	protected type Track is
+	protected type Track_Type is
 		
 		entry Leave(T : Train_Descriptor);
 		entry Enter(To_Add :  in out Train_Descriptor; Max_Speed : out Integer);
@@ -23,7 +23,7 @@ package Railway.Track is
 		
 		Curr_Max_Speed : Integer := 200; 
 	
-	end Track;
+	end Track_Type;
 	
 
-end Railway.Track;
+end Track;

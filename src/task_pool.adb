@@ -26,11 +26,6 @@ package body Task_Pool is
 			
 			-- Right Here, I'm shure to have an Operation to Execute
 			To_Execute.Do_Operation;
-			
-			delay 2.0;
-
-			-- After Executing the Operation, Frees the memory
-			Free(To_Execute);
 
 		end loop;
 	end Executor;

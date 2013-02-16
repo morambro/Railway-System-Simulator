@@ -1,3 +1,4 @@
+with Ada.Text_IO;use Ada.Text_IO;
 package body Regional_Station is
 	
 	-- Definition of Inherited Methods --
@@ -10,7 +11,16 @@ package body Regional_Station is
 	begin 
 		Station.Plattforms(Plattform).Leave(Descriptor);
 	end Leave;
-		
+	
+	
+	procedure WaitForTrain(
+			Station : Regional_Station_Type;
+			Traveler : in out Traveler_Manager;
+			Plattform : Integer) is
+	begin
+		Station.Plattforms(Plattform).AddOutgoingTraveler(Traveler);
+	end WaitForTrain;
+	
 	-- 
 	-- Creates a new Station instance
 	-- @return: A reference of the new created Station

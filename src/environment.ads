@@ -1,5 +1,5 @@
-with Railway.Track;use Railway.Track;
-with Railway.Station;use Railway.Station;
+with Track;use Track;
+with Generic_Station;use Generic_Station;
 with Regional_Station;use Regional_Station;
 with Task_Pool;use Task_Pool;
 with Traveler;use Traveler;
@@ -33,16 +33,6 @@ package Environment is
 		2 => new Move_Operation_Type(Traveler1_Manager'Access)
 	);
 	
-	
-	type All_Stations is array (Positive range <>) of Station_Ref;
-	
-	-- Array wich will contain all stations
-	Stations : All_Stations(1..3) := (
-		1 => new Regional_Station_Type(3),
-		2 => new Regional_Station_Type(2),
-		3 => new Regional_Station_Type(2)
-	);
-	
-	Track_1 : Track;
-	
+	Track_1 : Track_Type;
+
 end Environment;

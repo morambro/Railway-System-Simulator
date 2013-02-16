@@ -1,4 +1,4 @@
-with Railway.Train;use Railway.Train;
+with Train;use Train;
 with Queue;
 with Traveler;use Traveler;
 
@@ -20,6 +20,10 @@ package Plattform is
 		entry Enter(Descriptor : in out Train_Descriptor);
 		
 		procedure Leave(Descriptor : in out Train_Descriptor);
+		
+		procedure AddIncomingTraveler(Traveler : in out Traveler_Manager);
+		
+		procedure AddOutgoingTraveler(Traveler : in out Traveler_Manager);
 		
 	private 
 		Free : Boolean := True;

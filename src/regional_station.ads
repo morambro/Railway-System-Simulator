@@ -1,6 +1,7 @@
-with Railway.Station;use Railway.Station;
-with Railway.Train;use Railway.Train;
+with Generic_Station;use Generic_Station;
+with Train;use Train;
 with Plattform; use Plattform;
+with Traveler; use Traveler;
 
 package Regional_Station is
 	
@@ -19,6 +20,11 @@ package Regional_Station is
 			Station : Regional_Station_Type;
 			Descriptor : in out Train_Descriptor;
 			Plattform : Integer);
+		
+		overriding procedure WaitForTrain(
+			Station : Regional_Station_Type;
+			Traveler : in out Traveler_Manager;
+			Plattform : Integer);
 	
 	function NewRegionalStation(
 		Plattforms_Number : Positive;
@@ -28,10 +34,8 @@ private
 	
 	type Regional_Station_Type(Plattforms_Number : Positive) is new Station_Interface with
 	record
-		
 		Name : Positive;
 		Plattforms : Plattforms_List(1..Plattforms_Number);
-		
 	end record;
 	
 end Regional_Station; 

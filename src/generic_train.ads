@@ -1,13 +1,7 @@
 with Ada.Numerics.Discrete_Random;
+with Train;use Train;
 
-package Railway.Train is
-	
-	type Train_Descriptor is
-	record
-		ID 			: Integer;
-		Speed 		: Integer;
-		Max_Speed 	: Integer;
-	end record;	
+package Generic_Train is
 	
 	task type Train_Type is 
 		entry Initialize(Descr : Train_Descriptor);
@@ -19,4 +13,4 @@ package Railway.Train is
    	seed : Rand_Int.Generator;
    	Num : Rand_Range;
 	
-end Railway.Train;
+end Generic_Train;

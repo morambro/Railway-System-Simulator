@@ -8,6 +8,7 @@
 -- 	09/02/2013
 --==============================================================================
 
+with Stations;
 with Environment;use Environment;
 with All_Trains;
 with Task_Pool;
@@ -23,6 +24,7 @@ procedure Main is
 	-- Item : Any_Operation;
 
 	--Exec : Executor;
+	
 	
 begin
 	
@@ -42,10 +44,9 @@ begin
 	--T3.Initialize(TD3);
 	--T4.Initialize(TD4);
 	
-	for I in 1 .. Traveler1_Operations'Length loop
-		
-		Task_Pool.Execute(Traveler1_Operations(I));
-		
-	end loop;
+	Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
+	
+	Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
+	
 	
 end Main;

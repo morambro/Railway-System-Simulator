@@ -1,7 +1,7 @@
 with Ada.Text_IO;use Ada.Text_IO;
 with Environment;
 
-package body Railway.Train is
+package body Generic_Train is
 	
 	task body Train_Type is
 		Current_Descriptor : Train_Descriptor;
@@ -43,4 +43,4 @@ package body Railway.Train is
 		
 	end Train_Type;
 	
-end Railway.Train;
+end Generic_Train;
