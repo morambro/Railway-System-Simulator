@@ -23,7 +23,7 @@ package body Regional_Station is
 	begin
 		Station.Name := Name;
 		for I in Positive range 1..Plattforms_Number loop
-			Station.Plattforms(I) := new Plattform(I);
+			Station.Plattforms(I) := new Plattform_Type(I);
 		end loop;
 		return Station;
 	end;	

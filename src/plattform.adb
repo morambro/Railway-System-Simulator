@@ -1,7 +1,6 @@
+package body Plattform is
 
-package body Railway.Station is
-
-	protected body Plattform is
+	protected body Plattform_Type is
 		entry Enter(Descriptor : in out Train_Descriptor) when Free = True is
 		begin 
 			Free := False;
@@ -11,8 +10,6 @@ package body Railway.Station is
 		begin 
 			Free := True;
 		end Leave;
-	end Plattform;
-
-
+	end Plattform_Type;
 	
-end Railway.Station;
+end Plattform;

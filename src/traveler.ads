@@ -11,25 +11,24 @@
 with Ada.Strings.Unbounded;
 with Generic_Operation_Interface;use Generic_Operation_Interface;
 
-package Passenger is
+package Traveler is
 	
 	package Unbounded_Strings renames Ada.Strings.Unbounded;
 	
-	type Passenger_Operations is Array(Positive range <>) of Any_Operation;
+	type Traveler_Operations is Array(Positive range <>) of Any_Operation;
 	
-	-- Passenger type declaration
-	type Passenger_Type is record
+	-- Traveler type declaration
+	type Traveler_Type is record
 		ID 			: Integer;
 		Name 		: Unbounded_Strings.Unbounded_String;
 		Surname 	: Unbounded_Strings.Unbounded_String;
 	end record;
 
-	type Passenger_Manager(Op : access Passenger_Operations) is record
-		Passenger 		: Passenger_Type;
-		Operations 		: access Passenger_Operations;
+	type Traveler_Manager is record
+		Traveler 		: Traveler_Type;
 		Next_Operation 	: Positive := 1;
 		-- It will contain
 		Destination 	: Positive := 1;
 	end record;	
 	
-end Passenger;
+end Traveler;

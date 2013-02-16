@@ -18,13 +18,7 @@ package Railway.Station is
    	-- have a fixed size so it can be not allocated inside a record.
    	type Station_Ref is access all Station_Interface'Class;
 
-	------------------------------- PLATTFORM TYPE ----------------------------------------------
-	protected type Plattform(ID:Integer) is
-		entry Enter(Descriptor : in out Train_Descriptor);
-		procedure Leave(Descriptor : in out Train_Descriptor);
-	private 
-		Free : Boolean := True;
-	end Plattform;
+
 	
 	
 end Railway.Station;

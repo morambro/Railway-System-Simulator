@@ -42,9 +42,9 @@ begin
 	--T3.Initialize(TD3);
 	--T4.Initialize(TD4);
 	
-	for I in 1 .. Passenger1_Operations'Length loop
+	for I in 1 .. Traveler1_Operations'Length loop
 		
-		Task_Pool.Execute(Passenger1_Operations(I));
+		Task_Pool.Execute(Traveler1_Operations(I));
 		
 	end loop;
 	

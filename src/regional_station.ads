@@ -1,10 +1,11 @@
 with Railway.Station;use Railway.Station;
 with Railway.Train;use Railway.Train;
+with Plattform; use Plattform;
 
 package Regional_Station is
 	
 	-- Array Containing plattforms references
-	type Plattforms_List is array (Positive range <>) of access Plattform;
+	type Plattforms_List is array (Positive range <>) of access Plattform_Type;
 	
 	-- Definition of Regional Station Type implementing Station_Interface --
 	type Regional_Station_Type(Plattforms_Number : Positive) is new Station_Interface with private;
