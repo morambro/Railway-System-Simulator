@@ -8,6 +8,8 @@
 -- 	09/02/2013
 --==============================================================================
 
+with YAMI.Outgoing_Messages; use YAMI.Outgoing_Messages;
+
 with Stations;
 with Environment;use Environment;
 with All_Trains;
@@ -44,9 +46,9 @@ begin
 	--T3.Initialize(TD3);
 	--T4.Initialize(TD4);
 	
-	Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
+	--Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
 	
-	Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
-	
+	--Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
+	null;
 	
 end Main;

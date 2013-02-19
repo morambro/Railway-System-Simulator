@@ -30,4 +30,6 @@ package Traveler is
 		Destination 	: Positive := 1;
 	end record;	
 	
+	function GetName(Traveler : Traveler_Manager) return String;
+	
 end Traveler;

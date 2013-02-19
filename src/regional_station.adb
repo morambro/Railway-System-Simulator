@@ -19,6 +19,7 @@ package body Regional_Station is
 			Plattform : Integer) is
 	begin
 		Station.Plattforms(Plattform).AddOutgoingTraveler(Traveler);
+		Station.Panel.SetStatus("User " & GetName(Traveler) & " entered plattform " & Integer'Image(Plattform));
 	end WaitForTrain;
 	
 	-- 
@@ -35,6 +36,7 @@ package body Regional_Station is
 		for I in Positive range 1..Plattforms_Number loop
 			Station.Plattforms(I) := new Plattform_Type(I);
 		end loop;
+		Station.Panel := new Notice_Panel_Entity(Name);
 		return Station;
 	end;	
 	

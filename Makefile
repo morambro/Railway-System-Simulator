@@ -1,6 +1,9 @@
+GNAT=gnatmake
+FLAGS=-P
+PROJECT_NAME=trainsimulation
+
 default:
-	gnatmake -gnat2012 -D out src/main.adb
-	
+	$(GNAT) $(FLAGS) $(PROJECT_NAME)
 clean:
-	rm out/*
-	rm main
+	rm -rf out/*
+	rm -rf trainsimulation

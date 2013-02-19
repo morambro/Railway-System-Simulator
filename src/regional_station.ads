@@ -2,6 +2,7 @@ with Generic_Station;use Generic_Station;
 with Train;use Train;
 with Plattform; use Plattform;
 with Traveler; use Traveler;
+with Notice_Panel;use Notice_Panel;
 
 package Regional_Station is
 	
@@ -36,6 +37,7 @@ private
 	record
 		Name : Positive;
 		Plattforms : Plattforms_List(1..Plattforms_Number);
+		Panel : access Notice_Panel_Entity;
 	end record;
 	
 end Regional_Station; 
