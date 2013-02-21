@@ -27,6 +27,7 @@ package Environment is
 	); 
 	
 	
+	
 	-- Operations for Traveler1
 	Traveler1_Operations : Traveler_Operations(1..2) := (
 		1 => new Move_Operation_Type(Traveler1_Manager'Access),
@@ -34,5 +35,7 @@ package Environment is
 	);
 	
 	Track_1 : Track_Type;
-
+	
+	Station1 : Station_Ref := NewRegionalStation(4,12211);
+	
 end Environment;

@@ -13,29 +13,32 @@ package body Generic_Train is
 				Current_Descriptor := Descr;
 			end;
 			
+			Put_Line ("Got a descriptor");
 			Max_Speed := Current_Descriptor.Speed;
 
 			-- Put_Line("Train initialized with a descriptor");
-			--Environment.Track_1.Enter(Current_Descriptor,Max_Speed);
+			Environment.Track_1.Enter(Current_Descriptor,Max_Speed);
 
 			Rand_Int.Reset(seed);
 
 			Num := Rand_Int.Random(seed);
-			Put_Line("Train " & Integer'Image(Current_Descriptor.ID) & " running at speed " & Integer'Image(Max_Speed));
-			Put_Line("Train " & Integer'Image(Current_Descriptor.ID) &" Waiting for " & Rand_Range'Image(Num) & " seconds");
+			Put_Line(
+				"Train " & Integer'Image(Current_Descriptor.ID) & " running at speed " & Integer'Image(Max_Speed));
+			Put_Line(
+				"Train " & Integer'Image(Current_Descriptor.ID) & " Waiting for " & Rand_Range'Image(Num) & " seconds");
 
 			delay Duration(Num);
 
-			--Environment.Track_1.Leave(Current_Descriptor);	
+			Environment.Track_1.Leave(Current_Descriptor);	
 			
-			--Environment.Station1.Enter(Current_Descriptor,1);
+			Environment.Station1.Enter(Current_Descriptor,1);
 			
 			Put_Line("Train " & Integer'Image(Current_Descriptor.ID) &" Enters Plattform 1");
 	
 			Num := Rand_Int.Random(seed);
 			delay Duration (Num);
 			
-			--Environment.Station1.Leave(Current_Descriptor,1);
+			Environment.Station1.Leave(Current_Descriptor,1);
 			
 			Put_Line("Train " & Integer'Image(Current_Descriptor.ID) &" Leaved Plattform 1");
 			

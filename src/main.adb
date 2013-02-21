@@ -9,6 +9,13 @@
 --==============================================================================
 
 with YAMI.Outgoing_Messages; use YAMI.Outgoing_Messages;
+with YAMI.Agents;
+with YAMI.Parameters;
+
+with Ada.Command_Line;
+with Ada.Exceptions;
+with Ada.Text_IO;
+
 
 with Stations;
 with Environment;use Environment;
@@ -30,6 +37,8 @@ procedure Main is
 	
 begin
 	
+	All_Trains.T1.Initialize(All_Trains.TD1);
+	
 	--Put_Line("Passenger Name = "& P.GetName);
 	--Put_Line("Passenger Surname = "& P.GetSurname);
 	--Put_Line("Passenger ID = "& Integer'Image(P.GetID));
@@ -49,6 +58,33 @@ begin
 	--Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
 	
 	--Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
-	null;
 	
+	
+	if Ada.Command_Line.Argument_Count /= 1 then
+		Ada.Text_IO.Put_Line("expecting one parameter: server destination");
+		Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
+		return;
+	end if;
+
+	declare
+	  	Server_Address : constant String := Ada.Command_Line.Argument (1);
+	  	Client_Agent : YAMI.Agents.Agent := YAMI.Agents.Make_Agent;
+	begin
+		--  read lines of text from standard input
+		--  and post each one for transmission
+    	while not Ada.Text_IO.End_Of_File loop
+       		declare
+				Input_Line : constant String := Ada.Text_IO.Get_Line;
+				Params : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+			begin
+		        --  the "content" field name is arbitrary,
+		        --  but needs to be recognized at the server side
+		        Params.Set_String ("content", Input_Line);
+		        Params.Set_String ("prova", "Sciao belo");
+		        Client_Agent.Send_One_Way (Server_Address, "printer", "print", Params);
+		    end;
+      	end loop;
+	end;
+exception
+	when E : others => Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Message (E));
 end Main;

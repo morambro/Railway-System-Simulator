@@ -12,11 +12,16 @@ package Track is
 	
 	private 
 	
-		Free : Boolean := True;
+		entry Retry(T : Train_Descriptor);
+		Running_Trains : Train_Queue (1..10);
+	
+		Trains_Number : Integer := 0;
+	
+		Guard : Boolean := false;
 		
 		Retry_Num : Integer := 0;
 		
-		Track_Max_Speed : Integer := 200; 
+		Curr_Max_Speed : Integer := 200; 
 	
 	end Track_Type;
 	
