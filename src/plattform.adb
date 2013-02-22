@@ -1,4 +1,6 @@
 with Ada.Text_IO;use Ada.Text_IO;
+with Ada.Containers;use Ada.Containers;
+
 
 package body Plattform is
 
@@ -16,14 +18,14 @@ package body Plattform is
 		
 		procedure AddIncomingTraveler(Traveler : in out Traveler_Manager) is
 		begin
-			Arrival_Queue.Push(Traveler);
+			Arrival_Queue.Enqueue(Traveler);
 		end AddIncomingTraveler;
 		
 		
 		procedure AddOutgoingTraveler(Traveler : in out Traveler_Manager) is
 		begin
-			Arrival_Queue.Push(Traveler);
-			Put_Line("Travelers in queue = " & Integer'Image(Arrival_Queue.GetSize));
+			Arrival_Queue.Enqueue(Traveler);
+			Put_Line("Travelers in queue = " & Count_Type'Image(Arrival_Queue.Current_Use));
 			
 		end AddOutgoingTraveler;
 		

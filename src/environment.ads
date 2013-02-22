@@ -11,17 +11,22 @@ package Environment is
 	package Unbounded_Strings renames Ada.Strings.Unbounded;
 	use Unbounded_Strings;
 
-	Tasks : Task_Pool_Type(5);
+	-- Creation of Actors for Travelers
+	Traveler_Tasks : Task_Pool_Type(5);
 
-	Traveler1 : Traveler_Type := (
-		1,
-		To_Unbounded_String("Moreno"),
-		To_Unbounded_String("Ambrosin")
+	-- Creation of 5 stations
+	Stations : array (1 .. 5) of Station_Ref := (
+		1 => NewRegionalStation(4,12211),
+		2 => NewRegionalStation(3,44556),
+		3 => NewRegionalStation(2,32111),
+		4 => NewRegionalStation(3,66442),
+		5 => NewRegionalStation(2,56655)
 	);
-	
+
+
 	
 	Traveler1_Manager : aliased Traveler_Manager := (
-		Traveler => Traveler1,--(2,To_Unbounded_String("Sergio"),To_Unbounded_String("Rossi")),
+		Traveler => (2,To_Unbounded_String("Sergio"),To_Unbounded_String("Rossi")),
 		Next_Operation => 1,
 		Destination => 1
 	); 
@@ -36,6 +41,5 @@ package Environment is
 	
 	Track_1 : Track_Type;
 	
-	Station1 : Station_Ref := NewRegionalStation(4,12211);
 	
 end Environment;

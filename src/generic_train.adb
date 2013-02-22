@@ -31,14 +31,14 @@ package body Generic_Train is
 
 			Environment.Track_1.Leave(Current_Descriptor);	
 			
-			Environment.Station1.Enter(Current_Descriptor,1);
+			Environment.Stations(1).Enter(Current_Descriptor,1);
 			
 			Put_Line("Train " & Integer'Image(Current_Descriptor.ID) &" Enters Plattform 1");
 	
 			Num := Rand_Int.Random(seed);
 			delay Duration (Num);
 			
-			Environment.Station1.Leave(Current_Descriptor,1);
+			Environment.Stations(1).Leave(Current_Descriptor,1);
 			
 			Put_Line("Train " & Integer'Image(Current_Descriptor.ID) &" Leaved Plattform 1");
 			

@@ -7,13 +7,11 @@ package Plattform is
 	-- Create a queue for Traveler type
 	package Traveler_Queue_Package is new Queue(Traveler_Manager);
 
-	use Traveler_Queue_Package;
-
 	-- Queue for Arriving Traveler
-	Arrival_Queue : Queue_Type;
+	Arrival_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
 	
 	-- Queue for Travelers waiting for the train
-	Leaving_Queue : Queue_Type;
+	Leaving_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
 
 	protected type Plattform_Type(ID:Integer) is
 		

@@ -20,7 +20,7 @@ package body Task_Pool is
 	begin
 		loop
 			Put_Line("Task waits for an operation to Execute");
-			Operations_Queue.Pop(To_Execute);
+			Operations_Queue.Dequeue(To_Execute);
 			
 			Put_Line("Task retrieved an Operation");
 			
@@ -32,7 +32,7 @@ package body Task_Pool is
 
 	procedure Execute(Operation : Any_Operation) is
 	begin
-		Operations_Queue.Push(Operation);
+		Operations_Queue.Enqueue(Operation);
 	end Execute;
 
 end Task_Pool;
