@@ -20,7 +20,7 @@ with Ada.Text_IO;
 with Stations;
 with Environment;use Environment;
 with All_Trains;
-with Task_Pool;
+with Task_Pool;with Train_Pool;
 with Route;use Route;
 
 procedure Main is
@@ -42,7 +42,7 @@ procedure Main is
 	
 begin
 	
-	All_Trains.T1.Initialize(All_Trains.TD1);
+	Train_Pool.Associate(All_Trains.Trains(1));
 	
 	
 	
