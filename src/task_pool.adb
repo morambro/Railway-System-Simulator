@@ -11,9 +11,9 @@ with Ada.Text_IO;use Ada.Text_IO;
 
 package body Task_Pool is
 
-	-- Queue used to manage Operations
-	-- Operations_Queue : Queue_Type;
-
+	--
+	-- Task type Executor definition
+	--
 	task body Executor is
 		--Operation : Operation_Interface'Class := null;
 		To_Execute : Any_Operation;
@@ -30,6 +30,9 @@ package body Task_Pool is
 		end loop;
 	end Executor;
 
+	--
+	-- Adds the given Operation Pointer to the Operations queue
+	--
 	procedure Execute(Operation : Any_Operation) is
 	begin
 		Operations_Queue.Enqueue(Operation);

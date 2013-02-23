@@ -17,7 +17,7 @@ package body Generic_Train is
 			Max_Speed := Current_Descriptor.Speed;
 
 			-- Put_Line("Train initialized with a descriptor");
-			Environment.Track_1.Enter(Current_Descriptor,Max_Speed);
+			Environment.Tracks(1).Enter(Current_Descriptor,Max_Speed);
 
 			Rand_Int.Reset(seed);
 
@@ -29,7 +29,7 @@ package body Generic_Train is
 
 			delay Duration(Num);
 
-			Environment.Track_1.Leave(Current_Descriptor);	
+			Environment.Tracks(1).Leave(Current_Descriptor);	
 			
 			Environment.Stations(1).Enter(Current_Descriptor,1);
 			

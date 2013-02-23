@@ -23,23 +23,36 @@ package Environment is
 		5 => NewRegionalStation(2,56655)
 	);
 
-
-	
-	Traveler1_Manager : aliased Traveler_Manager := (
-		Traveler => (2,To_Unbounded_String("Sergio"),To_Unbounded_String("Rossi")),
-		Next_Operation => 1,
-		Destination => 1
-	); 
-	
-	
-	
-	-- Operations for Traveler1
-	Traveler1_Operations : Traveler_Operations(1..2) := (
-		1 => new Move_Operation_Type(Traveler1_Manager'Access),
-		2 => new Move_Operation_Type(Traveler1_Manager'Access)
+	Travelers : array (1 .. 4) of aliased Traveler_Manager := (
+		1 	=> (Traveler => (2,To_Unbounded_String("Sergio"),To_Unbounded_String("Rossi")),
+				Next_Operation => 1,
+				Destination => 1),
+		2 	=> (Traveler => (2,To_Unbounded_String("Mario"),To_Unbounded_String("Verdi")),
+				Next_Operation => 1,
+				Destination => 1),
+		3 	=> (Traveler => (2,To_Unbounded_String("Roberto"),To_Unbounded_String("Bianchi")),
+				Next_Operation => 1,
+				Destination => 1),
+		4 	=> (Traveler => (2,To_Unbounded_String("John"),To_Unbounded_String("Doe")),
+				Next_Operation => 1,
+				Destination => 1)
 	);
 	
-	Track_1 : Track_Type;
+
+	Operations : array (1 .. 4) of Traveler_Operations(1 .. 2) := (
+	-- Operations for Traveler1
+		1 =>  (	1 => new Move_Operation_Type(Travelers(1)'Access),
+				2 => new Move_Operation_Type(Travelers(1)'Access)),
+		2 =>  (	1 => new Move_Operation_Type(Travelers(2)'Access),
+				2 => new Move_Operation_Type(Travelers(2)'Access)),
+		3 =>  (	1 => new Move_Operation_Type(Travelers(3)'Access),
+				2 => new Move_Operation_Type(Travelers(3)'Access)),
+		4 =>  (	1 => new Move_Operation_Type(Travelers(4)'Access),
+				2 => new Move_Operation_Type(Travelers(4)'Access))
+	);
+	
+	
+	Tracks : array (1 .. 5) of Track_Type;
 	
 	
 end Environment;

@@ -5,7 +5,7 @@ with Traveler;use Traveler;
 package Plattform is
 	
 	-- Create a queue for Traveler type
-	package Traveler_Queue_Package is new Queue(Traveler_Manager);
+	package Traveler_Queue_Package is new Queue(Element => Traveler_Manager);
 
 	-- Queue for Arriving Traveler
 	Arrival_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
