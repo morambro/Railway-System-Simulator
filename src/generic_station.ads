@@ -1,5 +1,5 @@
 with Train;
-with Traveler;use Traveler;
+with Traveler;
 
 package Generic_Station is
 
@@ -8,20 +8,20 @@ package Generic_Station is
 
 		-- Station_Interface Methods
 		procedure Enter(
-			Station : Station_Interface;
+			This : Station_Interface;
 			Descriptor : in out Train.Train_Descriptor;
 			Plattform : Integer)
 		is abstract;
 
 		procedure Leave(
-			Station : Station_Interface;
+			This : Station_Interface;
 			Descriptor : in out Train.Train_Descriptor;
 			Plattform : Integer)
 		is abstract;
 
 		procedure WaitForTrain(
-			Station : Station_Interface;
-			Traveler : in out Traveler_Manager;
+			This : Station_Interface;
+			Incoming_Traveler : in out Traveler.Traveler_Manager;
 			Plattform : Integer)
 		is abstract;
 
