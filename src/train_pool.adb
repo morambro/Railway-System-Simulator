@@ -8,7 +8,7 @@ package body Train_Pool is
 
 	task body Train_Type is
 
-		NAME : constant String := "Train_Type";
+		NAME : constant String := "Train_Pool.Train_Type";
 
 		Current_Descriptor 	: Train_Descriptor;
 		Max_Speed 			: Integer;
@@ -88,6 +88,7 @@ package body Train_Pool is
 
 			delay Duration (Num);
 
+			-- Re-enqueue the descriptor only if it has more stages to travel
 			if(Current_Descriptor.Next_Stage < Routes.Route'Length) then
 				Trains_Queue.Enqueue(Current_Descriptor);
 			end if;

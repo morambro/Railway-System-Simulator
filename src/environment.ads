@@ -1,8 +1,8 @@
-With Track;Use Track;
-With Generic_Station;Use Generic_Station;
+With Track;
+With Generic_Station;
 With Regional_Station;
-With Traveler;Use Traveler;
-With Move_Operation;Use Move_Operation;
+With Traveler;
+With Move_Operation;
 With Ada.Strings.Unbounded;
 
 Package Environment Is
@@ -12,7 +12,7 @@ Package Environment Is
     Use Unbounded_Strings;
 
 	-- Creation of 5 stations
-    Stations : Array (1 .. 5) Of Station_Ref := (
+    Stations : Array (1 .. 5) Of Generic_Station.Station_Ref := (
 		1 => Regional_Station.NewRegionalStation(4,12211),
 		2 => Regional_Station.NewRegionalStation(3,44556),
 		3 => Regional_Station.NewRegionalStation(2,32111),
@@ -20,7 +20,7 @@ Package Environment Is
 		5 => Regional_Station.NewRegionalStation(2,56655)
 	);
 
-    Travelers : Array (1 .. 4) Of Aliased Traveler_Manager := (
+    Travelers : Array (1 .. 4) Of Aliased Traveler.Traveler_Manager := (
 		1 	=> (Traveler => (2,To_Unbounded_String("Sergio"),To_Unbounded_String("Rossi")),
 				Next_Operation => 1,
 				Destination => 1),
@@ -36,19 +36,19 @@ Package Environment Is
 	);
 
 
-    Operations : array (1 .. 4) of Traveler_Operations(1 .. 2) := (
+    Operations : array (1 .. 4) of Traveler.Traveler_Operations(1 .. 2) := (
 		-- Operations for Traveler1
-		1 =>  (	1 => new Move_Operation_Type(Travelers(1)'Access),
-		        2 => new Move_Operation_Type(Travelers(1)'Access)),
-		2 =>  (	1 => new Move_Operation_Type(Travelers(2)'Access),
-		        2 => new Move_Operation_Type(Travelers(2)'Access)),
-		3 =>  (	1 => new Move_Operation_Type(Travelers(3)'Access),
-		        2 => new Move_Operation_Type(Travelers(3)'Access)),
-		4 =>  (	1 => new Move_Operation_Type(Travelers(4)'Access),
-		        2 => new Move_Operation_Type(Travelers(4)'Access))
+		1 =>  (	1 => new Move_Operation.Move_Operation_Type(Travelers(1)'Access),
+		        2 => new Move_Operation.Move_Operation_Type(Travelers(1)'Access)),
+		2 =>  (	1 => new Move_Operation.Move_Operation_Type(Travelers(2)'Access),
+		        2 => new Move_Operation.Move_Operation_Type(Travelers(2)'Access)),
+		3 =>  (	1 => new Move_Operation.Move_Operation_Type(Travelers(3)'Access),
+		        2 => new Move_Operation.Move_Operation_Type(Travelers(3)'Access)),
+		4 =>  (	1 => new Move_Operation.Move_Operation_Type(Travelers(4)'Access),
+		        2 => new Move_Operation.Move_Operation_Type(Travelers(4)'Access))
     );
 
 
-    Tracks : Array (1 .. 4) Of Track_Type;
+    Tracks : Array (1 .. 4) Of Track.Track_Type;
 
 end Environment;

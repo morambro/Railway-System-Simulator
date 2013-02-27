@@ -12,11 +12,11 @@ with Ada.Strings.Unbounded;
 with Generic_Operation_Interface;use Generic_Operation_Interface;
 
 package Traveler is
-	
+
 	package Unbounded_Strings renames Ada.Strings.Unbounded;
-	
+
 	type Traveler_Operations is Array(Positive range <>) of Any_Operation;
-	
+
 	-- Traveler type declaration
 	type Traveler_Type is record
 		ID 			: Integer;
@@ -28,8 +28,9 @@ package Traveler is
 		Traveler 		: Traveler_Type;
 		Next_Operation 	: Positive := 1;
 		Destination 	: Positive := 1;
-	end record;	
-	
+	end record;
+
 	function GetName(Traveler : Traveler_Manager) return String;
-	
+
+
 end Traveler;

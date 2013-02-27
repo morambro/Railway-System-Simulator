@@ -16,7 +16,7 @@ package body Task_Pool is
 	--
 	task body Actor is
 
-		NAME : constant String := "Actor";
+		NAME : constant String := "Task_Pool.Actor";
 
 		To_Execute : Any_Operation;
 
