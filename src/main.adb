@@ -19,10 +19,12 @@ with Ada.Text_IO;
 
 with Stations;
 with Environment;use Environment;
-with All_Trains;
-with Task_Pool;with Train_Pool;
+with Trains;
 with Route;use Route;
+with Train_Pool;
 
+
+with Ada.Real_Time;
 procedure Main is
 
 	-- Reference type must be in the same scope as the type Access
@@ -36,14 +38,14 @@ procedure Main is
 	--Exec : Executor;
 	
 	R : Route_Type(1..2) := (
-		1 => NewStage(T => 1,S => 1,Leave_At => 2),
-		2 => NewStage(T => 1,S => 1,Leave_At => 2)
+		1 => NewStage(T => 1,S => 1,Leave_At => Ada.Real_Time.Clock),
+		2 => NewStage(T => 1,S => 1,Leave_At => Ada.Real_Time.Clock)
 	);
 	
 begin
 	
-	Train_Pool.Associate(All_Trains.Trains(1));
-	
+	Train_Pool.Associate(Trains.Trains(1));
+	null;
 	
 	
 	--Put_Line("Passenger Name = "& P.GetName);

@@ -9,12 +9,11 @@ package body Train_Pool is
 		Current_Descriptor : Train_Descriptor;
 		Max_Speed : Integer;
 	begin
-		select 
-			-- First Initialization
-			accept Initialize(Descr : Train_Descriptor) do
-				Current_Descriptor := Descr;
-			end;
-			
+		loop
+			Put_Line ("Train waits for a Descriptor");
+
+			Trains_Queue.Dequeue(Current_Descriptor);		
+					
 			Put_Line ("Got a descriptor");
 			Max_Speed := Current_Descriptor.Speed;
 
@@ -32,19 +31,18 @@ package body Train_Pool is
 			delay Duration(Num);
 
 			Environment.Tracks(1).Leave(Current_Descriptor);	
-			
+		
 			Environment.Stations(1).Enter(Current_Descriptor,1);
-			
+		
 			Put_Line("Train " & Integer'Image(Current_Descriptor.ID) &" Enters Plattform 1");
-	
+
 			Num := Rand_Int.Random(seed);
 			delay Duration (Num);
-			
+		
 			Environment.Stations(1).Leave(Current_Descriptor,1);
-			
-			Put_Line("Train " & Integer'Image(Current_Descriptor.ID) &" Leaved Plattform 1");
-			
-		end select;
+		
+			Put_Line("Train " & Integer'Image(Current_Descriptor.ID) &" Leaves Plattform 1");
+		end loop;	
 	end Train_Type;
 	
 	procedure Associate(Train : Train_Descriptor) is 

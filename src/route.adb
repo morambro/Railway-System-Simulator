@@ -1,6 +1,21 @@
 package body Route is
+
+	function GetNextTrack (S : Stage) return Positive is
+	begin
+		return S.Next_Track;
+	end GetNextTrack;
 	
-	function NewStage(T : Positive;S : Positive;Leave_At : Integer) return Stage is
+	function GetNextStation (S : Stage) return Positive is
+	begin
+		return S.Next_Station;
+	end GetNextStation;
+	
+	function GetTimeToLeave (S : Stage) return Time is
+	begin
+		return S.Leave_At;
+	end GetTimeToLeave;
+	
+	function NewStage(T : Positive;S : Positive;Leave_At : Time) return Stage is
 		To_Return : Stage;
 	begin
 		To_Return.Next_Track := T;

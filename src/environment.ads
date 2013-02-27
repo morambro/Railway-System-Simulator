@@ -1,6 +1,6 @@
 with Track;use Track;
 with Generic_Station;use Generic_Station;
-with Regional_Station;use Regional_Station;
+with Regional_Station;
 with Task_Pool;use Task_Pool;
 with Traveler;use Traveler;
 with Move_Operation;use Move_Operation;
@@ -16,11 +16,11 @@ package Environment is
 
 	-- Creation of 5 stations
 	Stations : array (1 .. 5) of Station_Ref := (
-		1 => NewRegionalStation(4,12211),
-		2 => NewRegionalStation(3,44556),
-		3 => NewRegionalStation(2,32111),
-		4 => NewRegionalStation(3,66442),
-		5 => NewRegionalStation(2,56655)
+		1 => Regional_Station.NewRegionalStation(4,12211),
+		2 => Regional_Station.NewRegionalStation(3,44556),
+		3 => Regional_Station.NewRegionalStation(2,32111),
+		4 => Regional_Station.NewRegionalStation(3,66442),
+		5 => Regional_Station.NewRegionalStation(2,56655)
 	);
 
 	Travelers : array (1 .. 4) of aliased Traveler_Manager := (

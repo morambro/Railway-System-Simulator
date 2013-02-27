@@ -1,4 +1,14 @@
-with Ada.Numerics.Discrete_Random;
+--==============================================================================
+-- File:
+--		train.ads
+-- Created by:
+--		Moreno Ambrosin
+--  	Mat.  : 1035635
+-- Date:
+--		09/02/2013
+-- Updates:
+--		22/02/2013 : Moved Train Task defintion in Train_Pool package		
+--==============================================================================
 
 package Train is
 	

@@ -8,21 +8,21 @@
 -- 	22/02/2013
 --==============================================================================
 --
--- This package contains a representation of a Route as an unbounded array
+-- This package contains a representation of a Route for a Train as an unbounded array
 -- of Stage objects.
 --
+with Ada.Real_Time;use Ada.Real_Time;
 package Route is
 
 	type Stage is private;
 	
 	type Route_Type is array (Positive range <>) of Stage;
 
---	function GetNextTrack (S : Stage) return Positive;
---	function GetNextStation (S : Stage) return Positive;
---	-- TODO: Change to Time
---	function GetTimeToLeave (S : Stage) return Integer;
+	function GetNextTrack (S : Stage) return Positive;
+	function GetNextStation (S : Stage) return Positive;
+	function GetTimeToLeave (S : Stage) return Time;
 	
-	function NewStage(T : Positive;S : Positive;Leave_At : Integer) return Stage;
+	function NewStage(T : Positive;S : Positive;Leave_At : Time) return Stage;
 
 private
 
@@ -30,8 +30,7 @@ private
 	-- Indexes of next Track and Station
 		Next_Track : Positive;
 		Next_Station : Positive;
-		-- TODO: Represent in Time
-		Leave_At : Integer;
+		Leave_At : Time;
 	end record;
 	
 	

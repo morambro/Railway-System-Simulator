@@ -1,6 +1,6 @@
 GNAT=gnatmake
 FLAGS=-P
-PROJECT_NAME=trainsimulation
+PROJECT_NAME=trainproject
 
 default:
 	$(GNAT) $(FLAGS) $(PROJECT_NAME)
