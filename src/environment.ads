@@ -1,7 +1,6 @@
 With Track;Use Track;
 With Generic_Station;Use Generic_Station;
 With Regional_Station;
-With Task_Pool;Use Task_Pool;
 With Traveler;Use Traveler;
 With Move_Operation;Use Move_Operation;
 With Ada.Strings.Unbounded;
@@ -11,9 +10,6 @@ Package Environment Is
     Package Unbounded_Strings Renames Ada.Strings.Unbounded;
 
     Use Unbounded_Strings;
-
-	-- Creation of Actors for Travelers
-	Traveler_Tasks : Task_Pool_Type(5);
 
 	-- Creation of 5 stations
     Stations : Array (1 .. 5) Of Station_Ref := (

@@ -7,28 +7,31 @@
 -- Date:
 -- 	09/02/2013
 --==============================================================================
-with Ada.Text_IO;use Ada.Text_IO;
+with Logger;
 
 package body Task_Pool is
 
 	--
 	-- Task type Executor definition
 	--
-	task body Executor is
-		--Operation : Operation_Interface'Class := null;
+	task body Actor is
+
+		NAME : constant String := "Actor";
+
 		To_Execute : Any_Operation;
+
 	begin
 		loop
-			Put_Line("Task waits for an operation to Execute");
+			Logger.Log(NAME,"Task waits for an operation to Execute",Logger.VERY_VERBOSE);
 			Operations_Queue.Dequeue(To_Execute);
-			
-			Put_Line("Task retrieved an Operation");
-			
+
+			Logger.Log(NAME,"Task retrieved an Operation",Logger.VERY_VERBOSE);
+
 			-- Right Here, I'm shure to have an Operation to Execute
 			To_Execute.Do_Operation;
 
 		end loop;
-	end Executor;
+    end Actor;
 
 	--
 	-- Adds the given Operation Pointer to the Operations queue

@@ -3,7 +3,7 @@
 --	main.adb
 -- Author:
 --	Moreno Ambrosin
---  	Mat.  : 1035635
+--	Mat.  : 1035635
 -- Date:
 -- 	09/02/2013
 --==============================================================================
@@ -22,7 +22,9 @@ with Environment;use Environment;
 with Trains;
 with Route;use Route;
 with Train_Pool;
+With Task_Pool;
 
+with Logger;
 
 procedure Main is
 
@@ -35,14 +37,31 @@ procedure Main is
 	-- Item : Any_Operation;
 
     --Exec : Executor;
-    Pool : Train_Pool.Train_Task_Pool(3);
+
 
 begin
 
-	Train_Pool.Associate(Trains.Trains(1));
-	null;
+	if Ada.Command_Line.Argument_Count /= 1 then
+		Ada.Text_IO.Put_Line("Expecting a log level [ -v | -vv | -vvv ].");
+		Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
+		return;
+	end if;
 
+	if(not Logger.Init(Ada.Command_Line.Argument (1))) then
+		Ada.Text_IO.Put_Line("Wrong parameter! Use a valid log level [ -v | -vv | -vvv ].");
+		return;
+	end if;
 
+	declare
+		-- Creation of Actors for Travelers
+		Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
+		Pool 			: Train_Pool.Train_Task_Pool(3);
+	begin
+
+		Train_Pool.Associate(Trains.Trains(1));
+		Train_Pool.Associate(Trains.Trains(2));
+
+	end;
 	--Put_Line("Passenger Name = "& P.GetName);
 	--Put_Line("Passenger Surname = "& P.GetSurname);
 	--Put_Line("Passenger ID = "& Integer'Image(P.GetID));

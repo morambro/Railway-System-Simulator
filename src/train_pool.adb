@@ -1,4 +1,4 @@
-with Ada.Text_IO;use Ada.Text_IO;
+with Logger;
 with Environment;
 with Trains;
 with Route;
@@ -8,6 +8,8 @@ package body Train_Pool is
 
 	task body Train_Type is
 
+		NAME : constant String := "Train_Type";
+
 		Current_Descriptor 	: Train_Descriptor;
 		Max_Speed 			: Integer;
 		Next_Station 		: Positive;
@@ -16,11 +18,13 @@ package body Train_Pool is
 
 	begin
 		loop
-			Put_Line ("Train waits for a Descriptor");
+
+			Logger.Log(NAME,"Train waits for a Descriptor",Logger.VERY_VERBOSE);
 
 			Trains_Queue.Dequeue(Current_Descriptor);
 
-			Put_Line ("Got a descriptor");
+			Logger.Log(NAME,"Train task obtained a Descriptor",Logger.VERY_VERBOSE);
+
 			Max_Speed := Current_Descriptor.Speed;
 
 			Next_Station 	:= Route.GetNextStation(Routes.Route(Current_Descriptor.Next_Stage));
@@ -34,10 +38,10 @@ package body Train_Pool is
 
 			Num := Rand_Int.Random(seed);
 
-	    	Put_Line(
+	    	Logger.Log(NAME,
 	      		"Train " & Integer'Image(Current_Descriptor.Id) &
-		  		" Enters Plattform " & Integer'Image(Next_Plattform) &
-	      		" At station " & Integer'Image(Next_Station));
+		  		" Enters Platform " & Integer'Image(Next_Plattform) &
+	      		" At station " & Integer'Image(Next_Station), Logger.VERY_VERBOSE);
 
 			-- Update Current Station!!
 			Current_Descriptor.Current_Station := Next_Station;
@@ -48,38 +52,45 @@ package body Train_Pool is
 	    	Environment.Stations(Next_Station).Leave(Current_Descriptor,Next_Plattform);
 
 
-	   		Put_Line(
+	   		Logger.Log(NAME,
 		      	"Train " & Integer'Image(Current_Descriptor.Id) &
 			  	" Leaves Platform " & Integer'Image(Next_Plattform) &
-			  	" At station " & Integer'Image(Next_Station));
+			  	" At station " & Integer'Image(Next_Station),Logger.VERY_VERBOSE);
 
 			Next_Track := Route.GetNextTrack(Routes.Route(Current_Descriptor.Next_Stage));
 
 			Environment.Tracks(Next_Track).Enter(Current_Descriptor,Max_Speed);
 
-			Put_Line(
+			Logger.Log(NAME,
 		      	"Train " & Integer'Image(Current_Descriptor.Id) &
-			  	" Enters Track " & Integer'Image(Next_Track));
-			Put_Line(
-				"Train " & Integer'Image(Current_Descriptor.ID) & " running at speed " & Integer'Image(Max_Speed));
-			Put_Line(
-				"Train " & Integer'Image(Current_Descriptor.ID) & " Waiting for " & Rand_Range'Image(Num) & " seconds");
+			  	" Enters Track " & Integer'Image(Next_Track),Logger.VERY_VERBOSE);
+
+			Logger.Log(NAME,
+				"Train " & Integer'Image(Current_Descriptor.ID) & " running at speed " & Integer'Image(Max_Speed),
+				Logger.VERY_VERBOSE);
+
+			Logger.Log(NAME,
+				"Train " & Integer'Image(Current_Descriptor.ID) & " Waiting for " & Rand_Range'Image(Num) & " seconds",
+				Logger.VERY_VERBOSE);
 
 			Num := Rand_Int.Random(seed);
 			delay Duration (Num);
 
 			Environment.Tracks(Next_Track).Leave(Current_Descriptor);
 
-			Put_Line(
+			Logger.Log(NAME,
 		      	"Train " & Integer'Image(Current_Descriptor.Id) &
 			  	" Leaves Platform " & Integer'Image(Next_Plattform) &
-			  	" At station " & Integer'Image(Next_Station));
+			  	" At station " & Integer'Image(Next_Station),
+			  	Logger.VERY_VERBOSE);
 
 			Current_Descriptor.Next_Stage := Current_Descriptor.Next_Stage + 1;
 
 			delay Duration (Num);
 
-			Trains_Queue.Enqueue(Current_Descriptor);
+			if(Current_Descriptor.Next_Stage < Routes.Route'Length) then
+				Trains_Queue.Enqueue(Current_Descriptor);
+			end if;
 
 		end loop;
 	end Train_Type;
