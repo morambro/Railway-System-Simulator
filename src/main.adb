@@ -24,7 +24,6 @@ with Route;use Route;
 with Train_Pool;
 
 
-with Ada.Real_Time;
 procedure Main is
 
 	-- Reference type must be in the same scope as the type Access
@@ -35,40 +34,36 @@ procedure Main is
 
 	-- Item : Any_Operation;
 
-	--Exec : Executor;
-	
-	R : Route_Type(1..2) := (
-		1 => NewStage(T => 1,S => 1,Leave_At => Ada.Real_Time.Clock),
-		2 => NewStage(T => 1,S => 1,Leave_At => Ada.Real_Time.Clock)
-	);
-	
+    --Exec : Executor;
+    Pool : Train_Pool.Train_Task_Pool(3);
+
 begin
-	
+
 	Train_Pool.Associate(Trains.Trains(1));
 	null;
-	
-	
+
+
 	--Put_Line("Passenger Name = "& P.GetName);
 	--Put_Line("Passenger Surname = "& P.GetSurname);
 	--Put_Line("Passenger ID = "& Integer'Image(P.GetID));
-	
+
 	--for I in 1 .. Operations'Length loop
-		
+
 		--Task_Pool.Execute(Operations(I));
-		
+
 	--end loop;
-	
+
 
 	--T1.Initialize(TD1);
 	--T2.Initialize(TD2);
 	--T3.Initialize(TD3);
 	--T4.Initialize(TD4);
-	
+
 --	Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
-	
+
 --	Task_Pool.Execute(Traveler1_Operations(Traveler1_Manager.Next_Operation));
-	
-	
+
+
 --	if Ada.Command_Line.Argument_Count /= 1 then
 --		Ada.Text_IO.Put_Line("expecting one parameter: server destination");
 --		Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
