@@ -1,1 +1,0 @@
-struct child { int a; };
