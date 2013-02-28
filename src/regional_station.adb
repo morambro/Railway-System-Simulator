@@ -43,7 +43,7 @@ package body Regional_Station is
 		Plattforms_Number : Positive;
 		Name : Positive) return Station_Ref
 	is
-		Station : access Regional_Station_Type:= new Regional_Station_Type(Plattforms_Number);
+		Station : access Regional_Station_Type := new Regional_Station_Type(Plattforms_Number);
 	begin
 		Station.Name := Name;
 		for I in Positive range 1..Plattforms_Number loop

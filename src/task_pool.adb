@@ -22,10 +22,10 @@ package body Task_Pool is
 
 	begin
 		loop
-			Logger.Log(NAME,"Task waits for an operation to Execute",Logger.VERY_VERBOSE);
+			Logger.Log(NAME,"Task waits for an operation to Execute",Logger.NOTICE);
 			Operations_Queue.Dequeue(To_Execute);
 
-			Logger.Log(NAME,"Task retrieved an Operation",Logger.VERY_VERBOSE);
+			Logger.Log(NAME,"Task retrieved an Operation",Logger.NOTICE);
 
 			-- Right Here, I'm shure to have an Operation to Execute
 			To_Execute.Do_Operation;

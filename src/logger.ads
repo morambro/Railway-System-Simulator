@@ -10,11 +10,11 @@
 
 package Logger is
 
-	type Log_Level is (v,vv,vvv);
+	type Log_Level is (info,NOTICE,DEBUG);
 
-	VERBOSE 			: constant Log_Level := v;
-	VERY_VERBOSE 		: constant Log_Level := vv;
-	VERY_VERY_VERBOSE 	: constant Log_Level := vvv;
+	INFO_LEVEL		: constant Log_Level := INFO;
+	NOTICE_LEVEL	: constant Log_Level := NOTICE;
+	DEBUG_LEVEL	 	: constant Log_Level := DEBUG;
 
 	function Init(L : String) return Boolean;
 

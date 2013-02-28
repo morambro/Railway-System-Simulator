@@ -10,6 +10,9 @@
 
 with Ada.Strings.Unbounded;
 with Generic_Operation_Interface;use Generic_Operation_Interface;
+with JSON_Helper;
+with Gnatcoll.JSON;use Gnatcoll.JSON;
+with JSON_Helper;use JSON_Helper;
 
 package Traveler is
 
@@ -30,7 +33,36 @@ package Traveler is
 		Destination 	: Positive := 1;
 	end record;
 
+	type Traveler_Manager_Array is Array(Positive range <>) of aliased Traveler_Manager;
+
 	function GetName(Traveler : Traveler_Manager) return String;
 
+	procedure Print(T : Traveler_Manager);
+
+	--
+	-- Creates a Traveler from JSON object
+	--
+	-- @return : A Traveler_Type object
+	--
+	function Get_Traveler(Json_Traveler : JSON_Value) return Traveler_Type;
+
+	--
+	-- Creates a Traveler_Manager from JSON object
+	--
+	-- @return : A Traveler_Manager object
+	--
+	function Get_Traveler_Manager(Json_Traveler : JSON_Value) return Traveler_Manager;
+
+	--
+	-- Creates a Traveler_Manager_Array from JSON object
+	--
+	-- @return : A Traveler_Manager_Array object
+	--
+	function Get_Traveler_Manager_Array(Json_Traveler : JSON_Value) return Traveler_Manager_Array;
+
+	function Get_Traveler_Manager_Array(Json_Traveler : String) return Traveler_Manager_Array;
+
+--  type Traveler_Type_Array is Array(Positive range <>) of aliased Traveler_Type;
+--  function Get_Traveler_Array(Json_Traveler : JSON_Value) return Traveler_Type_Array;
 
 end Traveler;

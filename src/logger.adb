@@ -43,12 +43,12 @@ package body Logger is
 	--
 	function ToLevel(L : String) return Log_Level is
 	begin
-		if (L = "-v") then
-			return v;
-		elsif (L = "-vv") then
-			return vv;
-		elsif (L = "-vvv") then
-			return vv;
+		if (L = "-i") then
+			return INFO;
+		elsif (L = "-n") then
+			return NOTICE;
+		elsif (L = "-d") then
+			return DEBUG;
 		end if;
 		raise Wrong_Input;
 	end;

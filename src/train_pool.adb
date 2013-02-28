@@ -19,11 +19,11 @@ package body Train_Pool is
 	begin
 		loop
 
-			Logger.Log(NAME,"Train waits for a Descriptor",Logger.VERY_VERBOSE);
+			Logger.Log(NAME,"Train waits for a Descriptor",Logger.NOTICE);
 
 			Trains_Queue.Dequeue(Current_Descriptor);
 
-			Logger.Log(NAME,"Train task obtained a Descriptor",Logger.VERY_VERBOSE);
+			Logger.Log(NAME,"Train task obtained a Descriptor",Logger.NOTICE);
 
 			Max_Speed := Current_Descriptor.Speed;
 
@@ -41,7 +41,7 @@ package body Train_Pool is
 	    	Logger.Log(NAME,
 	      		"Train " & Integer'Image(Current_Descriptor.Id) &
 		  		" Enters Platform " & Integer'Image(Next_Plattform) &
-	      		" At station " & Integer'Image(Next_Station), Logger.VERY_VERBOSE);
+	      		" At station " & Integer'Image(Next_Station), Logger.NOTICE);
 
 			-- Update Current Station!!
 			Current_Descriptor.Current_Station := Next_Station;
@@ -55,7 +55,7 @@ package body Train_Pool is
 	   		Logger.Log(NAME,
 		      	"Train " & Integer'Image(Current_Descriptor.Id) &
 			  	" Leaves Platform " & Integer'Image(Next_Plattform) &
-			  	" At station " & Integer'Image(Next_Station),Logger.VERY_VERBOSE);
+			  	" At station " & Integer'Image(Next_Station),Logger.NOTICE);
 
 			Next_Track := Route.GetNextTrack(Routes.Route(Current_Descriptor.Next_Stage));
 
@@ -63,15 +63,15 @@ package body Train_Pool is
 
 			Logger.Log(NAME,
 		      	"Train " & Integer'Image(Current_Descriptor.Id) &
-			  	" Enters Track " & Integer'Image(Next_Track),Logger.VERY_VERBOSE);
+			  	" Enters Track " & Integer'Image(Next_Track),Logger.NOTICE);
 
 			Logger.Log(NAME,
 				"Train " & Integer'Image(Current_Descriptor.ID) & " running at speed " & Integer'Image(Max_Speed),
-				Logger.VERY_VERBOSE);
+				Logger.NOTICE);
 
 			Logger.Log(NAME,
 				"Train " & Integer'Image(Current_Descriptor.ID) & " Waiting for " & Rand_Range'Image(Num) & " seconds",
-				Logger.VERY_VERBOSE);
+				Logger.NOTICE);
 
 			Num := Rand_Int.Random(seed);
 			delay Duration (Num);
@@ -82,7 +82,7 @@ package body Train_Pool is
 		      	"Train " & Integer'Image(Current_Descriptor.Id) &
 			  	" Leaves Platform " & Integer'Image(Next_Plattform) &
 			  	" At station " & Integer'Image(Next_Station),
-			  	Logger.VERY_VERBOSE);
+			  	Logger.NOTICE);
 
 			Current_Descriptor.Next_Stage := Current_Descriptor.Next_Stage + 1;
 

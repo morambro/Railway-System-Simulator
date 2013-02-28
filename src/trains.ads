@@ -1,7 +1,5 @@
 with Train;use Train;
 
---  pragma Elaborate_All(Train_Pool);
-
 package Trains is
 
 	Trains : array (1 .. 2) of Train_Descriptor := (

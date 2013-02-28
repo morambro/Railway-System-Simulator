@@ -1,0 +1,40 @@
+{
+    "travelers": [
+        {
+            "traveler": {
+                "id": 2,
+                "name": "Moreno",
+                "surname": "Ambrosin"
+            },
+            "next_operation": 1,
+            "destination": 1
+        },
+        {
+            "traveler": {
+                "id": 3,
+                "name": "Giacomo",
+                "surname": "Rossi"
+            },
+            "next_operation": 1,
+            "destination": 3
+        },
+        {
+            "traveler": {
+                "id": 4,
+                "name": "John",
+                "surname": "Doe"
+            },
+            "next_operation": 1,
+            "destination": 3
+        },
+        {
+            "traveler": {
+                "id": 5,
+                "name": "Giuseppe",
+                "surname": "Verdi"
+            },
+            "next_operation": 1,
+            "destination": 3
+        }
+    ]
+}

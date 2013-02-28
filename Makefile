@@ -5,7 +5,7 @@ PROJECT_NAME=trainproject
 default:
 	clear
 	$(GNAT) $(FLAGS) $(PROJECT_NAME)
-	$(GNAT) $(FLAGS) server
+	#$(GNAT) $(FLAGS) server
 clean:
 	rm -rf out/*
 	rm -rf trainsimulation

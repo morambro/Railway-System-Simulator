@@ -25,17 +25,19 @@ With Task_Pool;
 
 with Logger;
 
+with Traveler;
+
 procedure Main is
 begin
 
 	if Ada.Command_Line.Argument_Count /= 1 then
-		Ada.Text_IO.Put_Line("Expecting a log level [ -v | -vv | -vvv ].");
+		Ada.Text_IO.Put_Line("Expecting a log level [ -i | -n | -d ].");
 		Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
 		return;
 	end if;
 
 	if(not Logger.Init(Ada.Command_Line.Argument (1))) then
-		Ada.Text_IO.Put_Line("Wrong parameter! Use a valid log level [ -v | -vv | -vvv ].");
+		Ada.Text_IO.Put_Line("Wrong parameter! Use a valid log level [ -i | -n | -d ].");
 		return;
 	end if;
 
@@ -45,10 +47,13 @@ begin
 		Pool 			: Train_Pool.Train_Task_Pool(3);
 	begin
 
-		Train_Pool.Associate(Trains.Trains(1));
-		Train_Pool.Associate(Trains.Trains(2));
-
+--  		Train_Pool.Associate(Trains.Trains(1));
+--  		Train_Pool.Associate(Trains.Trains(2));
+			for J in 1 .. Environment.Travelers'Length loop
+				Traveler.Print(Environment.Travelers(J));
+			end loop;
 	end;
+
 
 --	declare
 --	  	Server_Address : constant String := Ada.Command_Line.Argument (1);
@@ -69,6 +74,7 @@ begin
 --		    end;
 --      	end loop;
 --	end;
+
 exception
 	when E : others => Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Message (E));
 end Main;

@@ -20,20 +20,8 @@ Package Environment Is
 		5 => Regional_Station.NewRegionalStation(2,56655)
 	);
 
-    Travelers : Array (1 .. 4) Of Aliased Traveler.Traveler_Manager := (
-		1 	=> (Traveler => (2,To_Unbounded_String("Sergio"),To_Unbounded_String("Rossi")),
-				Next_Operation => 1,
-				Destination => 1),
-		2 	=> (Traveler => (2,To_Unbounded_String("Mario"),To_Unbounded_String("Verdi")),
-				Next_Operation => 1,
-				Destination => 1),
-		3 	=> (Traveler => (2,To_Unbounded_String("Roberto"),To_Unbounded_String("Bianchi")),
-				Next_Operation => 1,
-				Destination => 1),
-		4 	=> (Traveler => (2,To_Unbounded_String("John"),To_Unbounded_String("Doe")),
-				Next_Operation => 1,
-				Destination => 1)
-	);
+	-- Array of Travelers
+    Travelers : Traveler.Traveler_Manager_Array := Traveler.Get_Traveler_Manager_Array("res/travelers.json");
 
 
     Operations : array (1 .. 4) of Traveler.Traveler_Operations(1 .. 2) := (
