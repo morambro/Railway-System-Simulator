@@ -21,7 +21,10 @@ package Regional_Station is
 	type Plattforms_List is array (Positive range <>) of access Plattform.Plattform_Type;
 
 	-- Definition of Regional Station Type implementing Station_Interface --
-	type Regional_Station_Type(Plattforms_Number : Positive) is new Ada.Finalization.Controlled and  Station_Interface with private;
+	type Regional_Station_Type(Plattforms_Number : Positive) is 
+		new Ada.Finalization.Controlled 
+		and Station_Interface 
+	with private;
 
 		overriding procedure Enter(
 			This : Regional_Station_Type;
@@ -41,8 +44,6 @@ package Regional_Station is
 	function NewRegionalStation(
 		Plattforms_Number : Positive;
 		Name : String) return Station_Ref;
-
-	type Stations_Array_Ref is access Stations_Array;
 
 	procedure Print(This : Regional_Station_Type);
 

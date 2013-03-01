@@ -26,7 +26,7 @@ package Generic_Operation_Interface is
 
 	-- Code to manage memory deallocation
  	procedure Free is new Unchecked_Deallocation (
-      		Operation_Interface'Class,
+      	Operation_Interface'Class,
 		Any_Operation
 	);
 

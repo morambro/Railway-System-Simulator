@@ -19,5 +19,10 @@ package body Move_Operation is
 		Put_Line("Added to queue");
 	end Do_Operation;
 
+	function NewOperation(T_Manager : access Traveler_Manager) return Any_Operation is
+	begin
+		return new Move_Operation_Type;
+	end;
+
 end Move_Operation;
 
