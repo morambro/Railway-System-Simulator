@@ -49,13 +49,9 @@ begin
 
 --  		Train_Pool.Associate(Trains.Trains(1));
 --  		Train_Pool.Associate(Trains.Trains(2));
---  			for J in 1 .. Environment.Travelers'Length loop
---  				Traveler.Print(Environment.Travelers(J));
---  			end loop;
---
---  			for J in 1 .. Environment.Stations'Length loop
---  				Environment.Stations(J).Print;
---  			end loop;
+			for I in 1 .. Environment.Stations'Length loop
+	    		Environment.Stations(I).Print;
+	    	end loop;
 			null;
 	end;
 

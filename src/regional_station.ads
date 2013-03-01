@@ -6,8 +6,6 @@ with Notice_Panel;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with JSON_Helper;use JSON_Helper;
 
-with Ada.Unchecked_Deallocation;
-
 package Regional_Station is
 
 	-- Array Containing plattforms references
@@ -39,25 +37,19 @@ package Regional_Station is
 
 	procedure Print(This : Regional_Station_Type);
 
-	function GetRegionalStation(Json_Station : Json_Value) return Station_Ref;
-
-	function GetRegionalStationArray(Json_Station : Json_Value) return Stations_Array_Ref;
-
 	function GetRegionalStationArray(Json_Station : String) return Stations_Array_Ref;
-
---  	procedure Free_Station_Array is new Ada.Unchecked_Deallocation
---      	(Object => Stations_Array, Name => Stations_Array_Ref);
-
-
-	function GetRegionalStationArray(Size : Integer) return Stations_Array;
 
 private
 
 	type Regional_Station_Type(Plattforms_Number : Positive) is new Station_Interface with
 	record
-		Name : Positive;
+		Name : Positive := 1;
 		Plattforms : Plattforms_List(1..Plattforms_Number);
-		Panel : access Notice_Panel.Notice_Panel_Entity;
+		Panel : access Notice_Panel.Notice_Panel_Entity := null;
 	end record;
+
+	function GetRegionalStation(Json_Station : Json_Value) return Station_Ref;
+
+	function GetRegionalStationArray(Json_v : Json_Value) return Stations_Array_Ref;
 
 end Regional_Station;

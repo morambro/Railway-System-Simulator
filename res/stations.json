@@ -1,5 +1,4 @@
 {
-	"dim" : 5,
 	"stations" : [
 		{
 			"plattform_number" : 3,
@@ -20,6 +19,14 @@
 		{
 			"plattform_number" : 3,
 			"name" : 56655
+		},
+		{
+			"plattform_number" : 5,
+			"name" : 22222
+		},
+		{
+			"plattform_number" : 3,
+			"name" : 55555
 		}
 	]
 }
