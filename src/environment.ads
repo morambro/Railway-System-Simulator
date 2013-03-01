@@ -4,6 +4,11 @@ With Regional_Station;
 With Traveler;
 With Move_Operation;
 With Ada.Strings.Unbounded;
+with JSON_Helper;use JSON_Helper;
+
+
+with Gnatcoll.JSON;use Gnatcoll.JSON;
+
 
 Package Environment Is
 
@@ -12,13 +17,17 @@ Package Environment Is
     Use Unbounded_Strings;
 
 	-- Creation of 5 stations
-    Stations : Array (1 .. 5) Of Generic_Station.Station_Ref := (
-		1 => Regional_Station.NewRegionalStation(4,12211),
-		2 => Regional_Station.NewRegionalStation(3,44556),
-		3 => Regional_Station.NewRegionalStation(2,32111),
-		4 => Regional_Station.NewRegionalStation(3,66442),
-		5 => Regional_Station.NewRegionalStation(2,56655)
+    Stations : Generic_Station.Stations_Array(1 .. 5) := (
+		1 => Regional_Station.GetRegionalStation(GetJsonValue("res/station.json").Get("station")),
+		2 => Regional_Station.GetRegionalStation(GetJsonValue("res/station.json").Get("station")),
+		3 => Regional_Station.GetRegionalStation(GetJsonValue("res/station.json").Get("station")),
+		4 => Regional_Station.GetRegionalStation(GetJsonValue("res/station.json").Get("station")),
+		5 => Regional_Station.GetRegionalStation(GetJsonValue("res/station.json").Get("station"))
 	);
+
+--  	Stations2 : access Generic_Station.Stations_Array :=
+--  		Regional_Station.GetRegionalStationArray(GetJsonValue("res/stations.json"));
+
 
 	-- Array of Travelers
     Travelers : Traveler.Traveler_Manager_Array := Traveler.Get_Traveler_Manager_Array("res/travelers.json");

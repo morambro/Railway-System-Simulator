@@ -1,6 +1,8 @@
 with Train;
 with Traveler;
 
+with Unchecked_Deallocation;
+
 package Generic_Station is
 
 	---------------------------------- STATION INTERFACE --------------------------------------
@@ -25,11 +27,24 @@ package Generic_Station is
 			Plattform : Integer)
 		is abstract;
 
+	procedure Print(This : Station_Interface) is abstract;
+
 	-- End Of the Interface
 
    	-- generic Station reference type to be used inside records: Type'Class doesn't
    	-- have a fixed size so it can be not allocated inside a record.
    	type Station_Ref is access all Station_Interface'Class;
+
+   	type Stations_Array is array (Positive range <>) of Station_Ref;
+
+
+		-- Code to manage memory deallocation
+ 	procedure Free is new Unchecked_Deallocation (
+      		Station_Interface'Class,
+			Station_Ref
+	);
+
+	pragma Controlled (Station_Ref);
 
 
 end Generic_Station;
