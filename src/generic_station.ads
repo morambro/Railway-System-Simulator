@@ -3,6 +3,8 @@ with Traveler;
 
 with Unchecked_Deallocation;
 
+with Ada.Finalization;
+
 package Generic_Station is
 
 	---------------------------------- STATION INTERFACE --------------------------------------
@@ -27,7 +29,7 @@ package Generic_Station is
 			Plattform : Integer)
 		is abstract;
 
-	procedure Print(This : Station_Interface) is abstract;
+		procedure Print(This : Station_Interface) is abstract;
 
 	-- End Of the Interface
 
@@ -38,7 +40,8 @@ package Generic_Station is
    	type Stations_Array is array (Positive range <>) of Station_Ref;
 
 
-		-- Code to manage memory deallocation
+	-- Code to manage memory deallocation of a Station. All objects of type < Station_Interface
+	-- will be deallocated by Free method.
  	procedure Free is new Unchecked_Deallocation (
       		Station_Interface'Class,
 			Station_Ref

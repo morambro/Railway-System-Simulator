@@ -2,31 +2,31 @@
 	"stations" : [
 		{
 			"plattform_number" : 3,
-			"name" : 12211
+			"name" : "223311"
 		},
 		{
 			"plattform_number" : 2,
-			"name" : 44556
+			"name" : "007733"
 		},
 		{
 			"plattform_number" : 3,
-			"name" : 32111
+			"name" : "435354"
 		},
 		{
 			"plattform_number" : 4,
-			"name" : 66442
+			"name" : "112233"
 		},
 		{
 			"plattform_number" : 3,
-			"name" : 56655
+			"name" : "442211"
 		},
 		{
 			"plattform_number" : 5,
-			"name" : 22222
+			"name" : "654534"
 		},
 		{
 			"plattform_number" : 3,
-			"name" : 55555
+			"name" : "234234"
 		}
 	]
 }

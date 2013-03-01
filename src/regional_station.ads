@@ -5,14 +5,23 @@ with Traveler;
 with Notice_Panel;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with JSON_Helper;use JSON_Helper;
+with Ada.Strings.Unbounded;
+
+with Ada.Finalization;
+with Unchecked_Deallocation;
 
 package Regional_Station is
+
+	package Unbounded_Strings renames Ada.Strings.Unbounded;
+
+	use Unbounded_Strings;
+
 
 	-- Array Containing plattforms references
 	type Plattforms_List is array (Positive range <>) of access Plattform.Plattform_Type;
 
 	-- Definition of Regional Station Type implementing Station_Interface --
-	type Regional_Station_Type(Plattforms_Number : Positive) is new Station_Interface with private;
+	type Regional_Station_Type(Plattforms_Number : Positive) is new Ada.Finalization.Controlled and  Station_Interface with private;
 
 		overriding procedure Enter(
 			This : Regional_Station_Type;
@@ -31,7 +40,7 @@ package Regional_Station is
 
 	function NewRegionalStation(
 		Plattforms_Number : Positive;
-		Name : Positive) return Station_Ref;
+		Name : String) return Station_Ref;
 
 	type Stations_Array_Ref is access Stations_Array;
 
@@ -39,11 +48,15 @@ package Regional_Station is
 
 	function GetRegionalStationArray(Json_Station : String) return Stations_Array_Ref;
 
+	overriding procedure Finalize   (This: in out Regional_Station_Type);
+
 private
 
-	type Regional_Station_Type(Plattforms_Number : Positive) is new Station_Interface with
-	record
-		Name : Positive := 1;
+	type Regional_Station_Type(Plattforms_Number : Positive) is
+		new Ada.Finalization.Controlled and
+		Station_Interface
+	with record
+		Name : Unbounded_Strings.Unbounded_String;
 		Plattforms : Plattforms_List(1..Plattforms_Number);
 		Panel : access Notice_Panel.Notice_Panel_Entity := null;
 	end record;

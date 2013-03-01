@@ -41,21 +41,21 @@ package body Regional_Station is
 	--
 	function NewRegionalStation(
 		Plattforms_Number : Positive;
-		Name : Positive) return Station_Ref
+		Name : String) return Station_Ref
 	is
 		Station : access Regional_Station_Type := new Regional_Station_Type(Plattforms_Number);
 	begin
-		Station.Name := Name;
+		Station.Name := Unbounded_Strings.To_Unbounded_String(Name);
 		for I in Positive range 1..Plattforms_Number loop
 			Station.Plattforms(I) := new Plattform.Plattform_Type(I);
 		end loop;
-		Station.Panel := new Notice_Panel.Notice_Panel_Entity(Name);
+		Station.Panel := new Notice_Panel.Notice_Panel_Entity(1);
 		return Station;
 	end;
 
 	procedure Print(This : Regional_Station_Type) is
 	begin
-		Put_Line ("Name : " & Integer'Image(This.Name));
+		Put_Line ("Name : " & Unbounded_Strings.To_String(This.Name));
 		Put_Line ("Platform Number : " & Integer'Image(This.Plattforms_Number));
     end Print;
 
@@ -64,11 +64,16 @@ package body Regional_Station is
 	function GetRegionalStation(Json_Station : Json_Value) return Station_Ref
 	is
 		Platforms_Number : Positive := Json_Station.Get("plattform_number");
-		Name : Positive 			 := Json_Station.Get("name");
+		Name : String				:= Json_Station.Get("name");
 	begin
 		return NewRegionalStation(Platforms_Number,Name);
 	end;
 
+	--
+	-- Creates a Station_Array object containing the station defined in the given Json_Value
+	--
+	-- @return A reference to the created Array
+	--
 	function GetRegionalStationArray(Json_v : Json_Value) return Stations_Array_Ref is
 		J_Array : JSON_Array := Json_v.Get(Field => "stations");
 		Array_Length : constant Natural := Length (J_Array);
@@ -87,5 +92,11 @@ package body Regional_Station is
 	begin
 		return GetRegionalStationArray(GetJsonValue(Json_Station));
     end Getregionalstationarray;
+
+
+    overriding procedure Finalize   (This: in out Regional_Station_Type) is
+    begin
+    	Put_Line("ciaooo");
+    end;
 
 end Regional_Station;

@@ -7,10 +7,6 @@ with Ada.Strings.Unbounded;
 
 package Environment Is
 
-    package Unbounded_Strings renames Ada.Strings.Unbounded;
-
-    use Unbounded_Strings;
-
 	-- Stations Creation
 	Stations : Regional_Station.Stations_array_Ref := Regional_Station.GetRegionalStationarray("res/stations.json");
 
@@ -28,7 +24,6 @@ package Environment Is
 		4 =>  (	1 => new Move_Operation.Move_Operation_Type(Travelers(4)'Access),
 		        2 => new Move_Operation.Move_Operation_Type(Travelers(4)'Access))
     );
-
 
     Tracks : array (1 .. 4) Of Track.Track_Type;
 

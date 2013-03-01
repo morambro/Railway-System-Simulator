@@ -23,6 +23,8 @@ with Route;use Route;
 with Train_Pool;
 With Task_Pool;
 
+with Generic_Station;
+
 with Logger;
 
 with Traveler;
@@ -52,6 +54,7 @@ begin
 			for I in 1 .. Environment.Stations'Length loop
 	    		Environment.Stations(I).Print;
 	    	end loop;
+
 			null;
 	end;
 
