@@ -31,7 +31,7 @@ package body Regional_Station is
 	begin
 		This.Plattforms(Plattform).AddOutgoingTraveler(Incoming_Traveler);
 		This.Panel.SetStatus(
-			"User " & Traveler.GetName(Incoming_Traveler) & " entered platform " & Integer'Image(Plattform));
+			"User " & Traveler.Get_Name(Incoming_Traveler) & " entered platform " & Integer'Image(Plattform));
 	end WaitForTrain;
 
 	--
@@ -39,7 +39,7 @@ package body Regional_Station is
 	--
 	-- @return: A reference of the new created Station
 	--
-	function NewRegionalStation(
+	function New_Regional_Station(
 		Plattforms_Number : Positive;
 		Name : String) return Station_Ref
 	is
@@ -61,42 +61,42 @@ package body Regional_Station is
 
 -------------------------------------- JSON - Regional Station --------------------------------------
 
-	function GetRegionalStation(Json_Station : Json_Value) return Station_Ref
+	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref
 	is
 		Platforms_Number : Positive := Json_Station.Get("plattform_number");
 		Name : String				:= Json_Station.Get("name");
 	begin
-		return NewRegionalStation(Platforms_Number,Name);
-	end;
+		return New_Regional_Station(Platforms_Number,Name);
+	end Get_Regional_Station;
 
 	--
 	-- Creates a Station_Array object containing the station defined in the given Json_Value
 	--
 	-- @return A reference to the created Array
 	--
-	function GetRegionalStationArray(Json_v : Json_Value) return Stations_Array_Ref is
+	function Get_Regional_Station_Array(Json_v : Json_Value) return Stations_Array_Ref is
 		J_Array : JSON_Array := Json_v.Get(Field => "stations");
 		Array_Length : constant Natural := Length (J_Array);
 		T : Stations_Array_Ref := new Stations_Array(1 .. Array_Length);
 	begin
 
 		for I in 1 .. T'Length loop
-			T(I) := GetRegionalStation(Get(Arr => J_Array, Index => I));
+			T(I) := Get_Regional_Station(Get(Arr => J_Array, Index => I));
 		end loop;
 
 		return T;
-	end GetRegionalStationArray;
+	end Get_Regional_Station_Array;
 
 
-	function GetRegionalStationArray(Json_Station : String) return Stations_Array_Ref is
+	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref is
 	begin
-		return GetRegionalStationArray(GetJsonValue(Json_Station));
-    end Getregionalstationarray;
+		return Get_Regional_Station_Array(Get_Json_Value(Json_Station));
+    end Get_Regional_Station_Array;
 
 
     overriding procedure Finalize   (This: in out Regional_Station_Type) is
     begin
     	Put_Line("ciaooo");
-    end;
+    end Finalize;
 
 end Regional_Station;

@@ -21,9 +21,9 @@ package Regional_Station is
 	type Plattforms_List is array (Positive range <>) of access Plattform.Plattform_Type;
 
 	-- Definition of Regional Station Type implementing Station_Interface --
-	type Regional_Station_Type(Plattforms_Number : Positive) is 
-		new Ada.Finalization.Controlled 
-		and Station_Interface 
+	type Regional_Station_Type(Plattforms_Number : Positive) is
+		new Ada.Finalization.Controlled
+		and Station_Interface
 	with private;
 
 		overriding procedure Enter(
@@ -41,13 +41,13 @@ package Regional_Station is
 			Incoming_Traveler : in out Traveler.Traveler_Manager;
 			Plattform : Integer);
 
-	function NewRegionalStation(
+	function New_Regional_Station(
 		Plattforms_Number : Positive;
 		Name : String) return Station_Ref;
 
 	procedure Print(This : Regional_Station_Type);
 
-	function GetRegionalStationArray(Json_Station : String) return Stations_Array_Ref;
+	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref;
 
 	overriding procedure Finalize   (This: in out Regional_Station_Type);
 
@@ -62,8 +62,8 @@ private
 		Panel : access Notice_Panel.Notice_Panel_Entity := null;
 	end record;
 
-	function GetRegionalStation(Json_Station : Json_Value) return Station_Ref;
+	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref;
 
-	function GetRegionalStationArray(Json_v : Json_Value) return Stations_Array_Ref;
+	function Get_Regional_Station_Array(Json_v : Json_Value) return Stations_Array_Ref;
 
 end Regional_Station;

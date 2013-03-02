@@ -35,7 +35,7 @@ package Traveler is
 
 	type Traveler_Manager_Array is Array(Positive range <>) of aliased Traveler_Manager;
 
-	function GetName(Traveler : Traveler_Manager) return String;
+	function Get_Name(Traveler : Traveler_Manager) return String;
 
 	procedure Print(T : Traveler_Manager);
 

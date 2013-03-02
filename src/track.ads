@@ -1,24 +1,30 @@
 with Train;use Train;
 
 package Track is
-	
-	-- Mantains unique ID of currently travelling trains
+
+	-- # IDs of currently traveling trains
 	type Train_Queue is array (Positive range <>) of Integer;
-	
+
 	protected type Track_Type is
-		
-		entry Leave(T : Train_Descriptor);
-		entry Enter(To_Add :  in out Train_Descriptor; Max_Speed : out Integer);
-	
-	private 
-	
+
+		-- #
+		-- # Trains ask to Enter the track; the access is in mutual-exclusion
+		-- #
+		entry Leave(T : in Train_Descriptor);
+
+		-- #
+		-- # Trains ask to Enter the track; the access is in mutual-exclusion
+		-- #
+		entry Enter(To_Add :  in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Float);
+
+	private
+		-- # Tells weather a train is already running or not
 		Free : Boolean := True;
-		
-		Retry_Num : Integer := 0;
-		
-		Track_Max_Speed : Integer := 200; 
-	
+		-- # Maximum Speed at which a Train can run
+		Track_Max_Speed : Positive := 200;
+		-- # Track Length in km
+		Track_Length : Float := 10.1;
+
 	end Track_Type;
-	
 
 end Track;

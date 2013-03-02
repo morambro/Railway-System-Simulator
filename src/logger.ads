@@ -10,11 +10,7 @@
 
 package Logger is
 
-	type Log_Level is (info,NOTICE,DEBUG);
-
-	INFO_LEVEL		: constant Log_Level := INFO;
-	NOTICE_LEVEL	: constant Log_Level := NOTICE;
-	DEBUG_LEVEL	 	: constant Log_Level := DEBUG;
+	type Log_Level is (INFO,NOTICE,DEBUG);
 
 	function Init(L : String) return Boolean;
 

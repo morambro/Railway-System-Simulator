@@ -7,7 +7,7 @@ with Move_Operation;
 package Environment Is
 
 	-- Creation of Regional Stations
-	Stations : Generic_Station.Stations_array_Ref := Regional_Station.GetRegionalStationarray("res/stations.json");
+	Stations : Generic_Station.Stations_array_Ref := Regional_Station.Get_Regional_Station_Array("res/stations.json");
 
 	-- array of Travelers
     Travelers : Traveler.Traveler_Manager_array := Traveler.Get_Traveler_Manager_array("res/travelers.json");

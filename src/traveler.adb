@@ -2,10 +2,10 @@ with Ada.Text_IO;
 
 package body Traveler is
 
-	function GetName(Traveler : Traveler_Manager) return String is
+	function Get_Name(Traveler : Traveler_Manager) return String is
 	begin
 		return Unbounded_Strings.To_String(Traveler.Traveler.Name);
-	end GetName;
+	end Get_Name;
 
 	procedure Print(T : Traveler_Manager) is
 	begin
@@ -26,19 +26,6 @@ package body Traveler is
 		T.Surname 	:= Json_Traveler.Get("surname");
 		return T;
     end;
-
---  	function Get_Traveler_Array(Json_Traveler : JSON_Value) return Traveler_Type_Array is
---  		A_JSON_Array : constant JSON_Array := Get (Val => Json_Traveler,Field => "travelers");
---  	    A_JSON_Value : JSON_Value;
---  	    Array_Length : constant Natural := Length (A_JSON_Array);
---  		T : Traveler_Type_Array(1 .. Array_Length);
---  	begin
---  		for J in 1 .. Array_Length loop
---  			A_JSON_Value := Get (Arr => A_JSON_Array,Index => J);
---  			T(J) := Get_Traveler(A_JSON_Value);
---  	    end loop;
---  		return T;
---      end Get_Traveler_Array;
 
     function Get_Traveler_Manager(Json_Traveler : JSON_Value) return Traveler_Manager is
     	T : Traveler_Manager;
@@ -64,7 +51,7 @@ package body Traveler is
 
     function Get_Traveler_Manager_Array(Json_Traveler : String) return Traveler_Manager_Array is
     begin
-    	return Get_Traveler_Manager_Array(GetJsonValue(Json_Traveler));
+    	return Get_Traveler_Manager_Array(Get_Json_Value(Json_Traveler));
     end Get_Traveler_Manager_Array;
 
 end Traveler;

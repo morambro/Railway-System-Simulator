@@ -33,7 +33,10 @@ package body Logger is
 	procedure Log(Sender : String; Message : String; L : Log_Level) is
 	begin
 		if(L <= Level) then
-			Put_Line(Sender & " : " & Message);
+			case L is
+				when INFO | NOTICE	=> Put_Line(Message);
+				when DEBUG 	=> Put_Line(Sender & " : " & Message);
+	    	end case;
 		end if;
     end Log;
 

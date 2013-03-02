@@ -8,14 +8,14 @@ package Move_Operation is
 	end record;
 
 	overriding procedure Do_Operation(This : in Move_Operation_Type);
-	
-	function NewOperation(T_Manager : access Traveler_Manager) return Any_Operation;  
-	
+
+	function NewOperation(T_Manager : access Traveler_Manager) return Any_Operation;
+
 private
 
-	
-	
-	
+
+
+
 	N : Positive := 1;
 
 end Move_Operation;

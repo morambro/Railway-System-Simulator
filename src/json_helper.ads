@@ -8,11 +8,11 @@ package JSON_Helper is
 
 	function Load_File(File_Name : String) return String;
 
-	function GetJsonValue(Json_File_Name : String) return JSON_Value;
+	function Get_Json_Value(Json_File_Name : String) return JSON_Value;
 
 	procedure Handler (Name  : in UTF8_String;Value : in JSON_Value);
 
-	procedure PrintJson(Text : String);
+	procedure Print_Json(Text : String);
 
 --  	function "<" (a,b : SU.Unbounded_String) return Boolean;
 --  	function "=" (a,b : SU.Unbounded_String) return Boolean;

@@ -28,14 +28,14 @@ package body JSON_Helper is
 
     end Load_File;
 
-    function GetJsonValue(Json_File_Name : String) return JSON_Value is
+    function Get_Json_Value(Json_File_Name : String) return JSON_Value is
     	Json : JSON_Value;
     begin
 		Json := Read (
 			Strm 		=> Load_File (Json_File_Name),
             Filename 	=> "");
         return Json;
-    end Getjsonvalue;
+    end Get_Json_Value;
 
 
    	procedure Handler (
@@ -83,12 +83,12 @@ package body JSON_Helper is
 	--  Map_JSON_Object again, which in turn calls this Handler procedure.
     end Handler;
 
-    procedure PrintJson(Text : String) is
+    procedure Print_Json(Text : String) is
     begin
 		Map_JSON_Object (
-			Val   => GetJsonValue(Text),
+			Val   => Get_Json_Value(Text),
             CB    => Handler'Access);
-    end Printjson;
+    end Print_Json;
 
     function "<" (a,b : SU.Unbounded_String) return Boolean is
     begin

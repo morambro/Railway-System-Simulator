@@ -49,11 +49,11 @@ begin
 		Pool 			: Train_Pool.Train_Task_Pool(3);
 	begin
 
---  		Train_Pool.Associate(Trains.Trains(1));
+		Train_Pool.Associate(Trains.Trains(1));
 --  		Train_Pool.Associate(Trains.Trains(2));
-			for I in 1 .. Environment.Stations'Length loop
-	    		Environment.Stations(I).Print;
-	    	end loop;
+--  			for I in 1 .. Environment.Stations'Length loop
+--  	    		Environment.Stations(I).Print;
+--  	    	end loop;
 
 			null;
 	end;
