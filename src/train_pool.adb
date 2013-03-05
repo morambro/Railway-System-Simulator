@@ -38,34 +38,39 @@ package body Train_Pool is
 	    	Next_Plattform 	:= Route.GetNextPlattform(Routes.Route(Current_Descriptor.Next_Stage));
 
 	    	-- Train enters Next Station
-			Environment.Stations(Next_Station).Enter(Current_Descriptor,Next_Plattform);
+--  			Environment.Stations(Next_Station).Enter(Current_Descriptor,Next_Plattform);
 
 
 			Rand_Int.Reset(seed);
 
 			Num := Rand_Int.Random(seed);
 
-	    	Logger.Log(NAME,
-	      		"Train " & Integer'Image(Current_Descriptor.Id) &
-		  		" Enters Platform " & Integer'Image(Next_Plattform) &
-	      		" At station " & Integer'Image(Next_Station), Logger.NOTICE);
+--  	    	Logger.Log(NAME,
+--  	      		"Train " & Integer'Image(Current_Descriptor.Id) &
+--  		  		" Enters Platform " & Integer'Image(Next_Plattform) &
+--  	      		" At station " & Integer'Image(Next_Station), Logger.NOTICE);
 
-			-- Update Current Station!!
-			Current_Descriptor.Current_Station := Next_Station;
+--  			-- Update Current Station!!
+--  			Current_Descriptor.Current_Station := Next_Station;
 
-			delay Duration(Num);
+--  			delay Duration(Num);
 
 			-- Train Leaves the station
-	    	Environment.Stations(Next_Station).Leave(Current_Descriptor,Next_Plattform);
+--  	    	Environment.Stations(Next_Station).Leave(Current_Descriptor,Next_Plattform);
 
 
-	   		Logger.Log(NAME,
-		      	"Train " & Integer'Image(Current_Descriptor.Id) &
-			  	" Leaves Platform " & Integer'Image(Next_Plattform) &
-			  	" At station " & Integer'Image(Next_Station),Logger.NOTICE);
+--  	   		Logger.Log(NAME,
+--  		      	"Train " & Integer'Image(Current_Descriptor.Id) &
+--  			  	" Leaves Platform " & Integer'Image(Next_Plattform) &
+--  			  	" At station " & Integer'Image(Next_Station),Logger.NOTICE);
 
 			-- Retrieve next Track to travel
 			Next_Track := Route.GetNextTrack(Routes.Route(Current_Descriptor.Next_Stage));
+
+
+			if ( Current_Descriptor.Id >= 3333 ) then
+				Current_Descriptor.Current_Station := 3;
+			end if;
 
 
 			Environment.Tracks(Next_Track).Enter(Current_Descriptor,Max_Speed,Leg_Length);
@@ -101,8 +106,7 @@ package body Train_Pool is
 
 			Logger.Log(NAME,
 		      	"Train " & Integer'Image(Current_Descriptor.Id) &
-			  	" Leaves Platform " & Integer'Image(Next_Plattform) &
-			  	" At station " & Integer'Image(Next_Station),
+			  	" Leaves Track ",
 			  	Logger.NOTICE);
 
 			Current_Descriptor.Next_Stage := Current_Descriptor.Next_Stage + 1;
