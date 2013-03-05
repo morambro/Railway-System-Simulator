@@ -30,7 +30,7 @@ package Generic_Station is
 		is abstract;
 
 		procedure Print(This : Station_Interface) is abstract;
-		
+
 
 	-- End Of the Interface
 
@@ -39,7 +39,7 @@ package Generic_Station is
    	type Station_Ref is access all Station_Interface'Class;
 
    	type Stations_Array is array (Positive range <>) of Station_Ref;
-	
+
 	type Stations_Array_Ref is access Stations_Array;
 
 	-- Code to manage memory deallocation of a Station. All objects of type < Station_Interface

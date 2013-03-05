@@ -24,6 +24,6 @@ package Environment Is
 		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(4)'Access))
     );
 
-    Tracks : array (1 .. 4) Of Track.Track_Type;
+    Tracks : array (1 .. 4) Of Track.Track_Type(160,10);
 
 end Environment;
