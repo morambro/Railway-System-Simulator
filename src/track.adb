@@ -24,7 +24,7 @@ package body Track is
 		-- # If the track is not free and the direction is different from the other train's, the train is requeued
 		-- # to another entry to wait until the track becomes free.
 		-- #
-		entry Enter(To_Add : in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Float) when True is
+		entry Enter(To_Add : in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Positive) when True is
 		begin
 
 			Logger.Log(
@@ -86,7 +86,7 @@ package body Track is
 		-- # And thanks to the access protocol, here there will be only trains queued coming from the
 		-- # same station.
 		-- #
-		entry Wait(To_Add : in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Float)
+		entry Wait(To_Add : in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Positive)
 			when Can_Retry_Enter is
 		begin
 
@@ -201,26 +201,41 @@ package body Track is
 	end Track_Type;
 
 
-	function Get_Track(Json_Station : Json_Value) return access Track_Type
+	function Get_Track(Json_Track : Json_Value) return access Track_Type
 	is
---  		Platforms_Number : Positive := Json_Station.Get("platform_number");
---  		Name : String				:= Json_Station.Get("name");
+		Track_Id 		: Natural	:= Json_Track.Get("id");
+		Max_Speed 		: Natural	:= Json_Track.Get("max_speed");
+		Queue_Dim		: Natural	:= Json_Track.Get("queue_dim");
+		Track_Length	: Positive 	:= Json_Track.Get("length");
+		New_Track 		: access Track_Type := new Track_Type(
+			Id => Track_Id,
+			Track_Max_Speed => Max_Speed,
+			Track_Length => Track_Length,
+			Queue_Dim => Queue_Dim
+			);
 	begin
-		return new Track_Type(160,10);
-	end Get_Regional_Station;
+		return New_Track;
+	end Get_Track;
 
 
-	function Get_Track_Array(Json_v : Json_Value) return Track_Array is
-		J_Array : JSON_Array := Json_v.Get(Field => "stations");
+	function Get_Track_Array(Json_v : Json_Value) return access Tracks_Array is
+
+		J_Array : JSON_Array := Json_v.Get(Field => "tracks");
 		Array_Length : constant Natural := Length (J_Array);
-		T : Stations_Array_Ref := new Stations_Array(1 .. Array_Length);
+		T : access Tracks_Array := new Tracks_Array(1 .. Array_Length);
+
 	begin
 
 		for I in 1 .. T'Length loop
-			T(I) := Get_Regional_Station(Get(Arr => J_Array, Index => I));
+			T(I) := Get_Track(Get(Arr => J_Array, Index => I));
 		end loop;
 
 		return T;
-	end Get_Regional_Station_Array;
+	end Get_Track_Array;
+
+	function Get_Track_Array(File_Name : String) return access Tracks_Array is
+	begin
+		return Get_Track_Array(Get_Json_Value(File_Name));
+    end Get_Track_Array;
 
 end Track;

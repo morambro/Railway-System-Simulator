@@ -49,14 +49,20 @@ begin
 		Pool 			: Train_Pool.Train_Task_Pool(3);
 	begin
 
-		Train_Pool.Associate(Trains.Trains(1));
-		Train_Pool.Associate(Trains.Trains(2));
-		Train_Pool.Associate(Trains.Trains(3));
-		Train_Pool.Associate(Trains.Trains(4));
+--  		Train_Pool.Associate(Trains.Trains(1));
 --  		Train_Pool.Associate(Trains.Trains(2));
---  			for I in 1 .. Environment.Stations'Length loop
---  	    		Environment.Stations(I).Print;
---  	    	end loop;
+--  		Train_Pool.Associate(Trains.Trains(3));
+--  		Train_Pool.Associate(Trains.Trains(4));
+
+
+			for I in 1 .. Environment.Stations'Length loop
+	    		Ada.Text_IO.Put_Line(
+	    			Integer'Image(Environment.Tracks(I).Id) & "  " &
+	    			Integer'Image(Environment.Tracks(I).Track_Max_Speed) & "  " &
+	    			Integer'Image(Environment.Tracks(I).Track_Length) & "  " &
+	    			Integer'Image(Environment.Tracks(I).Queue_Dim)
+	    			);
+	    	end loop;
 
 			null;
 	end;

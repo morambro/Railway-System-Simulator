@@ -9,6 +9,8 @@
 --==============================================================================
 
 with Train;use Train;
+with Gnatcoll.JSON;use Gnatcoll.JSON;
+with JSON_Helper;use JSON_Helper;
 
 package Track is
 
@@ -16,8 +18,11 @@ package Track is
 	type Train_Queue is array (Positive range <>) of Integer;
 
 	protected type Track_Type(
+		Id 				: Natural;
 		Track_Max_Speed : Positive;
-		Queue_Dim : Positive)
+		-- Length expressed in meters
+		Track_Length	: Positive ;
+		Queue_Dim 		: Positive)
 	is
 
 		-- #
@@ -28,7 +33,7 @@ package Track is
 		-- #
 		-- # Trains ask to Enter the track; the access is in mutual-exclusion
 		-- #
-		entry Enter(To_Add :  in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Float);
+		entry Enter(To_Add :  in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Positive);
 
 	private
 
@@ -36,7 +41,7 @@ package Track is
 		-- # Private Entry used to enqueue trains whose direction are not the same
 		-- # as the direction of already running trains.
 		-- #
-		entry Wait(To_Add :  in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Float);
+		entry Wait(To_Add :  in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Positive);
 
 		-- #
 		-- # Private Entry used to enqueue trains, to guarantee an exit order.
@@ -51,8 +56,6 @@ package Track is
 
 		-- # Current direction. Is set to 0 when the track is free
 		Current_Direction : Natural := 0;
-
-		Track_Length : Float := 10.0;
 
 		-- # Queue of all the running trains
 		Running_Trains : Train_Queue (1..Queue_Dim);
@@ -71,13 +74,16 @@ package Track is
 
 	end Track_Type;
 
-	type Track_Array is array (Positive range <>) of access Track_Type;
+	type Tracks_Array is array (Positive range <>) of access Track_Type;
 
 	------------------------------------ Json -> Track functions ----------------------
 
+	function Get_Track_Array(File_Name : String) return access Tracks_Array;
 
-	function Get_Track(Json_Station : Json_Value) return access Track_Type;
+private
 
-	function Get_Track_Array(Json_v : Json_Value) return Track_Array;
+	function Get_Track(Json_Track : Json_Value) return access Track_Type;
+
+	function Get_Track_Array(Json_v : Json_Value) return access Tracks_Array;
 
 end Track;

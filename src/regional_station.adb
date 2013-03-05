@@ -104,7 +104,7 @@ package body Regional_Station is
 
     overriding procedure Finalize   (This: in out Regional_Station_Type) is
     begin
-    	Put_Line("ciaooo");
+    	Put_Line("finalize");
     end Finalize;
 
 end Regional_Station;

@@ -16,7 +16,7 @@ package body Train_Pool is
 		Next_Station 		: Positive;
 		Next_Plattform 		: Positive;
 		Next_Track			: Positive;
-		Leg_Length 			: Float;
+		Leg_Length 			: Positive;
 
 		Time_In_Track 		: Float;
 
@@ -83,7 +83,7 @@ package body Train_Pool is
 				Current_Descriptor.Speed := Max_Speed;
 			end if;
 
-			Time_In_Track := Leg_Length / Float(Current_Descriptor.Speed) * 60.0;
+			Time_In_Track := Float(Leg_Length) / Float(Current_Descriptor.Speed) * 60.0;
 
 
 --  			Logger.Log(NAME,
