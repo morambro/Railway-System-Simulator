@@ -24,8 +24,6 @@ package Environment Is
 		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(4)'Access))
     );
 
-    --Tracks : array (1 .. 4) Of Track.Track_Type(1122,160,10000,10);
-
 	Tracks : access Track.Tracks_Array := Track.Get_Track_Array("res/tracks.json");
 
 end Environment;

@@ -21,8 +21,10 @@ package Track is
 		Id 				: Natural;
 		Track_Max_Speed : Positive;
 		-- Length expressed in meters
-		Track_Length	: Positive ;
-		Queue_Dim 		: Positive)
+		Track_Length	: Positive;
+		Queue_Dim 		: Positive;
+		First_End 		: Positive;
+		Second_End 		: Positive)
 	is
 
 		-- #
@@ -77,8 +79,14 @@ package Track is
 	type Tracks_Array is array (Positive range <>) of access Track_Type;
 
 	------------------------------------ Json -> Track functions ----------------------
+	-- Methods used to load Track data from a json configuration file
 
 	function Get_Track_Array(File_Name : String) return access Tracks_Array;
+
+	-- #
+	-- # A Simple Print procedure, used for debugging purposes
+	-- #
+	procedure Print(Track : access Track_Type);
 
 private
 

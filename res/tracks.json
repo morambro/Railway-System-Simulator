@@ -1,28 +1,36 @@
 {
 	"tracks" : [
 		{
-			"id" : 13452,
-			"max_speed" : 160,
-			"queue_dim" : 10,
-			"length" : 100000
+			"id" 			: 13452,
+			"max_speed" 	: 160,
+			"queue_dim" 	: 10,
+			"length" 		: 100000,
+			"first_end"		: 1,
+			"second_end"	: 2
 		},
 		{
-			"id" : 33442,
-			"max_speed" : 160,
-			"queue_dim" : 10,
-			"length" : 1500
+			"id" 			: 33442,
+			"max_speed" 	: 160,
+			"queue_dim" 	: 10,
+			"length" 		: 1500,
+			"first_end"		: 2,
+			"second_end"	: 3
 		},
 		{
-			"id" : 12432,
-			"max_speed" : 160,
-			"queue_dim" : 10,
-			"length" : 22000
+			"id" 			: 12432,
+			"max_speed" 	: 160,
+			"queue_dim" 	: 10,
+			"length" 		: 22000,
+			"first_end"		: 3,
+			"second_end"	: 4
 		},
 		{
-			"id" : 77663,
-			"max_speed" : 160,
-			"queue_dim" : 33,
-			"length" : 21500
+			"id" 			: 77663,
+			"max_speed" 	: 160,
+			"queue_dim" 	: 33,
+			"length" 		: 21500,
+			"first_end"		: 2,
+			"second_end"	: 5
 		}
 	]
 }

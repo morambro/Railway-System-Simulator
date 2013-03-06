@@ -23,6 +23,8 @@ with Route;use Route;
 with Train_Pool;
 With Task_Pool;
 
+with Track;
+
 with Generic_Station;
 
 with Logger;
@@ -56,12 +58,7 @@ begin
 
 
 			for I in 1 .. Environment.Stations'Length loop
-	    		Ada.Text_IO.Put_Line(
-	    			Integer'Image(Environment.Tracks(I).Id) & "  " &
-	    			Integer'Image(Environment.Tracks(I).Track_Max_Speed) & "  " &
-	    			Integer'Image(Environment.Tracks(I).Track_Length) & "  " &
-	    			Integer'Image(Environment.Tracks(I).Queue_Dim)
-	    			);
+    			Track.Print(Environment.Tracks(I));
 	    	end loop;
 
 			null;

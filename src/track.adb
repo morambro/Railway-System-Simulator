@@ -9,6 +9,7 @@
 --==============================================================================
 
 with Ada.Text_IO;use Ada.Text_IO;
+with Ada.Characters.Latin_1;use Ada.Characters.Latin_1;
 with Logger;
 
 package body Track is
@@ -203,29 +204,44 @@ package body Track is
 
 	function Get_Track(Json_Track : Json_Value) return access Track_Type
 	is
+		-- Retrieve all the needed fields
 		Track_Id 		: Natural	:= Json_Track.Get("id");
 		Max_Speed 		: Natural	:= Json_Track.Get("max_speed");
 		Queue_Dim		: Natural	:= Json_Track.Get("queue_dim");
 		Track_Length	: Positive 	:= Json_Track.Get("length");
+		First_End 		: Positive 	:= Json_Track.Get("first_end");
+		Second_End 		: Positive 	:= Json_Track.Get("second_end");
+		-- instantiate the new track
 		New_Track 		: access Track_Type := new Track_Type(
 			Id => Track_Id,
 			Track_Max_Speed => Max_Speed,
 			Track_Length => Track_Length,
-			Queue_Dim => Queue_Dim
-			);
+			Queue_Dim => Queue_Dim,
+			First_End => First_End,
+			Second_End => Second_End
+		);
 	begin
+		if
+			not Json_Track.Has_Field(Field => "id") or
+			not Json_Track.Has_Field(Field => "max_speed") or
+			not Json_Track.Has_Field(Field => "queue_dim") or
+			not Json_Track.Has_Field(Field => "length")
+		then
+			return null;
+		end if;
 		return New_Track;
 	end Get_Track;
 
-
 	function Get_Track_Array(Json_v : Json_Value) return access Tracks_Array is
-
+		-- Extract "tracks" json array in J_Array variable
 		J_Array : JSON_Array := Json_v.Get(Field => "tracks");
+		-- Extract J_Array length
 		Array_Length : constant Natural := Length (J_Array);
+		-- Instantiate a new Tracks_Array with Array_Length elements
 		T : access Tracks_Array := new Tracks_Array(1 .. Array_Length);
 
 	begin
-
+		-- For each element of the json array, create a new Track
 		for I in 1 .. T'Length loop
 			T(I) := Get_Track(Get(Arr => J_Array, Index => I));
 		end loop;
@@ -237,5 +253,18 @@ package body Track is
 	begin
 		return Get_Track_Array(Get_Json_Value(File_Name));
     end Get_Track_Array;
+
+
+    procedure Print(Track : access Track_Type) is
+    begin
+		Logger.Log(NAME,
+			CR & LF &
+			"Track ID : " & Integer'Image(Track.Id) & CR & LF &
+			"Max Speed : " & Integer'Image(Track.Id) & CR & LF &
+			"Track Length : " & Integer'Image(Track.Track_Length) & CR & LF &
+			"First End : Station " & Integer'Image(Track.First_End) & CR & LF &
+			"Second End : Station " & Integer'Image(Track.Second_End),
+			Logger.NOTICE);
+    end Print;
 
 end Track;
