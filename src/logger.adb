@@ -12,11 +12,16 @@ with Ada.Text_IO;use Ada.Text_IO;
 
 package body Logger is
 
+	-- 30=black 31=red 32=green 33=yellow 34=blue 35=magenta 36=cyan 37=white
+
 	--
 	-- Logger initialization
 	--
 	function Init(L : String) return Boolean is
 	begin
+		if Initiated then
+			return true;
+		end if;
 		Level := ToLevel(L);
 		Initiated := true;
 		return true;
@@ -32,12 +37,7 @@ package body Logger is
 	--
 	procedure Log(Sender : String; Message : String; L : Log_Level) is
 	begin
-		if(L <= Level) then
-			case L is
-				when INFO | NOTICE	=> Put_Line(Message);
-				when DEBUG 	=> Put_Line(Sender & " : " & Message);
-	    	end case;
-		end if;
+		Logger_Entity.Log(Sender,Message,L);
     end Log;
 
 	--
@@ -55,5 +55,28 @@ package body Logger is
 		end if;
 		raise Wrong_Input;
 	end;
+
+
+	protected body Logger_Entity is
+		procedure Log(Sender : String; Message : String; L : Log_Level) is
+		begin
+			if(L <= Level) then
+			Put("[" & Ada.Calendar.Formatting.Image(Ada.Calendar.Clock) & "] ");
+			case L is
+				when INFO =>
+					Put(ASCII.ESC & "[32m");
+					Put_Line(Message);
+					Put(ASCII.ESC & "[30m");
+				when NOTICE =>
+					Put(ASCII.ESC & "[34m");
+					Put_Line(Message);
+					Put(ASCII.ESC & "[30m");
+				when DEBUG 	=>
+					Put("[" & Ada.Calendar.Formatting.Image(Ada.Calendar.Clock) & "] ");
+					Put_Line(Sender & " : " & Message);
+	    	end case;
+		end if;
+		end Log;
+    end Logger_Entity;
 
 end Logger;

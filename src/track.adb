@@ -5,6 +5,7 @@
 -- Date:
 -- 		09/02/2013
 -- Updates:
+--		06/03/2013 : Completed the json -> Track_Type conversion methods
 -- 		05/03/2013 : Started to implement multiple-running tracks
 --==============================================================================
 
@@ -257,14 +258,13 @@ package body Track is
 
     procedure Print(Track : access Track_Type) is
     begin
-		Logger.Log(NAME,
+		Put_Line(
 			CR & LF &
 			"Track ID : " & Integer'Image(Track.Id) & CR & LF &
 			"Max Speed : " & Integer'Image(Track.Id) & CR & LF &
 			"Track Length : " & Integer'Image(Track.Track_Length) & CR & LF &
 			"First End : Station " & Integer'Image(Track.First_End) & CR & LF &
-			"Second End : Station " & Integer'Image(Track.Second_End),
-			Logger.NOTICE);
+			"Second End : Station " & Integer'Image(Track.Second_End));
     end Print;
 
 end Track;

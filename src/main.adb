@@ -51,15 +51,10 @@ begin
 		Pool 			: Train_Pool.Train_Task_Pool(3);
 	begin
 
---  		Train_Pool.Associate(Trains.Trains(1));
---  		Train_Pool.Associate(Trains.Trains(2));
---  		Train_Pool.Associate(Trains.Trains(3));
---  		Train_Pool.Associate(Trains.Trains(4));
-
-
-			for I in 1 .. Environment.Stations'Length loop
-    			Track.Print(Environment.Tracks(I));
-	    	end loop;
+		Train_Pool.Associate(Trains.Trains(1));
+		Train_Pool.Associate(Trains.Trains(2));
+		Train_Pool.Associate(Trains.Trains(3));
+		Train_Pool.Associate(Trains.Trains(4));
 
 			null;
 	end;

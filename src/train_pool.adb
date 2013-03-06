@@ -83,7 +83,7 @@ package body Train_Pool is
 				Current_Descriptor.Speed := Max_Speed;
 			end if;
 
-			Time_In_Track := Float(Leg_Length) / Float(Current_Descriptor.Speed) * 60.0;
+			Time_In_Track := Float(Leg_Length) / (Float(Current_Descriptor.Speed)*0.277777778);
 
 
 --  			Logger.Log(NAME,
