@@ -66,14 +66,22 @@ package body Logger is
 			Put("[" & Ada.Calendar.Formatting.Image(Ada.Calendar.Clock) & "] ");
 			case L is
 				when INFO =>
+					Put("[I] ");
 					Put(ASCII.ESC & "[32m");
 					Put_Line(Message);
 					Put(ASCII.ESC & "[00m");
 				when NOTICE =>
+					Put("[N] ");
 					Put(ASCII.ESC & "[34m");
 					Put_Line(Message);
 					Put(ASCII.ESC & "[00m");
+				when ERROR =>
+					Put("[E] ");
+					Put(ASCII.ESC & "[31m");
+					Put_Line(Message);
+					Put(ASCII.ESC & "[00m");
 				when DEBUG 	=>
+					Put("[D] ");
 					Put_Line(Sender & " : " & Message);
 	    	end case;
 		end if;

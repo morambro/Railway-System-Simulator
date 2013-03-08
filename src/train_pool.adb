@@ -1,10 +1,12 @@
 with Logger;
 with Environment;
 with Tracks;
+with Track;
 with Trains;
 with Route;
 with Routes;
 with Helper;
+with Ada.Exceptions;  use Ada.Exceptions;
 
 package body Train_Pool is
 
@@ -22,7 +24,9 @@ package body Train_Pool is
 		Time_In_Track 		: Float;
 
 	begin
-		loop
+		loop begin
+
+			-- ######################## GAIN A DESCRIPTOR ###########################
 
 			Logger.Log(NAME,"Train waits for a Descriptor",Logger.DEBUG);
 
@@ -43,8 +47,13 @@ package body Train_Pool is
 				Current_Descriptor.Current_Station := 3;
 			end if;
 
-
 			Tracks.Tracks(Next_Track).Enter(Current_Descriptor,Max_Speed,Leg_Length);
+
+			Logger.Log(
+				NAME,
+				"Train" & Integer'Image(Current_Descriptor.ID) & " entered the track",
+				Logger.NOTICE
+			);
 
 
 			-- Calculate Time to Travel the current track
@@ -57,12 +66,12 @@ package body Train_Pool is
 			Time_In_Track := 5.0;--Float(Leg_Length) / (Float(Current_Descriptor.Speed)*0.277777778);
 
 			Logger.Log(NAME,
-				"Train " & Integer'Image(Current_Descriptor.ID) & " running at speed "
+				"Train" & Integer'Image(Current_Descriptor.ID) & " running at speed "
 				& Integer'Image(Current_Descriptor.Speed) & " km/h",
 				Logger.NOTICE);
 
 			Logger.Log(NAME,
-				"Train " & Integer'Image(Current_Descriptor.ID) &
+				"Train" & Integer'Image(Current_Descriptor.ID) &
 				" will run for " & Helper.Get_String(Time_In_Track,10) & " seconds",
 				Logger.NOTICE);
 
@@ -80,7 +89,7 @@ package body Train_Pool is
 	    	Next_Plattform 	:= Route.GetNextPlattform(Routes.Route(Current_Descriptor.Next_Stage));
 
 	    	-- Train enters Next Station
-			Environment.Stations(Next_Station).Enter(Current_Descriptor,Next_Plattform);
+			--Environment.Stations(Next_Station).Enter(Current_Descriptor,Next_Plattform);
 
 
 			Rand_Int.Reset(seed);
@@ -88,7 +97,7 @@ package body Train_Pool is
 			Num := Rand_Int.Random(seed);
 
 	    	Logger.Log(NAME,
-	      		"Train " & Integer'Image(Current_Descriptor.Id) &
+	      		"Train" & Integer'Image(Current_Descriptor.Id) &
 		  		" Enters Platform " & Integer'Image(Next_Plattform) &
 	      		" At station " & Integer'Image(Next_Station), Logger.NOTICE);
 
@@ -102,7 +111,7 @@ package body Train_Pool is
 
 
 	   		Logger.Log(NAME,
-		      	"Train " & Integer'Image(Current_Descriptor.Id) &
+		      	"Train" & Integer'Image(Current_Descriptor.Id) &
 			  	" Leaves Platform " & Integer'Image(Next_Plattform) &
 			  	" At station " & Integer'Image(Next_Station),Logger.NOTICE);
 
@@ -115,6 +124,19 @@ package body Train_Pool is
 			if(Current_Descriptor.Next_Stage < Routes.Route'Length) then
 				Trains_Queue.Enqueue(Current_Descriptor);
 			end if;
+
+		----------------------------------- Error Handling -----------------------------
+		exception
+
+			-- # When the train track access results in a Bad_Track_Access_Request_Exception, the
+			-- # current train descriptor is discarded.
+			when E : Track.Bad_Track_Access_Request_Exception =>
+				Logger.Log(
+					NAME,
+					"Train" & Integer'Image(Current_Descriptor.ID) &
+					" Track access Error : " & Exception_Message(E),
+					Logger.ERROR);
+		end;
 
 		end loop;
 	end Train_Type;

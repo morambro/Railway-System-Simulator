@@ -14,7 +14,7 @@ with Ada.Calendar.Formatting;
 -- # This package provides a method to
 package Logger is
 
-	type Log_Level is (INFO,NOTICE,DEBUG);
+	type Log_Level is (ERROR,INFO,NOTICE,DEBUG);
 
 	function Init(L : String) return Boolean;
 

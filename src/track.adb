@@ -27,8 +27,18 @@ package body Track is
 		-- # If the track is not free and the direction is different from the other train's, the train is requeued
 		-- # to another entry to wait until the track becomes free.
 		-- #
-		entry Enter(To_Add : in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Positive) when True is
+		entry Enter(
+			To_Add : in out Train_Descriptor;
+			Max_Speed : out Positive;
+			Leg_Length : out Positive) when True is
 		begin
+
+
+			if (To_Add.Current_Station /= First_End) and (To_Add.Current_Station /= Second_End) then
+
+				raise Bad_Track_Access_Request_Exception with "Invalid Train's origin station";
+
+			end if;
 
 			Logger.Log(
 				NAME,
@@ -121,14 +131,20 @@ package body Track is
 
 		end Wait;
 
----------------------------------------------- Leave Entries -----------------------------------------
-
+---------------------------------------------- LEAVE ENTRIES -----------------------------------------
+		-- #
+		-- # Entry called by the Train to leave the track and access the Next Station.
+		-- #
 		entry Leave(T : Train_Descriptor) when not Free is
 		begin
 			if(Running_Trains(1) = T.ID) then
-				for I in Integer range 2 .. 10 loop
+
+				-- Shift all the other trains by one
+				for I in Integer range 2 .. Max_Trains loop
 					Running_Trains(I-1) := Running_Trains(I);
 				end loop;
+
+				-- If there is at least one train in queue, open the guard.
 				if(Retry'Count > 0) then
 					Retry_Num := Retry'Count;
 					Can_Retry_Leave := True;
@@ -139,19 +155,25 @@ package body Track is
 					"Train " & Integer'Image(T.ID) & " Leaves!",
 					Logger.DEBUG);
 
+				-- Decrease the number of running trains by one
 				Trains_Number := Trains_Number - 1;
 
+				-- If there is no other train running
 				if( Trains_Number = 0 ) then
+					-- If there is at least one train waiting to enter the track,
+					-- Open the guard!
 					if( Wait'Count > 0) then
 						Can_Retry_Enter := True;
 					else
 						Free := True;
-						Current_Direction := 0;
 					end if;
+				end if;
 
---  					requeue Environment.Stations(1).Get_Platform(2).Enter;
-					-- P := Stations(1).GetPlatform(T,...);
-					-- requeue Stations(1).Get_Plattform(P).Enter
+				-- Now re-queue the train to the proper platform.
+ 				if Current_Direction /= First_End then
+					requeue Environment.Stations(First_End).Get_Platform(1).Enter;
+				else
+					requeue Environment.Stations(Second_End).Get_Platform(1).Enter;
 				end if;
 
 			else
@@ -163,6 +185,10 @@ package body Track is
 			end if;
 		end Leave;
 
+
+		-- #
+		-- #
+		-- #
 		entry Retry(T : Train_Descriptor) when Can_Retry_Leave is
 		begin
 
@@ -187,6 +213,7 @@ package body Track is
 
 				Trains_Number := Trains_Number - 1;
 
+				-- Set to Free the track if no other train is in or waiting
 				if( Trains_Number = 0 ) then
 					if( Wait'Count > 0) then
 						Can_Retry_Enter := True;
@@ -196,10 +223,17 @@ package body Track is
 					end if;
 				end if;
 
+				-- Now re-queue the train to the proper platform.
+ 				if Current_Direction /= First_End then
+					requeue Environment.Stations(First_End).Get_Platform(1).Enter;
+				else
+					requeue Environment.Stations(Second_End).Get_Platform(1).Enter;
+				end if;
+
 			else
 				Logger.Log(
 					NAME,
-					"Train " & Integer'Image(T.ID) & " Can not leave because it's not the first",
+					"Train " & Integer'Image(T.ID) & " Can not leave because is not the first",
 					Logger.DEBUG);
 				requeue Retry;
 			end if;
@@ -207,6 +241,7 @@ package body Track is
 
 	end Track_Type;
 
+----------------------------------------- JSON -> TRACK FUNCTIONS ---------------------------------
 
 	function Get_Track(Json_Track : Json_Value) return access Track_Type
 	is
@@ -217,6 +252,7 @@ package body Track is
 		Track_Length	: Positive 	:= Json_Track.Get("length");
 		First_End 		: Positive 	:= Json_Track.Get("first_end");
 		Second_End 		: Positive 	:= Json_Track.Get("second_end");
+		Max_Trains 		: Positive 	:= Json_Track.Get("max_trains");
 		-- instantiate the new track
 		New_Track 		: access Track_Type := new Track_Type(
 			Id => Track_Id,
@@ -224,7 +260,8 @@ package body Track is
 			Track_Length => Track_Length,
 			Queue_Dim => Queue_Dim,
 			First_End => First_End,
-			Second_End => Second_End
+			Second_End => Second_End,
+			Max_Trains => Max_Trains
 		);
 	begin
 		if

@@ -17,6 +17,8 @@ package Track is
 	-- # IDs of currently traveling trains
 	type Train_Queue is array (Positive range <>) of Integer;
 
+	Bad_Track_Access_Request_Exception : exception;
+
 	protected type Track_Type(
 		Id 				: Natural;
 		Track_Max_Speed : Positive;
@@ -24,7 +26,9 @@ package Track is
 		Track_Length	: Positive;
 		Queue_Dim 		: Positive;
 		First_End 		: Positive;
-		Second_End 		: Positive)
+		Second_End 		: Positive;
+		Max_Trains		: Positive)
+
 	is
 
 		-- #
