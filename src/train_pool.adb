@@ -1,5 +1,6 @@
 with Logger;
 with Environment;
+with Tracks;
 with Trains;
 with Route;
 with Routes;
@@ -30,6 +31,47 @@ package body Train_Pool is
 			Logger.Log(NAME,"Train task obtained a Descriptor",Logger.DEBUG);
 
 			Max_Speed := Current_Descriptor.Speed;
+
+			-- ######################### NEXT TRACK ACCESS ############################
+
+			-- Retrieve next Track to travel
+			Next_Track := Route.GetNextTrack(Routes.Route(Current_Descriptor.Next_Stage));
+
+
+			-- TODO : REMOVE DEBUG CODE!!!
+			if ( Current_Descriptor.Id = 3333 ) then
+				Current_Descriptor.Current_Station := 3;
+			end if;
+
+
+			Tracks.Tracks(Next_Track).Enter(Current_Descriptor,Max_Speed,Leg_Length);
+
+
+			-- Calculate Time to Travel the current track
+			if(Current_Descriptor.Max_Speed < Max_Speed) then
+				Current_Descriptor.Speed := Current_Descriptor.Max_Speed;
+			else
+				Current_Descriptor.Speed := Max_Speed;
+			end if;
+
+			Time_In_Track := 5.0;--Float(Leg_Length) / (Float(Current_Descriptor.Speed)*0.277777778);
+
+			Logger.Log(NAME,
+				"Train " & Integer'Image(Current_Descriptor.ID) & " running at speed "
+				& Integer'Image(Current_Descriptor.Speed) & " km/h",
+				Logger.NOTICE);
+
+			Logger.Log(NAME,
+				"Train " & Integer'Image(Current_Descriptor.ID) &
+				" will run for " & Helper.Get_String(Time_In_Track,10) & " seconds",
+				Logger.NOTICE);
+
+			delay Duration (Time_In_Track);
+
+			Tracks.Tracks(Next_Track).Leave(Current_Descriptor);
+
+
+			-- ######################### NEXT STATION ACCESS ############################
 
 			-- Retrieve Next station
 			Next_Station 	:= Route.GetNextStation(Routes.Route(Current_Descriptor.Next_Stage));
@@ -64,50 +106,6 @@ package body Train_Pool is
 			  	" Leaves Platform " & Integer'Image(Next_Plattform) &
 			  	" At station " & Integer'Image(Next_Station),Logger.NOTICE);
 
-			-- Retrieve next Track to travel
-			Next_Track := Route.GetNextTrack(Routes.Route(Current_Descriptor.Next_Stage));
-
-
-			if ( Current_Descriptor.Id = 3333 ) then
-				Current_Descriptor.Current_Station := 3;
-			end if;
-
-
-			Environment.Tracks(Next_Track).Enter(Current_Descriptor,Max_Speed,Leg_Length);
-
-
-			-- Time to Travel Calculus
-			if(Current_Descriptor.Max_Speed < Max_Speed) then
-				Current_Descriptor.Speed := Current_Descriptor.Max_Speed;
-			else
-				Current_Descriptor.Speed := Max_Speed;
-			end if;
-
-			Time_In_Track := Float(Leg_Length) / (Float(Current_Descriptor.Speed)*0.277777778);
-
-
---  			Logger.Log(NAME,
---  		      	"Train " & Integer'Image(Current_Descriptor.Id) &
---  			  	" Enters Track " & Integer'Image(Next_Track),Logger.NOTICE);
-
-			Logger.Log(NAME,
-				"Train " & Integer'Image(Current_Descriptor.ID) & " running at speed "
-				& Integer'Image(Current_Descriptor.Speed) & " km/h",
-				Logger.NOTICE);
-
-			Logger.Log(NAME,
-				"Train " & Integer'Image(Current_Descriptor.ID) &
-				" will run for " & Helper.Get_String(Time_In_Track,10) & " seconds",
-				Logger.NOTICE);
-
-			delay Duration (Time_In_Track);
-
-			Environment.Tracks(Next_Track).Leave(Current_Descriptor);
-
---  			Logger.Log(NAME,
---  		      	"Train " & Integer'Image(Current_Descriptor.Id) &
---  			  	" Leaves Track ",
---  			  	Logger.NOTICE);
 
 			Current_Descriptor.Next_Stage := Current_Descriptor.Next_Stage + 1;
 

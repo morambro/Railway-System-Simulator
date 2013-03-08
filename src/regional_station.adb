@@ -67,6 +67,12 @@ package body Regional_Station is
 		Put_Line ("Platform Number : " & Integer'Image(This.Platforms_Number));
     end Print;
 
+
+    function Get_Platform(This : Regional_Station_Type;P : Natural) return access Platform.Platform_Type is
+    begin
+    	return This.Platforms(P);
+    end Get_Platform;
+
 -------------------------------------- JSON - Regional Station --------------------------------------
 
 	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref

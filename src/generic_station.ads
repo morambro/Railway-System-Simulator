@@ -4,6 +4,7 @@ with Traveler;
 with Unchecked_Deallocation;
 
 with Ada.Finalization;
+with Platform;
 
 package Generic_Station is
 
@@ -27,6 +28,11 @@ package Generic_Station is
 			This : Station_Interface;
 			Incoming_Traveler : in out Traveler.Traveler_Manager;
 			Plattform : Integer)
+		is abstract;
+
+		function Get_Platform(
+			This : Station_Interface;
+			P : Natural) return access Platform.Platform_Type
 		is abstract;
 
 		procedure Print(This : Station_Interface) is abstract;

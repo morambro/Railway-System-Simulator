@@ -5,7 +5,7 @@ with Ada.Containers;use Ada.Containers;
 package body Platform is
 
 	protected body Platform_Type is
-		entry Enter(Descriptor : in out Train_Descriptor) when Free = True is
+		entry Enter(T : Train_Descriptor) when Free = True is
 		begin
 			Free := False;
 		end Enter;

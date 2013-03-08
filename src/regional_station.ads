@@ -51,6 +51,10 @@ package Regional_Station is
 			Incoming_Traveler : in out Traveler.Traveler_Manager;
 			Platform: Integer);
 
+		overriding function Get_Platform(
+			This : Regional_Station_Type;
+			P : Natural) return access Platform.Platform_Type;
+
 	function New_Regional_Station(
 		Platforms_Number : Positive;
 		Name : String) return Station_Ref;

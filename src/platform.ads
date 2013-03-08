@@ -15,7 +15,7 @@ package Platform is
 
 	protected type Platform_Type(ID:Integer) is
 
-		entry Enter(Descriptor : in out Train_Descriptor);
+		entry Enter(T : Train_Descriptor);
 
 		procedure Leave(Descriptor : in out Train_Descriptor);
 

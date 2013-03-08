@@ -37,7 +37,9 @@ package body Logger is
 	--
 	procedure Log(Sender : String; Message : String; L : Log_Level) is
 	begin
-		Logger_Entity.Log(Sender,Message,L);
+		if Initiated then
+			Logger_Entity.Log(Sender,Message,L);
+    	end if;
     end Log;
 
 	--
@@ -66,13 +68,12 @@ package body Logger is
 				when INFO =>
 					Put(ASCII.ESC & "[32m");
 					Put_Line(Message);
-					Put(ASCII.ESC & "[30m");
+					Put(ASCII.ESC & "[00m");
 				when NOTICE =>
 					Put(ASCII.ESC & "[34m");
 					Put_Line(Message);
-					Put(ASCII.ESC & "[30m");
+					Put(ASCII.ESC & "[00m");
 				when DEBUG 	=>
-					Put("[" & Ada.Calendar.Formatting.Image(Ada.Calendar.Clock) & "] ");
 					Put_Line(Sender & " : " & Message);
 	    	end case;
 		end if;

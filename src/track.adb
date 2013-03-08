@@ -12,6 +12,7 @@
 with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Characters.Latin_1;use Ada.Characters.Latin_1;
 with Logger;
+with Environment;
 
 package body Track is
 
@@ -147,6 +148,10 @@ package body Track is
 						Free := True;
 						Current_Direction := 0;
 					end if;
+
+--  					requeue Environment.Stations(1).Get_Platform(2).Enter;
+					-- P := Stations(1).GetPlatform(T,...);
+					-- requeue Stations(1).Get_Plattform(P).Enter
 				end if;
 
 			else
