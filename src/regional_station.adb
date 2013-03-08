@@ -84,11 +84,6 @@ package body Regional_Station is
 	end Get_Regional_Station;
 
 
-	-- #
-	-- # Creates a Station_Array object containing the station defined in the given Json_Value
-	-- #
-	-- # @return A reference to the created Array
-	-- #
 	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref is
 		Json_v  : Json_Value := Get_Json_Value(Json_Station);
 		J_Array : constant JSON_Array := Json_v.Get(Field => "stations");

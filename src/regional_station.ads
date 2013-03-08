@@ -24,13 +24,16 @@ package Regional_Station is
 
 	use Unbounded_Strings;
 
-
+	-- #
 	-- # Array Containing Platforms references
+	-- #
 	type Platforms_List is array (Positive range <>) of access Platform.Platform_Type;
 
 	type Platform_Booking is array (Positive range <>) of Boolean;
 
+	-- #
 	-- # Definition of Regional Station Type implementing Station_Interface --
+	-- #
 	type Regional_Station_Type(Platforms_Number : Positive) is
 		new Ada.Finalization.Controlled
 		and Station_Interface
@@ -55,16 +58,34 @@ package Regional_Station is
 			This : Regional_Station_Type;
 			P : Natural) return access Platform.Platform_Type;
 
+	-- #
+	-- # Creates and returns an instance of Regional_Station_Type
+	-- #
+	-- # @return A reference to the created Regional_Station_Type
+	-- #
 	function New_Regional_Station(
 		Platforms_Number : Positive;
 		Name : String) return Station_Ref;
 
+	-- #
+	-- # Print method used for debug purposes
+	-- #
 	procedure Print(This : Regional_Station_Type);
 
 	----------------------- Procedures to convert Json to Station ------------------------
 
+	-- #
+	-- # Creates a Regional_Station_Type object containing the station defined in the given Json_Value
+	-- #
+	-- # @return A reference to the created Regional_Station_Type object
+	-- #
 	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref;
 
+	-- #
+	-- # Creates a Station_Array object containing the stations defined in the given Json_Value
+	-- #
+	-- # @return A reference to the created Stations_Array
+	-- #
 	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref;
 
 	--------------------------------------------------------------------------------------
