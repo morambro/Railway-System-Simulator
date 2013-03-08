@@ -1,0 +1,36 @@
+{
+	"trains" : [
+		{
+			"id" 				: 1111,
+			"speed" 			: 50,
+			"max_speed" 		: 100,
+			"current_station" 	: 1,
+			"next_stage" 		: 1,
+			"route_index" 		: 1
+		},
+		{
+			"id" 				: 2222,
+			"speed" 			: 50,
+			"max_speed" 		: 160,
+			"current_station" 	: 1,
+			"next_stage" 		: 1,
+			"route_index" 		: 1
+		},
+		{	
+			"id" 				: 3333,
+			"speed" 			: 50,
+			"max_speed" 		: 160,
+			"current_station" 	: 1,
+			"next_stage" 		: 1,
+			"route_index" 		: 1
+		},
+		{
+			"id" 				: 4444,
+			"speed" 			: 50,
+			"max_speed" 		: 160,
+			"current_station" 	: 1,
+			"next_stage" 		: 1,
+			"route_index" 		: 1
+		}
+	]
+}

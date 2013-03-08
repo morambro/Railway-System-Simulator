@@ -43,7 +43,7 @@ package Traveler is
 
 private
 
-		--
+	--
 	-- Creates a Traveler from JSON object
 	--
 	-- @return : A Traveler_Type object
@@ -56,12 +56,5 @@ private
 	-- @return : A Traveler_Manager object
 	--
 	function Get_Traveler_Manager(Json_Traveler : JSON_Value) return Traveler_Manager;
-
-	--
-	-- Creates a Traveler_Manager_Array from JSON object
-	--
-	-- @return : A Traveler_Manager_Array object
-	--
-	function Get_Traveler_Manager_Array(Json_Traveler : JSON_Value) return Traveler_Manager_Array;
 
 end Traveler;

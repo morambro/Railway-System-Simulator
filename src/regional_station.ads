@@ -61,9 +61,18 @@ package Regional_Station is
 
 	procedure Print(This : Regional_Station_Type);
 
+	----------------------- Procedures to convert Json to Station ------------------------
+
+	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref;
+
 	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref;
 
-	overriding procedure Finalize   (This: in out Regional_Station_Type);
+	--------------------------------------------------------------------------------------
+
+	-- #
+	-- # Overriding of the Finalize method.
+	-- #
+	overriding procedure Finalize(This: in out Regional_Station_Type);
 
 private
 
@@ -77,9 +86,5 @@ private
 		-- Indicates for each platform if it is free or not
 		Platform_Free : Platform_Booking(1 .. Platforms_Number) := (others => true);
 	end record;
-
-	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref;
-
-	function Get_Regional_Station_Array(Json_v : Json_Value) return Stations_Array_Ref;
 
 end Regional_Station;

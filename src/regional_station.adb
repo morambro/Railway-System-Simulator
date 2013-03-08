@@ -83,28 +83,23 @@ package body Regional_Station is
 		return New_Regional_Station(Platforms_Number,Name);
 	end Get_Regional_Station;
 
+
 	-- #
 	-- # Creates a Station_Array object containing the station defined in the given Json_Value
 	-- #
 	-- # @return A reference to the created Array
 	-- #
-	function Get_Regional_Station_Array(Json_v : Json_Value) return Stations_Array_Ref is
-		J_Array : JSON_Array := Json_v.Get(Field => "stations");
+	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref is
+		Json_v  : Json_Value := Get_Json_Value(Json_Station);
+		J_Array : constant JSON_Array := Json_v.Get(Field => "stations");
 		Array_Length : constant Natural := Length (J_Array);
 		T : Stations_Array_Ref := new Stations_Array(1 .. Array_Length);
 	begin
-
 		for I in 1 .. T'Length loop
 			T(I) := Get_Regional_Station(Get(Arr => J_Array, Index => I));
 		end loop;
 
 		return T;
-	end Get_Regional_Station_Array;
-
-
-	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref is
-	begin
-		return Get_Regional_Station_Array(Get_Json_Value(Json_Station));
     end Get_Regional_Station_Array;
 
 
