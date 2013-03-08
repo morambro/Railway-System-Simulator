@@ -1,13 +1,9 @@
 --==============================================================================
--- File:
---		train_pool.ads
 -- Created by:
 --		Moreno Ambrosin
 --  	Mat.  : 1035635
 -- Date:
 --		22/02/2013
--- Updates:
---
 --==============================================================================
 
 with Queue;
@@ -29,14 +25,16 @@ package Train_Pool is
 	-- #
 	-- # Procedure used to add a new descriptor to the queue
 	-- #
-	procedure Associate(Train : Train_Descriptor);
+--  	procedure Associate(Train : Train_Descriptor);
+	procedure Associate(Train : Positive);
 
 private
 
 	-- #
 	-- # Declaration of a new Queue package with Element => Train_Descriptor
 	-- #
-	package Trains_Queue_Package is new Queue(Element => Train_Descriptor);
+--  	package Trains_Queue_Package is new Queue(Element => Train_Descriptor);
+	package Trains_Queue_Package is new Queue(Element => Positive);
 
 	-- #
 	-- # Queue used to manage Traveler operations
