@@ -6,4 +6,4 @@ server
 .cproject
 .gb_project
 .project
-
+*.class
