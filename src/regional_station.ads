@@ -4,6 +4,8 @@
 --  	Mat.  : 1035635
 -- Date:
 -- 		09/02/2013
+-- Updates:
+--		08/03/2013 : Added methods to perform objects creation from Json
 --==============================================================================
 
 with Generic_Station;use Generic_Station;
@@ -59,9 +61,9 @@ package Regional_Station is
 			P : Natural) return access Platform.Platform_Type;
 
 	-- #
-	-- # Creates and returns an instance of Regional_Station_Type
+	-- # Creates a new Station instance
 	-- #
-	-- # @return A reference to the created Regional_Station_Type
+	-- # @return: A reference of the new created Station
 	-- #
 	function New_Regional_Station(
 		Platforms_Number : Positive;

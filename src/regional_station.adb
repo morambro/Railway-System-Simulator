@@ -10,7 +10,7 @@ with Ada.Text_IO;use Ada.Text_IO;
 
 package body Regional_Station is
 
-	-- # Definition of Inherited Methods --
+	-- ------------------------ Definition of the inherited abstract methods ------------------------
 	procedure Enter(
 		This : Regional_Station_Type;
 		Descriptor : in out Train.Train_Descriptor;
@@ -31,7 +31,6 @@ package body Regional_Station is
 	-- # Procedure called by a Traveler to enqueue at a given Platform
 	-- # waiting for a specific Train
 	-- #
-	-- #
 	procedure WaitForTrain(
 			This 	: Regional_Station_Type;
 			Incoming_Traveler 	: in out Traveler.Traveler_Manager;
@@ -42,11 +41,6 @@ package body Regional_Station is
 			"User " & Traveler.Get_Name(Incoming_Traveler) & " entered platform " & Integer'Image(Platform));
 	end WaitForTrain;
 
-	-- #
-	-- # Creates a new Station instance
-	-- #
-	-- # @return: A reference of the new created Station
-	-- #
 	function New_Regional_Station(
 		Platforms_Number : Positive;
 		Name : String) return Station_Ref

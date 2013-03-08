@@ -5,7 +5,7 @@
 -- Date:
 -- 		09/02/2013
 -- Updates:
---		06/03/2013 : Completed the json -> Track_Type conversion methods
+--		06/03/2013 : Completed the Json -> Track_Type conversion methods
 -- 		05/03/2013 : Started to implement multiple-running tracks
 --==============================================================================
 
@@ -187,7 +187,7 @@ package body Track is
 
 
 		-- #
-		-- #
+		-- # Entry used to perform ordered exit from the Track
 		-- #
 		entry Retry(T : Train_Descriptor) when Can_Retry_Leave is
 		begin
