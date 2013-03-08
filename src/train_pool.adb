@@ -19,7 +19,7 @@ package body Train_Pool is
 		NAME : constant String := "Train_Pool.Train_Type";
 
 		Current_Descriptor 	: Positive;
---  		Current_Descriptor 	: Train_Descriptor;
+-- # 		Current_Descriptor 	: Train_Descriptor;
 		Max_Speed 			: Integer;
 		Next_Station 		: Positive;
 		Next_Plattform 		: Positive;
@@ -31,7 +31,7 @@ package body Train_Pool is
 	begin
 		loop begin
 
-			-- ######################## GAIN A DESCRIPTOR ###########################
+			-- # ####################### GAIN A DESCRIPTOR ###########################
 
 			Logger.Log(NAME,"Train waits for a Descriptor",Logger.DEBUG);
 
@@ -41,13 +41,13 @@ package body Train_Pool is
 
 			Max_Speed := Trains.Trains(Current_Descriptor).Speed;
 
-			-- ######################### NEXT TRACK ACCESS ############################
+			-- # ######################## NEXT TRACK ACCESS ############################
 
-			-- Retrieve next Track to travel
+			-- # Retrieve next Track to travel
 			Next_Track := Route.GetNextTrack(Routes.Route(Trains.Trains(Current_Descriptor).Next_Stage));
 
 
-			-- TODO : REMOVE DEBUG CODE!!!
+			-- # TODO : REMOVE DEBUG CODE!!!
 			if ( Trains.Trains(Current_Descriptor).Id = 3333 ) then
 				Trains.Trains(Current_Descriptor).Current_Station := 3;
 			end if;
@@ -61,7 +61,7 @@ package body Train_Pool is
 			);
 
 
-			-- Calculate Time to Travel the current track
+			-- # Calculate Time to Travel the current track
 			if(Trains.Trains(Current_Descriptor).Max_Speed < Max_Speed) then
 				Trains.Trains(Current_Descriptor).Speed := Trains.Trains(Current_Descriptor).Max_Speed;
 			else
@@ -85,15 +85,15 @@ package body Train_Pool is
 			Tracks.Tracks(Next_Track).Leave(Trains.Trains(Current_Descriptor));
 
 
-			-- ######################### NEXT STATION ACCESS ############################
+			-- # ######################## NEXT STATION ACCESS ############################
 
-			-- Retrieve Next station
+			-- # Retrieve Next station
 			Next_Station 	:= Route.GetNextStation(Routes.Route(Trains.Trains(Current_Descriptor).Next_Stage));
 
-			-- Retrieve next platform number
+			-- # Retrieve next platform number
 	    	Next_Plattform 	:= Route.GetNextPlattform(Routes.Route(Trains.Trains(Current_Descriptor).Next_Stage));
 
-	    	-- Train enters Next Station
+	    	-- # Train enters Next Station
 			--Environment.Stations(Next_Station).Enter(Current_Descriptor,Next_Plattform);
 
 
@@ -106,12 +106,12 @@ package body Train_Pool is
 		  		" Enters Platform " & Integer'Image(Next_Plattform) &
 	      		" At station " & Integer'Image(Next_Station), Logger.NOTICE);
 
-			-- Update Current Station!!
+			-- # Update Current Station!!
 			Trains.Trains(Current_Descriptor).Current_Station := Next_Station;
 
 			delay Duration(Num);
 
-			-- Train Leaves the station
+			-- # Train Leaves the station
 	    	Environment.Stations(Next_Station).Leave(Trains.Trains(Current_Descriptor),Next_Plattform);
 
 
@@ -125,12 +125,12 @@ package body Train_Pool is
 
 			delay Duration (Num);
 
-			-- Re-enqueue the descriptor only if it has more stages to travel
+			-- # Re-enqueue the descriptor only if it has more stages to travel
 			if(Trains.Trains(Current_Descriptor).Next_Stage < Routes.Route'Length) then
 				Trains_Queue.Enqueue(Current_Descriptor);
 			end if;
 
-		-- ############################# ERROR HANDLING ###############################
+		-- # ############################ ERROR HANDLING ###############################
 		exception
 
 			-- # When the train track access results in a Bad_Track_Access_Request_Exception, the

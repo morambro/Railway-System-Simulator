@@ -1,0 +1,3 @@
+cd out
+scala -classpath ../yami4.jar Main $@
+cd ..
