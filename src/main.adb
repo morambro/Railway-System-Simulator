@@ -11,7 +11,7 @@
 with Ada.Command_Line;
 with Ada.Exceptions;
 with Ada.Text_IO;
-
+with Generic_Operation_Interface;
 
 with Environment;use Environment;
 with Trains;
@@ -27,14 +27,19 @@ with Logger;
 
 with Traveler;
 
-with Message_Agent;use Message_Agent;
+with Message_Agent;
+
+with YAMI.Outgoing_Messages; use YAMI.Outgoing_Messages;
+with YAMI.Agents;
+with YAMI.Parameters;
 
 procedure Main is
 
 begin
 
 	if Ada.Command_Line.Argument_Count < 2 then
-		Ada.Text_IO.Put_Line("Expecting a log level [ -i | -n | -d ]. And a tcp address in the form tcp://...");
+		-- ./run -name Node_Name -address tcp_//... -ns_address tcp://name_server_address [ -i | -n | -d ]
+		Ada.Text_IO.Put_Line("Expecting a log level [ -i | -n | -d ]. And Name Server tcp address");
 		Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
 		return;
 	end if;
@@ -46,20 +51,33 @@ begin
 
 	declare
 		-- Creation of Actors for Travelers
-		Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
-		Pool 			: Train_Pool.Train_Task_Pool(3);
+--  		Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
+--  		Pool 			: Train_Pool.Train_Task_Pool(3);
 		Node_Address 	: String := Ada.Command_Line.Argument (2);
 
-		Client : access Message_Agent_Type := new Message_Agent_Type;
+		Params : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
+		Client_Agent : YAMI.Agents.Agent := YAMI.Agents.Make_Agent;
 
 	begin
 
+		Params.Set_String("name","Node1");
+		Params.Set_String("address","tcp://localhost:6655");
 --  		Train_Pool.Associate(1);
 --  		Train_Pool.Associate(2);
 --  		Train_Pool.Associate(3);
 --  		Train_Pool.Associate(4);
+--
+		Message_Agent.Send(
+			Destination_Address => Node_Address,
+			Service =>  "add",
+			Object => "name_server",
+			Params => Params);
 
-		Client.Send(Dest => Node_Address,Message => "Prova");
+
+--  		Ada.Text_IO.Put_Line("Exit");
+--
+--  		Client_Agent.Close_Connection("",0);
 
 		null;
 	end;

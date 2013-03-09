@@ -9,23 +9,17 @@
 with YAMI.Outgoing_Messages; use YAMI.Outgoing_Messages;
 with YAMI.Agents;
 with YAMI.Parameters;
+with Ada.Unchecked_Deallocation;
 
 package Message_Agent is
 
-	type Message_Agent_Type is tagged private;
-
-		procedure Send(
-			This : access Message_Agent_Type;
-			Dest : String;
-			Message : String);
+	procedure Send(
+		Destination_Address : String;
+		Object : String;
+		Service : String;
+		Params : YAMI.Parameters.Parameters_Collection);
 
 	procedure Process_Reply
         (Content : in out YAMI.Parameters.Parameters_Collection);
-
-private
-
-	type Message_Agent_Type is tagged record
-		Client_Agent : YAMI.Agents.Agent_Access := YAMI.Agents.New_Agent;
-	end record;
 
 end Message_Agent;
