@@ -17,18 +17,19 @@ package body Message_Agent is
 	 end Process_Reply;
 
 	procedure Send(
-		Destination_Address : String;
-		Object : String;
-		Service : String;
-		Params : YAMI.Parameters.Parameters_Collection)
+		This 				: access Message_Agent_Type;
+		Destination_Address : in String;
+		Object 				: in String;
+		Service 			: in String;
+		Params 				: in YAMI.Parameters.Parameters_Collection)
 	is
 		Msg : aliased YAMI.Outgoing_Messages.Outgoing_Message;
       	State : YAMI.Outgoing_Messages.Message_State;
-      	Client_Agent : YAMI.Agents.Agent := YAMI.Agents.Make_Agent;
 	begin
 		--  the "content" field name is arbitrary,
 	    --  but needs to be recognized at the server side
-        Client_Agent.Send (Destination_Address, Object,Service, Params,Msg'Unchecked_Access);
+        This.Client_Agent.Send(
+        Destination_Address, Object,Service, Params,Msg'Unchecked_Access);
 
         Msg.Wait_For_Completion;
 
@@ -49,6 +50,12 @@ package body Message_Agent is
    			Ada.Text_IO.Put_Line("ERROR : " & Exception_Message(E));
 
     end Send;
+
+
+    procedure Close(This: access Message_Agent_Type) is
+    begin
+		YAMI.Agents.Free(This.Client_Agent);
+    end Close;
 
 
 end Message_Agent;

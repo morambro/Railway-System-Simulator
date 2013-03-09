@@ -35,6 +35,8 @@ with YAMI.Parameters;
 
 procedure Main is
 
+	use Message_Agent;
+
 begin
 
 	if Ada.Command_Line.Argument_Count < 2 then
@@ -57,7 +59,7 @@ begin
 
 		Params : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
 
-		Client_Agent : YAMI.Agents.Agent := YAMI.Agents.Make_Agent;
+		Client : Message_Agent_Ref := new Message_Agent_Type;
 
 	begin
 
@@ -68,16 +70,13 @@ begin
 --  		Train_Pool.Associate(3);
 --  		Train_Pool.Associate(4);
 --
-		Message_Agent.Send(
-			Destination_Address => Node_Address,
-			Service =>  "add",
-			Object => "name_server",
-			Params => Params);
+		Client.Send(
+			Node_Address,
+			"name_server",
+			"add",
+			Params);
 
-
---  		Ada.Text_IO.Put_Line("Exit");
---
---  		Client_Agent.Close_Connection("",0);
+		Client.Close;
 
 		null;
 	end;
