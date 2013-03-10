@@ -5,16 +5,19 @@
 -- Date:
 -- 		08/03/2013
 --==============================================================================
-with Ada.Text_IO;
+with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Exceptions;  use Ada.Exceptions;
+with Logger;
 
 package body Message_Agent is
 
-	 procedure Process_Reply(Content : in out YAMI.Parameters.Parameters_Collection) is
+	NAME : constant String := "Message_Agent";
+
+	procedure Process_Reply(Content : in out YAMI.Parameters.Parameters_Collection) is
 	 	State : constant String := Content.Get_String("address");
-	 begin
-		Ada.Text_IO.Put_Line("Result : " & State);
-	 end Process_Reply;
+	begin
+		Put_Line("Result : " & State);
+	end Process_Reply;
 
 	procedure Send(
 		This 				: access Message_Agent_Type;
@@ -40,20 +43,20 @@ package body Message_Agent is
         	Msg.Process_Reply_Content(Process_Reply'Access);
 
       	elsif State = YAMI.Outgoing_Messages.Rejected then
-         	Ada.Text_IO.Put_Line("The message has been rejected: " & Msg.Exception_Message);
+         	Put_Line("The message has been rejected: " & Msg.Exception_Message);
       	else
-         	Ada.Text_IO.Put_Line ("The message has been abandoned.");
+         	Put_Line ("The message has been abandoned.");
       	end if;
-
-	exception
-   		when E : YAMI.Runtime_Error =>
-   			Ada.Text_IO.Put_Line("ERROR : " & Exception_Message(E));
 
     end Send;
 
 
     procedure Close(This: access Message_Agent_Type) is
     begin
+    	Logger.Log(
+    		Sender => NAME & ".Message_Agent",
+    		Message => "Closing the agent",
+    		L => Logger.DEBUG);
 		YAMI.Agents.Free(This.Client_Agent);
     end Close;
 

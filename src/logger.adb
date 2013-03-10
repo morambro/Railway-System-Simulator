@@ -78,7 +78,7 @@ package body Logger is
 				when ERROR =>
 					Put("[E] ");
 					Put(ASCII.ESC & "[31m");
-					Put_Line(Message);
+					Put_Line(Sender & " : " & Message);
 					Put(ASCII.ESC & "[00m");
 				when DEBUG 	=>
 					Put("[D] ");

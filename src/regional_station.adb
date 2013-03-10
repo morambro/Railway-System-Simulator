@@ -7,6 +7,7 @@
 --==============================================================================
 
 with Ada.Text_IO;use Ada.Text_IO;
+with Logger;
 
 package body Regional_Station is
 
@@ -92,9 +93,12 @@ package body Regional_Station is
     end Get_Regional_Station_Array;
 
 
-    overriding procedure Finalize   (This: in out Regional_Station_Type) is
+    overriding procedure Finalize (This: in out Regional_Station_Type) is
     begin
-    	Put_Line("finalize");
+    	Logger.Log(
+    		Sender => "Regional_Station",
+    		Message => "Finalize Station " & Unbounded_Strings.To_String(This.Name),
+    		L => Logger.DEBUG);
     end Finalize;
 
 end Regional_Station;
