@@ -24,28 +24,14 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>.		--
 ----------------------------------------------------------------------------------
 
-with Unchecked_Deallocation;
 
--- Package which defines an Interface to expose a unique method, to be invoked
--- by worker tasks.
-package Generic_Operation_Interface is
+package body Environment Is
 
-	-- Operation Interface type declaration
-	type Operation_Interface is abstract tagged null record;
+	Ciao : Natural := 5;
 
-	-- Operation Method declaration
-	procedure Do_Operation (X : in Operation_Interface) is abstract;
+    function Get_Num return Natural is
+    begin
+    	return Ciao;
+    end Get_Num;
 
-   	-- Operation reference type to be used inside records: Type'Class doesn't
-   	-- have a fixed size so it can be not allocated inside a record.
-   	type Any_Operation is access all Operation_Interface'Class;
-
-	-- Code to manage memory deallocation
- 	procedure Free is new Unchecked_Deallocation (
-      	Operation_Interface'Class,
-		Any_Operation
-	);
-
-   	pragma Controlled (Any_Operation);
-
-end Generic_Operation_Interface;
+end Environment;
