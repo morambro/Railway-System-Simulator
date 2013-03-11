@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -32,24 +32,10 @@ with Move_Operation;
 
 package Environment Is
 
-	-- Creation of Regional Stations
-	Stations : Generic_Station.Stations_array_Ref := Regional_Station.Get_Regional_Station_Array("res/stations.json");
+    function Get_Stations return Generic_Station.Stations_array_Ref;
 
-	-- array of Travelers
-    Travelers : Traveler.Traveler_Manager_array := Traveler.Get_Traveler_Manager_array("res/travelers.json");
+    function Get_Travelers return Traveler.Traveler_Manager_Array_Ref;
 
-    Operations : array (1 .. 4) of Traveler.Traveler_Operations(1 .. 2) := (
-		-- Operations for Traveler1
-		1 =>  (	1 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(1)'Access),
-		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(1)'Access)),
-		2 =>  (	1 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(2)'Access),
-		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(2)'Access)),
-		3 =>  (	1 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(3)'Access),
-		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(3)'Access)),
-		4 =>  (	1 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(4)'Access),
-		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(4)'Access))
-    );
-
-    function Get_Num return Natural;
+    procedure Init;
 
 end Environment;

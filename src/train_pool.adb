@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -119,7 +119,7 @@ package body Train_Pool is
 	    	Next_Plattform 	:= Route.GetNextPlattform(Routes.Route(Trains.Trains(Current_Descriptor).Next_Stage));
 
 	    	-- # Train enters Next Station
-			--Environment.Stations(Next_Station).Enter(Current_Descriptor,Next_Plattform);
+			--Environment.Get_Stations(Next_Station).Enter(Current_Descriptor,Next_Plattform);
 
 
 			Rand_Int.Reset(seed);
@@ -137,7 +137,7 @@ package body Train_Pool is
 			delay Duration(Num);
 
 			-- # Train Leaves the station
-	    	Environment.Stations(Next_Station).Leave(Trains.Trains(Current_Descriptor),Next_Plattform);
+	    	Environment.Get_Stations(Next_Station).Leave(Trains.Trains(Current_Descriptor),Next_Plattform);
 
 
 	   		Logger.Log(NAME,

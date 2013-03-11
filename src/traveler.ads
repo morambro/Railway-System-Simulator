@@ -51,11 +51,13 @@ package Traveler is
 
 	type Traveler_Manager_Array is Array(Positive range <>) of aliased Traveler_Manager;
 
+	type Traveler_Manager_Array_Ref is access all Traveler_Manager_Array;
+
 	function Get_Name(Traveler : Traveler_Manager) return String;
 
 	procedure Print(T : Traveler_Manager);
 
-	function Get_Traveler_Manager_Array(Json_Traveler : String) return Traveler_Manager_Array;
+	function Get_Traveler_Manager_Array(Json_Traveler : String) return Traveler_Manager_Array_Ref;
 
 private
 

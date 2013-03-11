@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -37,7 +37,7 @@ package body Move_Operation is
 
 		Put_Line("Move Operation for Passenger " & To_String(This.Manager.Traveler.Name));
 
-		Environment.Stations(1).WaitForTrain(This.Manager.all,2);
+		Environment.Get_Stations(1).WaitForTrain(This.Manager.all,2);
 
 		-- Points to the next Operation to
 		This.Manager.Next_Operation := This.Manager.Next_Operation + 1;

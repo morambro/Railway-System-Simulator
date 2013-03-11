@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -61,12 +61,12 @@ package body Traveler is
 		return T;
     end Get_Traveler_Manager;
 
-    function Get_Traveler_Manager_Array(Json_Traveler : String) return Traveler_Manager_Array is
+    function Get_Traveler_Manager_Array(Json_Traveler : String) return Traveler_Manager_Array_Ref is
 		Json_v : JSON_Value := Get_Json_Value(Json_Traveler);
     	A_JSON_Array : constant JSON_Array := Get (Val => Json_v,Field => "travelers");
 	    A_JSON_Value : JSON_Value;
 	    Array_Length : constant Natural := Length (A_JSON_Array);
-		T : Traveler_Manager_Array(1 .. Array_Length);
+		T : Traveler_Manager_Array_Ref := new Traveler_Manager_Array(1 .. Array_Length);
 
     begin
     	for J in 1 .. Array_Length loop

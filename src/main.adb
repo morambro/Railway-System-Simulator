@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -86,8 +86,6 @@ begin
 
 	begin
 
-		Ada.Text_IO.Put_Line("" & Log_Level);
-
 		if(not Logger.Init(Log_Level)) then
 			Ada.Text_IO.Put_Line("ERROR : Unknown log level " & Log_Level & "! Use a valid log level [ -i | -n | -d ].");
 			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
@@ -123,11 +121,6 @@ begin
 			Params.Set_String("name",Node_Name);
 			Params.Set_String("address",Node_Addr);
 
-	--  		Train_Pool.Associate(1);
-	--  		Train_Pool.Associate(2);
-	--  		Train_Pool.Associate(3);
-	--  		Train_Pool.Associate(4);
-	--
 			Client.Send(
 				Name_Server,
 				"name_server",
@@ -139,6 +132,12 @@ begin
 				Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
 				Pool			: Train_Pool.Train_Task_Pool(3);
 			begin
+				Environment.Init;
+				Train_Pool.Associate(1);
+				Train_Pool.Associate(2);
+	--  		Train_Pool.Associate(3);
+	--  		Train_Pool.Associate(4);
+
 				null;
 			end;
 			Client.Close;
