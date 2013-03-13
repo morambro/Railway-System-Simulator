@@ -1,5 +1,14 @@
 {
     "travelers": [
+    	 {
+            "traveler": {
+                "id": 1,
+                "name": "Giacomo",
+                "surname": "Caccamo"
+            },
+            "next_operation": 1,
+            "destination": 3
+        },
         {
             "traveler": {
                 "id": 2,

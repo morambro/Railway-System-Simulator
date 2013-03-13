@@ -23,42 +23,50 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-
+with Ada.Text_IO;
 
 package body Environment Is
 
 	-- Creation of Regional Stations
-	Stations 	: Generic_Station.Stations_array_Ref := null;
+	Regional_Stations 	: Generic_Station.Stations_array_Ref := null;
 
 	-- array of Travelers
     Travelers 	: Traveler.Traveler_Manager_Array_Ref := null;
 
---      Operations 	: array (1 .. 4) of Traveler.Traveler_Operations(1 .. 2) := (
---  		-- Operations for Traveler1
---  		1 =>  (	1 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(1)'Access),
---  		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(1)'Access)),
---  		2 =>  (	1 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(2)'Access),
---  		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(2)'Access)),
---  		3 =>  (	1 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(3)'Access),
---  		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(3)'Access)),
---  		4 =>  (	1 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(4)'Access),
---  		        2 => new Move_Operation.Move_Operation_Type'(Manager => Travelers(4)'Access))
---      );
+	Operations 	: Traveler.Travelers_All_Operations_Ref := null;
 
 	function Get_Travelers return Traveler.Traveler_Manager_Array_Ref is
 	begin
 		return Travelers;
     end Get_Travelers;
 
-    function Get_Stations return Generic_Station.Stations_array_Ref is
+    function Get_Regional_Stations return Generic_Station.Stations_array_Ref is
     begin
-    	return Stations;
-    end Get_Stations;
+    	return Regional_Stations;
+    end Get_Regional_Stations;
+
+    function Get_Operations return Traveler.Travelers_All_Operations_Ref is
+    begin
+    	return Operations;
+    end Get_Operations;
 
     procedure Init is
     begin
-    	Stations 	:= Regional_Station.Get_Regional_Station_Array("res/stations.json");
+    	-- # Creates regional stations array loading data from file
+    	Regional_Stations 	:= Regional_Station.Get_Regional_Station_Array("res/stations.json");
+
+		-- # Creates travelers array loading data from file
     	Travelers 	:= Traveler.Get_Traveler_Manager_array("res/travelers.json");
+
+		-- # Create an operations set for each Traveler
+    	Operations	:= new Traveler.Travelers_All_Operations(1 .. Travelers'Length);
+
+		for I in 1 .. Operations'Length loop
+			Operations(I) := new Traveler.Traveler_Operations(1..2);
+			Operations(I)(1) := new Move_Operation.Move_Operation_Type'(Manager => Travelers(I)'Access);
+		    Operations(I)(2) := new Move_Operation.Move_Operation_Type'(Manager => Travelers(I)'Access);
+		end loop;
+
     end Init;
 
 end Environment;

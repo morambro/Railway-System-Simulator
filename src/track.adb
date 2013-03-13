@@ -186,9 +186,9 @@ package body Track is
 
 				-- Now re-queue the train to the proper platform.
  				if Current_Direction /= First_End then
-					requeue Environment.Get_Stations(First_End).Get_Platform(1).Enter;
+					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(1).Enter;
 				else
-					requeue Environment.Get_Stations(Second_End).Get_Platform(1).Enter;
+					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(1).Enter;
 				end if;
 
 			else
@@ -240,9 +240,9 @@ package body Track is
 
 				-- Now re-queue the train to the proper platform.
  				if Current_Direction /= First_End then
-					requeue Environment.Get_Stations(First_End).Get_Platform(1).Enter;
+					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(1).Enter;
 				else
-					requeue Environment.Get_Stations(Second_End).Get_Platform(1).Enter;
+					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(1).Enter;
 				end if;
 
 			else

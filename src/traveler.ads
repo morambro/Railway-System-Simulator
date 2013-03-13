@@ -36,6 +36,12 @@ package Traveler is
 
 	type Traveler_Operations is Array(Positive range <>) of Any_Operation;
 
+	type Traveler_Operations_Ref is access all Traveler_Operations;
+
+	type Travelers_All_Operations is array (Positive range <>) of Traveler_Operations_Ref;
+
+	type Travelers_All_Operations_Ref is access all Travelers_All_Operations;
+
 	-- Traveler type declaration
 	type Traveler_Type is record
 		ID 			: Integer;

@@ -32,9 +32,11 @@ with Move_Operation;
 
 package Environment Is
 
-    function Get_Stations return Generic_Station.Stations_array_Ref;
+    function Get_Regional_Stations return Generic_Station.Stations_array_Ref;
 
     function Get_Travelers return Traveler.Traveler_Manager_Array_Ref;
+
+    function Get_Operations return Traveler.Travelers_All_Operations_Ref;
 
     procedure Init;
 

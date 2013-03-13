@@ -119,7 +119,7 @@ package body Train_Pool is
 	    	Next_Plattform 	:= Route.GetNextPlattform(Routes.Route(Trains.Trains(Current_Descriptor).Next_Stage));
 
 	    	-- # Train enters Next Station
-			--Environment.Get_Stations(Next_Station).Enter(Current_Descriptor,Next_Plattform);
+			--Environment.Get_Regional_Stations(Next_Station).Enter(Current_Descriptor,Next_Plattform);
 
 
 			Rand_Int.Reset(seed);
@@ -137,7 +137,7 @@ package body Train_Pool is
 			delay Duration(Num);
 
 			-- # Train Leaves the station
-	    	Environment.Get_Stations(Next_Station).Leave(Trains.Trains(Current_Descriptor),Next_Plattform);
+	    	Environment.Get_Regional_Stations(Next_Station).Leave(Trains.Trains(Current_Descriptor),Next_Plattform);
 
 
 	   		Logger.Log(NAME,

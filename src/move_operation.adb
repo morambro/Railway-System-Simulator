@@ -37,7 +37,7 @@ package body Move_Operation is
 
 		Put_Line("Move Operation for Passenger " & To_String(This.Manager.Traveler.Name));
 
-		Environment.Get_Stations(1).WaitForTrain(This.Manager.all,2);
+		Environment.Get_Regional_Stations(1).WaitForTrain(This.Manager.all,2);
 
 		-- Points to the next Operation to
 		This.Manager.Next_Operation := This.Manager.Next_Operation + 1;

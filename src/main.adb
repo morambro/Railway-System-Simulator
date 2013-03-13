@@ -121,11 +121,11 @@ begin
 			Params.Set_String("name",Node_Name);
 			Params.Set_String("address",Node_Addr);
 
-			Client.Send(
-				Name_Server,
-				"name_server",
-				"add",
-				Params);
+--  			Client.Send(
+--  				Name_Server,
+--  				"name_server",
+--  				"add",
+--  				Params);
 
 			declare
 				-- Start the real simulation
@@ -133,8 +133,8 @@ begin
 				Pool			: Train_Pool.Train_Task_Pool(3);
 			begin
 				Environment.Init;
-				Train_Pool.Associate(1);
-				Train_Pool.Associate(2);
+--  				Train_Pool.Associate(1);
+--  				Train_Pool.Associate(2);
 	--  		Train_Pool.Associate(3);
 	--  		Train_Pool.Associate(4);
 
