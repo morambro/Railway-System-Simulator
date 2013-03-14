@@ -31,9 +31,9 @@ package Train is
 
 	type Train_Descriptor is
 	record
-	    Id 			    : Integer;
-		Speed 		    : Integer;
-	    Max_Speed 	    : Integer;
+	    Id 			    : Positive;
+		Speed 		    : Positive;
+	    Max_Speed 	    : Positive;
 	    -- Id of the current station
 	    Current_Station : Positive;
 	    -- Id of the next stage;

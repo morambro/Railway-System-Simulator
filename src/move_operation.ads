@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -38,9 +38,6 @@ package Move_Operation is
 	function NewOperation(T_Manager : access Traveler_Manager) return Any_Operation;
 
 private
-
-
-
 
 	N : Positive := 1;
 

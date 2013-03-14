@@ -98,7 +98,7 @@ package body Regional_Station is
 
 
 	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref is
-		Json_v  : Json_Value := Get_Json_Value(Json_Station);
+		Json_v  : Json_Value := Get_Json_Value(Json_File_Name => Json_Station);
 		J_Array : constant JSON_Array := Json_v.Get(Field => "stations");
 		Array_Length : constant Natural := Length (J_Array);
 		T : Stations_Array_Ref := new Stations_Array(1 .. Array_Length);

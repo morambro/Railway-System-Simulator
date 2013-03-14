@@ -29,6 +29,7 @@ with Generic_Operation_Interface;use Generic_Operation_Interface;
 with JSON_Helper;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with JSON_Helper;use JSON_Helper;
+with Ticket;
 
 package Traveler is
 
@@ -53,6 +54,7 @@ package Traveler is
 		Traveler 		: Traveler_Type;
 		Next_Operation 	: Positive := 1;
 		Destination 	: Positive := 1;
+		Ticket 			: access Ticket.Ticket_Type := null;
 	end record;
 
 	type Traveler_Manager_Array is Array(Positive range <>) of aliased Traveler_Manager;

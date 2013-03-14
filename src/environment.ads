@@ -29,6 +29,7 @@ with Generic_Station;
 with Regional_Station;
 with Traveler;
 with Move_Operation;
+with Ticket;
 
 package Environment Is
 

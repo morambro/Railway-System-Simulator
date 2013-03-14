@@ -1,0 +1,10 @@
+{
+	"ticket" : [
+		{
+			"next_station" : 2,
+			"train_id"	: 4,
+			"platform_index" : 6
+		}
+	]
+
+}

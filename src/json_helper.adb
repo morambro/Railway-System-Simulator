@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -54,15 +54,22 @@ package body JSON_Helper is
 
     end Load_File;
 
-    function Get_Json_Value(Json_File_Name : String) return JSON_Value is
+    function Get_Json_Value(Json_String : String := ""; Json_File_Name : String := "") return JSON_Value is
     	Json : JSON_Value;
     begin
-		Json := Read (
-			Strm 		=> Load_File (Json_File_Name),
-            Filename 	=> "");
-        return Json;
-    end Get_Json_Value;
+		if Json_String = "" then
+			Json := Read (
+				Strm 		=> Load_File (Json_File_Name),
+	            Filename 	=> "");
+	    elsif Json_File_Name = "" then
+			Json := Read (
+				Strm 		=> Json_String,
+	            Filename 	=> "");
+	    end if;
 
+		return Json;
+
+    end Get_Json_Value;
 
    	procedure Handler (
    		Name  : in UTF8_String;

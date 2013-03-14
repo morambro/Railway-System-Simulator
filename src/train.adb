@@ -27,7 +27,7 @@
 package body Train is
 
 	function Get_Trains_Array(Json_File_Name : String) return Trains_Array is
-		Json_v  : Json_Value := Get_Json_Value(Json_File_Name);
+		Json_v  : Json_Value := Get_Json_Value(Json_File_Name => Json_File_Name);
 		J_Array : constant JSON_Array := Json_v.Get(Field => "trains");
 		Array_Length : constant Natural := Length (J_Array);
 		T : Trains_Array(1 .. Array_Length);

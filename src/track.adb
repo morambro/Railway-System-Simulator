@@ -309,7 +309,7 @@ package body Track is
 
 	function Get_Track_Array(File_Name : String) return access Tracks_Array is
 	begin
-		return Get_Track_Array(Get_Json_Value(File_Name));
+		return Get_Track_Array(Get_Json_Value(Json_File_Name => File_Name));
     end Get_Track_Array;
 
 

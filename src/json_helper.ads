@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -26,16 +26,20 @@
 
 
 with Gnatcoll.JSON;use Gnatcoll.JSON;
-with Ada.Containers.Ordered_Maps;
+--  with Ada.Containers.Ordered_Maps;
 with Ada.Strings.Unbounded;
 
 package JSON_Helper is
 
-	package SU   renames Ada.Strings.Unbounded;
+	package SU renames Ada.Strings.Unbounded;
 
 	function Load_File(File_Name : String) return String;
 
-	function Get_Json_Value(Json_File_Name : String) return JSON_Value;
+	-- #
+	-- # Creates a JSON_Value from a Json input. Json data can be retrieved either from file or
+	-- # from a given string, it depends on what the caller specify.
+	-- #
+	function Get_Json_Value(Json_String : String := ""; Json_File_Name : String := "") return JSON_Value;
 
 	procedure Handler (Name  : in UTF8_String;Value : in JSON_Value);
 

@@ -62,7 +62,7 @@ package body Traveler is
     end Get_Traveler_Manager;
 
     function Get_Traveler_Manager_Array(Json_Traveler : String) return Traveler_Manager_Array_Ref is
-		Json_v : JSON_Value := Get_Json_Value(Json_Traveler);
+		Json_v : JSON_Value := Get_Json_Value(Json_File_Name => Json_Traveler);
     	A_JSON_Array : constant JSON_Array := Get (Val => Json_v,Field => "travelers");
 	    A_JSON_Value : JSON_Value;
 	    Array_Length : constant Natural := Length (A_JSON_Array);

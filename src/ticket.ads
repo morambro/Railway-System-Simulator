@@ -23,10 +23,31 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-with Train;
 
-package Trains is
+-- #
+-- # This package contains the definition of a ticket, that is an array of stages the
+-- # traveler will follow to reach the destination.
+-- #
+with Gnatcoll.JSON;use Gnatcoll.JSON;
+with JSON_Helper;use JSON_Helper;
 
-	Trains : Train.Trains_Array := Train.Get_Trains_Array("res/trains.json");
+package Ticket is
 
-end Trains;
+	type Ticket_Stage is record
+		-- # Index of the next station to reach
+		Next_Station 	: Natural := 0;
+		-- # The ID of the train to wait for in order to reach the destination
+		Train_ID 	 	: Natural := 0;
+		-- # The Platform index at which the traveler will wait
+		Platform_Index	: Natural := 0;
+    end record;
+
+    type Ticket_Type is array (Positive range <>) of Ticket_Stage;
+
+    -- ############################## Json -> Ticket ###############################
+
+    function Get_Ticket(Json_String : String) return access Ticket_Type;
+
+
+
+end Ticket;
