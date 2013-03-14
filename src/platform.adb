@@ -62,21 +62,44 @@ package body Platform is
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Arrival_Queue.Enqueue(T_Manager);
 				else
-					declare
-					begin
-						Logger.Log(
+					Logger.Log(
 							Sender  => NAME,
 							Message => "Passenger " &
 										Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
 									   " Leaves the train at station " &
 									   Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Next_Station),
 							L       => Logger.NOTICE);
-					exception
-						when Error : others =>
-							Ada.Text_IO.Put("Exception: ");
-					    	Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Name(Error));
-						    Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Message(Error));
-					end;
+
+					-- # Check if there are more stages, otherwise STOP
+					if 	Environment.Get_Travelers(T_Manager).Ticket.Next_Stage =
+						Environment.Get_Travelers(T_Manager).Ticket.Stages'Length then
+						Logger.Log(
+							Sender  => NAME,
+							Message => "Passenger " &
+										Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
+									   " FINISHED HIS TRAVEL" &
+									   Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Next_Station),
+							L       => Logger.NOTICE);
+					else
+						declare
+							Next_Operation : Positive := 1;
+						begin
+
+							-- # Execute the operation number 2 (Traveler waits to leave the train).
+							Task_Pool.Execute(Environment.Get_Operations(T_Manager)(Next_Operation));
+							-- # Set the new Operation Index
+							Environment.Get_Travelers(T_Manager).Next_Operation := Next_Operation;
+
+						exception
+							when Error : others =>
+								Logger.Log(
+									Sender  => NAME,
+								    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
+								    			Ada.Exceptions.Exception_Message(Error),
+								    L       => Logger.ERROR);
+						end;
+					end if;
+
 				end if;
 			end loop;
 
@@ -88,13 +111,17 @@ package body Platform is
 					Message => "Train " & Integer'Image(T.Id) & " Performs Boarding of travelers",
 					L       => Logger.NOTICE);
 			for I in 1..Leaving_Number loop
+
+				-- # Retrieve the next Traveler Manager Index
 				Leaving_Queue.Dequeue(T_Manager);
+				-- # Retrieve the Next_Stage Index
 				Next_Stage := Environment.Get_Travelers(T_Manager).Ticket.Next_Stage;
 
 				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= T.Id then
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Leaving_Queue.Enqueue(T_Manager);
 				else
+					-- # If the current traveler have to board to the train...
 					Logger.Log(
 						Sender  => NAME,
 						Message => "Passenger " &
@@ -105,8 +132,10 @@ package body Platform is
 
 
 					declare
+						-- # The next Traveler operation
 						Next_Operation : Positive := 2;
 					begin
+						-- # Go to the next stage (there will be at least another one for sure!)
 						Environment.Get_Travelers(T_Manager).Ticket.Next_Stage :=
 							Environment.Get_Travelers(T_Manager).Ticket.Next_Stage +1;
 						-- # Execute the operation number 2 (Traveler waits to leave the train).
@@ -116,9 +145,12 @@ package body Platform is
 
 					exception
 						when Error : others =>
-							Ada.Text_IO.Put("Exception: ");
-					    	Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Name(Error));
-						    Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Message(Error));
+							Logger.Log(
+								Sender  => NAME,
+							    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
+							    			Ada.Exceptions.Exception_Message(Error),
+							    L       => Logger.ERROR);
+
 					end;
 
 				end if;
