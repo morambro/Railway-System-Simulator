@@ -34,7 +34,7 @@ package Move_Operation is
 	-- # Operation used to make the Traveler wait for a train at a platform
 	-- #
 	type Leave_Operation_Type is new Operation_Interface with record
-		Manager : access Traveler_Manager := null;
+		Manager : Positive;
 	end record;
 
 	overriding procedure Do_Operation(This : in Leave_Operation_Type);
@@ -44,11 +44,11 @@ package Move_Operation is
 	-- # Operation used to make the Traveler wait at the next station to arrive
 	-- #
 	type Enter_Operation_Type is new Operation_Interface with record
-		Manager : access Traveler_Manager := null;
+		Manager : Positive;
 	end record;
 
 	overriding procedure Do_Operation(This : in Enter_Operation_Type);
 
-	function New_Move_Operation(T_Manager : access Traveler_Manager) return Any_Operation;
+	function New_Move_Operation(T_Manager : Positive) return Any_Operation;
 
 end Move_Operation;

@@ -26,6 +26,7 @@
 
 with Ada.Text_IO;use Ada.Text_IO;
 with Logger;
+with Environment;
 
 package body Regional_Station is
 
@@ -57,13 +58,14 @@ package body Regional_Station is
 	-- #
 	procedure Wait_For_Train(
 			This 				: in		Regional_Station_Type;
-			Outgoing_Traveler 	: 			access Traveler.Traveler_Manager;
+			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive) is
 	begin
 		This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
 		This.Panel.SetStatus(
-			"Passenger " & Traveler.Get_Name(Outgoing_Traveler.all) & " entered platform " & Integer'Image(Platform_Index));
+			"Passenger " & Traveler.Get_Name(Environment.Get_Travelers(Outgoing_Traveler)) &
+			" entered platform " & Integer'Image(Platform_Index));
 	end Wait_For_Train;
 
 

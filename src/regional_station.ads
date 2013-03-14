@@ -69,7 +69,7 @@ package Regional_Station is
 
 		overriding procedure Wait_For_Train(
 			This 				: in		Regional_Station_Type;
-			Outgoing_Traveler 	: 			access Traveler.Traveler_Manager;
+			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 

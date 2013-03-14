@@ -31,7 +31,7 @@ with Traveler;use Traveler;
 package Platform is
 
 	-- Create a queue for Traveler type
-	package Traveler_Queue_Package is new Queue(Element => Traveler_Manager);
+	package Traveler_Queue_Package is new Queue(Element => Positive);
 
 	-- Queue for Arriving Traveler
 	Arrival_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
@@ -45,9 +45,9 @@ package Platform is
 
 		procedure Leave(Descriptor : in out Train_Descriptor);
 
-		procedure Add_Incoming_Traveler(Traveler : access Traveler_Manager);
+		procedure Add_Incoming_Traveler(Traveler : Positive);
 
-		procedure Add_Outgoing_Traveler(Traveler : access Traveler_Manager);
+		procedure Add_Outgoing_Traveler(Traveler : Positive);
 
 	private
 		Free : Boolean := True;

@@ -37,14 +37,14 @@ package body Move_Operation is
 	NAME_LEAVE : constant String := "Move_Operation.Leave_Operation_Type";
 
 	procedure Do_Operation(This : in Leave_Operation_Type) is
-		Next_Stage 		: Positive 	:= This.Manager.Ticket.Next_Stage;
-		Next_Station 	: Natural 	:= This.Manager.Ticket.Stages(Next_Stage).Next_Station;
-		Train_ID	 	: Natural 	:= This.Manager.Ticket.Stages(Next_Stage).Train_ID;
-		Platform_Index 	: Natural 	:= This.Manager.Ticket.Stages(Next_Stage).Platform_Index;
+		Next_Stage 		: Positive 	:= Environment.Get_Travelers(This.Manager).Ticket.Next_Stage;
+		Next_Station 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Next_Station;
+		Train_ID	 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Train_ID;
+		Platform_Index 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Platform_Index;
 	begin
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
-			Message => "Traveler " & To_String(This.Manager.Traveler.Name) &
+			Message => "Traveler " & To_String(Environment.Get_Travelers(This.Manager).Traveler.Name) &
 					   " will wait at platform" & Integer'Image(Platform_Index) & ", station " & Integer'Image(Next_Station),
 			L 		=> Logger.NOTICE);
 
@@ -55,7 +55,7 @@ package body Move_Operation is
 			Platform_Index		=> Platform_Index);
 
 		-- Points to the next Operation to
-		This.Manager.Next_Operation := This.Manager.Next_Operation + 1;
+		Environment.Get_Travelers(This.Manager).Next_Operation := Environment.Get_Travelers(This.Manager).Next_Operation + 1;
 
 	exception
 		when Error : others =>
@@ -72,7 +72,7 @@ package body Move_Operation is
     end Do_Operation;
 
 
-	function New_Move_Operation(T_Manager : access Traveler_Manager) return Any_Operation is
+	function New_Move_Operation(T_Manager : Positive) return Any_Operation is
 	begin
 		return new Leave_Operation_Type'(Manager => T_Manager);
 	end New_Move_Operation;

@@ -26,6 +26,8 @@
 with Ada.Containers;use Ada.Containers;
 with Logger;
 with Ada.Strings.Unbounded;
+with Environment;
+with Ada.Text_IO;
 
 package body Platform is
 
@@ -40,7 +42,8 @@ package body Platform is
 		entry Enter(T : Train_Descriptor) when Free = True is
 			Arrival_Number 	: Count_Type := Arrival_Queue.Current_Use;
 			Leaving_Number 	: Count_Type := Leaving_Queue.Current_Use;
-			T_Manager		: Traveler_Manager;
+			T_Manager		: Positive;
+			Next_Stage 		: Positive;
 		begin
 			Free := False;
 
@@ -53,13 +56,15 @@ package body Platform is
 					L       => Logger.NOTICE);
 			for I in 1..Arrival_Number loop
 				Arrival_Queue.Dequeue(T_Manager);
-				if T_Manager.Ticket.Stages(T_Manager.Ticket.Next_Stage).Train_ID /= T.Id then
-					-- # If the current Travelere was not waiting for this train, requeue it
+				Next_Stage := Environment.Get_Travelers(T_Manager).Ticket.Next_Stage;
+				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= T.Id then
+					-- # If the current Traveler was not waiting for this train, re-queue it
 					Arrival_Queue.Enqueue(T_Manager);
 				else
 					Logger.Log(
 						Sender  => NAME,
-						Message => "Passenger " & Ada.Strings.Unbounded.To_String(T_Manager.Traveler.Name) &
+						Message => "Passenger " &
+									Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
 								   " Leaves the train",
 						L       => Logger.NOTICE);
 				end if;
@@ -74,15 +79,21 @@ package body Platform is
 					L       => Logger.NOTICE);
 			for I in 1..Leaving_Number loop
 				Leaving_Queue.Dequeue(T_Manager);
-				if T_Manager.Ticket.Stages(T_Manager.Ticket.Next_Stage).Train_ID /= T.Id then
-					-- # If the current Travelere was not waiting for this train, requeue it
+				Next_Stage := Environment.Get_Travelers(T_Manager).Ticket.Next_Stage;
+
+				Ada.Text_IO.Put_Line(Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID));
+
+				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= T.Id then
+					-- # If the current Traveler was not waiting for this train, re-queue it
 					Leaving_Queue.Enqueue(T_Manager);
 				else
 					Logger.Log(
 						Sender  => NAME,
-						Message => "Passenger " & Ada.Strings.Unbounded.To_String(T_Manager.Traveler.Name) &
+						Message => "Passenger " &
+								   Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
 								   " boarding",
 						L       => Logger.NOTICE);
+
 				end if;
 			end loop;
 
@@ -94,15 +105,15 @@ package body Platform is
 		end Leave;
 
 
-		procedure Add_Incoming_Traveler(Traveler : access Traveler_Manager) is
+		procedure Add_Incoming_Traveler(Traveler : Positive) is
 		begin
-			Arrival_Queue.Enqueue(Traveler.all);
+			Arrival_Queue.Enqueue(Traveler);
 		end Add_Incoming_Traveler;
 
 
-		procedure Add_Outgoing_Traveler(Traveler : access Traveler_Manager) is
+		procedure Add_Outgoing_Traveler(Traveler : Positive) is
 		begin
-			Leaving_Queue.Enqueue(Traveler.all);
+			Leaving_Queue.Enqueue(Traveler);
 			Logger.Log(
 				NAME,
 				"Travelers in queue = " & Count_Type'Image(Arrival_Queue.Current_Use),
