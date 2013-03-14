@@ -44,18 +44,14 @@ package body Move_Operation is
 	begin
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
-			Message => "Traveler " & To_String(Environment.Get_Travelers(This.Manager).Traveler.Name) &
+			Message => "LEAVE : Traveler " & To_String(Environment.Get_Travelers(This.Manager).Traveler.Name) &
 					   " will wait at platform" & Integer'Image(Platform_Index) & ", station " & Integer'Image(Next_Station),
 			L 		=> Logger.NOTICE);
 
-
-		Environment.Get_Regional_Stations(Next_Station).Wait_For_Train(
+		Environment.Get_Regional_Stations(Next_Station).Wait_For_Train_To_Go(
 			Outgoing_Traveler 	=> This.Manager,
 			Train_ID 			=> Train_ID,
 			Platform_Index		=> Platform_Index);
-
-		-- Points to the next Operation to
-		Environment.Get_Travelers(This.Manager).Next_Operation := Environment.Get_Travelers(This.Manager).Next_Operation + 1;
 
 	exception
 		when Error : others =>
@@ -66,10 +62,38 @@ package body Move_Operation is
 			);
 	end Do_Operation;
 
+
+
 	procedure Do_Operation(This : in Enter_Operation_Type) is
+		Next_Stage 		: Positive 	:= Environment.Get_Travelers(This.Manager).Ticket.Next_Stage;
+		Next_Station 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Next_Station;
+		Train_ID	 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Train_ID;
+		Platform_Index 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Platform_Index;
 	begin
- 		null;
+		Logger.Log(
+			Sender 	=> NAME_LEAVE,
+			Message => "ARRIVE: Traveler " & To_String(Environment.Get_Travelers(This.Manager).Traveler.Name) &
+					   " will wait at platform" & Integer'Image(Platform_Index) & ", station " & Integer'Image(Next_Station),
+			L 		=> Logger.NOTICE);
+
+		Put_Line ("NEXT = " & Integer'Image(Next_Station));
+
+		Environment.Get_Regional_Stations(Next_Station).Print;
+
+		Environment.Get_Regional_Stations(Next_Station).Wait_For_Train_To_Arrive(
+			Incoming_Traveler 	=> This.Manager,
+			Train_ID 			=> Train_ID,
+			Platform_Index		=> Platform_Index);
+
+	exception
+		when Error : others =>
+			Logger.Log(
+				NAME_LEAVE,
+				"Exception: " & Ada.Exceptions.Exception_Name(Error) & " , " & Ada.Exceptions.Exception_Message(Error),
+				Logger.ERROR
+			);
     end Do_Operation;
+
 
 
 	function New_Move_Operation(T_Manager : Positive) return Any_Operation is

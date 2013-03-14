@@ -26,6 +26,7 @@
 with Train;use Train;
 with Queue;
 with Traveler;use Traveler;
+with Ada.Strings.Unbounded;
 
 
 package Platform is
@@ -33,13 +34,8 @@ package Platform is
 	-- Create a queue for Traveler type
 	package Traveler_Queue_Package is new Queue(Element => Positive);
 
-	-- Queue for Arriving Traveler
-	Arrival_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
-
-	-- Queue for Travelers waiting for the train
-	Leaving_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
-
-	protected type Platform_Type(ID:Integer) is
+	protected type Platform_Type(
+		ID			:	Integer;S : access Ada.Strings.Unbounded.Unbounded_String) is
 
 		entry Enter(T : Train_Descriptor);
 
@@ -51,6 +47,11 @@ package Platform is
 
 	private
 		Free : Boolean := True;
+		-- Queue for Arriving Traveler
+		Arrival_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
+
+		-- Queue for Travelers waiting for the train
+		Leaving_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
 	end Platform_Type;
 
 end Platform;

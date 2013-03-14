@@ -5,6 +5,11 @@
 			"next_station" 	: 2,
 			"train_id"		: 1111,
 			"platform_index": 1
+		},
+		{
+			"next_station" 	: 4,
+			"train_id"		: 1111,
+			"platform_index": 1
 		}
 	]
 }

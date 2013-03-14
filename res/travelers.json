@@ -3,11 +3,11 @@
     	 {
             "traveler": {
                 "id": 1,
-                "name": "Giacomo",
+                "name": "Gero",
                 "surname": "Caccamo"
             },
             "next_operation": 1,
-            "destination": 3
+            "destination": 2
         },
         {
             "traveler": {

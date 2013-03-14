@@ -67,9 +67,15 @@ package Regional_Station is
 			Descriptor : in out Train.Train_Descriptor;
 			Platform: Integer);
 
-		overriding procedure Wait_For_Train(
+		overriding procedure Wait_For_Train_To_Go(
 			This 				: in		Regional_Station_Type;
 			Outgoing_Traveler 	: in		Positive;
+			Train_ID 			: in		Positive;
+			Platform_Index		: in		Positive);
+
+		overriding procedure Wait_For_Train_To_Arrive(
+			This 				: in		Regional_Station_Type;
+			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 
@@ -120,11 +126,11 @@ private
 		new Ada.Finalization.Controlled and
 		Station_Interface
 	with record
-		Name : Unbounded_Strings.Unbounded_String;
-		Platforms : Platforms_List(1..Platforms_Number);
-		Panel : access Notice_Panel.Notice_Panel_Entity := null;
+		Name 			: aliased  Unbounded_Strings.Unbounded_String;
+		Platforms 		: Platforms_List(1..Platforms_Number);
+		Panel 			: access Notice_Panel.Notice_Panel_Entity := null;
 		-- Indicates for each platform if it is free or not
-		Platform_Free : Platform_Booking(1 .. Platforms_Number) := (others => true);
+		Platform_Free 	: Platform_Booking(1 .. Platforms_Number) := (others => true);
 	end record;
 
 end Regional_Station;

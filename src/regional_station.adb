@@ -56,7 +56,7 @@ package body Regional_Station is
 	-- # Procedure called by a Traveler to enqueue at a given Platform
 	-- # waiting for a specific Train
 	-- #
-	procedure Wait_For_Train(
+	procedure Wait_For_Train_To_Go(
 			This 				: in		Regional_Station_Type;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
@@ -65,8 +65,23 @@ package body Regional_Station is
 		This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
 		This.Panel.SetStatus(
 			"Passenger " & Traveler.Get_Name(Environment.Get_Travelers(Outgoing_Traveler)) &
-			" entered platform " & Integer'Image(Platform_Index));
-	end Wait_For_Train;
+			" waits by platform " & Integer'Image(Platform_Index) & " to GO");
+	end Wait_For_Train_To_Go;
+
+
+
+	overriding procedure Wait_For_Train_To_Arrive(
+			This 				: in		Regional_Station_Type;
+			Incoming_Traveler 	: in		Positive;
+			Train_ID 			: in		Positive;
+			Platform_Index		: in		Positive) is
+	begin
+		This.Platforms(Platform_Index).Add_Incoming_Traveler(Incoming_Traveler);
+		This.Panel.SetStatus(
+			"Passenger " & Traveler.Get_Name(Environment.Get_Travelers(Incoming_Traveler)) &
+			" waits by station " & Unbounded_Strings.To_String(This.Name)
+			& " at platform " & Integer'Image(Platform_Index) & " to ARRIVE");
+    end Wait_For_Train_To_Arrive;
 
 
 
@@ -78,7 +93,7 @@ package body Regional_Station is
 	begin
 		Station.Name := Unbounded_Strings.To_Unbounded_String(Name);
 		for I in Positive range 1..Platforms_Number loop
-			Station.Platforms(I) := new Platform.Platform_Type(I);
+			Station.Platforms(I) := new Platform.Platform_Type(I,Station.Name'Access);
 		end loop;
 		Station.Panel := new Notice_Panel.Notice_Panel_Entity(1);
 		return Station;

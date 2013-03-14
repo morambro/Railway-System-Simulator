@@ -65,8 +65,9 @@ package body Environment Is
     	Operations	:= new Traveler.Travelers_All_Operations(1 .. Travelers'Length);
 
 		for I in 1 .. Operations'Length loop
-			Operations(I) := new Traveler.Traveler_Operations(1..1);
-			Operations(I)(1) := Move_Operation.New_Move_Operation(I);
+			Operations(I) := new Traveler.Traveler_Operations(1..2);
+			Operations(I)(1) := new Move_Operation.Leave_Operation_Type'(Manager => I);
+			Operations(I)(2) := new Move_Operation.Enter_Operation_Type'(Manager => I);
 		end loop;
 
     end Init;

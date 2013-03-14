@@ -80,7 +80,7 @@ package body Train_Pool is
 
 			-- # ######################## NEXT TRACK ACCESS ############################
 			begin
-				Ada.Text_IO.Put_Line("" & Integer'Image(Trains.Trains(Current_Descriptor).Next_Stage));
+				--Ada.Text_IO.Put_Line("" & Integer'Image(Trains.Trains(Current_Descriptor).Next_Stage));
 
 	--  			-- # TODO : REMOVE DEBUG CODE!!!
 	--  			if ( Trains.Trains(Current_Descriptor).Id = 3333 ) then

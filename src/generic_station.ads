@@ -51,9 +51,16 @@ package Generic_Station is
 			Plattform 			: in 		Integer)
 		is abstract;
 
-		procedure Wait_For_Train(
+		procedure Wait_For_Train_To_Go(
 			This 				: in 		Station_Interface;
 			Outgoing_Traveler 	: in		Positive;
+			Train_ID 			: in		Positive;
+			Platform_Index		: in		Positive)
+		is abstract;
+
+		procedure Wait_For_Train_To_Arrive(
+			This 				: in 		Station_Interface;
+			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive)
 		is abstract;

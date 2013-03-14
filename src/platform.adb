@@ -27,7 +27,9 @@ with Ada.Containers;use Ada.Containers;
 with Logger;
 with Ada.Strings.Unbounded;
 with Environment;
-with Ada.Text_IO;
+with Ada.Text_IO;use Ada.Text_IO;
+with Task_Pool;
+with Ada.Exceptions;
 
 package body Platform is
 
@@ -46,7 +48,6 @@ package body Platform is
 			Next_Stage 		: Positive;
 		begin
 			Free := False;
-
 			-- #
 			-- # Alighting of Travelers
 			-- #
@@ -61,12 +62,21 @@ package body Platform is
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Arrival_Queue.Enqueue(T_Manager);
 				else
-					Logger.Log(
-						Sender  => NAME,
-						Message => "Passenger " &
-									Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
-								   " Leaves the train",
-						L       => Logger.NOTICE);
+					declare
+					begin
+						Logger.Log(
+							Sender  => NAME,
+							Message => "Passenger " &
+										Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
+									   " Leaves the train at station " &
+									   Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Next_Station),
+							L       => Logger.NOTICE);
+					exception
+						when Error : others =>
+							Ada.Text_IO.Put("Exception: ");
+					    	Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Name(Error));
+						    Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Message(Error));
+					end;
 				end if;
 			end loop;
 
@@ -81,8 +91,6 @@ package body Platform is
 				Leaving_Queue.Dequeue(T_Manager);
 				Next_Stage := Environment.Get_Travelers(T_Manager).Ticket.Next_Stage;
 
-				Ada.Text_IO.Put_Line(Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID));
-
 				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= T.Id then
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Leaving_Queue.Enqueue(T_Manager);
@@ -91,8 +99,27 @@ package body Platform is
 						Sender  => NAME,
 						Message => "Passenger " &
 								   Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
-								   " boarding",
+								   " boarding at station " &
+								   Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Next_Station),
 						L       => Logger.NOTICE);
+
+
+					declare
+						Next_Operation : Positive := 2;
+					begin
+						Environment.Get_Travelers(T_Manager).Ticket.Next_Stage :=
+							Environment.Get_Travelers(T_Manager).Ticket.Next_Stage +1;
+						-- # Execute the operation number 2 (Traveler waits to leave the train).
+						Task_Pool.Execute(Environment.Get_Operations(T_Manager)(Next_Operation));
+						-- # Set the new Operation Index
+						Environment.Get_Travelers(T_Manager).Next_Operation := Next_Operation;
+
+					exception
+						when Error : others =>
+							Ada.Text_IO.Put("Exception: ");
+					    	Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Name(Error));
+						    Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Message(Error));
+					end;
 
 				end if;
 			end loop;
