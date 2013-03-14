@@ -42,8 +42,12 @@ package Ticket is
 		Platform_Index	: Natural := 0;
     end record;
 
-    type Ticket_Type is array (Positive range <>) of Ticket_Stage;
+    type Ticket_Stages is array (Positive range <>) of Ticket_Stage;
 
+    type Ticket_Type(Stages_Number : Positive) is record
+    	Next_Stage 	: Positive := 1;
+    	Stages 		: Ticket_Stages(1 .. Stages_Number);
+	end record;
     -- ############################## Json -> Ticket ###############################
 
     function Get_Ticket(Json_String : String) return access Ticket_Type;

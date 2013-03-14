@@ -28,8 +28,6 @@ with JSON_Helper;
 
 package body Environment Is
 
-
-
 	-- Creation of Regional Stations
 	Regional_Stations 	: Generic_Station.Stations_array_Ref := null;
 
@@ -61,13 +59,14 @@ package body Environment Is
 		-- # Creates travelers array loading data from file
     	Travelers 	:= Traveler.Get_Traveler_Manager_array("res/travelers.json");
 
+		Travelers(1).Ticket := Ticket.Get_Ticket(JSON_Helper.Load_File("res/tickets.json"));
+
 		-- # Create an operations set for each Traveler
     	Operations	:= new Traveler.Travelers_All_Operations(1 .. Travelers'Length);
 
 		for I in 1 .. Operations'Length loop
-			Operations(I) := new Traveler.Traveler_Operations(1..2);
-			Operations(I)(1) := new Move_Operation.Move_Operation_Type'(Manager => Travelers(I)'Access);
-		    Operations(I)(2) := new Move_Operation.Move_Operation_Type'(Manager => Travelers(I)'Access);
+			Operations(I) := new Traveler.Traveler_Operations(1..1);
+			Operations(I)(1) := Move_Operation.New_Move_Operation(Travelers(I)'Access);
 		end loop;
 
     end Init;

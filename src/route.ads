@@ -28,22 +28,31 @@
 -- of Stage objects.
 --
 with Ada.Real_Time;use Ada.Real_Time;
+with Gnatcoll.JSON; use Gnatcoll.JSON;
 package Route is
 
 	type Stage is private;
 
 	type Route_Type is array (Positive range <>) of Stage;
 
-	function GetNextTrack (S : Stage) return Positive;
-	function GetNextStation (S : Stage) return Positive;
-	function GetTimeToLeave (S : Stage) return Time;
-    function GetNextPlattform (S : Stage) return Positive;
+	type Routes is array (Positive range <>) of access Route_Type;
 
-    function Newstage(
+	function Get_Next_Track (S : Stage) return Positive;
+	function Get_Next_Station (S : Stage) return Positive;
+	function Get_Time_To_Leave (S : Stage) return Time;
+    function Get_Next_Platform (S : Stage) return Positive;
+
+    function New_Stage(
 		Track : Positive;
 		Station : Positive;
-		Next_Plattform : Positive;
+		Next_Platform : Positive;
 		Leave_At : Time) return Stage;
+
+	function Get_Route(Json_v : JSON_Value) return access Route_Type;
+
+	function Get_Routes (Json_File : String) return Routes;
+
+	procedure Print(R : Route_Type);
 
 private
 
@@ -51,7 +60,7 @@ private
 	    -- Indexes of next Track and Station
 		Next_Track      : Positive;
 	    Next_Station    : Positive;
-        Plattform_Index : Positive;
+        Platform_Index : Positive;
 		Leave_At        : Time;
 	end record;
 

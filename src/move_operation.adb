@@ -27,28 +27,52 @@
 with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Strings.Unbounded;
 with Environment;
+with Logger;
 
 package body Move_Operation is
 
 	use Ada.Strings.Unbounded;
 
-	procedure Do_Operation(This : in Move_Operation_Type) is
+	NAME_LEAVE : constant String := "Move_Operation.Leave_Operation_Type";
+
+	procedure Do_Operation(This : in Leave_Operation_Type) is
+		Next_Stage 		: Positive 	:= This.Manager.Ticket.Next_Stage;
+		Next_Station 	: Natural 	:= This.Manager.Ticket.Stages(Next_Stage).Next_Station;
+		Train_ID	 	: Natural 	:= This.Manager.Ticket.Stages(Next_Stage).Train_ID;
+		Platform_Index 	: Natural 	:= This.Manager.Ticket.Stages(Next_Stage).Platform_Index;
 	begin
 
-		Put_Line("Move Operation for Passenger " & To_String(This.Manager.Traveler.Name));
+		Logger.Log(
+			Sender 	=> NAME_LEAVE,
+			Message => "Passenger " & To_String(This.Manager.Traveler.Name & "waits at platform station 1"),
+			L 		=> Logger.NOTICE);
 
-		Environment.Get_Regional_Stations(1).WaitForTrain(This.Manager.all,2);
+
+		Environment.Get_Regional_Stations(Next_Station).Wait_For_Train(
+			Outgoing_Traveler 	=> This.Manager.all,
+			Train_ID 			=> Train_ID,
+			Platform_Index		=> Platform_Index);
 
 		-- Points to the next Operation to
 		This.Manager.Next_Operation := This.Manager.Next_Operation + 1;
-		N := N + 1;
-		Put_Line("Added to queue");
+
+		Logger.Log(
+			Sender 	=> NAME_LEAVE,
+			Message => "Passenger " & To_String(This.Manager.Traveler.Name) & "Leaves the platform",
+			L 		=> Logger.NOTICE);
+
 	end Do_Operation;
 
-	function NewOperation(T_Manager : access Traveler_Manager) return Any_Operation is
+	procedure Do_Operation(This : in Enter_Operation_Type) is
 	begin
-		return new Move_Operation_Type;
-	end;
+		null;
+    end Do_Operation;
+
+
+	function New_Move_Operation(T_Manager : access Traveler_Manager) return Any_Operation is
+	begin
+		return new Leave_Operation_Type;
+	end New_Move_Operation;
 
 end Move_Operation;
 

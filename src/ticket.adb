@@ -29,19 +29,20 @@ package body Ticket is
 		-- Create JSON_Value object from the given json string
 		Json_v : JSON_Value := Get_Json_Value(Json_String => Json_String);
 		-- Extract "ticket" json array in J_Array variable
-		J_Array : JSON_Array := Json_v.Get(Field => "ticket");
+		J_Array : JSON_Array := Json_v.Get(Field => "ticket").Get(Field => "array");
 		-- Extract J_Array length
 		Array_Length : constant Natural := Length (J_Array);
 		-- Instantiate a new Ticket_Type with Array_Length elements
-		T : access Ticket_Type := new Ticket_Type(1 .. Array_Length);
+		T : access Ticket_Type := new Ticket_Type(Array_Length);
 
 	begin
 		-- For each element of the json array, create a new Ticket stage
-		for I in 1 .. T'Length loop
+		T.Next_Stage := Json_v.Get(Field => "ticket").Get(Field => "next_stage");
+		for I in 1 .. T.Stages'Length loop
 			declare
 				Json_Ticket : Json_Value := Get(Arr => J_Array, Index => I);
 			begin
-				T(I) := (
+				T.Stages(I) := (
 					Next_Station 	=> Json_Ticket.Get("next_station"),
 					Train_ID 		=> Json_Ticket.Get("train_id"),
 					Platform_Index	=> Json_Ticket.Get("platform_index")

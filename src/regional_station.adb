@@ -31,17 +31,17 @@ package body Regional_Station is
 
 	-- ------------------------ Definition of the inherited abstract methods ------------------------
 	procedure Enter(
-		This : Regional_Station_Type;
-		Descriptor : in out Train.Train_Descriptor;
-		Platform : Integer) is
+			This 				: in		Regional_Station_Type;
+			Descriptor 			: in	out Train.Train_Descriptor;
+			Platform 			: in 		Integer) is
 	begin
 		This.Platforms(Platform).Enter(Descriptor);
 	end Enter;
 
 	procedure Leave(
-		This : Regional_Station_Type;
-		Descriptor : in out Train.Train_Descriptor;
-		Platform : Integer) is
+			This 				: in		Regional_Station_Type;
+			Descriptor 			: in	out Train.Train_Descriptor;
+			Platform 			: in 		Integer) is
 	begin
 		This.Platforms(Platform).Leave(Descriptor);
 	end Leave;
@@ -50,19 +50,20 @@ package body Regional_Station is
 	-- # Procedure called by a Traveler to enqueue at a given Platform
 	-- # waiting for a specific Train
 	-- #
-	procedure WaitForTrain(
-			This 	: Regional_Station_Type;
-			Incoming_Traveler 	: in out Traveler.Traveler_Manager;
-			Platform 	: Integer) is
+	procedure Wait_For_Train(
+			This 				: in		Regional_Station_Type;
+			Outgoing_Traveler 	: in	out	Traveler.Traveler_Manager;
+			Train_ID 			: in		Positive;
+			Platform_Index		: in		Positive) is
 	begin
-		This.Platforms(Platform).AddOutgoingTraveler(Incoming_Traveler);
+		This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
 		This.Panel.SetStatus(
-			"User " & Traveler.Get_Name(Incoming_Traveler) & " entered platform " & Integer'Image(Platform));
-	end WaitForTrain;
+			"User " & Traveler.Get_Name(Outgoing_Traveler) & " entered platform " & Integer'Image(Platform_Index));
+	end Wait_For_Train;
 
 	function New_Regional_Station(
-		Platforms_Number : Positive;
-		Name : String) return Station_Ref
+			Platforms_Number 	: in		Positive;
+			Name 				: in 		String) return Station_Ref
 	is
 		Station : access Regional_Station_Type := new Regional_Station_Type(Platforms_Number);
 	begin
@@ -74,7 +75,7 @@ package body Regional_Station is
 		return Station;
 	end;
 
-	procedure Print(This : Regional_Station_Type) is
+	procedure Print(This : in Regional_Station_Type) is
 	begin
 		Put_Line ("Name : " & Unbounded_Strings.To_String(This.Name));
 		Put_Line ("Platform Number : " & Integer'Image(This.Platforms_Number));

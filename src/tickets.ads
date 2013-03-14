@@ -15,40 +15,18 @@
 --  the Free Software Foundation, either version 3 of the License, or			--
 --  (at your option) any later version.											--
 --																				--
---  Railway_Simulation is distributed in the hope that it will be useful,			--
+--  Railway_Simulation is distributed in the hope that it will be useful,		--
 --  but WITHOUT ANY WARRANTY; without even the implied warranty of				--
 --  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the				--
 --  GNU General Public License for more details.								--
 --																				--
 --  You should have received a copy of the GNU General Public License			--
---  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>.		--
+--  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
+with Ticket;
 
-with Generic_Operation_Interface;use Generic_Operation_Interface;
-with Traveler; use Traveler;
+package Tickets is
 
-package Move_Operation is
+	All_Tickets : Ticket.Ticket_Type := Get_Ticket("");
 
-	-- ############################ LEAVE OPERATION ##########################
-	-- #
-	-- # Operation used to make the Traveler wait for a train at a platform
-	-- #
-	type Leave_Operation_Type is new Operation_Interface with record
-		Manager : access Traveler_Manager := null;
-	end record;
-
-	overriding procedure Do_Operation(This : in Leave_Operation_Type);
-
-	-- ############################ ENTER OPERATION ##########################
-	-- #
-	-- # Operation used to make the Traveler wait at the next station to arrive
-	-- #
-	type Enter_Operation_Type is new Operation_Interface with record
-		Manager : access Traveler_Manager := null;
-	end record;
-
-	overriding procedure Do_Operation(This : in Enter_Operation_Type);
-
-	function New_Move_Operation(T_Manager : access Traveler_Manager) return Any_Operation;
-
-end Move_Operation;
+end Tickets;

@@ -1,5 +1,19 @@
 {
-	"ticket" : [
+	"ticket" : 
+		{
+			"next_stage " : 2,
+		},
+		"array" : [
+		{
+			"next_station" : 2,
+			"train_id"	: 4,
+			"platform_index" : 6
+		},
+		{
+			"next_station" : 2,
+			"train_id"	: 4,
+			"platform_index" : 6
+		},
 		{
 			"next_station" : 2,
 			"train_id"	: 4,

@@ -34,7 +34,9 @@ with Ada.Numerics.Discrete_Random;
 -- #
 package Train_Pool is
 
-	task type Train_Type;
+	task type Train_Type is
+    	entry Stop;
+    end Train_Type;
 
 	type Train_Vector is array (Positive range <>) of Train_Type;
 

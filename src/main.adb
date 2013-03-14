@@ -29,11 +29,13 @@ with Ada.Exceptions;
 with Ada.Text_IO;
 with Generic_Operation_Interface;
 
-with Environment;use Environment;
+with Environment;
 with Trains;
-with Route;use Route;
+with Routes;
 with Train_Pool;
 With Task_Pool;
+
+with Route;
 
 with Track;
 
@@ -126,6 +128,13 @@ begin
 --  				"name_server",
 --  				"add",
 --  				Params);
+--  			For I in 1 .. Routes.All_Routes'Length loop
+--  --  				for J in 1 .. Routes.All_Routes(I)'Length loop
+--  --  					Put_Line(Routes.All_Routes(I)(J))
+--  --  				end loop;
+--  				Route.Print(Routes.All_Routes(I).all);
+--  			end loop;
+
 
 			declare
 				-- Start the real simulation
@@ -133,10 +142,12 @@ begin
 				Pool			: Train_Pool.Train_Task_Pool(3);
 			begin
 				Environment.Init;
---  				Train_Pool.Associate(1);
---  				Train_Pool.Associate(2);
+				Train_Pool.Associate(1);
+				Train_Pool.Associate(2);
 	--  		Train_Pool.Associate(3);
 	--  		Train_Pool.Associate(4);
+
+
 
 				null;
 			end;

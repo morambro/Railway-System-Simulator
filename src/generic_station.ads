@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -40,29 +40,30 @@ package Generic_Station is
 
 		-- Station_Interface Methods
 		procedure Enter(
-			This : Station_Interface;
-			Descriptor : in out Train.Train_Descriptor;
-			Plattform : Integer)
+			This 				: in		Station_Interface;
+			Descriptor 			: in	out Train.Train_Descriptor;
+			Plattform 			: in		Integer)
 		is abstract;
 
 		procedure Leave(
-			This : Station_Interface;
-			Descriptor : in out Train.Train_Descriptor;
-			Plattform : Integer)
+			This 				: in 		Station_Interface;
+			Descriptor			: in	out	Train.Train_Descriptor;
+			Plattform 			: in 		Integer)
 		is abstract;
 
-		procedure WaitForTrain(
-			This : Station_Interface;
-			Incoming_Traveler : in out Traveler.Traveler_Manager;
-			Plattform : Integer)
+		procedure Wait_For_Train(
+			This 				: in 		Station_Interface;
+			Outgoing_Traveler 	: in	out	Traveler.Traveler_Manager;
+			Train_ID 			: in		Positive;
+			Platform_Index		: in		Positive)
 		is abstract;
 
 		function Get_Platform(
-			This : Station_Interface;
-			P : Natural) return access Platform.Platform_Type
+			This 				: in 		Station_Interface;
+			P 					: in		Natural) return access Platform.Platform_Type
 		is abstract;
 
-		procedure Print(This : Station_Interface) is abstract;
+		procedure Print(This : in Station_Interface) is abstract;
 
 
 	-- End Of the Interface

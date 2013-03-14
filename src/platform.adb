@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -41,18 +41,18 @@ package body Platform is
 		end Leave;
 
 
-		procedure AddIncomingTraveler(Traveler : in out Traveler_Manager) is
+		procedure Add_Incoming_Traveler(Traveler : in out Traveler_Manager) is
 		begin
 			Arrival_Queue.Enqueue(Traveler);
-		end AddIncomingTraveler;
+		end Add_Incoming_Traveler;
 
 
-		procedure AddOutgoingTraveler(Traveler : in out Traveler_Manager) is
+		procedure Add_Outgoing_Traveler(Traveler : in out Traveler_Manager) is
 		begin
 			Arrival_Queue.Enqueue(Traveler);
 			Put_Line("Travelers in queue = " & Count_Type'Image(Arrival_Queue.Current_Use));
 
-		end AddOutgoingTraveler;
+		end Add_Outgoing_Traveler;
 
 	end Platform_Type;
 
