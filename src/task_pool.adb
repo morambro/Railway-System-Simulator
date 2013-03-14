@@ -24,6 +24,8 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with Logger;
+with Ada.Containers;use Ada.Containers;
+with Ada.Text_IO;use Ada.Text_IO;
 
 package body Task_Pool is
 
@@ -38,14 +40,17 @@ package body Task_Pool is
 
 	begin
 		loop
-			Logger.Log(NAME,"Task waits for an operation to Execute",Logger.DEBUG);
+			Logger.Log(
+				NAME,
+				"Task waits for an operation to Execute " & Count_Type'Image(Operations_Queue.Current_Use),
+				Logger.DEBUG);
+
 			Operations_Queue.Dequeue(To_Execute);
 
 			Logger.Log(NAME,"Task retrieved an Operation",Logger.DEBUG);
 
 			-- Right Here, I'm shure to have an Operation to Execute
 			To_Execute.Do_Operation;
-
 		end loop;
     end Actor;
 
@@ -55,6 +60,10 @@ package body Task_Pool is
 	procedure Execute(Operation : Any_Operation) is
 	begin
 		Operations_Queue.Enqueue(Operation);
+		Logger.Log(
+				"Task_Pool",
+				"Operation Added; total number : " & Count_Type'Image(Operations_Queue.Current_Use),
+				Logger.DEBUG);
 	end Execute;
 
 end Task_Pool;

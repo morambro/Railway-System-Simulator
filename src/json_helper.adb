@@ -123,6 +123,13 @@ package body JSON_Helper is
             CB    => Handler'Access);
     end Print_Json;
 
+	procedure Print_Json_value(J : Json_Value) is
+	begin
+		Map_JSON_Object (
+			Val   => J,
+            CB    => Handler'Access);
+    end Print_Json_value;
+
     function "<" (a,b : SU.Unbounded_String) return Boolean is
     begin
 		return SU.To_String(a) < SU.To_String(b);

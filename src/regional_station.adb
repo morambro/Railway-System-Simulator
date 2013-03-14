@@ -30,13 +30,18 @@ with Logger;
 package body Regional_Station is
 
 	-- ------------------------ Definition of the inherited abstract methods ------------------------
+
+
 	procedure Enter(
 			This 				: in		Regional_Station_Type;
 			Descriptor 			: in	out Train.Train_Descriptor;
 			Platform 			: in 		Integer) is
 	begin
 		This.Platforms(Platform).Enter(Descriptor);
+
 	end Enter;
+
+
 
 	procedure Leave(
 			This 				: in		Regional_Station_Type;
@@ -52,14 +57,16 @@ package body Regional_Station is
 	-- #
 	procedure Wait_For_Train(
 			This 				: in		Regional_Station_Type;
-			Outgoing_Traveler 	: in	out	Traveler.Traveler_Manager;
+			Outgoing_Traveler 	: 			access Traveler.Traveler_Manager;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive) is
 	begin
 		This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
 		This.Panel.SetStatus(
-			"User " & Traveler.Get_Name(Outgoing_Traveler) & " entered platform " & Integer'Image(Platform_Index));
+			"Passenger " & Traveler.Get_Name(Outgoing_Traveler.all) & " entered platform " & Integer'Image(Platform_Index));
 	end Wait_For_Train;
+
+
 
 	function New_Regional_Station(
 			Platforms_Number 	: in		Positive;
@@ -74,6 +81,8 @@ package body Regional_Station is
 		Station.Panel := new Notice_Panel.Notice_Panel_Entity(1);
 		return Station;
 	end;
+
+
 
 	procedure Print(This : in Regional_Station_Type) is
 	begin

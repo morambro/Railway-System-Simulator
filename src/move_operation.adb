@@ -28,6 +28,7 @@ with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Strings.Unbounded;
 with Environment;
 with Logger;
+with Ada.Exceptions;
 
 package body Move_Operation is
 
@@ -41,37 +42,39 @@ package body Move_Operation is
 		Train_ID	 	: Natural 	:= This.Manager.Ticket.Stages(Next_Stage).Train_ID;
 		Platform_Index 	: Natural 	:= This.Manager.Ticket.Stages(Next_Stage).Platform_Index;
 	begin
-
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
-			Message => "Passenger " & To_String(This.Manager.Traveler.Name & "waits at platform station 1"),
+			Message => "Traveler " & To_String(This.Manager.Traveler.Name) &
+					   " will wait at platform" & Integer'Image(Platform_Index) & ", station " & Integer'Image(Next_Station),
 			L 		=> Logger.NOTICE);
 
 
 		Environment.Get_Regional_Stations(Next_Station).Wait_For_Train(
-			Outgoing_Traveler 	=> This.Manager.all,
+			Outgoing_Traveler 	=> This.Manager,
 			Train_ID 			=> Train_ID,
 			Platform_Index		=> Platform_Index);
 
 		-- Points to the next Operation to
 		This.Manager.Next_Operation := This.Manager.Next_Operation + 1;
 
-		Logger.Log(
-			Sender 	=> NAME_LEAVE,
-			Message => "Passenger " & To_String(This.Manager.Traveler.Name) & "Leaves the platform",
-			L 		=> Logger.NOTICE);
-
+	exception
+		when Error : others =>
+			Logger.Log(
+				NAME_LEAVE,
+				"Exception: " & Ada.Exceptions.Exception_Name(Error) & " , " & Ada.Exceptions.Exception_Message(Error),
+				Logger.ERROR
+			);
 	end Do_Operation;
 
 	procedure Do_Operation(This : in Enter_Operation_Type) is
 	begin
-		null;
+ 		null;
     end Do_Operation;
 
 
 	function New_Move_Operation(T_Manager : access Traveler_Manager) return Any_Operation is
 	begin
-		return new Leave_Operation_Type;
+		return new Leave_Operation_Type'(Manager => T_Manager);
 	end New_Move_Operation;
 
 end Move_Operation;

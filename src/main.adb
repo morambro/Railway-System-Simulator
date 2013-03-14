@@ -143,11 +143,18 @@ begin
 			begin
 				Environment.Init;
 				Train_Pool.Associate(1);
-				Train_Pool.Associate(2);
+--  				Train_Pool.Associate(2);
 	--  		Train_Pool.Associate(3);
 	--  		Train_Pool.Associate(4);
 
+				Task_Pool.Execute(Environment.Get_Operations(1)(1));
 
+				exception
+					when E : others =>
+					Logger.Log(
+		   				Sender => "",
+		   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+		   				L => Logger.ERROR);
 
 				null;
 			end;
@@ -160,6 +167,11 @@ begin
 	   				Message => "ERROR : " & Exception_Message(E) & " Impossibile connettersi al Name Server",
 	   				L => Logger.ERROR);
 	   			Client.Close;
+	   		when Error : others =>
+		    -- Handle all others
+		    	Ada.Text_IO.Put("Exception: ");
+		    	Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Name(Error));
+			    Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Message(Error));
 		end;
 	end;
 exception

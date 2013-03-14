@@ -23,21 +23,22 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
+with Ada.Text_IO;
 package body Ticket is
 
 	function Get_Ticket(Json_String : String) return access Ticket_Type is
 		-- Create JSON_Value object from the given json string
 		Json_v : JSON_Value := Get_Json_Value(Json_String => Json_String);
 		-- Extract "ticket" json array in J_Array variable
-		J_Array : JSON_Array := Json_v.Get(Field => "ticket").Get(Field => "array");
-		-- Extract J_Array length
+		J_Array : JSON_Array := Json_v.Get(Field => "ticket");
+--  		-- Extract J_Array length
 		Array_Length : constant Natural := Length (J_Array);
-		-- Instantiate a new Ticket_Type with Array_Length elements
+--  		-- Instantiate a new Ticket_Type with Array_Length elements
 		T : access Ticket_Type := new Ticket_Type(Array_Length);
 
 	begin
+		T.Next_Stage := Json_v.Get("next");
 		-- For each element of the json array, create a new Ticket stage
-		T.Next_Stage := Json_v.Get(Field => "ticket").Get(Field => "next_stage");
 		for I in 1 .. T.Stages'Length loop
 			declare
 				Json_Ticket : Json_Value := Get(Arr => J_Array, Index => I);

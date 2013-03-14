@@ -27,6 +27,7 @@ with Train;use Train;
 with Queue;
 with Traveler;use Traveler;
 
+
 package Platform is
 
 	-- Create a queue for Traveler type
@@ -44,9 +45,9 @@ package Platform is
 
 		procedure Leave(Descriptor : in out Train_Descriptor);
 
-		procedure Add_Incoming_Traveler(Traveler : in out Traveler_Manager);
+		procedure Add_Incoming_Traveler(Traveler : access Traveler_Manager);
 
-		procedure Add_Outgoing_Traveler(Traveler : in out Traveler_Manager);
+		procedure Add_Outgoing_Traveler(Traveler : access Traveler_Manager);
 
 	private
 		Free : Boolean := True;

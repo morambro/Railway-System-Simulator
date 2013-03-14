@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -24,17 +24,20 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>.		--
 ----------------------------------------------------------------------------------
 
-with Ada.Text_IO;use Ada.Text_IO;
+with Logger;
 
 package body Notice_Panel is
-	
-	protected body Notice_Panel_Entity is 
-		
-		procedure SetStatus(Status : String) is 
+
+	protected body Notice_Panel_Entity is
+
+		procedure SetStatus(Status : String) is
 		begin
-			Put_Line("Panel says : " & Status);
+			Logger.Log(
+				"Notice_Panel",
+				Status,
+				Logger.NOTICE);
 		end SetStatus;
-		
+
 	end Notice_Panel_Entity;
 
 end Notice_Panel;

@@ -45,6 +45,8 @@ package JSON_Helper is
 
 	procedure Print_Json(Text : String);
 
+	procedure Print_Json_value(J : Json_Value);
+
 --  	function "<" (a,b : SU.Unbounded_String) return Boolean;
 --  	function "=" (a,b : SU.Unbounded_String) return Boolean;
 --

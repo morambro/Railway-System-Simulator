@@ -53,7 +53,7 @@ package Generic_Station is
 
 		procedure Wait_For_Train(
 			This 				: in 		Station_Interface;
-			Outgoing_Traveler 	: in	out	Traveler.Traveler_Manager;
+			Outgoing_Traveler 	: 			access Traveler.Traveler_Manager;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive)
 		is abstract;
