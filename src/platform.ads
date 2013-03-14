@@ -28,29 +28,36 @@ with Queue;
 with Traveler;use Traveler;
 with Ada.Strings.Unbounded;
 
-
+-- #
+-- # Represents a Platform for a generic Station, both for Trains and Travelers.
+-- #
 package Platform is
 
-	-- Create a queue for Traveler type
+	-- # Create a queue for Traveler type
 	package Traveler_Queue_Package is new Queue(Element => Positive);
 
 	protected type Platform_Type(
-		ID			:	Integer;S : access Ada.Strings.Unbounded.Unbounded_String) is
+		ID	: Integer;
+		S 	: access Ada.Strings.Unbounded.Unbounded_String) is
 
-		entry Enter(T : Train_Descriptor);
+		entry Enter(
+			Train_D		: in 		Train_Descriptor);
 
-		procedure Leave(Descriptor : in out Train_Descriptor);
+		procedure Leave(
+			Descriptor 	: in 	out Train_Descriptor);
 
-		procedure Add_Incoming_Traveler(Traveler : Positive);
+		procedure Add_Incoming_Traveler(
+			Traveler 	: in 		Positive);
 
-		procedure Add_Outgoing_Traveler(Traveler : Positive);
+		procedure Add_Outgoing_Traveler(
+			Traveler 	: in 		Positive);
 
 	private
 		Free : Boolean := True;
-		-- Queue for Arriving Traveler
+		-- # Queue for Arriving Traveler
 		Arrival_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
 
-		-- Queue for Travelers waiting for the train
+		-- # Queue for Travelers waiting for the train to leave
 		Leaving_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
 	end Platform_Type;
 

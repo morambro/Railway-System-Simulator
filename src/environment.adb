@@ -66,8 +66,8 @@ package body Environment Is
 
 		for I in 1 .. Operations'Length loop
 			Operations(I) := new Traveler.Traveler_Operations(1..2);
-			Operations(I)(1) := new Move_Operation.Leave_Operation_Type'(Manager => I);
-			Operations(I)(2) := new Move_Operation.Enter_Operation_Type'(Manager => I);
+			Operations(I)(1) := new Move_Operation.Leave_Operation_Type'(Traveler_Manager_Index => I);
+			Operations(I)(2) := new Move_Operation.Enter_Operation_Type'(Traveler_Manager_Index => I);
 		end loop;
 
     end Init;

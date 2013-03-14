@@ -37,19 +37,19 @@ package body Move_Operation is
 	NAME_LEAVE : constant String := "Move_Operation.Leave_Operation_Type";
 
 	procedure Do_Operation(This : in Leave_Operation_Type) is
-		Next_Stage 		: Positive 	:= Environment.Get_Travelers(This.Manager).Ticket.Next_Stage;
-		Next_Station 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Next_Station;
-		Train_ID	 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Train_ID;
-		Platform_Index 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Platform_Index;
+		Next_Stage 		: Positive 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
+		Next_Station 	: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station;
+		Train_ID	 	: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
+		Platform_Index 	: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Platform_Index;
 	begin
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
-			Message => "LEAVE : Traveler " & To_String(Environment.Get_Travelers(This.Manager).Traveler.Name) &
+			Message => "LEAVE : Traveler " & To_String(Environment.Get_Travelers(This.Traveler_Manager_Index).Traveler.Name) &
 					   " will wait at platform" & Integer'Image(Platform_Index) & ", station " & Integer'Image(Next_Station),
 			L 		=> Logger.NOTICE);
 
 		Environment.Get_Regional_Stations(Next_Station).Wait_For_Train_To_Go(
-			Outgoing_Traveler 	=> This.Manager,
+			Outgoing_Traveler 	=> This.Traveler_Manager_Index,
 			Train_ID 			=> Train_ID,
 			Platform_Index		=> Platform_Index);
 
@@ -63,16 +63,18 @@ package body Move_Operation is
 	end Do_Operation;
 
 
-
+	-- #
+	-- # Operation which lets the Traveler (Manager)
+	-- #
 	procedure Do_Operation(This : in Enter_Operation_Type) is
-		Next_Stage 		: Positive 	:= Environment.Get_Travelers(This.Manager).Ticket.Next_Stage;
-		Next_Station 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Next_Station;
-		Train_ID	 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Train_ID;
-		Platform_Index 	: Natural 	:= Environment.Get_Travelers(This.Manager).Ticket.Stages(Next_Stage).Platform_Index;
+		Next_Stage 		: Positive 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
+		Next_Station 	: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station;
+		Train_ID	 	: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
+		Platform_Index 	: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Platform_Index;
 	begin
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
-			Message => "ARRIVE: Traveler " & To_String(Environment.Get_Travelers(This.Manager).Traveler.Name) &
+			Message => "ARRIVE: Traveler " & To_String(Environment.Get_Travelers(This.Traveler_Manager_Index).Traveler.Name) &
 					   " will wait at platform" & Integer'Image(Platform_Index) & ", station " & Integer'Image(Next_Station),
 			L 		=> Logger.NOTICE);
 
@@ -81,7 +83,7 @@ package body Move_Operation is
 		Environment.Get_Regional_Stations(Next_Station).Print;
 
 		Environment.Get_Regional_Stations(Next_Station).Wait_For_Train_To_Arrive(
-			Incoming_Traveler 	=> This.Manager,
+			Incoming_Traveler 	=> This.Traveler_Manager_Index,
 			Train_ID 			=> Train_ID,
 			Platform_Index		=> Platform_Index);
 
@@ -93,13 +95,6 @@ package body Move_Operation is
 				Logger.ERROR
 			);
     end Do_Operation;
-
-
-
-	function New_Move_Operation(T_Manager : Positive) return Any_Operation is
-	begin
-		return new Leave_Operation_Type'(Manager => T_Manager);
-	end New_Move_Operation;
 
 end Move_Operation;
 

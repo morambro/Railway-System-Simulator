@@ -41,7 +41,7 @@ package body Platform is
 		-- # Entry At which trains are re-queued to enter the station. Once a train enters the Platform,
 		-- # it performs alighting and boarding of the Travelers at the platform.
 		-- #
-		entry Enter(T : Train_Descriptor) when Free = True is
+		entry Enter(Train_D : Train_Descriptor) when Free = True is
 			Arrival_Number 	: Count_Type := Arrival_Queue.Current_Use;
 			Leaving_Number 	: Count_Type := Leaving_Queue.Current_Use;
 			T_Manager		: Positive;
@@ -53,12 +53,12 @@ package body Platform is
 			-- #
 			Logger.Log(
 					Sender  => NAME,
-					Message => "Train " & Integer'Image(T.Id) & " Performs Alighting of travelers",
+					Message => "Train " & Integer'Image(Train_D.Id) & " Performs Alighting of travelers",
 					L       => Logger.NOTICE);
 			for I in 1..Arrival_Number loop
 				Arrival_Queue.Dequeue(T_Manager);
 				Next_Stage := Environment.Get_Travelers(T_Manager).Ticket.Next_Stage;
-				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= T.Id then
+				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= Train_D.Id then
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Arrival_Queue.Enqueue(T_Manager);
 				else
@@ -108,7 +108,7 @@ package body Platform is
 			-- #
 			Logger.Log(
 					Sender  => NAME,
-					Message => "Train " & Integer'Image(T.Id) & " Performs Boarding of travelers",
+					Message => "Train " & Integer'Image(Train_D.Id) & " Performs Boarding of travelers",
 					L       => Logger.NOTICE);
 			for I in 1..Leaving_Number loop
 
@@ -117,7 +117,7 @@ package body Platform is
 				-- # Retrieve the Next_Stage Index
 				Next_Stage := Environment.Get_Travelers(T_Manager).Ticket.Next_Stage;
 
-				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= T.Id then
+				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= Train_D.Id then
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Leaving_Queue.Enqueue(T_Manager);
 				else
