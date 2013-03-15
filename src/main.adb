@@ -139,7 +139,7 @@ begin
 			declare
 				-- Start the real simulation
 				Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
-				Pool			: Train_Pool.Train_Task_Pool(3);
+				Pool			: Train_Pool.Train_Task_Pool(3,5);
 			begin
 				Environment.Init;
 				Train_Pool.Associate(1);

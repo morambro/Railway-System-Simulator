@@ -103,6 +103,15 @@ package body Platform is
 				end if;
 			end loop;
 
+		end Enter;
+
+		procedure Leave(Train_D : in out Train_Descriptor) is
+			Leaving_Number 	: Count_Type := Leaving_Queue.Current_Use;
+			T_Manager		: Positive;
+			Next_Stage 		: Positive;
+		begin
+			Free := True;
+
 			-- #
 			-- # Boarding of Travelers
 			-- #
@@ -155,12 +164,6 @@ package body Platform is
 
 				end if;
 			end loop;
-
-		end Enter;
-
-		procedure Leave(Descriptor : in out Train_Descriptor) is
-		begin
-			Free := True;
 		end Leave;
 
 

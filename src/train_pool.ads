@@ -27,6 +27,7 @@
 with Queue;
 with Train;use Train;
 with Ada.Numerics.Discrete_Random;
+with System;use System;
 
 -- #
 -- # This Package contains a definition of a Train task pool; Each Task is responsible
@@ -34,13 +35,23 @@ with Ada.Numerics.Discrete_Random;
 -- #
 package Train_Pool is
 
-	task type Train_Type is
+	task type Low_Priority_Train_Type is
+		pragma Priority(Priority'First + 1);
     	entry Stop;
-    end Train_Type;
+    end Low_Priority_Train_Type;
 
-	type Train_Vector is array (Positive range <>) of Train_Type;
+	task type High_Priority_Train_Type is
+		pragma Priority(Priority'Last - 1);
+    	entry Stop;
+    end High_Priority_Train_Type;
 
-	type Train_Task_Pool(Pool_Size : Positive) is limited private;
+	type Low_Priority_Vector is array (Positive range <>) of Low_Priority_Train_Type;
+
+	type High_Priority_Vector is array (Positive range <>) of Low_Priority_Train_Type;
+
+	type Train_Task_Pool(
+		Low_Priority_Pool_Size : Positive;
+		High_Priority_Pool_Size : Positive) is limited private;
 
 	-- #
 	-- # Procedure used to add a new descriptor to the queue
@@ -59,7 +70,8 @@ private
 	-- #
 	-- # Queue used to manage Traveler operations
 	-- #
-	Trains_Queue : Trains_Queue_Package.Unbounded_Queue.Queue;
+	Low_Priority_Trains_Queue 	: Trains_Queue_Package.Unbounded_Queue.Queue;
+	High_Priority_Trains_Queue 	: Trains_Queue_Package.Unbounded_Queue.Queue;
 
 	-- Random initializations
 	type Rand_Range is range 1..3;
@@ -68,11 +80,16 @@ private
    	Num : Rand_Range;
 
 	-- #
-	-- # Private Definition of Train_Task_Pool type as a record with one
-	-- # field of type Train_Vector
+	-- # Private Definition of Train_Task_Pool type as a record with two pools of
+	-- # tasks, one low priority queue, and one at higher priority
 	-- #
-	type Train_Task_Pool(Pool_Size : Positive) is record
-		Tasks : Train_Vector(1 .. Pool_Size);
+	type Train_Task_Pool(
+		Low_Priority_Pool_Size : Positive;
+		High_Priority_Pool_Size : Positive) is record
+
+		Low_Tasks : Low_Priority_Vector(1 .. Low_Priority_Pool_Size);
+		High_Tasks : High_Priority_Vector(1 .. High_Priority_Pool_Size);
+
 	end record;
 
 end Train_Pool;

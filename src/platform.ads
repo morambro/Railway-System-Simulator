@@ -44,7 +44,7 @@ package Platform is
 			Train_D		: in 		Train_Descriptor);
 
 		procedure Leave(
-			Descriptor 	: in 	out Train_Descriptor);
+			Train_D 	: in 	out Train_Descriptor);
 
 		procedure Add_Incoming_Traveler(
 			Traveler 	: in 		Positive);

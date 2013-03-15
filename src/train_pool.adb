@@ -40,7 +40,7 @@ package body Train_Pool is
 	-- #
 	-- # Train task implementation
 	-- #
-	task body Train_Type is
+	task body Low_Priority_Train_Type is
 
 		NAME : constant String := "Train_Pool.Train_Type";
 
@@ -60,7 +60,7 @@ package body Train_Pool is
 
 			Logger.Log(NAME,"Train waits for a Descriptor",Logger.DEBUG);
 
-			Trains_Queue.Dequeue(Current_Descriptor);
+			Low_Priority_Trains_Queue.Dequeue(Current_Descriptor);
 
 			Logger.Log(NAME,"Train task obtained a Descriptor",Logger.DEBUG);
 
@@ -156,7 +156,7 @@ package body Train_Pool is
 
 				-- # Re-enqueue the descriptor only if it has more stages to travel
 				if(Trains.Trains(Current_Descriptor).Next_Stage <= Routes.All_Routes(1)'Length) then
-					Trains_Queue.Enqueue(Current_Descriptor);
+					Low_Priority_Trains_Queue.Enqueue(Current_Descriptor);
 				else
 					Logger.Log(NAME,
 				      	"Train" & Integer'Image(Trains.Trains(Current_Descriptor).Id) &
@@ -177,11 +177,17 @@ package body Train_Pool is
 					Logger.ERROR);
 		end;
 		end loop MAIN_LOOP;
-	end Train_Type;
+	end Low_Priority_Train_Type;
+
+
+	task body High_Priority_Train_Type is
+	begin
+		null;
+    end High_Priority_Train_Type;
 
 	procedure Associate(Train : Positive) is
 	begin
-		Trains_Queue.Enqueue(Train);
+		Low_Priority_Trains_Queue.Enqueue(Train);
 	end Associate;
 
 end Train_Pool;
