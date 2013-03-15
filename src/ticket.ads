@@ -34,12 +34,16 @@ with JSON_Helper;use JSON_Helper;
 package Ticket is
 
 	type Ticket_Stage is record
+		-- # The index of the start station
+		Start_Station				: Natural := 0;
 		-- # Index of the next station to reach
-		Next_Station 	: Natural := 0;
+		Next_Station 				: Natural := 0;
 		-- # The ID of the train to wait for in order to reach the destination
-		Train_ID 	 	: Natural := 0;
+		Train_ID 	 				: Natural := 0;
 		-- # The Platform index at which the traveler will wait
-		Platform_Index	: Natural := 0;
+		Start_Platform_Index		: Natural := 0;
+		-- # Destination platform index
+		Destination_Platform_Index	: Natural := 0;
     end record;
 
     type Ticket_Stages is array (Positive range <>) of Ticket_Stage;

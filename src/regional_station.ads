@@ -58,14 +58,14 @@ package Regional_Station is
 	with private;
 
 		overriding procedure Enter(
-			This : Regional_Station_Type;
-			Descriptor : in out Train.Train_Descriptor;
-			Platform: Integer);
+			This 				: in		Regional_Station_Type;
+			Descriptor			: in		Positive;
+			Platform			: in		Positive);
 
 		overriding procedure Leave(
-			This : Regional_Station_Type;
-			Descriptor : in out Train.Train_Descriptor;
-			Platform: Integer);
+			This 				: in 		Regional_Station_Type;
+			Descriptor			: in		Positive;
+			Platform			: in		Positive);
 
 		overriding procedure Wait_For_Train_To_Go(
 			This 				: in		Regional_Station_Type;

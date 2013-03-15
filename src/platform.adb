@@ -30,6 +30,7 @@ with Environment;
 with Ada.Text_IO;use Ada.Text_IO;
 with Task_Pool;
 with Ada.Exceptions;
+with Trains;
 
 package body Platform is
 
@@ -41,7 +42,7 @@ package body Platform is
 		-- # Entry At which trains are re-queued to enter the station. Once a train enters the Platform,
 		-- # it performs alighting and boarding of the Travelers at the platform.
 		-- #
-		entry Enter(Train_D : Train_Descriptor) when Free = True is
+		entry Enter(Train_D : in Positive) when Free is
 			Arrival_Number 	: Count_Type := Arrival_Queue.Current_Use;
 			Leaving_Number 	: Count_Type := Leaving_Queue.Current_Use;
 			T_Manager		: Positive;
@@ -53,12 +54,12 @@ package body Platform is
 			-- #
 			Logger.Log(
 					Sender  => NAME,
-					Message => "Train " & Integer'Image(Train_D.Id) & " Performs Alighting of travelers",
+					Message => "Train " & Integer'Image(Trains.Trains(Train_D).Id) & " Performs Alighting of travelers",
 					L       => Logger.NOTICE);
 			for I in 1..Arrival_Number loop
 				Arrival_Queue.Dequeue(T_Manager);
 				Next_Stage := Environment.Get_Travelers(T_Manager).Ticket.Next_Stage;
-				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= Train_D.Id then
+				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_D).Id then
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Arrival_Queue.Enqueue(T_Manager);
 				else
@@ -81,10 +82,12 @@ package body Platform is
 									   Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Next_Station),
 							L       => Logger.NOTICE);
 					else
+						-- # Go to the next stage (there will be at least another one for sure!)
+						Environment.Get_Travelers(T_Manager).Ticket.Next_Stage :=
+							Environment.Get_Travelers(T_Manager).Ticket.Next_Stage +1;
 						declare
 							Next_Operation : Positive := 1;
 						begin
-
 							-- # Execute the operation number 2 (Traveler waits to leave the train).
 							Task_Pool.Execute(Environment.Get_Operations(T_Manager)(Next_Operation));
 							-- # Set the new Operation Index
@@ -105,7 +108,7 @@ package body Platform is
 
 		end Enter;
 
-		procedure Leave(Train_D : in out Train_Descriptor) is
+		procedure Leave(Train_D : in Positive) is
 			Leaving_Number 	: Count_Type := Leaving_Queue.Current_Use;
 			T_Manager		: Positive;
 			Next_Stage 		: Positive;
@@ -117,7 +120,7 @@ package body Platform is
 			-- #
 			Logger.Log(
 					Sender  => NAME,
-					Message => "Train " & Integer'Image(Train_D.Id) & " Performs Boarding of travelers",
+					Message => "Train " & Integer'Image(Trains.Trains(Train_D).Id) & " Performs Boarding of travelers",
 					L       => Logger.NOTICE);
 			for I in 1..Leaving_Number loop
 
@@ -126,7 +129,7 @@ package body Platform is
 				-- # Retrieve the Next_Stage Index
 				Next_Stage := Environment.Get_Travelers(T_Manager).Ticket.Next_Stage;
 
-				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= Train_D.Id then
+				if Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_D).Id then
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Leaving_Queue.Enqueue(T_Manager);
 				else
@@ -144,9 +147,6 @@ package body Platform is
 						-- # The next Traveler operation
 						Next_Operation : Positive := 2;
 					begin
-						-- # Go to the next stage (there will be at least another one for sure!)
-						Environment.Get_Travelers(T_Manager).Ticket.Next_Stage :=
-							Environment.Get_Travelers(T_Manager).Ticket.Next_Stage +1;
 						-- # Execute the operation number 2 (Traveler waits to leave the train).
 						Task_Pool.Execute(Environment.Get_Operations(T_Manager)(Next_Operation));
 						-- # Set the new Operation Index

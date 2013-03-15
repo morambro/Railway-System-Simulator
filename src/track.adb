@@ -28,6 +28,7 @@ with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Characters.Latin_1;use Ada.Characters.Latin_1;
 with Logger;
 with Environment;
+with Trains;
 
 package body Track is
 
@@ -43,40 +44,40 @@ package body Track is
 		-- # to another entry to wait until the track becomes free.
 		-- #
 		entry Enter(
-			To_Add : in out Train_Descriptor;
-			Max_Speed : out Positive;
-			Leg_Length : out Positive) when True is
+			To_Add 		:	in 		Positive;
+			Max_Speed 	: 	 	out Positive;
+			Leg_Length 	:		out	Positive) when True is
 		begin
 
 
-			if (To_Add.Current_Station /= First_End) and (To_Add.Current_Station /= Second_End) then
-
+			if 	(Trains.Trains(To_Add).Current_Station /= First_End) and
+				(Trains.Trains(To_Add).Current_Station /= Second_End)
+			then
 				raise Bad_Track_Access_Request_Exception with "Invalid Train's origin station";
-
 			end if;
 
 			Logger.Log(
 				NAME,
-				"Train " & Integer'Image(To_Add.ID) &
-				" current origin : Station " & Integer'Image(To_Add.Current_Station),
+				"Train " & Integer'Image(Trains.Trains(To_Add).ID) &
+				" current origin : Station " & Integer'Image(Trains.Trains(To_Add).Current_Station),
 				Logger.DEBUG);
 
 			-- If the track is Free, set it to not Free, and set also the current "direction"
 			if Free then
 				Logger.Log(
 					NAME,
-					"Train " & Integer'Image(To_Add.ID) & " Enters, Track was free",
+					"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " Enters, Track was free",
 					Logger.DEBUG);
-				Current_Direction := To_Add.Current_Station;
+				Current_Direction := Trains.Trains(To_Add).Current_Station;
 				Free := False;
 			else
 				-- If the Track is not Free ad the current train direction is not the same as the direction
 				-- of the already running train(s), re-queue to Wait entry.
-				if ( To_Add.Current_Station /= Current_Direction) then
+				if ( Trains.Trains(To_Add).Current_Station /= Current_Direction) then
 					-- In case The track is not null, move the task to a waiting queue
 					Logger.Log(
 						NAME,
-						"Train " & Integer'Image(To_Add.ID) & " will be re-queued, wrong direction",
+						"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " will be re-queued, wrong direction",
 						Logger.DEBUG);
 					requeue Wait;
 				end if;
@@ -86,10 +87,10 @@ package body Track is
 			-- parameters settings.
 			-- Add the train to the train queue
 			Trains_Number := Trains_Number + 1;
-			Running_Trains(Trains_Number) := To_Add.ID;
+			Running_Trains(Trains_Number) := Trains.Trains(To_Add).ID;
 
-			if To_Add.Max_Speed < Current_Max_Speed then
-				Current_Max_Speed := To_Add.Max_Speed;
+			if Trains.Trains(To_Add).Max_Speed < Current_Max_Speed then
+				Current_Max_Speed := Trains.Trains(To_Add).Max_Speed;
 			end if;
 
 			-- Set parameters
@@ -102,7 +103,7 @@ package body Track is
 
 			Logger.Log(
 				NAME,
-				"Train " & Integer'Image(To_Add.ID) & " added to running trains queue",
+				"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " added to running trains queue",
 				Logger.DEBUG);
 
 		end Enter;
@@ -114,21 +115,24 @@ package body Track is
 		-- # And thanks to the access protocol, here there will be only trains queued coming from the
 		-- # same station.
 		-- #
-		entry Wait(To_Add : in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Positive)
+		entry Wait(
+			To_Add 		: 	in 	 	Positive;
+			Max_Speed 	: 		out Positive;
+			Leg_Length 	: 		out Positive)
 			when Can_Retry_Enter is
 		begin
 
 			if Free then
 				Logger.Log(
 					NAME,
-					"Train " & Integer'Image(To_Add.ID) & " Enters, Track was free",
+					"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " Enters, Track was free",
 					Logger.DEBUG);
 				Free := False;
-				Current_Direction := To_Add.Current_Station;
+				Current_Direction := Trains.Trains(To_Add).Current_Station;
 			end if;
 			-- Add the train to the train queue
 			Trains_Number := Trains_Number + 1;
-			Running_Trains(Trains_Number) := To_Add.ID;
+			Running_Trains(Trains_Number) := Trains.Trains(To_Add).ID;
 
 			-- Set parameters
 			if Track_Max_Speed > Current_Max_Speed then
@@ -141,7 +145,7 @@ package body Track is
 
 			Logger.Log(
 				NAME,
-				"Train " & Integer'Image(To_Add.ID) & " added to running trains queue",
+				"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " added to running trains queue",
 				Logger.DEBUG);
 
 		end Wait;
@@ -150,9 +154,9 @@ package body Track is
 		-- #
 		-- # Entry called by the Train to leave the track and access the Next Station.
 		-- #
-		entry Leave(T : Train_Descriptor) when not Free is
+		entry Leave(Train_D : in Positive) when not Free is
 		begin
-			if(Running_Trains(1) = T.ID) then
+			if(Running_Trains(1) = Trains.Trains(Train_D).ID) then
 
 				-- Shift all the other trains by one
 				for I in Integer range 2 .. Max_Trains loop
@@ -167,7 +171,7 @@ package body Track is
 
 				Logger.Log(
 					NAME,
-					"Train " & Integer'Image(T.ID) & " Leaves!",
+					"Train " & Integer'Image(Trains.Trains(Train_D).ID) & " Leaves!",
 					Logger.DEBUG);
 
 				-- Decrease the number of running trains by one
@@ -194,7 +198,7 @@ package body Track is
 			else
 				Logger.Log(
 					NAME,
-					"Train " & Integer'Image(T.ID) & " Can not leave because it's not the first",
+					"Train " & Integer'Image(Trains.Trains(Train_D).ID) & " Can not leave because it's not the first",
 					Logger.DEBUG);
 				requeue Retry;
 			end if;
@@ -204,7 +208,7 @@ package body Track is
 		-- #
 		-- # Entry used to perform ordered exit from the Track
 		-- #
-		entry Retry(T : Train_Descriptor) when Can_Retry_Leave is
+		entry Retry(Train_D : in Positive) when Can_Retry_Leave is
 		begin
 
 			Retry_Num := Retry_Num - 1;
@@ -212,7 +216,7 @@ package body Track is
 				Can_Retry_Leave := False;
 			end if;
 
-			if(Running_Trains(1) = T.ID) then
+			if(Running_Trains(1) = Trains.Trains(Train_D).ID) then
 				for I in Integer range 2 .. 10 loop
 					Running_Trains(I-1) := Running_Trains(I);
 				end loop;
@@ -223,7 +227,7 @@ package body Track is
 
 				Logger.Log(
 					NAME,
-					"Train " & Integer'Image(T.ID) & " Leaves!",
+					"Train " & Integer'Image(Trains.Trains(Train_D).ID) & " Leaves!",
 					Logger.DEBUG);
 
 				Trains_Number := Trains_Number - 1;
@@ -248,7 +252,7 @@ package body Track is
 			else
 				Logger.Log(
 					NAME,
-					"Train " & Integer'Image(T.ID) & " Can not leave because is not the first",
+					"Train " & Integer'Image(Trains.Trains(Train_D).ID) & " Can not leave because is not the first",
 					Logger.DEBUG);
 				requeue Retry;
 			end if;

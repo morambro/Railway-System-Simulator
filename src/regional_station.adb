@@ -34,10 +34,11 @@ package body Regional_Station is
 
 
 	procedure Enter(
-			This 				: in		Regional_Station_Type;
-			Descriptor 			: in	out Train.Train_Descriptor;
-			Platform 			: in 		Integer) is
+			This 		: in		Regional_Station_Type;
+			Descriptor	: in		Positive;
+			Platform	: in		Positive) is
 	begin
+		Put_Line("ENTER CALLED");
 		This.Platforms(Platform).Enter(Descriptor);
 
 	end Enter;
@@ -45,9 +46,9 @@ package body Regional_Station is
 
 
 	procedure Leave(
-			This 				: in		Regional_Station_Type;
-			Descriptor 			: in	out Train.Train_Descriptor;
-			Platform 			: in 		Integer) is
+			This 		: in 		Regional_Station_Type;
+			Descriptor	: in		Positive;
+			Platform	: in		Positive) is
 	begin
 		This.Platforms(Platform).Leave(Descriptor);
 	end Leave;

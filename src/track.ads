@@ -48,14 +48,17 @@ package Track is
 	is
 
 		-- #
-		-- # Trains ask to Enter the track; the access is in mutual-exclusion
+		-- # Trains ask to Enter the track
 		-- #
-		entry Leave(T : in Train_Descriptor);
+		entry Leave(Train_D : in Positive);
 
 		-- #
-		-- # Trains ask to Enter the track; the access is in mutual-exclusion
+		-- # Trains ask to Enter the track
 		-- #
-		entry Enter(To_Add :  in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Positive);
+		entry Enter(
+			To_Add 		:	in 		Positive;
+			Max_Speed 	: 	 	out Positive;
+			Leg_Length 	:		out	Positive);
 
 	private
 
@@ -63,12 +66,15 @@ package Track is
 		-- # Private Entry used to enqueue trains whose direction are not the same
 		-- # as the direction of already running trains.
 		-- #
-		entry Wait(To_Add :  in out Train_Descriptor; Max_Speed : out Positive;Leg_Length : out Positive);
+		entry Wait(
+			To_Add 		:	in 		Positive;
+			Max_Speed 	: 	 	out Positive;
+			Leg_Length 	:		out	Positive);
 
 		-- #
 		-- # Private Entry used to enqueue trains, to guarantee an exit order.
 		-- #
-		entry Retry(T : Train_Descriptor);
+		entry Retry(Train_D : in Positive);
 
 		-- # Tells weather a train is already running or not
 		Free : Boolean := True;

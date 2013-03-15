@@ -41,10 +41,10 @@ package Platform is
 		S 	: access Ada.Strings.Unbounded.Unbounded_String) is
 
 		entry Enter(
-			Train_D		: in 		Train_Descriptor);
+			Train_D		: in 		Positive);
 
 		procedure Leave(
-			Train_D 	: in 	out Train_Descriptor);
+			Train_D 	: in 		Positive);
 
 		procedure Add_Incoming_Traveler(
 			Traveler 	: in 		Positive);

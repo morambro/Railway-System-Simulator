@@ -35,11 +35,13 @@ with System;use System;
 -- #
 package Train_Pool is
 
+	-- # Low priority Task, which will be used by REGIONAL trains
 	task type Low_Priority_Train_Type is
 		pragma Priority(Priority'First + 1);
     	entry Stop;
     end Low_Priority_Train_Type;
 
+	-- # High priority Task, which will be used by FB trains
 	task type High_Priority_Train_Type is
 		pragma Priority(Priority'Last - 1);
     	entry Stop;
@@ -54,10 +56,10 @@ package Train_Pool is
 		High_Priority_Pool_Size : Positive) is limited private;
 
 	-- #
-	-- # Procedure used to add a new descriptor to the queue
+	-- # Procedure used to put the given train descriptor index in the right queue,
+	-- # to let the train move.
 	-- #
---  	procedure Associate(Train : Train_Descriptor);
-	procedure Associate(Train : Positive);
+	procedure Associate(Train_D : Positive);
 
 private
 

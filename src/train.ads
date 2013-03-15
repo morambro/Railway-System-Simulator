@@ -29,6 +29,8 @@ with JSON_Helper;use JSON_Helper;
 
 package Train is
 
+	type Train_Type is (FB,REGIONAL);
+
 	type Train_Descriptor is
 	record
 	    Id 			    : Positive;
@@ -40,15 +42,31 @@ package Train is
 	    Next_Stage		: Positive;
 	    -- Index of the Route
 	    Route_Index		: Positive;
+	    -- # Number of sits
+	    Sists_Number 	: Natural;
+	    -- # Number of Travelers Currently in the Train
+	    Occupied_Sits 	: Natural := 0;
+		-- # The train type
+		T_Type			: Train_Type;
+
 	End Record;
 
 	type Trains_Array is array (Positive range <>) of Train_Descriptor;
 
 	----------------- Procedures to convert Json to Train_Descriptor ----------------------------
 
-	function Get_Trains_Array(Json_File_Name : String) return Trains_Array;
+	function Get_Trains_Array (
+		Json_File_Name 	: in String) return Trains_Array;
 
-	function Get_Train_Descriptor(Json_Train : Json_Value) return Train_Descriptor;
+	procedure Print(T : access Train_Descriptor);
+
+private
+
+	function Get_Train_Descriptor (
+		Json_Train 		: in Json_Value) return Train_Descriptor;
+
+	function String_To_Train_Type (
+		T_Type			: in String) return Train_Type;
 
 
 end Train;

@@ -33,6 +33,7 @@ with Routes;
 with Helper;
 with Ada.Exceptions;  use Ada.Exceptions;
 with Ada.Text_IO;
+with Train;
 
 package body Train_Pool is
 
@@ -44,7 +45,7 @@ package body Train_Pool is
 
 		NAME : constant String := "Train_Pool.Train_Type";
 
-		Current_Descriptor 	: Positive;
+		Current_Descriptor_Index 	: Positive;
 
 	begin
 		MAIN_LOOP:
@@ -60,15 +61,15 @@ package body Train_Pool is
 
 			Logger.Log(NAME,"Train waits for a Descriptor",Logger.DEBUG);
 
-			Low_Priority_Trains_Queue.Dequeue(Current_Descriptor);
+			Low_Priority_Trains_Queue.Dequeue(Current_Descriptor_Index);
 
 			Logger.Log(NAME,"Train task obtained a Descriptor",Logger.DEBUG);
 
 			declare
-				Max_Speed 			: Integer  := Trains.Trains(Current_Descriptor).Speed;
+				Max_Speed 			: Integer  := Trains.Trains(Current_Descriptor_Index).Speed;
 					-- # Retrieve Next station
-				Route_Index 		: Positive := Trains.Trains(Current_Descriptor).Route_Index;
-				Next_Stage 			: Positive := Trains.Trains(Current_Descriptor).Next_Stage;
+				Route_Index 		: Positive := Trains.Trains(Current_Descriptor_Index).Route_Index;
+				Next_Stage 			: Positive := Trains.Trains(Current_Descriptor_Index).Next_Stage;
 				-- # Retrieve next Track to travel
 				Next_Station 	    : Positive := Route.Get_Next_Station(Routes.All_Routes(Route_Index)(Next_Stage));
 				-- # Retrieve next platform number
@@ -80,86 +81,88 @@ package body Train_Pool is
 
 			-- # ######################## NEXT TRACK ACCESS ############################
 			begin
-				--Ada.Text_IO.Put_Line("" & Integer'Image(Trains.Trains(Current_Descriptor).Next_Stage));
+				--Ada.Text_IO.Put_Line("" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Next_Stage));
 
 	--  			-- # TODO : REMOVE DEBUG CODE!!!
-	--  			if ( Trains.Trains(Current_Descriptor).Id = 3333 ) then
-	--  				Trains.Trains(Current_Descriptor).Current_Station := 3;
+	--  			if ( Trains.Trains(Current_Descriptor_Index).Id = 3333 ) then
+	--  				Trains.Trains(Current_Descriptor_Index).Current_Station := 3;
 	--  			end if;
 
-				Tracks.Tracks(Next_Track).Enter(Trains.Trains(Current_Descriptor),Max_Speed,Leg_Length);
+				Tracks.Tracks(Next_Track).Enter(Current_Descriptor_Index,Max_Speed,Leg_Length);
 
 				Logger.Log(
 					NAME,
-					"Train" & Integer'Image(Trains.Trains(Current_Descriptor).ID) &
+					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
 					" entered Track Number " & Integer'Image(Next_Track),
 					Logger.NOTICE
 				);
 
 				-- # Calculate Time to Travel the current track
-				if(Trains.Trains(Current_Descriptor).Max_Speed < Max_Speed) then
-					Trains.Trains(Current_Descriptor).Speed := Trains.Trains(Current_Descriptor).Max_Speed;
+				if(Trains.Trains(Current_Descriptor_Index).Max_Speed < Max_Speed) then
+					Trains.Trains(Current_Descriptor_Index).Speed := Trains.Trains(Current_Descriptor_Index).Max_Speed;
 				else
-					Trains.Trains(Current_Descriptor).Speed := Max_Speed;
+					Trains.Trains(Current_Descriptor_Index).Speed := Max_Speed;
 				end if;
 
-				Time_In_Track := 3.0;--Float(Leg_Length) / (Float(Current_Descriptor.Speed)*0.277777778);
+				Time_In_Track := 3.0;--Float(Leg_Length) / (Float(Current_Descriptor_Index.Speed)*0.277777778);
 
 				Logger.Log(NAME,
-					"Train" & Integer'Image(Trains.Trains(Current_Descriptor).ID) & " running at speed "
-					& Integer'Image(Trains.Trains(Current_Descriptor).Speed) & " km/h",
+					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) & " running at speed "
+					& Integer'Image(Trains.Trains(Current_Descriptor_Index).Speed) & " km/h",
 					Logger.NOTICE);
 
 				Logger.Log(NAME,
-					"Train" & Integer'Image(Trains.Trains(Current_Descriptor).ID) &
+					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
 					" will run for " & Helper.Get_String(Time_In_Track,10) & " seconds",
 					Logger.NOTICE);
 
 				delay Duration (Time_In_Track);
 
-				Tracks.Tracks(Next_Track).Leave(Trains.Trains(Current_Descriptor));
+				Tracks.Tracks(Next_Track).Leave(Current_Descriptor_Index);
 
 
 				-- # ######################## NEXT STATION ACCESS ############################
 
 		    	-- # Train enters Next Station
-				--Environment.Get_Regional_Stations(Next_Station).Enter(Current_Descriptor,Next_Platform);
+				--Environment.Get_Regional_Stations(Next_Station).Enter(Current_Descriptor_Index,Next_Platform);
 
 				Rand_Int.Reset(seed);
 
 				Num := Rand_Int.Random(seed);
 
 		    	Logger.Log(NAME,
-		      		"Train" & Integer'Image(Trains.Trains(Current_Descriptor).Id) &
+		      		"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
 		      		" leved Track Number" & Integer'Image(Next_Track) &
 			  		" entered Platform " & Integer'Image(Next_Platform) &
 		      		" at Station " & Integer'Image(Next_Station), Logger.NOTICE);
 
 				-- # Update Current Station!!
-				Trains.Trains(Current_Descriptor).Current_Station := Next_Station;
+				Trains.Trains(Current_Descriptor_Index).Current_Station := Next_Station;
 
 				delay Duration(Num);
 
 				-- # Train Leaves the station
-		    	Environment.Get_Regional_Stations(Next_Station).Leave(Trains.Trains(Current_Descriptor),Next_Platform);
+		    	Environment.Get_Regional_Stations(Next_Station).Leave(Current_Descriptor_Index,Next_Platform);
 
 
-		   		Logger.Log(NAME,
-			      	"Train" & Integer'Image(Trains.Trains(Current_Descriptor).Id) &
+		   		Logger.Log(
+		   			NAME,
+			      	"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
 				  	" leaved Platform " & Integer'Image(Next_Platform) &
-				  	" at Station " & Integer'Image(Next_Station),Logger.NOTICE);
+				  	" at Station " & Integer'Image(Next_Station),
+				  	Logger.NOTICE);
 
 
-				Trains.Trains(Current_Descriptor).Next_Stage := Trains.Trains(Current_Descriptor).Next_Stage + 1;
+				Trains.Trains(Current_Descriptor_Index).Next_Stage := Trains.Trains(Current_Descriptor_Index).Next_Stage + 1;
 
 				delay Duration (Num);
 
 				-- # Re-enqueue the descriptor only if it has more stages to travel
-				if(Trains.Trains(Current_Descriptor).Next_Stage <= Routes.All_Routes(1)'Length) then
-					Low_Priority_Trains_Queue.Enqueue(Current_Descriptor);
+				if(Trains.Trains(Current_Descriptor_Index).Next_Stage <= Routes.All_Routes(Route_Index)'Length) then
+					Low_Priority_Trains_Queue.Enqueue(Current_Descriptor_Index);
 				else
 					Logger.Log(NAME,
-				      	"Train" & Integer'Image(Trains.Trains(Current_Descriptor).Id) &
+				      	"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
 					  	" finished its run!",Logger.NOTICE);
 				end if;
 
@@ -172,7 +175,7 @@ package body Train_Pool is
 			when E : Track.Bad_Track_Access_Request_Exception =>
 				Logger.Log(
 					NAME,
-					"Train" & Integer'Image(Trains.Trains(Current_Descriptor).ID) &
+					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
 					" Track access Error : " & Exception_Message(E),
 					Logger.ERROR);
 		end;
@@ -185,9 +188,15 @@ package body Train_Pool is
 		null;
     end High_Priority_Train_Type;
 
-	procedure Associate(Train : Positive) is
+	procedure Associate(Train_D : Positive) is
 	begin
-		Low_Priority_Trains_Queue.Enqueue(Train);
+		-- # Put the Train Descriptor index in the right queue, depending on his
+		-- # type.
+		if Trains.Trains(Train_D).T_Type = Train.FB then
+			High_Priority_Trains_Queue.Enqueue(Train_D);
+		else
+			Low_Priority_Trains_Queue.Enqueue(Train_D);
+		end if;
 	end Associate;
 
 end Train_Pool;

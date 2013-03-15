@@ -44,9 +44,11 @@ package body Ticket is
 				Json_Ticket : Json_Value := Get(Arr => J_Array, Index => I);
 			begin
 				T.Stages(I) := (
-					Next_Station 	=> Json_Ticket.Get("next_station"),
-					Train_ID 		=> Json_Ticket.Get("train_id"),
-					Platform_Index	=> Json_Ticket.Get("platform_index")
+					Start_Station				=> Json_Ticket.Get("start_station"),
+					Next_Station 				=> Json_Ticket.Get("next_station"),
+					Train_ID 					=> Json_Ticket.Get("train_id"),
+					Start_Platform_Index		=> Json_Ticket.Get("start_platform_index"),
+					Destination_Platform_Index	=> Json_Ticket.Get("destination_platform_index")
 				);
 			end;
 		end loop;

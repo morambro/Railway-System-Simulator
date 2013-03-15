@@ -2,19 +2,18 @@
 	"next" 	 : 1,
 	"ticket" : [
 		{
-			"next_station" 	: 2,
-			"train_id"		: 1111,
-			"platform_index": 1
+			"start_station"				: 2,
+			"next_station" 				: 3,
+			"train_id"					: 2222,
+			"start_platform_index"		: 1,
+			"destination_platform_index": 1
 		},
 		{
-			"next_station" 	: 3,
-			"train_id"		: 1111,
-			"platform_index": 1
-		},
-		{
-			"next_station" 	: 4,
-			"train_id"		: 1111,
-			"platform_index": 1
+			"start_station"				: 3,
+			"next_station" 				: 4,
+			"train_id"					: 2222,
+			"start_platform_index"		: 1,
+			"destination_platform_index": 1
 		}
 	]
 }

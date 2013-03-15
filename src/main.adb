@@ -143,7 +143,7 @@ begin
 			begin
 				Environment.Init;
 				Train_Pool.Associate(1);
---  				Train_Pool.Associate(2);
+				Train_Pool.Associate(2);
 	--  		Train_Pool.Associate(3);
 	--  		Train_Pool.Associate(4);
 

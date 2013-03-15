@@ -6,7 +6,10 @@
 			"max_speed" 		: 100,
 			"current_station" 	: 1,
 			"next_stage" 		: 1,
-			"route_index" 		: 1
+			"route_index" 		: 1,
+			"sits_number"		: 20,
+			"occupied_sits"		: 0,
+			"type"				: "fb"
 		},
 		{
 			"id" 				: 2222,
@@ -14,7 +17,10 @@
 			"max_speed" 		: 160,
 			"current_station" 	: 1,
 			"next_stage" 		: 1,
-			"route_index" 		: 1
+			"route_index" 		: 1,
+			"sits_number"		: 20,
+			"occupied_sits"		: 0,
+			"type"				: "regionale"
 		},
 		{	
 			"id" 				: 3333,
@@ -22,7 +28,10 @@
 			"max_speed" 		: 160,
 			"current_station" 	: 1,
 			"next_stage" 		: 1,
-			"route_index" 		: 1
+			"route_index" 		: 1,
+			"sits_number"		: 20,
+			"occupied_sits"		: 0,
+			"type"				: "regionale"
 		},
 		{
 			"id" 				: 4444,
@@ -30,7 +39,10 @@
 			"max_speed" 		: 160,
 			"current_station" 	: 1,
 			"next_stage" 		: 1,
-			"route_index" 		: 1
+			"route_index" 		: 1,
+			"sits_number"		: 20,
+			"occupied_sits"		: 0,
+			"type"				: "regionale"
 		}
 	]
 }
