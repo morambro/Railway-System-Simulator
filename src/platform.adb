@@ -63,10 +63,13 @@ package body Platform is
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Arrival_Queue.Enqueue(T_Manager);
 				else
+					-- # Decrease the number of occupied sits
+					Trains.Trains(Train_D).Occupied_Sits := Trains.Trains(Train_D).Occupied_Sits - 1;
+
 					Logger.Log(
 							Sender  => NAME,
-							Message => "Passenger " &
-										Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
+							Message => "Traveler " &
+										Integer'Image(Environment.Get_Travelers(T_Manager).Traveler.ID) &
 									   " Leaves the train at station " &
 									   Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Next_Station),
 							L       => Logger.NOTICE);
@@ -76,8 +79,8 @@ package body Platform is
 						Environment.Get_Travelers(T_Manager).Ticket.Stages'Length then
 						Logger.Log(
 							Sender  => NAME,
-							Message => "Passenger " &
-										Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
+							Message => "Traveler " &
+										Integer'Image(Environment.Get_Travelers(T_Manager).Traveler.ID) &
 									   " FINISHED HIS TRAVEL" &
 									   Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Next_Station),
 							L       => Logger.NOTICE);
@@ -133,11 +136,14 @@ package body Platform is
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Leaving_Queue.Enqueue(T_Manager);
 				else
+					-- # Increase the number of occupied sits
+					Trains.Trains(Train_D).Occupied_Sits := Trains.Trains(Train_D).Occupied_Sits + 1;
+
 					-- # If the current traveler have to board to the train...
 					Logger.Log(
 						Sender  => NAME,
-						Message => "Passenger " &
-								   Ada.Strings.Unbounded.To_String(Environment.Get_Travelers(T_Manager).Traveler.Name) &
+						Message => "Traveler " &
+								   Integer'Image(Environment.Get_Travelers(T_Manager).Traveler.ID) &
 								   " boarding at station " &
 								   Integer'Image(Environment.Get_Travelers(T_Manager).Ticket.Stages(Next_Stage).Next_Station),
 						L       => Logger.NOTICE);
@@ -164,6 +170,15 @@ package body Platform is
 
 				end if;
 			end loop;
+
+			Logger.Log(
+				Sender  => NAME,
+				Message => "Train " &
+						   Integer'Image(Trains.Trains(Train_D).Id) &
+						   " has" & Integer'Image(Trains.Trains(Train_D).Occupied_Sits) & "/" &
+						   Integer'Image(Trains.Trains(Train_D).Sists_Number) & " travelers",
+				L       => Logger.NOTICE);
+
 		end Leave;
 
 

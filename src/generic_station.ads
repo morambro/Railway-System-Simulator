@@ -41,14 +41,14 @@ package Generic_Station is
 		-- Station_Interface Methods
 		procedure Enter(
 			This 				: in		Station_Interface;
-			Descriptor 			: in		Positive;
-			Plattform 			: in		Positive)
+			Descriptor_Index	: in		Positive;
+			Platform_Index		: in		Positive)
 		is abstract;
 
 		procedure Leave(
 			This 				: in 		Station_Interface;
-			Descriptor			: in		Positive;
-			Platform			: in		Positive)
+			Descriptor_Index	: in		Positive;
+			Platform_Index		: in		Positive)
 		is abstract;
 
 		procedure Wait_For_Train_To_Go(

@@ -28,13 +28,12 @@ with JSON_Helper;
 
 package body Environment Is
 
-	-- Creation of Regional Stations
 	Regional_Stations 	: Generic_Station.Stations_array_Ref := null;
 
 	-- array of Travelers
-    Travelers 	: Traveler.Traveler_Manager_Array_Ref := null;
+    Travelers 			: Traveler.Traveler_Manager_Array_Ref := null;
 
-	Operations 	: Traveler.Travelers_All_Operations_Ref := null;
+	Operations 			: Traveler.Travelers_All_Operations_Ref := null;
 
 	function Get_Travelers return Traveler.Traveler_Manager_Array_Ref is
 	begin

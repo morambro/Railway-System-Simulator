@@ -81,8 +81,6 @@ package body Train_Pool is
 
 			-- # ######################## NEXT TRACK ACCESS ############################
 			begin
-				--Ada.Text_IO.Put_Line("" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Next_Stage));
-
 	--  			-- # TODO : REMOVE DEBUG CODE!!!
 	--  			if ( Trains.Trains(Current_Descriptor_Index).Id = 3333 ) then
 	--  				Trains.Trains(Current_Descriptor_Index).Current_Station := 3;
@@ -132,7 +130,7 @@ package body Train_Pool is
 
 		    	Logger.Log(NAME,
 		      		"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
-		      		" leved Track Number" & Integer'Image(Next_Track) &
+		      		" leaved Track Number" & Integer'Image(Next_Track) &
 			  		" entered Platform " & Integer'Image(Next_Platform) &
 		      		" at Station " & Integer'Image(Next_Station), Logger.NOTICE);
 

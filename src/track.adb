@@ -29,6 +29,8 @@ with Ada.Characters.Latin_1;use Ada.Characters.Latin_1;
 with Logger;
 with Environment;
 with Trains;
+with Routes;
+with Route;
 
 package body Track is
 
@@ -130,7 +132,8 @@ package body Track is
 				Free := False;
 				Current_Direction := Trains.Trains(To_Add).Current_Station;
 			end if;
-			-- Add the train to the train queue
+
+			-- # Add the train to the train queue
 			Trains_Number := Trains_Number + 1;
 			Running_Trains(Trains_Number) := Trains.Trains(To_Add).ID;
 
@@ -150,7 +153,7 @@ package body Track is
 
 		end Wait;
 
----------------------------------------------- LEAVE ENTRIES -----------------------------------------
+-- ############################################### LEAVE ENTRIES #############################################
 		-- #
 		-- # Entry called by the Train to leave the track and access the Next Station.
 		-- #
@@ -190,9 +193,14 @@ package body Track is
 
 				-- Now re-queue the train to the proper platform.
  				if Current_Direction /= First_End then
-					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(1).Enter;
+					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
+						-- # At this point, I am sure the Next_Track index would not have been incremented yet
+						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
+					).Enter;
 				else
-					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(1).Enter;
+					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
+						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
+					).Enter;
 				end if;
 
 			else
@@ -244,9 +252,13 @@ package body Track is
 
 				-- Now re-queue the train to the proper platform.
  				if Current_Direction /= First_End then
-					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(1).Enter;
+					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
+						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
+					).Enter;
 				else
-					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(1).Enter;
+					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
+						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
+					).Enter;
 				end if;
 
 			else
@@ -260,7 +272,7 @@ package body Track is
 
 	end Track_Type;
 
------------------------------------------ JSON -> TRACK FUNCTIONS ---------------------------------
+-- ########################################### JSON -> TRACK FUNCTIONS ###########################################
 
 	function Get_Track(Json_Track : Json_Value) return access Track_Type
 	is

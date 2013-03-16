@@ -51,6 +51,8 @@ with YAMI.Outgoing_Messages; use YAMI.Outgoing_Messages;
 with YAMI.Agents;
 with YAMI.Parameters;
 
+with Ticket_Office;
+
 with Ada.Exceptions;  use Ada.Exceptions;
 
 procedure Main is
@@ -120,8 +122,8 @@ begin
 
 		begin
 
-			Params.Set_String("name",Node_Name);
-			Params.Set_String("address",Node_Addr);
+			Params.Set_String("content","{'traveler' : 'lake','action' : 'moved'}");
+--  			Params.Set_String("address",Node_Addr);
 
 --  			Client.Send(
 --  				Name_Server,
@@ -141,13 +143,19 @@ begin
 				Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
 				Pool			: Train_Pool.Train_Task_Pool(3,5);
 			begin
-				Environment.Init;
-				Train_Pool.Associate(1);
-				Train_Pool.Associate(2);
+--  				Environment.Init;
+--  				Train_Pool.Associate(1);
+--  				Train_Pool.Associate(2);
 	--  		Train_Pool.Associate(3);
 	--  		Train_Pool.Associate(4);
 
-				Task_Pool.Execute(Environment.Get_Operations(1)(1));
+--  				Task_Pool.Execute(Environment.Get_Operations(1)(1));
+
+				Client.Send(
+					"tcp://localhost:4567",
+					"central_controller",
+					"event",
+					Params);
 
 				exception
 					when E : others =>

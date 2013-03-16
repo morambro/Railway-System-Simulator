@@ -23,40 +23,15 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
---
--- This package contains a representation of a Route for a Train as an unbounded array
--- of Stage objects.
---
-with Ada.Real_Time;use Ada.Real_Time;
-with Gnatcoll.JSON; use Gnatcoll.JSON;
-package Route is
+with Gnatcoll.JSON;use Gnatcoll.JSON;
+with JSON_Helper;use JSON_Helper;
+with Ada.Text_IO;use Ada.Text_IO;
 
-	type Stage is private;
+package body Ticket_Office is
 
-	type Route_Type is array (Positive range <>) of Stage;
+	function Get_Ticket return Positive is
+	begin
+		return 1;
+    end Get_Ticket;
 
-	type Routes is array (Positive range <>) of access Route_Type;
-
-	function Get_Next_Track (S : Stage) return Positive;
-	function Get_Next_Station (S : Stage) return Positive;
-	function Get_Time_To_Leave (S : Stage) return Time;
-    function Get_Next_Platform (S : Stage) return Positive;
-
-	function Get_Route(Json_v : JSON_Value) return access Route_Type;
-
-	function Get_Routes (Json_File : String) return Routes;
-
-	procedure Print(R : Route_Type);
-
-private
-
-	type Stage is record
-	    -- Indexes of next Track and Station
-		Next_Track      : Positive;
-	    Next_Station    : Positive;
-        Platform_Index 	: Positive;
-		Leave_At        : Time;
-	end record;
-
-
-end Route;
+end Ticket_Office;

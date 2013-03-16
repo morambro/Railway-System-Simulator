@@ -51,25 +51,6 @@ package body Route is
 		return S.Platform_Index;
     end Get_Next_Platform;
 
-    -- #
-    -- # Creates a new Stage with the given parameters and returns it.
-    -- #
-    function New_Stage(
-		      Track 		: in Positive;
-		      Station 		: in Positive;
-		      Next_Platform : in Positive;
-		      Leave_At 		: in Time)
-    return Stage is
-		To_Return : Stage;
-	begin
-		To_Return.Next_Track       := Track;
-	    To_Return.Next_Station     := Station;
-	    To_Return.Platform_Index   := Next_Platform;
-		To_Return.Leave_At         := Leave_At;
-		return To_Return;
-	end New_Stage;
-
-
 	function Get_Routes (Json_File : String) return Routes is
 		Json_v 			: JSON_Value := Get_Json_Value(Json_File_Name => Json_File);
 		J_Array 		: JSON_Array := Json_v.Get(Field => "routes");
@@ -96,7 +77,7 @@ package body Route is
 				Route(I) := (
 					Next_Track 			=> Json_Stage.Get("next_track"),
 					Next_Station 		=> Json_Stage.Get("next_station"),
-					Platform_Index 	=> Json_Stage.Get("platform_index"),
+					Platform_Index 		=> Json_Stage.Get("platform_index"),
 					Leave_At 			=>
 						Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Json_Stage.Get("leave_at"))
 				);

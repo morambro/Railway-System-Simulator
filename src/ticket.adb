@@ -24,13 +24,13 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with Ada.Text_IO;
+with JSON_Helper;use JSON_Helper;
+
 package body Ticket is
 
-	function Get_Ticket(Json_String : String) return access Ticket_Type is
-		-- Create JSON_Value object from the given json string
-		Json_v : JSON_Value := Get_Json_Value(Json_String => Json_String);
+	function Get_Ticket(Json_V : in JSON_Value) return access Ticket_Type is
 		-- Extract "ticket" json array in J_Array variable
-		J_Array : JSON_Array := Json_v.Get(Field => "ticket");
+		J_Array : JSON_Array := Json_V.Get(Field => "ticket");
 --  		-- Extract J_Array length
 		Array_Length : constant Natural := Length (J_Array);
 --  		-- Instantiate a new Ticket_Type with Array_Length elements
@@ -55,5 +55,25 @@ package body Ticket is
 
 		return T;
 	end Get_Ticket;
+
+	function Get_Ticket(Json_String : in String) return access Ticket_Type is
+	begin
+		return Get_Ticket(Get_Json_Value(Json_String => Json_String));
+    end Get_Ticket;
+
+
+    function Get_All_Tickets(Json_File : String) return access Tickets_Array is
+		Json_v 			: JSON_Value := Get_Json_Value(Json_File_Name => Json_File);
+		J_Array			: JSON_Array := Json_v.Get(Field => "tickets");
+		Array_Length 	: constant Natural := Length (J_Array);
+		To_Return 		: access Ticket.Tickets_Array := new Ticket.Tickets_Array(1..Array_Length);
+	begin
+		for I in 1..Array_Length loop
+			To_Return(I) := Get_Ticket(Get(Arr => J_Array, Index => I));
+		end loop;
+
+
+		return To_Return;
+    end Get_All_Tickets;
 
 end Ticket;

@@ -44,8 +44,10 @@ package body Move_Operation is
 	begin
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
-			Message => "LEAVE : Traveler " & To_String(Environment.Get_Travelers(This.Traveler_Manager_Index).Traveler.Name) &
-					   " will wait at platform" & Integer'Image(Start_Platform_Index) & ", station " & Integer'Image(Start_Station),
+			Message => "Traveler" & Integer'Image(Environment.Get_Travelers(This.Traveler_Manager_Index).Traveler.ID) &
+					   " will wait at platform" & Integer'Image(Start_Platform_Index) &
+					   ", station" & Integer'Image(Start_Station) &
+					  " to GO." ,
 			L 		=> Logger.NOTICE);
 
 		Environment.Get_Regional_Stations(Start_Station).Wait_For_Train_To_Go(
@@ -74,13 +76,9 @@ package body Move_Operation is
 	begin
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
-			Message => "ARRIVE: Traveler " & To_String(Environment.Get_Travelers(This.Traveler_Manager_Index).Traveler.Name) &
-					   " will wait at platform" & Integer'Image(Destination_Platform_Index) & ", station " & Integer'Image(Next_Station),
+			Message => "Traveler" & Integer'Image(Environment.Get_Travelers(This.Traveler_Manager_Index).Traveler.ID) &
+					   " will wait to ARRIVE at platform" & Integer'Image(Destination_Platform_Index) & ", station " & Integer'Image(Next_Station),
 			L 		=> Logger.NOTICE);
-
-		Put_Line ("NEXT = " & Integer'Image(Next_Station));
-
-		Environment.Get_Regional_Stations(Next_Station).Print;
 
 		Environment.Get_Regional_Stations(Next_Station).Wait_For_Train_To_Arrive(
 			Incoming_Traveler 	=> This.Traveler_Manager_Index,

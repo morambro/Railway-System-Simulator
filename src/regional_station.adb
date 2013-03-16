@@ -34,23 +34,21 @@ package body Regional_Station is
 
 
 	procedure Enter(
-			This 		: in		Regional_Station_Type;
-			Descriptor	: in		Positive;
-			Platform	: in		Positive) is
+			This 				: in		Regional_Station_Type;
+			Descriptor_Index	: in		Positive;
+			Platform_Index		: in		Positive) is
 	begin
-		Put_Line("ENTER CALLED");
-		This.Platforms(Platform).Enter(Descriptor);
-
+		This.Platforms(Platform_Index).Enter(Descriptor_Index);
 	end Enter;
 
 
 
 	procedure Leave(
-			This 		: in 		Regional_Station_Type;
-			Descriptor	: in		Positive;
-			Platform	: in		Positive) is
+			This 				: in 		Regional_Station_Type;
+			Descriptor_Index	: in		Positive;
+			Platform_Index		: in		Positive) is
 	begin
-		This.Platforms(Platform).Leave(Descriptor);
+		This.Platforms(Platform_Index).Leave(Descriptor_Index);
 	end Leave;
 
 	-- #
@@ -65,7 +63,7 @@ package body Regional_Station is
 	begin
 		This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
 		This.Panel.SetStatus(
-			"Passenger " & Traveler.Get_Name(Environment.Get_Travelers(Outgoing_Traveler)) &
+			"Traveler " & Traveler.Get_Name(Environment.Get_Travelers(Outgoing_Traveler)) &
 			" waits by platform " & Integer'Image(Platform_Index) & " to GO");
 	end Wait_For_Train_To_Go;
 
@@ -79,7 +77,7 @@ package body Regional_Station is
 	begin
 		This.Platforms(Platform_Index).Add_Incoming_Traveler(Incoming_Traveler);
 		This.Panel.SetStatus(
-			"Passenger " & Traveler.Get_Name(Environment.Get_Travelers(Incoming_Traveler)) &
+			"Traveler " & Traveler.Get_Name(Environment.Get_Travelers(Incoming_Traveler)) &
 			" waits by station " & Unbounded_Strings.To_String(This.Name)
 			& " at platform " & Integer'Image(Platform_Index) & " to ARRIVE");
     end Wait_For_Train_To_Arrive;
@@ -111,6 +109,7 @@ package body Regional_Station is
 
     function Get_Platform(This : Regional_Station_Type;P : Natural) return access Platform.Platform_Type is
     begin
+    	-- # N.B.: Non viene fatta una copia di P, poiché è LIMITED!
     	return This.Platforms(P);
     end Get_Platform;
 

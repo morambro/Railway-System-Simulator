@@ -43,13 +43,14 @@ package Traveler is
 
 	type Travelers_All_Operations_Ref is access all Travelers_All_Operations;
 
-	-- Traveler type declaration
+	-- # Traveler type declaration
 	type Traveler_Type is record
 		ID 			: Integer;
 		Name 		: Unbounded_Strings.Unbounded_String;
 		Surname 	: Unbounded_Strings.Unbounded_String;
 	end record;
 
+	-- # Traveler Manager
 	type Traveler_Manager is record
 		Traveler 		: Traveler_Type;
 		Next_Operation 	: Positive := 1;
@@ -69,18 +70,18 @@ package Traveler is
 
 private
 
-	--
-	-- Creates a Traveler from JSON object
-	--
-	-- @return : A Traveler_Type object
-	--
+	-- #
+	-- # Creates a Traveler from JSON object
+	-- #
+	-- # @return : A Traveler_Type object
+	-- #
 	function Get_Traveler(Json_Traveler : JSON_Value) return Traveler_Type;
 
-	--
-	-- Creates a Traveler_Manager from JSON object
-	--
-	-- @return : A Traveler_Manager object
-	--
+	-- #
+	-- # Creates a Traveler_Manager from JSON object
+	-- #
+	-- # @return : A Traveler_Manager object
+	-- #
 	function Get_Traveler_Manager(Json_Traveler : JSON_Value) return Traveler_Manager;
 
 end Traveler;

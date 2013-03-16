@@ -59,6 +59,9 @@ package Platform is
 
 		-- # Queue for Travelers waiting for the train to leave
 		Leaving_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
+
+		N : Integer := 3;
+
 	end Platform_Type;
 
 end Platform;

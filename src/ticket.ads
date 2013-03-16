@@ -23,14 +23,11 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-
+with Gnatcoll.JSON;use Gnatcoll.JSON;
 -- #
 -- # This package contains the definition of a ticket, that is an array of stages the
 -- # traveler will follow to reach the destination.
 -- #
-with Gnatcoll.JSON;use Gnatcoll.JSON;
-with JSON_Helper;use JSON_Helper;
-
 package Ticket is
 
 	type Ticket_Stage is record
@@ -52,10 +49,16 @@ package Ticket is
     	Next_Stage 	: Positive := 1;
     	Stages 		: Ticket_Stages(1 .. Stages_Number);
 	end record;
+
+	type Tickets_Array is array (Positive range <>) of access Ticket_Type;
+
     -- ############################## Json -> Ticket ###############################
 
-    function Get_Ticket(Json_String : String) return access Ticket_Type;
+    function Get_Ticket (Json_String	: in String) return access Ticket_Type;
 
+    function Get_Ticket (Json_V 		: in JSON_Value) return access Ticket_Type;
+
+    function Get_All_Tickets (Json_File : in String) return access Tickets_Array;
 
 
 end Ticket;

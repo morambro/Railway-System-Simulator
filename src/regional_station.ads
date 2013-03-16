@@ -59,13 +59,12 @@ package Regional_Station is
 
 		overriding procedure Enter(
 			This 				: in		Regional_Station_Type;
-			Descriptor			: in		Positive;
-			Platform			: in		Positive);
-
+			Descriptor_Index	: in		Positive;
+			Platform_Index		: in		Positive);
 		overriding procedure Leave(
 			This 				: in 		Regional_Station_Type;
-			Descriptor			: in		Positive;
-			Platform			: in		Positive);
+			Descriptor_Index	: in		Positive;
+			Platform_Index		: in		Positive);
 
 		overriding procedure Wait_For_Train_To_Go(
 			This 				: in		Regional_Station_Type;

@@ -29,4 +29,6 @@ package Trains is
 
 	Trains : Train.Trains_Array := Train.Get_Trains_Array("res/trains.json");
 
+	function Get_Trains return Train.Trains_Array;
+
 end Trains;
