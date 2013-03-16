@@ -1,8 +1,8 @@
-with "lib/yami4-gpl-1.6.0/src/ada/yami";
+with "../lib/yami4-gpl-1.6.0/src/ada/yami";
 -- Import gnatcoll libraries
 with "/usr/local/lib/gnat/gnatcoll";
 
-project TrainProject is
+project Railway_Project is
 
 	for Object_Dir use "out";
 	for Source_Dirs use ("src/");
@@ -21,5 +21,5 @@ project TrainProject is
 		for Default_Switches ("ada") use ("-i4");
 	end Pretty_Printer;
 
-end TrainProject;
+end Railway_Project;
 

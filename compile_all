@@ -1,0 +1,11 @@
+fsc -shutdown
+cd central_controller
+make
+cd ..
+fsc -shutdown
+cd scala_name_server
+make
+cd ..
+cd railway
+make
+cd ..

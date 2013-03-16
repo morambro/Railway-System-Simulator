@@ -1,1 +1,3 @@
-./trainsimulation $@
+cd railway
+./run $@
+cd ..
