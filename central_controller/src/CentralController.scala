@@ -1,7 +1,7 @@
 import scala.actors._
 import com.inspirel.yami._
 
-case class Event (description 	: String) 
+case class Event (description : String) 
 
 object Event {
 	def createFromJson (Json_String : String) : Event = Event(Json_String)
@@ -37,7 +37,7 @@ class Publisher(val address : String) extends Actor {
 	
 }
 
-class Subscriber(ID : Int) extends Actor with IncomingMessageCallback{
+/*class Subscriber(ID : Int) extends Actor with IncomingMessageCallback{
 	
 	val subscriberAgent = new Agent
 
@@ -70,7 +70,7 @@ class Subscriber(ID : Int) extends Actor with IncomingMessageCallback{
 		}
 	}
 	
-}
+}*/
 
 
 class Receiver(val controller : Publisher) extends IncomingMessageCallback {
@@ -112,8 +112,8 @@ object ControllerMain extends App {
 				receiver.close
 				println ("Bye!")
 			}
-			case _ => {
-				println ("Type [q|Q] to quit")
+			case a:String => {
+				controller ! Event(a)
 				waitExit
 			}
 		}
@@ -130,6 +130,7 @@ object ControllerMain extends App {
 		receiver = new Receiver(controller)
 		receiver.addHandler(args(0));
 		
+		/*
 		val s = new Subscriber(1)
 		s.start
 		s ! "init"
@@ -137,6 +138,7 @@ object ControllerMain extends App {
 		val s2 = new Subscriber(2)
 		s2.start
 		s2 ! "init"
+		*/
 		
 		waitExit
 		

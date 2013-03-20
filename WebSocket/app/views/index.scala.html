@@ -1,0 +1,22 @@
+@(message: String,form : Form[User])
+
+@main("Chat di prova") {
+    
+    <h1>Chat di prova!</h1>
+	
+	<form id="id_form" action="@routes.Application.chatPage()">
+		<input id="chatID" name="chatID" type="text" placeholder="Chat ID">
+		
+		<script>
+			var handleReturnKey = function(e) {
+                if(e.charCode == 13 || e.keyCode == 13) {
+                    e.preventDefault()
+                    $("#id_form").submit()
+                } 
+            }
+            
+            $("#chatID").keypress(handleReturnKey)  
+		</script>
+	</form>
+    
+}

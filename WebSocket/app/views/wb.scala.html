@@ -1,0 +1,50 @@
+@(message: String,chatID:String)(implicit request: RequestHeader)
+
+@main("WebSocket") {
+    
+    <div id="messages"> </div>
+    <script type="text/javascript" charset="utf-8">
+    
+    	websocket = new WebSocket("@routes.Application.chat(chatID).webSocketURL()");
+    	websocket.onopen = function(evt) {
+    		write("OPEN")    		
+    	};
+    	websocket.onclose = function(evt) {
+    		write("CLOSE")    		
+    	};
+    	
+    	
+    	websocket.onmessage = function(evt) { 
+    		write('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>'); 
+    	}
+    	
+    	
+    	function send(msg) {
+    		websocket.send(msg);
+    	}
+    	
+    	function write(msg) {
+    		var p = document.createElement("div");
+    		p.innerHTML = msg;
+    		document.getElementById("messages").appendChild(p);
+    	}
+    	
+    </script>
+    
+    <textarea id="talk"></textarea>
+    
+    <script>
+		var handleReturnKey = function(e) {
+            if(e.charCode == 13 || e.keyCode == 13) {
+                e.preventDefault()
+                send($("#talk").val())
+                $("#talk").val('')
+            } 
+        }
+        
+        $("#talk").keypress(handleReturnKey)  
+	</script> 
+    
+    
+}
+
