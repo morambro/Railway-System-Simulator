@@ -3,6 +3,7 @@
 @main("WebSocket") {
     
     <div id="messages"> </div>
+        
     <script type="text/javascript" charset="utf-8">
     
     	websocket = new WebSocket("@routes.Application.chat(chatID).webSocketURL()");
@@ -19,7 +20,7 @@
     	}
     	
     	
-    	function send(msg) {
+    	function sendMessage(msg) {
     		websocket.send(msg);
     	}
     	
@@ -29,6 +30,8 @@
     		document.getElementById("messages").appendChild(p);
     	}
     	
+    	
+    	
     </script>
     
     <textarea id="talk"></textarea>
@@ -37,14 +40,42 @@
 		var handleReturnKey = function(e) {
             if(e.charCode == 13 || e.keyCode == 13) {
                 e.preventDefault()
-                send($("#talk").val())
+                sendMessage($("#talk").val())
                 $("#talk").val('')
             } 
         }
         
         $("#talk").keypress(handleReturnKey)  
 	</script> 
+	
+	<div id="canvas"></div>
+	<script>
+		
+		r = Animations.createRaphael(true,{
+			container_id	: "canvas",
+			width			: 400,
+			height			: 500	
+		});
+		 
+        path	= Animations.createStraightPath(r,50,90,200,90);
+        t2 		= Animations.createStraightPath(r,230,90,300,200);
+        
+   		station1 = r.circle(35,90,15);
+   		
+   		station2 = r.circle(35+path.getTotalLength()+30,90,15);
+   
+		rect = r.rect(0,0,20,20);
+		
+		Animations.translate(rect,50,90);
+		
+		rect.attr('fill',"red");
+		
+		function animate() {
+			Animations.runElementOnPath(rect,path,2000,0,1);
+		}
+		
+	</script>
     
-    
+	<button onclick="animate()"> animate </button>    
 }
 
