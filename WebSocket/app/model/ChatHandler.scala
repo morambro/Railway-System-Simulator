@@ -52,7 +52,7 @@ class Subscriber(ID : Int, default : ActorRef) extends Actor with IncomingMessag
 		    
 		    println("Subscriber " + ID + " Received event : " + event)
 		}catch{
-			case e => e.printStackTrace 
+			case e : Exception => e.printStackTrace 
 		}
 		
 	}
@@ -61,13 +61,17 @@ class Subscriber(ID : Int, default : ActorRef) extends Actor with IncomingMessag
 
 
 object ChatHandler {
+	
+	// Implicit Timeout for the request
 	implicit val timeout = Timeout(1 second)
 	
+	// Create the Actor responsible of keep track of all the incoming 
+	// connections and to push notifications via message Talk(...)
 	lazy val default = Akka.system.actorOf(Props[ChatHandler])
 	
-	val system = ActorSystem("MySystem")  
-  	
-  	val subscribe = {
+  	// Creation and initialization of the Actor used to listen for incoming 
+  	// events from the central controller
+  	val subscriber = {
   		val a = Akka.system.actorOf(Props(new Subscriber(1,default)))
   		a ! Init()
   		println("Actor created")
@@ -87,6 +91,7 @@ object ChatHandler {
 				}.mapDone { _ =>
 					default ! Quit(username)
 				}
+				// Returns the iteratee and the enumerator to the client
 				(iteratee,enumerator)
 			
 			case CannotConnect(error) => 
@@ -107,33 +112,37 @@ object ChatHandler {
 }
 
 class ChatHandler extends Actor {
+	
 	var members = Set.empty[String]
-	val (chatEnumerator, chatChannel) = Concurrent.broadcast[String]
+	
+	// Creates an Enumerator and a Broadcast channel to push data to all 
+	// incoming channels
+	val (enumerator, channel) = Concurrent.broadcast[String]
 	
 	def receive = {
     
+    	// Keeps track of the new incoming connection
 		case Join(username) => {
-		  if(members.contains(username)) {
-		    sender ! CannotConnect("This username is already used")
-		  } else {
-		    members = members + username
-		    sender ! Connected(chatEnumerator)
-		    self ! NotifyJoin(username)
-		  }
+			if(members.contains(username)) {
+		 	 	sender ! CannotConnect("This username is already used")
+		  	} else {
+				members = members + username
+				sender ! Connected(enumerator)
+				self ! NotifyJoin(username)
+		  	}
 		}
 
 		case NotifyJoin(username) => {
-		  notifyAll("join", username, "has entered the room")
+			notifyAll("join", username, "has entered the room")
 		}
 		
 		case Talk(username, text) => {
-		  println("Takl")
-		  notifyAll("talk", username, text)
+		  	notifyAll("talk", username, text)
 		}
 		
 		case Quit(username) => {
-		  members = members - username
-		  notifyAll("quit", username, "has left the room")
+		  	members = members - username
+		  	notifyAll("quit", username, "has left the room")
 		}
     
   	}
@@ -149,6 +158,6 @@ class ChatHandler extends Actor {
 		    )
 		  )
 		)*/
-		chatChannel.push(kind + " " + user + " " + text)
+		channel.push(kind + " " + user + " " + text)
   	}
 }
