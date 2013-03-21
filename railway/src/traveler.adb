@@ -37,7 +37,7 @@ package body Traveler is
 		Ada.Text_IO.Put_Line("ID : " & Integer'Image(T.Traveler.ID));
 		Ada.Text_IO.Put_Line("Name : " & Unbounded_Strings.To_String(T.Traveler.Name));
 		Ada.Text_IO.Put_Line("Surname : " & Unbounded_Strings.To_String(T.Traveler.Surname));
-		Ada.Text_IO.Put_Line("Next Op : " & Integer'Image(T.Next_Operation));
+		--Ada.Text_IO.Put_Line("Next Op : " & Integer'Image(T.Next_Operation));
 		Ada.Text_IO.Put_Line("Destination : " & Integer'Image(T.Destination));
     end Print;
 
@@ -56,8 +56,20 @@ package body Traveler is
     	T : Traveler_Manager;
     begin
     	T.Traveler		 := Get_Traveler(Json_Traveler.Get("traveler"));
-		T.Next_Operation := Json_Traveler.Get("next_operation");
+
+		declare
+			OP : Integer := Json_Traveler.Get("next_operation");
+		begin
+			case OP is
+				when 1 => T.Next_Operation := LEAVE;
+				when 2 => T.Next_Operation := ENTER;
+				-- TODO: TO FIX!!!!
+				when others => T.Next_Operation := LEAVE;
+			end case;
+		end;
+
 		T.Destination	 := Json_Traveler.Get("destination");
+
 		return T;
     end Get_Traveler_Manager;
 

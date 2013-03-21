@@ -143,19 +143,13 @@ begin
 				Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
 				Pool			: Train_Pool.Train_Task_Pool(3,5);
 			begin
---  				Environment.Init;
---  				Train_Pool.Associate(1);
---  				Train_Pool.Associate(2);
+				Environment.Init;
+				Train_Pool.Associate(1);
+				Train_Pool.Associate(2);
 	--  		Train_Pool.Associate(3);
 	--  		Train_Pool.Associate(4);
 
---  				Task_Pool.Execute(Environment.Get_Operations(1)(1));
-
-				Client.Send(
-					"tcp://localhost:4567",
-					"central_controller",
-					"event",
-					Params);
+				Task_Pool.Execute(Environment.Get_Operations(1)(Traveler.ENTER));
 
 				exception
 					when E : others =>

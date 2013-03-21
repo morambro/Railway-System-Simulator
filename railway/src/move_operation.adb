@@ -45,9 +45,8 @@ package body Move_Operation is
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
 			Message => "Traveler" & Integer'Image(Environment.Get_Travelers(This.Traveler_Manager_Index).Traveler.ID) &
-					   " will wait at platform" & Integer'Image(Start_Platform_Index) &
-					   ", station" & Integer'Image(Start_Station) &
-					  " to GO." ,
+					   " will wait to LEAVE at platform" & Integer'Image(Start_Platform_Index) &
+					   ", station" & Integer'Image(Start_Station),
 			L 		=> Logger.NOTICE);
 
 		Environment.Get_Regional_Stations(Start_Station).Wait_For_Train_To_Go(

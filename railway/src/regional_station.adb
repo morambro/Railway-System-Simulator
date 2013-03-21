@@ -64,7 +64,8 @@ package body Regional_Station is
 		This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
 		This.Panel.SetStatus(
 			"Traveler " & Traveler.Get_Name(Environment.Get_Travelers(Outgoing_Traveler)) &
-			" waits by platform " & Integer'Image(Platform_Index) & " to GO");
+			" waits by platform " & Integer'Image(Platform_Index) & " station " &
+			Unbounded_Strings.To_String(This.Name) & " to GO");
 	end Wait_For_Train_To_Go;
 
 
