@@ -7,3 +7,4 @@ server
 .gb_project
 .project
 *.class
+report/out/*
