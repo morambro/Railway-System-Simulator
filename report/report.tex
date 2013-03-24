@@ -37,16 +37,35 @@
 		}
 \date{\today}
 
+\fancypagestyle{content}{
+	\setcounter{page}{1}
+	% \leftmark Per avere il titolo del capitolo, usare questo al posto di rightmark 
+	\lhead{\footnotesize{\rightmark}}
+	\chead{}
+	\rhead{}
+	%\rhead{\includegraphics[scale=0.5]{imgs/logoUnipdAltoDes.png}}
+	\lfoot{\varTitle\ \varVersion}
+	\lfoot{\footnotesize{Relazione progetto SCD}}
+	\cfoot{}
+	\rfoot{Pagina \thepage\ di \pageref{mylastpage}}
+
+	\pagenumbering{arabic}
+}
+
+\newcommand{\ii}[1]{\textit{#1}}
+\newcommand{\bb}[1]{\textbf{#1}}
+\newcommand{\ttt}[1]{\texttt{#1}}
 
 % ############################################### DOCUMENT ###########################################
 
 \begin{document}
 	\maketitle
 	\tableofcontents
+	\pagestyle{content}
 	\include{problem}
-	\chapter{Analisi del problema}
+	\include{problem_analisis}
 	\chapter{Soluzione}
-
+	
 3 - Dimostrazione che la soluzione risolve il problema
-   
+   \label{mylastpage}
 \end{document}
