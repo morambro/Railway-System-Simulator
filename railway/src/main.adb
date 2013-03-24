@@ -149,7 +149,11 @@ begin
 	--  		Train_Pool.Associate(3);
 	--  		Train_Pool.Associate(4);
 
-				Task_Pool.Execute(Environment.Get_Operations(1)(Traveler.ENTER	 ));
+				Task_Pool.Execute(Environment.Get_Operations(1)(Traveler.LEAVE));
+
+				delay 2.0;
+
+				Train_Pool.Stop;
 
 				exception
 					when E : others =>

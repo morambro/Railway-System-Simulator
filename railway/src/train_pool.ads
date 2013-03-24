@@ -35,21 +35,23 @@ with System;use System;
 -- #
 package Train_Pool is
 
+
 	-- # Low priority Task, which will be used by REGIONAL trains
 	task type Low_Priority_Train_Type is
-		pragma Priority(Priority'First + 1);
-    	entry Stop;
     end Low_Priority_Train_Type;
+
+
 
 	-- # High priority Task, which will be used by FB trains
 	task type High_Priority_Train_Type is
-		pragma Priority(Priority'Last - 1);
-    	entry Stop;
     end High_Priority_Train_Type;
+
 
 	type Low_Priority_Vector is array (Positive range <>) of Low_Priority_Train_Type;
 
-	type High_Priority_Vector is array (Positive range <>) of Low_Priority_Train_Type;
+
+	type High_Priority_Vector is array (Positive range <>) of High_Priority_Train_Type;
+
 
 	type Train_Task_Pool(
 		Low_Priority_Pool_Size : Positive;
@@ -60,6 +62,8 @@ package Train_Pool is
 	-- # to let the train move.
 	-- #
 	procedure Associate(Train_D : Positive);
+
+	procedure Stop;
 
 private
 
@@ -72,8 +76,8 @@ private
 	-- #
 	-- # Queue used to manage Traveler operations
 	-- #
-	Low_Priority_Trains_Queue 	: Trains_Queue_Package.Unbounded_Queue.Queue;
-	High_Priority_Trains_Queue 	: Trains_Queue_Package.Unbounded_Queue.Queue;
+	Low_Priority_Trains_Queue 	: Trains_Queue_Package.Terminable_Queue;
+	High_Priority_Trains_Queue 	: Trains_Queue_Package.Terminable_Queue;
 
 	-- Random initializations
 	type Rand_Range is range 1..3;
@@ -86,11 +90,11 @@ private
 	-- # tasks, one low priority queue, and one at higher priority
 	-- #
 	type Train_Task_Pool(
-		Low_Priority_Pool_Size : Positive;
+		Low_Priority_Pool_Size 	: Positive;
 		High_Priority_Pool_Size : Positive) is record
 
 		Low_Tasks : Low_Priority_Vector(1 .. Low_Priority_Pool_Size);
-		High_Tasks : High_Priority_Vector(1 .. High_Priority_Pool_Size);
+--  		High_Tasks : High_Priority_Vector(1 .. High_Priority_Pool_Size);
 
 	end record;
 

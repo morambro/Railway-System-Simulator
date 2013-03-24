@@ -24,36 +24,32 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 
-with Ada.Containers.Unbounded_Synchronized_Queues;
-with Ada.Containers.Synchronized_Queue_Interfaces;
---
--- Declaration of a generic queue implementation of elements of type Element
---
-generic type Element is private;
+with Ada.Containers;use Ada.Containers;
 
-package Queue is
+package body Queue is
 
-	package Unbounded_Queue_Interface is new Ada.Containers.Synchronized_Queue_Interfaces(Element_Type => Element);
+	protected body Terminable_Queue is
 
-	package Unbounded_Queue is new Ada.Containers.Unbounded_Synchronized_Queues
-		(Queue_Interfaces => Unbounded_Queue_Interface);
-
-	protected type Terminable_Queue is
-		procedure Enqueue(
-			To_Add		: in 	 Element);
+		procedure Enqueue(To_Add	: in Element) is
+		begin
+			Q.Enqueue(To_Add);
+		end Enqueue;
 
 		entry Dequeue(
 			To_Get		: 	 out Element;
-			Terminated 	: 	 out Boolean);
+			Terminated 	: 	 out Boolean) when Termination or Q.Current_Use > 0 is
+		begin
+			if not Termination then
+				Q.Dequeue(To_Get);
+			end if;
+			Terminated := Termination;
+		end;
 
-		procedure Stop;
+		procedure Stop is
+		begin
+			Termination := True;
+		end Stop;
 
-	private
-		Termination : Boolean := False;
-		Q 			: Unbounded_Queue.Queue;
     end Terminable_Queue;
-
-
-private
 
 end Queue;

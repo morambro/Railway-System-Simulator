@@ -46,22 +46,22 @@ package body Train_Pool is
 		NAME : constant String := "Train_Pool.Train_Type";
 
 		Current_Descriptor_Index 	: Positive;
+		Terminated 					: Boolean;
 
 	begin
 		MAIN_LOOP:
 		loop begin
 			-- # ####################### GAIN A DESCRIPTOR ###########################
 
-			select
-				accept Stop;
-				exit MAIN_LOOP;
-			else
-				null;
-			end select;
-
 			Logger.Log(NAME,"Train waits for a Descriptor",Logger.DEBUG);
 
-			Low_Priority_Trains_Queue.Dequeue(Current_Descriptor_Index);
+			Low_Priority_Trains_Queue.Dequeue(
+				To_Get 		=> Current_Descriptor_Index,
+				Terminated 	=> Terminated
+			);
+
+
+			exit MAIN_LOOP when Terminated;
 
 			Logger.Log(NAME,"Train task obtained a Descriptor",Logger.DEBUG);
 
@@ -178,6 +178,12 @@ package body Train_Pool is
 					Logger.ERROR);
 		end;
 		end loop MAIN_LOOP;
+
+		Logger.Log(
+			NAME,
+			"Task Received Termination Signal. Bye!",
+			Logger.DEBUG);
+
 	end Low_Priority_Train_Type;
 
 
@@ -196,5 +202,11 @@ package body Train_Pool is
 			Low_Priority_Trains_Queue.Enqueue(Train_D);
 		end if;
 	end Associate;
+
+
+	procedure Stop is
+	begin
+		Low_Priority_Trains_Queue.Stop;
+	end Stop;
 
 end Train_Pool;
