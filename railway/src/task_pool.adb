@@ -37,21 +37,31 @@ package body Task_Pool is
 		NAME : constant String := "Task_Pool.Actor";
 
 		To_Execute : Any_Operation;
-
+		Terminated : Boolean;
 	begin
+		MAIN_LOOP:
 		loop
+--  			Logger.Log(
+--  				NAME,
+--  				"Task waits for an operation to Execute " & Count_Type'Image(Operations_Queue.Current_Use),
+--  				Logger.DEBUG);
+
+			Operations_Queue.Dequeue(To_Execute,Terminated);
+
+			exit MAIN_LOOP when Terminated;
+
 			Logger.Log(
-				NAME,
-				"Task waits for an operation to Execute " & Count_Type'Image(Operations_Queue.Current_Use),
-				Logger.DEBUG);
-
-			Operations_Queue.Dequeue(To_Execute);
-
-			Logger.Log(NAME,"Task retrieved an Operation",Logger.DEBUG);
+				Sender 	=> NAME,
+				Message => "Task retrieved an Operation",
+				L		=> Logger.DEBUG);
 
 			-- Right Here, I'm shure to have an Operation to Execute
 			To_Execute.Do_Operation;
-		end loop;
+		end loop MAIN_LOOP;
+		Logger.Log(
+			Sender 	=> NAME,
+			Message => "Traveler Task Received Stop Signal",
+			L 		=> Logger.DEBUG);
     end Actor;
 
 	--
@@ -60,10 +70,15 @@ package body Task_Pool is
 	procedure Execute(Operation : Any_Operation) is
 	begin
 		Operations_Queue.Enqueue(Operation);
-		Logger.Log(
-				"Task_Pool",
-				"Operation Added; total number : " & Count_Type'Image(Operations_Queue.Current_Use),
-				Logger.DEBUG);
+--  		Logger.Log(
+--  			"Task_Pool",
+--  			"Operation Added; total number : " & Count_Type'Image(Operations_Queue.Current_Use),
+--  			Logger.DEBUG);
 	end Execute;
+
+	procedure Stop is
+	begin
+		Operations_Queue.Stop;
+	end Stop;
 
 end Task_Pool;

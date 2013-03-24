@@ -32,6 +32,8 @@ package Task_Pool is
 	-- Adds a new operation to the executing queue
 	procedure Execute(Operation : Any_Operation);
 
+	procedure Stop;
+
 	-- Task which Executes an operation taken from Operations_Queue
 	task type Actor;
 
@@ -47,7 +49,7 @@ private
 	package Operations_Queue_Package is new Queue(Element => Any_Operation);
 
 	-- Queue used to manage Traveler operations
-	Operations_Queue : Operations_Queue_Package.Unbounded_Queue.Queue;
+	Operations_Queue : Operations_Queue_Package.Terminable_Queue;
 
 
 end Task_Pool;

@@ -151,10 +151,10 @@ begin
 
 				Task_Pool.Execute(Environment.Get_Operations(1)(Traveler.LEAVE));
 
-				delay 2.0;
-
-				Train_Pool.Stop;
-
+--  				delay 4.0;
+--
+--  				Train_Pool.Stop;
+--  				Task_Pool.Stop;
 				exception
 					when E : others =>
 					Logger.Log(
