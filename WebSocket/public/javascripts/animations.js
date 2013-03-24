@@ -17,6 +17,7 @@
 			};
 		};
 	})();
+	
 var Animations = {
 
 	createRaphael : function(with_guides,parameters) {

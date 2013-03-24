@@ -37,7 +37,7 @@ package Route is
 
 	type Routes is array (Positive range <>) of access Route_Type;
 
-	function Get_Next_Track (S : Stage) return Positive;
+	function Get_Next_Segment (S : Stage) return Positive;
 	function Get_Next_Station (S : Stage) return Positive;
 	function Get_Time_To_Leave (S : Stage) return Time;
     function Get_Next_Platform (S : Stage) return Positive;
@@ -51,8 +51,8 @@ package Route is
 private
 
 	type Stage is record
-	    -- Indexes of next Track and Station
-		Next_Track      : Positive;
+	    -- Indexes of next Segment and Station
+		Next_Segment      : Positive;
 	    Next_Station    : Positive;
         Platform_Index 	: Positive;
 		Leave_At        : Time;

@@ -28,18 +28,18 @@ with Train;use Train;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with JSON_Helper;use JSON_Helper;
 
-package Track is
+package Segment is
 
 	-- # IDs of currently traveling trains
 	type Train_Queue is array (Positive range <>) of Integer;
 
-	Bad_Track_Access_Request_Exception : exception;
+	Bad_Segment_Access_Request_Exception : exception;
 
-	protected type Track_Type(
+	protected type Segment_Type(
 		Id 				: Natural;
-		Track_Max_Speed : Positive;
+		Segment_Max_Speed : Positive;
 		-- Length expressed in meters
-		Track_Length	: Positive;
+		Segment_Length	: Positive;
 		Queue_Dim 		: Positive;
 		First_End 		: Positive;
 		Second_End 		: Positive;
@@ -48,12 +48,12 @@ package Track is
 	is
 
 		-- #
-		-- # Trains ask to Enter the track
+		-- # Trains ask to Enter the Segment
 		-- #
 		entry Leave(Train_D : in Positive);
 
 		-- #
-		-- # Trains ask to Enter the track
+		-- # Trains ask to Enter the Segment
 		-- #
 		entry Enter(
 			To_Add 		:	in 		Positive;
@@ -80,18 +80,18 @@ package Track is
 		Free : Boolean := True;
 
 		-- # Current maximum speed
-		Current_Max_Speed : Positive := Track_Max_Speed;
+		Current_Max_Speed : Positive := Segment_Max_Speed;
 
-		-- # Current direction. Is set to 0 when the track is free
+		-- # Current direction. Is set to 0 when the Segment is free
 		Current_Direction : Natural := 0;
 
 		-- # Queue of all the running trains
 		Running_Trains : Train_Queue (1..Queue_Dim);
 
-		-- # Boolean guard telling if a train can retry to Leave the track
+		-- # Boolean guard telling if a train can retry to Leave the Segment
 		Can_Retry_Leave : Boolean := False;
 
-		-- # Boolean guard telling if a train can retry to Enter the track
+		-- # Boolean guard telling if a train can retry to Enter the Segment
 		Can_Retry_Enter : Boolean := False;
 
 		-- # Number of exit attempt
@@ -100,24 +100,24 @@ package Track is
 		-- # Number of trains currently running
 		Trains_Number : Natural := 0;
 
-	end Track_Type;
+	end Segment_Type;
 
-	type Tracks_Array is array (Positive range <>) of access Track_Type;
+	type Segments_Array is array (Positive range <>) of access Segment_Type;
 
-	------------------------------------ Json -> Track functions ----------------------
-	-- Methods used to load Track data from a json configuration file
+	------------------------------------ Json -> Segment functions ----------------------
+	-- Methods used to load Segment data from a json configuration file
 
-	function Get_Track_Array(File_Name : String) return access Tracks_Array;
+	function Get_Segment_Array(File_Name : String) return access Segments_Array;
 
 	-- #
 	-- # A Simple Print procedure, used for debugging purposes
 	-- #
-	procedure Print(Track : access Track_Type);
+	procedure Print(Segment : access Segment_Type);
 
 private
 
-	function Get_Track(Json_Track : Json_Value) return access Track_Type;
+	function Get_Segment(Json_Segment : Json_Value) return access Segment_Type;
 
-	function Get_Track_Array(Json_v : Json_Value) return access Tracks_Array;
+	function Get_Segment_Array(Json_v : Json_Value) return access Segments_Array;
 
-end Track;
+end Segment;

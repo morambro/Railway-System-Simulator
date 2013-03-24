@@ -25,8 +25,8 @@
 ----------------------------------------------------------------------------------
 with Logger;
 with Environment;
-with Tracks;
-with Track;
+with Segments;
+with Segment;
 with Trains;
 with Route;
 with Routes;
@@ -70,39 +70,39 @@ package body Train_Pool is
 					-- # Retrieve Next station
 				Route_Index 		: Positive := Trains.Trains(Current_Descriptor_Index).Route_Index;
 				Next_Stage 			: Positive := Trains.Trains(Current_Descriptor_Index).Next_Stage;
-				-- # Retrieve next Track to travel
+				-- # Retrieve next Segment to travel
 				Next_Station 	    : Positive := Route.Get_Next_Station(Routes.All_Routes(Route_Index)(Next_Stage));
 				-- # Retrieve next platform number
 		    	Next_Platform 		: Positive := Route.Get_Next_Platform(Routes.All_Routes(Route_Index)(Next_Stage));
-				Next_Track			: Positive := Route.Get_Next_Track(Routes.All_Routes(Route_Index)(Next_Stage));
+				Next_Segment			: Positive := Route.Get_Next_Segment(Routes.All_Routes(Route_Index)(Next_Stage));
 				Leg_Length 			: Positive;
 
-				Time_In_Track 		: Float;
+				Time_In_Segment 		: Float;
 
-			-- # ######################## NEXT TRACK ACCESS ############################
+			-- # ######################## NEXT Segment ACCESS ############################
 			begin
 	--  			-- # TODO : REMOVE DEBUG CODE!!!
 	--  			if ( Trains.Trains(Current_Descriptor_Index).Id = 3333 ) then
 	--  				Trains.Trains(Current_Descriptor_Index).Current_Station := 3;
 	--  			end if;
 
-				Tracks.Tracks(Next_Track).Enter(Current_Descriptor_Index,Max_Speed,Leg_Length);
+				Segments.Segments(Next_Segment).Enter(Current_Descriptor_Index,Max_Speed,Leg_Length);
 
 				Logger.Log(
 					NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
-					" entered Track Number " & Integer'Image(Next_Track),
+					" entered Segment Number " & Integer'Image(Next_Segment),
 					Logger.NOTICE
 				);
 
-				-- # Calculate Time to Travel the current track
+				-- # Calculate Time to Travel the current Segment
 				if(Trains.Trains(Current_Descriptor_Index).Max_Speed < Max_Speed) then
 					Trains.Trains(Current_Descriptor_Index).Speed := Trains.Trains(Current_Descriptor_Index).Max_Speed;
 				else
 					Trains.Trains(Current_Descriptor_Index).Speed := Max_Speed;
 				end if;
 
-				Time_In_Track := 3.0;--Float(Leg_Length) / (Float(Current_Descriptor_Index.Speed)*0.277777778);
+				Time_In_Segment := 3.0;--Float(Leg_Length) / (Float(Current_Descriptor_Index.Speed)*0.277777778);
 
 				Logger.Log(NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) & " running at speed "
@@ -111,12 +111,12 @@ package body Train_Pool is
 
 				Logger.Log(NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
-					" will run for " & Helper.Get_String(Time_In_Track,10) & " seconds",
+					" will run for " & Helper.Get_String(Time_In_Segment,10) & " seconds",
 					Logger.NOTICE);
 
-				delay Duration (Time_In_Track);
+				delay Duration (Time_In_Segment);
 
-				Tracks.Tracks(Next_Track).Leave(Current_Descriptor_Index);
+				Segments.Segments(Next_Segment).Leave(Current_Descriptor_Index);
 
 
 				-- # ######################## NEXT STATION ACCESS ############################
@@ -130,7 +130,7 @@ package body Train_Pool is
 
 		    	Logger.Log(NAME,
 		      		"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
-		      		" leaved Track Number" & Integer'Image(Next_Track) &
+		      		" leaved Segment Number" & Integer'Image(Next_Segment) &
 			  		" entered Platform " & Integer'Image(Next_Platform) &
 		      		" at Station " & Integer'Image(Next_Station), Logger.NOTICE);
 
@@ -168,13 +168,13 @@ package body Train_Pool is
 			end;
 		exception
 
-			-- # When the train track access results in a Bad_Track_Access_Request_Exception, the
+			-- # When the train Segment access results in a Bad_Segment_Access_Request_Exception, the
 			-- # current train descriptor is discarded.
-			when E : Track.Bad_Track_Access_Request_Exception =>
+			when E : Segment.Bad_Segment_Access_Request_Exception =>
 				Logger.Log(
 					NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
-					" Track access Error : " & Exception_Message(E),
+					" Segment access Error : " & Exception_Message(E),
 					Logger.ERROR);
 		end;
 		end loop MAIN_LOOP;

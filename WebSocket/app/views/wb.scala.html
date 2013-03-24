@@ -16,7 +16,9 @@
     	
     	
     	websocket.onmessage = function(evt) { 
-    		write('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>'); 
+    		write('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+    		animate(0,0,2000);
+    		animate(1,0,1000);
     	}
     	
     	
@@ -56,26 +58,29 @@
 			width			: 400,
 			height			: 500	
 		});
-		 
-        path	= Animations.createStraightPath(r,50,90,200,90);
-        t2 		= Animations.createStraightPath(r,230,90,300,200);
+		
+		segments = new Array();
+		
+		segments[0] = Animations.createStraightPath(r,50,90,200,90);
+        segments[1] = Animations.createStraightPath(r,230,90,300,200);
         
-   		station1 = r.circle(35,90,15);
-   		
-   		station2 = r.circle(35+path.getTotalLength()+30,90,15);
+        
+        stations = new Array();
+   		stations[0] = r.circle(35,90,15);
+   		stations[1] = r.circle(35+segments[0].getTotalLength()+30,90,15);
    
-		rect = r.rect(0,0,20,20);
+		trains = new Array();
+		trains[0] = r.rect(0,0,25,15);trains[0].attr('fill',"red");
+		trains[1] = r.rect(0,0,25,15);trains[1].attr('fill',"blue");
 		
-		Animations.translate(rect,50,90);
+		//Animations.translate(rect,50,90);
 		
-		rect.attr('fill',"red");
-		
-		function animate() {
-			Animations.runElementOnPath(rect,path,2000,0,1);
+		function animate(train, path, time) {
+			Animations.runElementOnPath(trains[train],segments[path],time,0,1);
 		}
 		
 	</script>
     
-	<button onclick="animate()"> animate </button>    
+	<button onclick="animate(0,0,2000)"> animate </button>    
 }
 

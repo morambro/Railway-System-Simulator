@@ -24,7 +24,7 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 
-with Track;
+with Segment;
 with Generic_Station;
 with Regional_Station;
 with Traveler;

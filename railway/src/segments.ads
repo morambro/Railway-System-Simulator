@@ -23,10 +23,10 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-with Track;
+with Segment;
 
-package Tracks is
+package Segments is
 
-	Tracks : access Track.Tracks_Array := Track.Get_Track_Array("res/tracks.json");
+	Segments : access Segment.Segments_Array := Segment.Get_Segment_Array("res/segments.json");
 
-end Tracks;
+end Segments;

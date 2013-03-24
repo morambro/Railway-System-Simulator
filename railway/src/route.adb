@@ -31,10 +31,10 @@ package body Route is
 
 	use JSON_Helper;
 
-	function Get_Next_Track (S : Stage) return Positive is
+	function Get_Next_Segment (S : Stage) return Positive is
 	begin
-		return S.Next_Track;
-	end Get_Next_Track;
+		return S.Next_Segment;
+	end Get_Next_Segment;
 
 	function Get_Next_Station (S : Stage) return Positive is
 	begin
@@ -75,7 +75,7 @@ package body Route is
 				Json_Stage : JSON_Value := Get(Arr => J_Array,Index => I);
 			begin
 				Route(I) := (
-					Next_Track 			=> Json_Stage.Get("next_track"),
+					Next_Segment 			=> Json_Stage.Get("next_segment"),
 					Next_Station 		=> Json_Stage.Get("next_station"),
 					Platform_Index 		=> Json_Stage.Get("platform_index"),
 					Leave_At 			=>
@@ -91,7 +91,7 @@ package body Route is
     begin
     	for I in 1 .. R'Length loop
     		Ada.Text_IO.Put_Line(
-    			"Next Track       : " & Integer'Image(R(I).Next_Track) & ASCII.LF &
+    			"Next Segment       : " & Integer'Image(R(I).Next_Segment) & ASCII.LF &
     			"Next Station     : " & Integer'Image(R(I).Next_Station) & ASCII.LF &
     			"Platform Index   : " & Integer'Image(R(I).Platform_Index) & ASCII.LF
     		);
