@@ -36,7 +36,26 @@ with Ada.Strings.Unbounded;
 with Ada.Finalization;
 with Unchecked_Deallocation;
 
+with Ada.Containers.Ordered_Maps;  use Ada.Containers;
+with Ada.Containers.Vectors;
+with Queue;
+with Route;
+
 package Regional_Station is
+
+
+	package Positive_Vector_Package is new Ada.Containers.Vectors(
+		Element_Type	=> Positive,
+		Index_Type		=> Positive
+	);
+
+	type Vector_Ref is access all Positive_Vector_Package.Vector;
+
+   	package Segments_Map is new Ada.Containers.Ordered_Maps(
+   		Key_Type 		=> Positive,
+      	Element_Type 	=> Vector_Ref
+    );
+
 
 	package Unbounded_Strings renames Ada.Strings.Unbounded;
 
@@ -60,7 +79,9 @@ package Regional_Station is
 		overriding procedure Enter(
 			This 				: in		Regional_Station_Type;
 			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive);
+			Platform_Index		: in		Positive;
+			Action				: in 		Route.Action);
+
 		overriding procedure Leave(
 			This 				: in 		Regional_Station_Type;
 			Descriptor_Index	: in		Positive;
@@ -81,6 +102,11 @@ package Regional_Station is
 		overriding function Get_Platform(
 			This : Regional_Station_Type;
 			P : Natural) return access Platform.Platform_Type;
+
+		overriding procedure Add_Train(
+			This				: in 		Regional_Station_Type;
+			Train_ID			: in 		Positive;
+			Segment_ID			: in 		Positive);
 
 	-- #
 	-- # Creates a new Station instance
@@ -125,11 +151,12 @@ private
 		new Ada.Finalization.Controlled and
 		Station_Interface
 	with record
-		Name 			: aliased  Unbounded_Strings.Unbounded_String;
-		Platforms 		: Platforms_List(1..Platforms_Number);
-		Panel 			: access Notice_Panel.Notice_Panel_Entity := null;
+		Name 				: aliased  Unbounded_Strings.Unbounded_String;
+		Platforms 			: Platforms_List(1..Platforms_Number);
+		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
 		-- Indicates for each platform if it is free or not
-		Platform_Free 	: Platform_Booking(1 .. Platforms_Number) := (others => true);
+		Platform_Free 		: Platform_Booking(1 .. Platforms_Number) := (others => true);
+		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;
 	end record;
 
 end Regional_Station;

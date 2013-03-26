@@ -31,25 +31,30 @@ package body Route is
 
 	use JSON_Helper;
 
-	function Get_Next_Segment (S : Stage) return Positive is
-	begin
-		return S.Next_Segment;
-	end Get_Next_Segment;
-
-	function Get_Next_Station (S : Stage) return Positive is
-	begin
-		return S.Next_Station;
-	end Get_Next_Station;
-
-	function Get_Time_To_Leave (S : Stage) return Time is
-	begin
-		return S.Leave_At;
-    End Get_Time_To_Leave;
-
-    function Get_Next_Platform (S : Stage) return Positive is
-    begin
-		return S.Platform_Index;
-    end Get_Next_Platform;
+--  	function Get_Next_Segment (S : Stage) return Positive is
+--  	begin
+--  		return S.Next_Segment;
+--  	end Get_Next_Segment;
+--
+--  	function Get_Next_Station (S : Stage) return Positive is
+--  	begin
+--  		return S.Next_Station;
+--  	end Get_Next_Station;
+--
+--  	function Get_Time_To_Leave (S : Stage) return Time is
+--  	begin
+--  		return S.Leave_At;
+--      End Get_Time_To_Leave;
+--
+--      function Get_Next_Platform (S : Stage) return Positive is
+--      begin
+--  		return S.Platform_Index;
+--      end Get_Next_Platform;
+--
+--      function Get_Action (S : Stage) return Action is
+--      begin
+--      	return S.Train_Action;
+--      end Get_Action;
 
 	function Get_Routes (Json_File : String) return Routes is
 		Json_v 			: JSON_Value := Get_Json_Value(Json_File_Name => Json_File);
@@ -64,6 +69,15 @@ package body Route is
     end Get_Routes;
 
 
+	function StringToAction(Act : String) return Action is
+	begin
+		if Act = "PASS" then
+			return PASS;
+		end if;
+		return ENTER;
+    end Stringtoaction;
+
+
 	function Get_Route (Json_v : JSON_Value) return access Route_Type is
 		J_Array 		: JSON_Array := Json_v.Get(Field => "route");
 		Array_Length 	: constant Natural := Length (J_Array);
@@ -72,28 +86,29 @@ package body Route is
 
 		for I in 1 .. Array_length loop
 			declare
-				Json_Stage : JSON_Value := Get(Arr => J_Array,Index => I);
+				Json_Stage 	: JSON_Value := Get(Arr => J_Array,Index => I);
 			begin
 				Route(I) := (
-					Next_Segment 			=> Json_Stage.Get("next_segment"),
+					Next_Segment 		=> Json_Stage.Get("next_segment"),
 					Next_Station 		=> Json_Stage.Get("next_station"),
 					Platform_Index 		=> Json_Stage.Get("platform_index"),
 					Leave_At 			=>
-						Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Json_Stage.Get("leave_at"))
+						Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Json_Stage.Get("leave_at")),
+					Train_Action		=> StringToAction(Json_Stage.Get("action"))
 				);
 			end;
 		end loop;
 		return Route;
     end Get_Route;
 
-
     procedure Print(R : Route_Type) is
     begin
     	for I in 1 .. R'Length loop
     		Ada.Text_IO.Put_Line(
-    			"Next Segment       : " & Integer'Image(R(I).Next_Segment) & ASCII.LF &
+    			"Next Segment     : " & Integer'Image(R(I).Next_Segment) & ASCII.LF &
     			"Next Station     : " & Integer'Image(R(I).Next_Station) & ASCII.LF &
-    			"Platform Index   : " & Integer'Image(R(I).Platform_Index) & ASCII.LF
+    			"Platform Index   : " & Integer'Image(R(I).Platform_Index) & ASCII.LF &
+    			"Action           : " & (if (R(I).Train_Action = PASS) then "PASS" else "ENTER") & ASCII.LF
     		);
     	end loop;
     end Print;

@@ -69,12 +69,15 @@ package body Train_Pool is
 				Max_Speed 			: Integer  := Trains.Trains(Current_Descriptor_Index).Speed;
 					-- # Retrieve Next station
 				Route_Index 		: Positive := Trains.Trains(Current_Descriptor_Index).Route_Index;
+
 				Next_Stage 			: Positive := Trains.Trains(Current_Descriptor_Index).Next_Stage;
 				-- # Retrieve next Segment to travel
-				Next_Station 	    : Positive := Route.Get_Next_Station(Routes.All_Routes(Route_Index)(Next_Stage));
+				Next_Station 	    : Positive := Routes.All_Routes(Route_Index)(Next_Stage).Next_Station;
 				-- # Retrieve next platform number
-		    	Next_Platform 		: Positive := Route.Get_Next_Platform(Routes.All_Routes(Route_Index)(Next_Stage));
-				Next_Segment			: Positive := Route.Get_Next_Segment(Routes.All_Routes(Route_Index)(Next_Stage));
+		    	Next_Platform 		: Positive := Routes.All_Routes(Route_Index)(Next_Stage).Platform_Index;
+
+				Next_Segment		: Positive := Routes.All_Routes(Route_Index)(Next_Stage).Next_Segment;
+
 				Leg_Length 			: Positive;
 
 				Time_In_Segment 		: Float;
@@ -122,7 +125,11 @@ package body Train_Pool is
 				-- # ######################## NEXT STATION ACCESS ############################
 
 		    	-- # Train enters Next Station
-				--Environment.Get_Regional_Stations(Next_Station).Enter(Current_Descriptor_Index,Next_Platform);
+				Environment.Get_Regional_Stations(Next_Station).Enter(
+					Descriptor_Index	=> Current_Descriptor_Index,
+					Platform_Index		=> Next_Platform,
+					Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Train_Action
+				);
 
 				Rand_Int.Reset(seed);
 

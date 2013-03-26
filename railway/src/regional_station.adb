@@ -27,6 +27,7 @@
 with Ada.Text_IO;use Ada.Text_IO;
 with Logger;
 with Environment;
+with Route;use Route;
 
 package body Regional_Station is
 
@@ -36,9 +37,13 @@ package body Regional_Station is
 	procedure Enter(
 			This 				: in		Regional_Station_Type;
 			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive) is
+			Platform_Index		: in		Positive;
+			Action				: in 		Route.Action) is
 	begin
-		This.Platforms(Platform_Index).Enter(Descriptor_Index);
+
+		if Action = Route.ENTER then
+			This.Platforms(Platform_Index).Enter(Descriptor_Index);
+		end if;
 	end Enter;
 
 
@@ -84,6 +89,33 @@ package body Regional_Station is
     end Wait_For_Train_To_Arrive;
 
 
+	overriding procedure Add_Train(
+			This				: in 		Regional_Station_Type;
+			Train_ID			: in 		Positive;
+			Segment_ID			: in 		Positive) is
+	begin
+		if not This.Segments_Map_Order.Contains(Segment_ID) then
+			Logger.Log(
+				Sender 	=> "Regional_Station",
+				Message => "Created List for Segment " & Integer'Image(Segment_ID),
+				L 		=> Logger.DEBUG
+			);
+			declare
+				R : Vector_Ref := new Positive_Vector_Package.Vector;
+			begin
+				This.Segments_Map_Order.Insert(
+					Key 		=> Segment_ID,
+					New_Item 	=> R);
+			end;
+		end if;
+		Logger.Log(
+			Sender 	=> "Regional_Station",
+			Message => "Adding Train " & Integer'Image(Train_ID),
+			L 		=> Logger.DEBUG
+		);
+		This.Segments_Map_Order.Element(Segment_ID).Append(Train_ID);
+    end Add_Train;
+
 
 	function New_Regional_Station(
 			Platforms_Number 	: in		Positive;
@@ -101,7 +133,7 @@ package body Regional_Station is
 
 
 
-	procedure Print(This : in Regional_Station_Type) is
+	overriding procedure Print(This : in Regional_Station_Type) is
 	begin
 		Put_Line ("Name : " & Unbounded_Strings.To_String(This.Name));
 		Put_Line ("Platform Number : " & Integer'Image(This.Platforms_Number));
@@ -114,7 +146,7 @@ package body Regional_Station is
     	return This.Platforms(P);
     end Get_Platform;
 
--------------------------------------- JSON - Regional Station --------------------------------------
+-- ################################################ JSON - Regional Station ##########################################
 
 	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref
 	is

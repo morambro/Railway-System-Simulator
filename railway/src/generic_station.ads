@@ -33,6 +33,8 @@ with Unchecked_Deallocation;
 with Ada.Finalization;
 with Platform;
 
+with Route;
+
 package Generic_Station is
 
 	---------------------------------- STATION INTERFACE --------------------------------------
@@ -42,7 +44,8 @@ package Generic_Station is
 		procedure Enter(
 			This 				: in		Station_Interface;
 			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive)
+			Platform_Index		: in		Positive;
+			Action				: in 		Route.Action)
 		is abstract;
 
 		procedure Leave(
@@ -71,6 +74,12 @@ package Generic_Station is
 		is abstract;
 
 		procedure Print(This : in Station_Interface) is abstract;
+
+		procedure Add_Train(
+			This				: in 		Station_Interface;
+			Train_ID			: in 		Positive;
+			Segment_ID			: in 		Positive
+		) is abstract;
 
 
 	-- End Of the Interface

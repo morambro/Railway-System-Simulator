@@ -130,6 +130,10 @@ package body Platform is
 			Put_Line("END");
 		end Enter;
 
+
+		-- #
+		-- #
+		-- #
 		procedure Leave(Train_D : in Positive) is
 			Leaving_Number 	: Count_Type := Leaving_Queue.Current_Use;
 			T_Manager		: Positive;

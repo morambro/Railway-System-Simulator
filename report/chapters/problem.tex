@@ -1,0 +1,30 @@
+\chapter{Il problema}
+
+Il progetto didattico prevede la progettazione e la realizzazione di un simulatore software di un sistema ferroviario. Tale sistema prevede i seguenti requisiti di base (la specifica originale è consultabile all'indirizzo \url{http://www.math.unipd.it/~tullio/SCD/2005/Progetto.html}):
+	\begin{itemize}
+		\item La presenza di Treni appartenenti a categorie a priorità e modalità di fruizione diverse. 
+		\item La presenza di Viaggiatori, che eseguono operazioni elementari come acquisto di un biglietto, salita/discesa su/da un Treno, ecc.
+		\item La definizione di un ambiente costituito da un insieme di Stazioni, ciascuna composta da:
+			\begin{itemize}
+				\item Piattaforme di attesa per Treni e Viaggiatori.
+				\item Un Pannello Informativo che visualizza informazioni sui Treni in arrivo, in transito e che hanno appena superato la Stazione corrente.
+				\item Una Biglietteria, presso la quale un Viaggiatore può acquistare un biglietto di viaggio.
+			\end{itemize}
+		\item La presenza di Segmenti di collegamento tra Stazioni, a percorrenza bidirezionale.
+		\item La presenza di un entità di controllo globale che mantiene lo stato di ciascun Viaggiatore e ciascun Treno in transito.
+		\item L'obbligo da parte di un Viaggiatore di acquistare un Biglietto prima di poter usufruire del servizio ferroviario.
+		\item La presenza di collegamenti multipli tra Stazioni, ovvero ciascuna Stazione può essere raggiunta da più Segmenti e da ciascuna stazione possono partire più segmenti.
+		\item Il percorso portato a termine da un Viaggiatore può comprendere cambi di treno.
+	\end{itemize}
+
+\section{Specifica arricchita}
+
+La soluzione presentata con il seguente documento, è relativa alla seguente raffinamento della specifica originaria:
+	\begin{itemize}
+		\item Ciascun Treno appartiene ad una delle seguenti due categorie:
+			\begin{description}
+				\item {\bb{Regionale}}\\Treno a bassa priorità, senza posto garantito.
+				\item {\bb{FB}}\\Treno a priorità più alta, che necessita prenotazione.
+			\end{description}
+		\item Ciascun Treno possiede una capienza massima di Viaggiatori.
+	\end{itemize}

@@ -31,16 +31,27 @@ with Ada.Real_Time;use Ada.Real_Time;
 with Gnatcoll.JSON; use Gnatcoll.JSON;
 package Route is
 
-	type Stage is private;
+	type Action is (ENTER,PASS);
+
+--  	type Stage is private;
+	type Stage is record
+	    -- Indexes of next Segment and Station
+		Next_Segment    : Positive;
+	    Next_Station    : Positive;
+        Platform_Index 	: Positive;
+		Leave_At        : Time;
+		Train_Action	: Action;
+	end record;
 
 	type Route_Type is array (Positive range <>) of Stage;
 
 	type Routes is array (Positive range <>) of access Route_Type;
 
-	function Get_Next_Segment (S : Stage) return Positive;
-	function Get_Next_Station (S : Stage) return Positive;
-	function Get_Time_To_Leave (S : Stage) return Time;
-    function Get_Next_Platform (S : Stage) return Positive;
+--  	function Get_Next_Segment (S : Stage) return Positive;
+--  	function Get_Next_Station (S : Stage) return Positive;
+--  	function Get_Time_To_Leave (S : Stage) return Time;
+--      function Get_Next_Platform (S : Stage) return Positive;
+--      function Get_Action (S : Stage) return Action;
 
 	function Get_Route(Json_v : JSON_Value) return access Route_Type;
 
@@ -48,15 +59,16 @@ package Route is
 
 	procedure Print(R : Route_Type);
 
-private
-
-	type Stage is record
-	    -- Indexes of next Segment and Station
-		Next_Segment      : Positive;
-	    Next_Station    : Positive;
-        Platform_Index 	: Positive;
-		Leave_At        : Time;
-	end record;
+--  private
+--
+--  	type Stage is record
+--  	    -- Indexes of next Segment and Station
+--  		Next_Segment    : Positive;
+--  	    Next_Station    : Positive;
+--          Platform_Index 	: Positive;
+--  		Leave_At        : Time;
+--  		Train_Action	: Action;
+--  	end record;
 
 
 end Route;

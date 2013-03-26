@@ -191,17 +191,26 @@ package body Segment is
 					end if;
 				end if;
 
-				-- Now re-queue the train to the proper platform.
+--  				-- Now re-queue the train to the proper platform.
  				if Current_Direction /= First_End then
-					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
-						-- # At this point, I am sure the Next_Segment index would not have been incremented yet
-						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
-					).Enter;
+--  					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
+--  						-- # At this point, I am sure the Next_Segment index would not have been incremented yet
+--  						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
+--  					).Enter;
+					Environment.Get_Regional_Stations(First_End).Add_Train(
+						Train_ID 	=> Train_D,
+						Segment_ID	=> Id
+					);
 				else
-					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
-						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
-					).Enter;
+--  					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
+--  						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
+--  					).Enter;
+					Environment.Get_Regional_Stations(Second_End).Add_Train(
+						Train_ID 	=> Train_D,
+						Segment_ID	=> Id
+					);
 				end if;
+
 
 			else
 				Logger.Log(
@@ -250,16 +259,16 @@ package body Segment is
 					end if;
 				end if;
 
-				-- Now re-queue the train to the proper platform.
- 				if Current_Direction /= First_End then
-					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
-						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
-					).Enter;
-				else
-					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
-						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
-					).Enter;
-				end if;
+--  				-- Now re-queue the train to the proper platform.
+--   				if Current_Direction /= First_End then
+--  					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
+--  						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
+--  					).Enter;
+--  				else
+--  					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
+--  						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
+--  					).Enter;
+--  				end if;
 
 			else
 				Logger.Log(
