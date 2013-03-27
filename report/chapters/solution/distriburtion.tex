@@ -1,0 +1,36 @@
+\section{Logica di Distribuzione}
+
+Un diagramma infromale delle componenti distribuite che compongono il sistema è presentato in figura X. Di seguito verranno descritte le principali.
+	
+	\subsection{Regioni}\label{sec:distr_regioni}
+	
+	La simulazione è stata suddivisa in Regioni, le quali risiederanno su nodi di calcolo diversi. Questa scelta aggiunge i seguenti requisiti minimi alla specifica iniziale:
+	\begin{itemize}
+		\item I Treni, se previsto dal percorso, possono viaggiare da una Regione all'altra.
+		\item I Passeggeri possono raggiungere destinazioni in Regioni diverse.
+		\item Esisteranno stazioni che chiameremo di Gateway che permettono a Treni e Passeggeri di raggiungere Regioni diverse. 
+		\item Deve essere garantita consistenza temporale nel passaggio da una Regione ad un'altra.
+	\end{itemize}
+	Da questa scelta consegue inoltre l'introduzione di un semplice Server dei Nomi che mantiene traccia di ciascuna Regione, in modo tale da rendere agevole la risoluzione della locazione alla quale l'entità si trova. 
+	
+	
+	
+	\subsection{Biglietterie}
+	
+	Per poter gestire meglio la definizione di un percorso e l'erogazione di un Biglietto per un Viaggiatore, ho pensato di introdurre una gerarchia su due livelli, di Biglietterie. Ci saranno dunque tre categorie di biglietterie:
+		\begin{description}
+			\item {\bb{Biglietterie di Stazione}} \\
+			Forniscono un'interfaccia adeguata ai Viaggiatori per poter acquistare un biglietto.
+			\item {\bb{Biglietterie Regionali}}\\
+			Hanno conoscenza regionale della topologia del grafo composto da Stazioni e Segmenti.
+			\item {\bb{Biglietteria Cantrale}} \\ 
+			Ha conoscenza di più alto livello; in particolare, essa mantiene traccia delle connessioni tra le varie regioni ( ovvero i collegamenti tra Stazioni di Gateway di regioni diverse).
+		\end{description} 
+	
+	\subsection{Controller Centrale}
+		
+	Il Conterollo Centrale è una entità distribuita, alla quale tutti i nodi inviano Eventi per notificare lo stato di avanzamento globale della simulazione. Esso fornisce una interfaccia alle varie Regioni per ricevere gli Eventi, ed un'interfaccia per permettere a client remoti di poter visualizzare gli effetti di tali Eventi. Quest'ultima possibilità è ottenuta mediante un meccanismo di tipo Publish/Subscribe, attraverso il quale client remoti possono registrarsi presso il Controller per ricevere, in modalità Push, gli Eventi.
+	In questo modo è possibile per un qualsiasi client interfacciarsi al Controller e fornire, ad esempio, una rappresentazione grafica della simulazione.
+
+	Il Controller sarà anche responsabile dell'invio di un \ii{segnale di terminazione}, che verrà recapitato a tutti i nodi che componegono la simulazione. 
+\newpage

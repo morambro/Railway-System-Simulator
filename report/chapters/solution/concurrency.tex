@@ -1,0 +1,75 @@
+\section{Logica di Concorrenza}
+
+Internamente a ciascuna Regione di simulazione, sono definite entità che modellano le interazioni previste dalla specifica del problema. Di seguito sono descritte le principali.
+
+	
+	%  ################################################# SEGMENTO ######################################################
+	\subsection{Segmento}
+	
+	Un Segmento (\ttt{Segment}) è modellato come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità N}, dove \ttt{N} è il numero massimo di utilizzatori, la quale fornisce un'interfaccia utilizzabile da entità attive di tipo Treno per accedere ed uscire in maniera ordinata. Esso è caratterizzato da:
+			\begin{itemize}
+				\item le due stazioni che esso collega;
+				\item una lunghezza;
+				\item una velocità massima di percorrenza.
+				\item un flag booleano \ttt{Free} che indica lo stato della risorsa, occupata o no.
+			\end{itemize}
+
+
+	%  ################################################# VIAGGIATORE ######################################################
+	\subsection{Viaggiatore}\label{subsec:traveler_def}		
+	
+	In prima analisi, un Viaggiatore (\ttt{Traveler}) può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici.
+	La modellazione dell'entità Viaggiatore come Attiva non può però essere semplicemente associata ad un processo, soprattutto in presenza di un modello di distribuzione come quello presentato in sezione \ref{sec:distr_regioni}.
+	In questa ipotesi infatti, nel caso in cui un Viaggiatore si spostasse da una Regione ad un'altre, avremmo a disposizione solo due possibili soluzioni:
+		\begin{itemize}
+			\item La migrazione del processo che rappresenta il Viaggiatore sul nodo (Regioni) di destinazione, come distruzione del processo sul nodo di partenza e creazione dinamica dello stesso sul nodo destinazione. Questa operazione è in generale computazionalmente molto costosa. 
+			\item La replicazione del processo che rappresenta il Viaggiatore su tutti i nodi, e l'attivazione, intesa come cambio di stato del processo in modo tale che possa competere per la CPU; tale soluzione è molto costosa in termini di memoria utilizzata, e non scala all'aumentare del numero di passeggeri.
+		\end{itemize}
+	La soluzione adottata consiste nel disaccoppiare le operazioni svolte da ciascun Viaggiatore dal processo che le esegue, prevedendo una struttura dati costituita da:
+		\begin{itemize}
+			\item un \ii{pool di M processi} dimensionato in maniera opportuna;
+			\item una \ii{coda di operazioni} che man mano vengono estratte ed eseguite dai processi nel pool.
+		\end{itemize}
+	In questo modo è sufficiente replicare per ciascun Viaggiatore, su tutti i nodi che compongono il sistema, una struttura dati che contiene i suoi dati e le operazioni che esso eseguirà. 
+	Il cambio di Regione di un Viaggiatore sarà quindi potrà essere ottenuto semplicemente inserendo la prossima operazione da eseguire per il Viaggiatore nella coda del pool di processi del nodo destinazione.
+	
+	%  ################################################# TRENO ######################################################
+	\subsection{Treno}
+	Un Treno (\ttt{Train}) è una \ii{entità Attiva}, la quale esegue ciclicamente un numero finito di operazioni. Ciascuna entità Treno può appartenere a due categorie, FB a priorità più alta, e Regionale a priorità minore, ed è caratterizzata da:
+		\begin{itemize}
+			\item un identificativo univoco;
+			\item una capienza massima;
+			\item una velocità massima raggiungibile;
+			\item una velocità corrente;
+		\end{itemize}
+	
+	Anche in questo caso come per le entità di tipo Viaggiatore, ciascuna entità non viene mappata su un singolo processo. Infatti anche per le entità di tipo Treno ciò comporterebbe una complessa e costosa, in termini computazionali e di memoria, gestione del passaggio da un nodo (Regione) ad un altro. Ho optato invece nel progettare una struttura dati che mantiene:
+		\begin{itemize}
+			\item una coda di Descrittori di Treno, che contengono tutte le informazioni che distinguono una entità Treno;
+			\item un pool di processi a dimensionato in maniera opportuna; ciascun processo sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni.
+		\end{itemize}
+	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta.
+				
+	%  ################################################# STAZIONE ######################################################
+	\subsection{Stazione}
+	
+	Una Stazione (\ttt{Station}) è modellata come una struttura dati contenete:
+		\begin{itemize}
+			\item un certo numero $ n > 2$ di Piattaforme (\ttt{Platform});
+			\item una Biglietteria (\ttt{Ticket\_Office});
+			\item un Pannello Informativo (\ttt{Notice\_Panel}).
+		\end{itemize}
+	Essa offre una interfaccia alle entità Treno e Viaggiatore per l'accesso a Piattaforme e Biglietteria.
+		
+		\subsubsection{Piattaforma}
+	
+		Una Piattaforma è modellata come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di potervi sostare ed effettuare discesa e salita delle entità Passeggero o di poter superare la stazione, e alle entità Passeggero di accodarsi in attesa di uno specifico Treno.
+		
+		\subsubsection{Biglietteria}
+		
+		Una Piattaforma è modellata come una interfaccia che permette al Viaggiatore di acquisire un Biglietto di viaggio. 
+		
+		\subsubsection{Pannello Informativo}
+		
+		Una Piattaforma è modellata come una \ii{entità reattiva con agente di controllo, a molteplicità 1}. Esso espone una interfaccia tale da permettere alla stazione di notificare lo stato delle entità Treno che stanno arrivando, quelle in sosta e quelle in partenza.
+\newpage
