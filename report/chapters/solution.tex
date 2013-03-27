@@ -55,25 +55,9 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 
 	%  ################################################# VIAGGIATORE ######################################################
 %		\item {\bb{Viaggiatore}} \\
-	\subsection{Viaggiatore}			
+	\subsection{Viaggiatore}\label{subsec:traveler_def}		
 	
-	In prima analisi, un Viaggiatore \ttt{Traveler} può essere modellato come una \ii{entità Attiva} che esegue le seguenti semplici operazioni:
-		\begin{itemize}
-			\item Acquisto di un Biglietto (\ttt{Ticket}) presso la Biglietteria della Stazione (\ttt{Ticket\_Office}) di partenza. Ciascun Biglietto è composto da una sequenza ordinata di Tappe (\ttt{Ticket\_Stages}), ciascuna composta da:
-				\begin{verbatim}
-					- start_station
-					- next_station
-					- train_id 
-					- start_platform 
-					- destination_platform
-				\end{verbatim}
-			\item Una volta ottenuto un Ticket, vengono eseguite le seguenti operazioni per ciascuna Tappa del Biglietto:
-				\begin{itemize}
-					\item Accodamento presso la Piattaforma \ttt{start\_platform} della Stazione \ttt{start\_station} in attesa del Treno \ttt{train\_id}.
-					\item All'arrivo del treno \ttt{train\_id}, Accodamento presso la Piattaforma \ttt{destination\_platform} della Stazione \ttt{next\_station} in attesa dell'arrivo di \ttt{train\_id}. 
-				\end{itemize}
-		\end{itemize} 
-	
+	In prima analisi, un Viaggiatore \ttt{Traveler} può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici.
 	La modellazione dell'entità Viaggiatore come Attiva non può però essere semplicemente associata ad un processo, soprattutto in presenza di un modello di distribuzione come quello presentato in sezione \ref{sec:distr_regioni}.
 	In questa ipotesi infatti, nel caso in cui un Viaggiatore si spostasse da una Regione ad un'altre, avremmo a disposizione solo due possibili soluzioni:
 		\begin{itemize}
@@ -86,26 +70,24 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 			\item una \ii{coda di operazioni} che man mano vengono estratte ed eseguite dai processi nel pool.
 		\end{itemize}
 	In questo modo è sufficiente replicare per ciascun Viaggiatore, su tutti i nodi che compongono il sistema, una struttura dati che contiene i suoi dati e le operazioni che esso eseguirà. 
-	Il cambio di Regione di un Viaggiatore sarà quindi potrà essere ottenuto semplicemente inserendo la prossima operazione da eseguire per il Viaggiatore nella coda del pool di processi del nodo destinazione.  
-		
+	Il cambio di Regione di un Viaggiatore sarà quindi potrà essere ottenuto semplicemente inserendo la prossima operazione da eseguire per il Viaggiatore nella coda del pool di processi del nodo destinazione.
+	
 	%  ################################################# TRENO ######################################################
 	\subsection{Treno}
-			Un Treno (\ttt{Train}) è una \ii{entità Attiva}, la quale esegue ciclicamente un numero finito di operazioni. A ciascuna entità Treno, è assegnato un Percorso (\ttt{Route}) di andata e un Percorso di ritorno, ovvero sequenze di Tappe (\ttt{Stage}) successive, ciascuna composta dalla n-upla:
-				\begin{center}
-					\begin{verbatim}
-						       <next_segment,next_station,next_platfom,action>
-					\end{verbatim}
-				\end{center}
-dove \ttt{action} indica quello che un Treno dovrà compiere presso la prossima stazione, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione.
-
-Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di andata o di ritorno):
-				\begin{itemize}
-					\item Accesso al prossimo Segmento \ttt{next\_segment} previsto.
-					\item Percorrenza all'interno del Segmento come attesa finita di durata proporzionale alla lunghezza del Segmento e alla velocità massima alla quale il Treno può percorrerlo.
-					\item Uscita dal Segmento e richiesta di Accesso alla Stazione successiva (\ttt{next\_station}) presso la Piattaforma indicata da \ttt{next\_platfom}, per eseguire l'azione \ttt{action}.
-					\item Se \ttt{action = ENTER} allore effettua discesa e salita dei Viaggiatori in attesa dell'arrivo del Treno.
-					\item Uscita dalla Piattaforma \ttt{next\_platfom}.
-				\end{itemize}
+	Un Treno (\ttt{Train}) è una \ii{entità Attiva}, la quale esegue ciclicamente un numero finito di operazioni. Ciascuna entità Treno può appartenere a due categorie, FB a priorità più alta, e Regionale a priorità minore, ed è caratterizzata da:
+		\begin{itemize}
+			\item un identificativo univoco;
+			\item una capienza massima;
+			\item una velocità massima raggiungibile;
+			\item una velocità corrente;
+		\end{itemize}
+	
+	Anche in questo caso come per le entità di tipo Viaggiatore, ciascuna entità non viene mappata su un singolo processo. Infatti anche per le entità di tipo Treno ciò comporterebbe una complessa e costosa, in termini computazionali e di memoria, gestione del passaggio da un nodo (Regione) ad un altro. Ho optato invece nel progettare una struttura dati che mantiene:
+		\begin{itemize}
+			\item una coda di Descrittori di Treno, che contengono tutte le informazioni che distinguono una entità Treno;
+			\item un pool di processi a dimensionato in maniera opportuna; ciascun processo sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni.
+		\end{itemize}
+	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta.
 				
 	%  ################################################# STAZIONE ######################################################
 	\subsection{Stazione}
@@ -134,7 +116,43 @@ Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di anda
 
 	\subsection{Viaggio di un Viaggiatore}
 	
+	Alla luce della definizione dell'entità Viaggiatore in sezione \ref{subsec:traveler_def}, è possibile definire le azioni che compongono il viaggio:
+		\begin{itemize}
+			\item Acquisto di un Biglietto (\ttt{Ticket}) presso la Biglietteria della Stazione (\ttt{Ticket\_Office}) di partenza. Ciascun Biglietto è composto da una sequenza ordinata di Tappe (\ttt{Ticket\_Stages}), ciascuna contenente:
+				\begin{verbatim}
+					- start_station
+					- next_station
+					- train_id 
+					- start_platform 
+					- destination_platform
+				\end{verbatim}
+			\item Una volta ottenuto un Ticket, vengono eseguite le seguenti operazioni per ciascuna Tappa del Biglietto:
+				\begin{itemize}
+					\item Accodamento presso la Piattaforma \ttt{start\_platform} della Stazione \ttt{start\_station} in attesa del Treno \ttt{train\_id}.
+					\item All'arrivo del treno \ttt{train\_id}, Accodamento presso la Piattaforma \ttt{destination\_platform} della Stazione \ttt{next\_station} in attesa dell'arrivo di \ttt{train\_id}. 
+				\end{itemize}
+		\end{itemize} 
+	Le tre operazioni sopraelencate possono essere incapsulate in strutture dati che rappresentano una specifica operazione. In questo modo viene generata una gerarchia di operazioni, tutte derivanti da un'unica operazione generica.
+	
 	\subsection{Viaggio di un Treno}
+	
+	A ciascuna entità Treno, è assegnato un Percorso (\ttt{Route}) di andata e un Percorso di ritorno, ovvero sequenze di Tappe (\ttt{Stage}) successive, ciascuna composta dalla n-upla:
+				\begin{center}
+					\begin{verbatim}
+						       <next_segment,next_station,next_platfom,action>
+					\end{verbatim}
+				\end{center}
+dove \ttt{action} indica quello che un Treno dovrà compiere presso la prossima stazione, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione.
+
+Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di andata o di ritorno):
+				\begin{itemize}
+					\item Accesso al prossimo Segmento \ttt{next\_segment} previsto.
+					\item Percorrenza all'interno del Segmento come attesa finita di durata proporzionale alla lunghezza del Segmento e alla velocità massima alla quale il Treno può percorrerlo.
+					\item Uscita dal Segmento e richiesta di Accesso alla Stazione successiva (\ttt{next\_station}) presso la Piattaforma indicata da \ttt{next\_platfom}, per eseguire l'azione \ttt{action}.
+					\item Se \ttt{action = ENTER} allore effettua discesa e salita dei Viaggiatori in attesa dell'arrivo del Treno.
+					\item Uscita dalla Piattaforma \ttt{next\_platfom}.
+				\end{itemize}
+	
 	
 	
 	
