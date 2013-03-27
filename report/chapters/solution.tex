@@ -36,6 +36,7 @@ Un diagramma infromale delle componenti distribuite che compongono il sistema è
 	Il Conterollo Centrale è una entità distribuita, alla quale tutti i nodi inviano Eventi per notificare lo stato di avanzamento globale della simulazione. Esso fornisce una interfaccia alle varie Regioni per ricevere gli Eventi, ed un'interfaccia per permettere a client remoti di poter visualizzare gli effetti di tali Eventi. Quest'ultima possibilità è ottenuta mediante un meccanismo di tipo Publish/Subscribe, attraverso il quale client remoti possono registrarsi presso il Controller per ricevere, in modalità Push, gli Eventi.
 	In questo modo è possibile per un qualsiasi client interfacciarsi al Controller e fornire, ad esempio, una rappresentazione grafica della simulazione.
 
+	Il Controller sarà anche responsabile dell'invio di un \ii{segnale di terminazione}, che verrà recapitato a tutti i nodi che componegono la simulazione. 
 \newpage
 \section{Architettura Logica Concorrente}
 
@@ -45,19 +46,19 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	%  ################################################# SEGMENTO ######################################################
 	\subsection{Segmento}
 	
-	Un Segmento (\ttt{Segment}) è modellato come una \ii{entità reattiva con agente di controllo a molteplicità N}, dove \ttt{N} è il numero massimo di utilizzatori, la quale fornisce un'interfaccia utilizzabile da entità attive di tipo Treno per accedere ed uscire in maniera ordinata. Esso è caratterizzato da:
+	Un Segmento (\ttt{Segment}) è modellato come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità N}, dove \ttt{N} è il numero massimo di utilizzatori, la quale fornisce un'interfaccia utilizzabile da entità attive di tipo Treno per accedere ed uscire in maniera ordinata. Esso è caratterizzato da:
 			\begin{itemize}
 				\item le due stazioni che esso collega;
 				\item una lunghezza;
 				\item una velocità massima di percorrenza.
+				\item un flag booleano \ttt{Free} che indica lo stato della risorsa, occupata o no.
 			\end{itemize}
 
 
 	%  ################################################# VIAGGIATORE ######################################################
-%		\item {\bb{Viaggiatore}} \\
 	\subsection{Viaggiatore}\label{subsec:traveler_def}		
 	
-	In prima analisi, un Viaggiatore \ttt{Traveler} può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici.
+	In prima analisi, un Viaggiatore (\ttt{Traveler}) può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici.
 	La modellazione dell'entità Viaggiatore come Attiva non può però essere semplicemente associata ad un processo, soprattutto in presenza di un modello di distribuzione come quello presentato in sezione \ref{sec:distr_regioni}.
 	In questa ipotesi infatti, nel caso in cui un Viaggiatore si spostasse da una Regione ad un'altre, avremmo a disposizione solo due possibili soluzioni:
 		\begin{itemize}
@@ -94,7 +95,7 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	
 	Una Stazione (\ttt{Station}) è modellata come una struttura dati contenete:
 		\begin{itemize}
-			\item un certo numero n > 2 di Piattaforme (\ttt{Platform});
+			\item un certo numero $ n > 2$ di Piattaforme (\ttt{Platform});
 			\item una Biglietteria (\ttt{Ticket\_Office});
 			\item un Pannello Informativo (\ttt{Notice\_Panel}).
 		\end{itemize}
@@ -102,7 +103,7 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 		
 		\subsubsection{Piattaforma}
 	
-		Una Piattaforma è modellata come una \ii{entità reattiva con agente di controllo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di potervi sostare ed effettuare discesa e salita delle entità Passeggero o di poter superare la stazione, e alle entità Passeggero di accodarsi in attesa di uno specifico Treno.
+		Una Piattaforma è modellata come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di potervi sostare ed effettuare discesa e salita delle entità Passeggero o di poter superare la stazione, e alle entità Passeggero di accodarsi in attesa di uno specifico Treno.
 		
 		\subsubsection{Biglietteria}
 		
@@ -153,6 +154,54 @@ Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di anda
 					\item Uscita dalla Piattaforma \ttt{next\_platfom}.
 				\end{itemize}
 	
+		\subsubsection{Accesso al prossimo Segmento}
+		
+		L'accesso alla risorsa protetta Segmento è regolato da una interfaccia ben definita, che permette:
+			\begin{itemize}
+				\item Ingresso.
+				\item Uscita.
+			\end{itemize}
+		Per mantenere l'ordine di accesso, ciascun Segmento è dotato di una Coda FIFO (\ttt{Train\_Queue}) che conterrà i Descrittori dei Treni correntemente in transito.
+		\begin{description}
+			\item {\bb{Ingresso}} \\
+			La richiesta di accesso al segmento avviene in mutua esclusione tra tutti le entità Treno. In ogni momento quindi solo una entità eseguirà all'interno della risorsa protetta. Una volta ottenuta la risorsa ciascun Treno compie le seguenti operazioni
+			 \begin{itemize}
+			 	\item Inserimento del Descrittore nella coda \ttt{Train\_Queue};
+			 	\item Aggiornamento della velocità di percorrenza del Treno entrato in base a quella dei treni che lo precedono.
+			 	\item Nel caso in cui la risorsa risulti vuota (viene consultato il flag booleano che mantiene questa informazione), allora viene modificato il valore del flag in modo tale da indicare lo stato occupato della risorsa, e memorizzata la stazione di provenienza del Treno.
+			\end{itemize}
+			Una volta terminate queste due operazioni, il Treno rilascia la risorsa e, basandosi sulla lunghezza e sulla velocità da mantenere, simula la percorrenza rendendosi inattivo (non competitivo per l'ottenimento della CPU) per un tempo dato dalla semplice equazione: $ Time = Segment\_Length / Actual\_Speed $.
+			
+			Nel caso in cui una volta ottenuta la risorsa protetta Segmento, un Treno richiedesse l'accesso nella direzione opposta a quella dei Treni che percorrono il Segmento (ovvero abbiamo la situazione in cui il flag booleano indica lo stato occupato, e la stazione di provenienza memorizzata presso il Segmento è diversa da quella del Treno richiedente) allora questo dovrà attendere fino a che il Segmento non sarà si sarà liberato dai treni in transito.
+			
+			Una prima soluzione possibile è quella di prevedere una coda di attesa interna alla risorsa Segmento (\ttt{Waiting\_Queue}), per i Treni provenienti dalla direzione opposta rispetto al senso di marcia corrente: tali Treni dovranno avere priorità maggiore nell'accedere al Segmento appena esso diventa vuoto, rispetto ad altri Treni che sopraggiungono successivamente.
+			
+			Questa prima modellazione, non risulta però sufficiente a garantire che i Treni nella coda avranno accesso al Segmento in qualche momento: infatti vi è il rischio di portare a Starvation dei Treni in attesa. Si consideri la presenza di un percorso circolare composto da N Segmenti, e di M Treni che viaggiano lungo tale percorso in senso orario, in modo tale che in ogni istante ci sia almeno un treno all'interno di ciascun Segmento. Se ora aggiungiamo al sistema un Treno che viaggia in direzione opposta, allora esso, adottando la semantica di accesso descritta non riuscirà mai a percorrere uno dei Segmenti.			
+			
+			 %Questo problema può essere evitato aggiungendo un parametro al Segmento che determina il massimo numero di Treni che, da ciascuna direzione, possono circolare su di esso. Una volta che esso è stato raggiunto, i Treni che dovessero sopraggiungere con lo stesso senso di marcia rispetto ai treni in transito verranno accodati internamente alla risorsa, con priorità minore di accedere successivamente rispetto ai treni nella coda \ttt{Waiting\_Queue}, ma maggiore rispetto ai Treni che richiedono l'accesso dall'esterno.
+			
+			Una possibile soluzione al problema, è mantenere nella coda \ttt{Waiting\_Queue} tutte le entità Treno che non possono accedere correntemente, sia perché provenienti dalla direzione opposta, sia perché il numero massimo di accessi da una direzione è stato raggiunto. In questo modo la semantica di accesso viene modificata come segue:
+				\begin{itemize}
+					\item Se \ttt{Free = True} allora il Treno corrente 
+						\begin{itemize}
+							\item Modifica il valore di \ttt{Free} a \ttt{False}.
+							\item Imposta la Stazione provenienza con la propria.
+							\item Incrementa di 1 il contatore di accessi.
+						\end{itemize}
+					\item Se invece \ttt{Free = False} allora
+						\begin{itemize}
+							\item Se la stazione di provenienza del Treno corrente è diversa da quella memorizzata nel Segmento, allora inserisci il Treno nella coda \ttt{Waiting\_Queue} e STOP.
+							\item Altrimenti 
+								\begin{itemize}
+									\item Se il contatore di accessi è $ < $ del limite massimo incrementa di 1 il contatore di accessi.
+									\item Altrimenti accoda il Treno su \ttt{Waiting\_Queue} e STOP.
+								\end{itemize}
+						\end{itemize}
+					\item Se il Treno ha avuto accesso al Segmento, inserisci il Descrittore del Treno nella coda \ttt{Train\_Queue} e modifica velocità di transito del Treno a seconda della massima velocità possibile.
+				\end{itemize}
+			
+			
+		\end {description}
 	
 	
 	

@@ -120,8 +120,7 @@ package body Segment is
 		entry Wait(
 			To_Add 		: 	in 	 	Positive;
 			Max_Speed 	: 		out Positive;
-			Leg_Length 	: 		out Positive)
-			when Can_Retry_Enter is
+			Leg_Length 	: 		out Positive) when Can_Retry_Enter is
 		begin
 
 			if Free then

@@ -1,0 +1,46 @@
+% ########################################### DISTRIBUZIONE ##################################################
+\section{Distribuzione}
+
+Le problematiche legate alla distribuzione sono molteplici. Nel progetto di un simulatore di un sistema ferroviario infatti, la presenza di entità distribuite è auspicabile, sia per suddividere logicamente le entità, sia per distribuire l'onere di calcolo su nodi differenti.
+Le caratteristiche desiderabili da un sistema dostribuito che simula una struttura ferroviaria sono:
+	\begin{itemize}
+		\item Il complesso deve apparire all'utente come un sistema unitario, la natura distibuita del sistema deve essere nascosta all'utilizzatore finale. 
+		\item L'architettura distribuita non deve limitare le funzionalità desiderate.
+		\item \'E desiderabile che vi sia un buon grado di disaccoppiamento tra le componenti, e dalle tecnologie adottate per la comunicazione tra nodi della rete.
+		\item Il sistema dovrà essere il più possibile robusto agli errori.
+		\item La progettazione architetturale deve prevedere un meccanismo che permetta Avvio del sistema e Terminazione ordinata.
+		\item L'architettura distribuita deve sottostare a vincoli temporali propri di un sistema ferroviario.
+		\item La struttura distribuita deve essere tale da permettere estendibilità e scalabilità.
+	\end{itemize}
+
+	\subsection{Gestione del Tempo}
+	
+	La simulazione è scandita da orari di partenza e di arrivo dei Treni che circolano tra le stazioni. Per questo è importante dotare il sistema di un \ii{riferimento temporale} adeguato, che permetta di gestire i ritardi introdotti dalla comunicazione di rete, o dalla diversità di sincronizzazione degli orologi dei diversi nodi della rete.
+	 
+	Tale problema assume forme diverse in base al grado di distribuzione scelto per le componenti che generano gli eventi caratterizzanti la simulazione. In particolare, un livello di distribuzione alto, che prevede ad esempio la collocazione di una entità Stazione per nodo della rete, richiederà un meccanismo di regolazione del tempo più complesso e delicato rispetto ad un sistema con un livello di distribuzione più contenuto, che preveda ad esempio una distribuzione di singole Regioni di simulazione. 
+	
+	La scelta del riferimento temporale diviene quindi cruciale per lo svolgersi della simulazione. Abbiamo due tipi possibili di orologio:
+		\begin{itemize}
+			\item Assoluto: Prevede l'esistenza di un'entità dalla quale le varie componenti attingono per ottenere l'informazione temporale. 
+			\item Relativo: Ciascun nodo di calcolo possiede un proprio riferimento temporale interno.
+		\end{itemize}
+		
+	\'E chiaro che la prima soluzione non si presta ad essere utilizzata per il problema presentato. Infatti esso, possedendo un flusso coninuo interno del tempo, non permetterebbe a entità indipendenti su nodi diversi di eseguire logicamente allo stasso istante (ad esempio due treni che in nodi diversi partono contemporaneamente da una stazione)
+
+	\subsection{Acquisto di un Biglietto}
+	
+	In base al grado di distribuzione della modellazione realizzata, è necessario prevedere una struttura distribuita di biglietterie, in quanto la natura del problema prevede un livello di conoscenza globale soprattutto per l'acquisto di biglietti di treni a prenotazione.
+
+	\subsection{Terminazione del Sistema}
+	
+	La durata di una simulazione di un sistema ferroviario è per sua natura indefinita. \'E quindi necessario un intervento esterno che ne decreti la terminazione.	La \ii{Terminazione del sistema} globale deve essere coordinata tra tutte le componenti distribuite, ed effettuata in modo tale da non far terminare l'esecuzione in uno stato inconsistente. Dovrà inoltre garantire che nessun nodo di calcolo rimarrà attivo (ad esempio, nessun thread in esecuzione o in attesa).
+
+	\subsection{Avvio del Sistema}
+	
+	L'\ii{Avvio del sistema} dove essere progettato in modo tale da permettere a tutte le componenti distribuite di interagire, ed evitare errori. In particolare:
+	\begin{itemize}
+		\item dev'essere previsto un meccanismo che permetta una rapida individuazione dei nodi con i quali ciascuna entità coopera;
+		\item devono essere evitati (o gestiti) errori causati dal tentativo di comunicazione di thread concorrenti con entità non ancora pronte o allocate.
+	\end{itemize} 
+	
+
