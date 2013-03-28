@@ -25,12 +25,12 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 			\item La migrazione del processo che rappresenta il Viaggiatore sul nodo (Regioni) di destinazione, come distruzione del processo sul nodo di partenza e creazione dinamica dello stesso sul nodo destinazione. Questa operazione è in generale computazionalmente molto costosa. 
 			\item La replicazione del processo che rappresenta il Viaggiatore su tutti i nodi, e l'attivazione, intesa come cambio di stato del processo in modo tale che possa competere per la CPU; tale soluzione è molto costosa in termini di memoria utilizzata, e non scala all'aumentare del numero di passeggeri.
 		\end{itemize}
-	La soluzione adottata consiste nel disaccoppiare le operazioni svolte da ciascun Viaggiatore dal processo che le esegue, prevedendo una struttura dati costituita da:
+	La soluzione adottata consiste nel disaccoppiare le operazioni svolte da ciascun Viaggiatore dal processo che le esegue, prevedendo una struttura dati (\ttt{Traveler\_Pool}) costituita da:
 		\begin{itemize}
 			\item un \ii{pool di M processi} dimensionato in maniera opportuna;
 			\item una \ii{coda di operazioni} che man mano vengono estratte ed eseguite dai processi nel pool.
 		\end{itemize}
-	In questo modo è sufficiente replicare per ciascun Viaggiatore, su tutti i nodi che compongono il sistema, una struttura dati che contiene i suoi dati e le operazioni che esso eseguirà. 
+	In questo modo è sufficiente replicare per ciascun Viaggiatore, su tutti i nodi che compongono il sistema, una struttura dati che contiene i suoi dati e le operazioni che esso eseguirà, e cioè un Descrittore (\ttt{Traveler\_Descriptor}). 
 	Il cambio di Regione di un Viaggiatore sarà quindi potrà essere ottenuto semplicemente inserendo la prossima operazione da eseguire per il Viaggiatore nella coda del pool di processi del nodo destinazione.
 	
 	%  ################################################# TRENO ######################################################
@@ -64,7 +64,13 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 		\subsubsection{Piattaforma}
 	
 		Una Piattaforma è modellata come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di potervi sostare ed effettuare discesa e salita delle entità Passeggero o di poter superare la stazione, e alle entità Passeggero di accodarsi in attesa di uno specifico Treno.
-		
+		Internamente essa mantiene due code di \ttt{Traveler\_Descriptor}:
+		\begin{itemize}
+			\item \ttt{Leaving\_Queue}, che conterrà i descrittori dei Viaggiatori in attesa di Treni per poter effettuare la partenza.
+			\item \ttt{Arrival\_Queue}, che conterrà i descrittori dei Viaggiatori in attesa di Treni per poter effettuare l'arrivo alla stazione.
+		\end{itemize}
+		Inoltre contiene un flag booleano \ttt{Free} che ne indica lo stato di occupazione.
+				
 		\subsubsection{Biglietteria}
 		
 		Una Piattaforma è modellata come una interfaccia che permette al Viaggiatore di acquisire un Biglietto di viaggio. 
