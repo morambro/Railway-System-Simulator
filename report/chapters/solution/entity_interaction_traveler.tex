@@ -1,0 +1,21 @@
+\subsection{Percorrenza di un Viaggiatore}
+	
+	Alla luce della definizione dell'entità Viaggiatore in sezione \ref{subsec:traveler_def}, è possibile definire le azioni che compongono il viaggio:
+		\begin{itemize}
+			\item Acquisto di un Biglietto (\ttt{Ticket}) presso la Biglietteria della Stazione (\ttt{Ticket\_Office}) di partenza. Ciascun Biglietto è composto da una sequenza ordinata di Tappe (\ttt{Ticket\_Stages}), ciascuna contenente:
+				\begin{verbatim}
+					- start_station
+					- next_station
+					- train_id 
+					- start_platform 
+					- destination_platform
+				\end{verbatim}
+			\item Una volta ottenuto un Ticket, vengono eseguite le seguenti operazioni per ciascuna Tappa del Biglietto:
+				\begin{itemize}
+					\item Accodamento presso la Piattaforma \ttt{start\_platform} della Stazione \ttt{start\_station} in attesa del Treno \ttt{train\_id}.
+					\item All'arrivo del treno \ttt{train\_id}, Accodamento presso la Piattaforma \ttt{destination\_platform} della Stazione \ttt{next\_station} in attesa dell'arrivo di \ttt{train\_id}. 
+				\end{itemize}
+		\end{itemize} 
+	Le tre operazioni sopraelencate possono essere incapsulate in strutture dati che rappresentano una specifica operazione. In questo modo viene generata una gerarchia di operazioni, tutte derivanti da un'unica operazione generica.
+
+	

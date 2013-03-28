@@ -1,0 +1,124 @@
+	\subsection{Percorrenza di un Treno}
+	
+	A ciascuna entità Treno, è assegnato un Percorso (\ttt{Route}) di andata e un Percorso di ritorno, ovvero sequenze di Tappe (\ttt{Stage}) successive, ciascuna composta dalla n-upla:
+				\begin{center}
+					\begin{verbatim}
+						       <next_segment,next_station,next_platfom,action>
+					\end{verbatim}
+				\end{center}
+dove \ttt{action} indica quello che un Treno dovrà compiere presso la prossima stazione, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione.
+
+Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di andata o di ritorno):
+				\begin{itemize} 
+					\item Accesso al prossimo Segmento \ttt{next\_segment} previsto.
+					\item Percorrenza all'interno del Segmento come attesa finita di durata proporzionale alla lunghezza del Segmento e alla velocità massima alla quale il Treno può percorrerlo.
+					\item Uscita dal Segmento e richiesta di Accesso alla Stazione successiva (\ttt{next\_station}) presso la Piattaforma indicata da \ttt{next\_platfom}, per eseguire l'azione \ttt{action}.
+					\item Se \ttt{action = ENTER} allore effettua discesa e salita dei Viaggiatori in attesa dell'arrivo del Treno.
+					\item Uscita dalla Piattaforma \ttt{next\_platfom}.
+				\end{itemize}
+	
+		\subsubsection{Accesso ad un Segmento}
+		
+		L'accesso alla risorsa protetta Segmento è regolato da una interfaccia ben definita, che permette:
+			\begin{itemize}
+				\item Ingresso.
+				\item Uscita.
+			\end{itemize}
+		Per mantenere l'ordine di accesso, ciascun Segmento è dotato di una Coda FIFO (\ttt{Train\_Queue}) che conterrà i Descrittori dei Treni correntemente in transito.
+		\begin{description}
+			\item {\bb{Ingresso}} \\
+			La richiesta di accesso (\ttt{Enter}) al segmento avviene in mutua esclusione tra tutti le entità Treno. In ogni momento quindi solo una entità eseguirà all'interno della risorsa protetta. Una volta ottenuta la risorsa ciascun Treno compie le seguenti operazioni
+			 \begin{itemize}
+			 	\item Inserimento del Descrittore nella coda \ttt{Train\_Queue};
+			 	\item Aggiornamento della velocità di percorrenza del Treno entrato in base a quella dei treni che lo precedono.
+			 	\item Nel caso in cui la risorsa risulti vuota (viene consultato il flag booleano che mantiene questa informazione), allora viene modificato il valore del flag in modo tale da indicare lo stato occupato della risorsa, e memorizzata la stazione di provenienza del Treno.
+			\end{itemize}
+			Una volta terminate queste due operazioni, il Treno rilascia la risorsa e, basandosi sulla lunghezza e sulla velocità da mantenere, simula la percorrenza rendendosi inattivo (non competitivo per l'ottenimento della CPU) per un tempo dato dalla semplice equazione: $ Time = Segment\_Length / Actual\_Speed $.
+			
+			Nel caso in cui una volta ottenuta la risorsa protetta Segmento, un Treno richiedesse l'accesso nella direzione opposta a quella dei Treni che percorrono il Segmento (ovvero abbiamo la situazione in cui il flag booleano indica lo stato occupato, e la stazione di provenienza memorizzata presso il Segmento è diversa da quella del Treno richiedente) allora questo dovrà attendere fino a che il Segmento non sarà si sarà liberato dai treni in transito.
+			
+			Una prima soluzione possibile è quella di prevedere una coda di attesa interna alla risorsa Segmento (\ttt{Waiting\_Queue}), per i Treni provenienti dalla direzione opposta rispetto al senso di marcia corrente: tali Treni dovranno avere priorità maggiore nell'accedere al Segmento appena esso diventa vuoto, rispetto ad altri Treni che sopraggiungono successivamente.
+			
+			Questa prima modellazione, non risulta però sufficiente a garantire che i Treni nella coda avranno accesso al Segmento in qualche momento: infatti vi è il rischio di portare a Starvation dei Treni in attesa. Si consideri la presenza di un percorso circolare composto da N Segmenti, e di M Treni che viaggiano lungo tale percorso in senso orario, in modo tale che in ogni istante ci sia almeno un treno all'interno di ciascun Segmento. Se ora aggiungiamo al sistema un Treno che viaggia in direzione opposta, allora esso, adottando la semantica di accesso descritta non riuscirà mai a percorrere uno dei Segmenti.			
+			
+			 %Questo problema può essere evitato aggiungendo un parametro al Segmento che determina il massimo numero di Treni che, da ciascuna direzione, possono circolare su di esso. Una volta che esso è stato raggiunto, i Treni che dovessero sopraggiungere con lo stesso senso di marcia rispetto ai treni in transito verranno accodati internamente alla risorsa, con priorità minore di accedere successivamente rispetto ai treni nella coda \ttt{Waiting\_Queue}, ma maggiore rispetto ai Treni che richiedono l'accesso dall'esterno.
+			
+			Una possibile soluzione al problema, è mantenere nella coda \ttt{Waiting\_Queue} tutte le entità Treno che non possono accedere correntemente, sia perché provenienti dalla direzione opposta, sia perché il numero massimo di accessi da una direzione è stato raggiunto. In questo modo la semantica di accesso viene modificata come segue:
+				\begin{itemize}
+					\item Se \ttt{Free = True} allora il Treno corrente 
+						\begin{itemize}
+							\item Modifica il valore di \ttt{Free} a \ttt{False}.
+							\item Imposta la Stazione provenienza con la propria.
+							\item Incrementa di 1 il contatore di accessi.
+						\end{itemize}
+					\item Se invece \ttt{Free = False} allora
+						\begin{itemize}
+							\item Se la stazione di provenienza del Treno corrente è diversa da quella memorizzata nel Segmento, allora inserisci il Treno nella coda \ttt{Waiting\_Queue} e STOP.
+							\item Altrimenti 
+								\begin{itemize}
+									\item Se il contatore di accessi è $ < $ del limite massimo incrementa di 1 il contatore di accessi.
+									\item Altrimenti accoda il Treno su \ttt{Waiting\_Queue} e STOP.
+								\end{itemize}
+						\end{itemize}
+					\item Se il Treno ha avuto accesso al Segmento, inserisci il Descrittore del Treno nella coda \ttt{Train\_Queue} e modifica velocità di transito del Treno a seconda della massima velocità possibile.
+				\end{itemize}
+			  
+			\item {\bb{Uscita}} \\ 
+			
+			L'uscita (\ttt{Leave}) da una Segmento da parte di una entità Treno, ha come prerequisito l'aver avuto accesso al Segmento. \'E quindi possibile assumere che il descrittore del Treno che intende uscire dal Segmento sia presente all'interno della coda \ttt{Train\_Queue}, e che inoltre al momento di tale richiesta abbia già terminato il tempo previsto di attesa che simula la percorrenza.
+			
+			Il requisito principale richiesto dall'azione di uscita è che essa avvenga in maniera ordinata, in base all'ordine con cui i Treni hanno avuto accesso al Segmento. La soluzione apportata mira a garantire tale ordine di uscita, senza fare alcuna assunzione sull'ordine con il quale i Treni verranno scelti per l'esecuzione dallo scheduler. La semantica adottata è quindi la seguente:
+			\begin{itemize}
+				 \item Viene controllato per prima cosa se il Treno corrente è effettivamente il prossimo che deve uscire secondo l'ordine di ingresso.
+				 \item Se è è il prossimo (vengono confrontati i Descrittori) allora il Treno:
+				 	\begin{itemize} 
+				 		\item Nel caso in cui la coda sia vuota, 
+				 		\item può abbandonare la risorsa protetta.
+				 	\end{itemize} 
+				 \item Altrimenti il Descrittore del Treno corrente viene posto in attesa su una coda; tale coda verrà riesaminata ogni volta che un Treno abbandonerà la risorsa protetta (disponendo ad esempio di instruzioni wait e signal, ciascun Treno uscente invocherà una signal sulla coda), e se il Treno in esecuzione non sarà nuovamente il Treno destinato ad uscire, esso verrà riaccodato. 
+			\end{itemize}
+		\end {description}  
+	
+	La semantica descritta, garantisce ingresso sequenziale a molteplicità limitata, e uscita ordinata secondo l'ordine di ingresso. Il passo successivo consiste nel garantire l'accesso alla Stazione con lo stesso ordine di uscita per tutti i Treni provenienti dallo stesso Segmento.
+	
+		\subsection{Accesso ad una Stazione}
+		
+		I prerequisiti alla richiesta da parte di un Treno $T$ di accesso ad una Stazione sono:
+		
+			\begin{itemize}
+				\item Il Treno $T$ ha avuto accesso ad un Segmento $S$ che collega la stazione corrente a quella dalla quale proviene. Ciò significa che il suo Descrittore sarà stato inserito nella coda \ttt{Train\_Queue} di $ S $.
+				\item Il Treno $T$ ha simulato la percorrenza su $S$ 
+				\item Il Treno $T$ uscito dal Segmento $S$, quindi è stato rimosso dalla coda \ttt{Train\_Queue} di $S$.
+			\end{itemize}
+			
+		\subsubsection{Ingresso Ordinato}
+		
+		Per tutti i Treni provenienti dallo stesso Segmento, è necessario mantenere un ordine di richiesta di accesso alla Stazione successiva uguale a quello utilizzato per l'uscita dal Segmento. Poiché il sistema non può fare assunzioni sulle scelte dello scheduler che verrà adottato, è necessario introdurre un meccanismo che riesca a mantenere l'ordine di richiesta di accesso anche nel caso in cui, il thread che rappresenta il Treno appena uscito dal Segmento venga prerilasciato e venga eseguito il thread rappresentante il Treno successivo.
+
+		Ho vagliato diverse possibili soluzioni:
+		\begin{enumerate}
+			\item Rappresentazione della Stazione come entità passiva ad accesso mutuamente esclusivo. Essa manterrà al suo interno una coda per Segmento, del tutto simile alla coda \ttt{Train\_Queue} interna ai Segmenti, e popolata parallelamente a \ttt{Train\_Queue}. In questo modo sarà semplice garantire (con un meccanismo simile a quello utilizzato per l'uscita da un Segmento) un accesso ordinato. Questa soluzione ha però uno svantaggio evidente: la richiesta di accesso avverrà in mutua esclusione anche tra i Treni provenienti da Segmenti diversi, e che quindi si ritroveranno a dover superare un punto di sincronizzazione inutile, se diretti a Piattaforme diverse della Stazione.
+			\item Una seconda possibilità prevede la presenza, all'interno di ciascuna Stazione, di una risorsa ad accesso mututamente esclusivo per ciascun Segmento entrante, la quale si occuperà di garantire l'ordine di accesso (tale ordine sarà dato da una coda interna aggiornata in modo analogo alla soluzione precedentemente illustrata). Una volta che il Treno ha guadagnato il permesso di accedere in mutua esclusione alla risorsa protetta di controllo, esso verrà inserito su una coda di Treni presso la Piattaforma corretta.
+			In questo modo la Stazione diventerà solo un'interfaccia utilizzabile per l'accesso alle piattaforme, e inoltre i vincoli di ordinamento e accesso concorrente alle Piattaforme da Treni provenienti da Segmenti diversi saranno garantiti.
+			
+			Lo svantaggio di utilizzare questa soluzione risiede nella creazione delle entità protette, una per ciascun Segmento entrante, che regolano l'accesso ordinato, e quindi spostano parte della conoscenza della topologia della rete ferroviaria anche sulle Stazioni, rendendone più complessa la configurazione iniziale.
+		\end{enumerate} 
+		
+		Per la soluzione realizzata ho scelto la seconda opzione.
+		
+		\subsubsection{Ingresso ad una Piattaforma}
+		
+		Dopo aver superato la risorsa di controllo, ciascun Treno viene accodato presso la Piattaforma, interna a ciascuna Stazione, prevista dal percorso. La semantica di accodamento su di una generica Piattaforma $P$ (supponiamo disponibile mediante procedura eseguita in mutua esclusione) è la seguente:
+		\begin{itemize}
+			\item Se $P$ è libera, ovvero il flag booleano \ttt{Free} sarà \ttt{True}, allora 
+				\begin{itemize}
+					\item Il Treno occupa la Piattaforma (\ttt{Free = False}) ed esegue l'operazione di \bb{Discesa dei Viaggiatori}.
+					\item Il Treno rilascia la risorsa, in modo tale che altri Treni vi si possano accodare, e rimane in attesa fino all'orario prestabilito di partenza.
+					\item Al momento della partenza il Treno effettua la \bb{Salita dei Viaggiatori}, e libera la Piattaforma (setta il flag booleano \ttt{Free} a \ttt{True}.
+				\end{itemize} 
+			\item Se invece la Piattaforma risulta occupata, il Treno viene accodato presso una coda di Treni interna alla Piattaforma. Rappresentando la Piattaforma come una risorsa protetta da monitor, l'accodamento si traduce in una attesa su condizione, \ttt{wait(Free = True)}.
+		\end{itemize}
+		
+		
+		
+		
