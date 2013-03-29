@@ -31,4 +31,16 @@ package Ticket_Office is
 
 	function Get_Ticket return Positive;
 
+	type Regional_Ticket_Office is tagged null record;
+
+	type Station_Ticket_Office is tagged private;
+
+
+
+private
+
+	type Station_Ticket_Office is tagged record
+		Id : Integer;
+	end record;
+
 end Ticket_Office;

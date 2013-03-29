@@ -32,8 +32,6 @@ with Route;use Route;
 package body Regional_Station is
 
 	-- ------------------------ Definition of the inherited abstract methods ------------------------
-
-
 	procedure Enter(
 			This 				: in		Regional_Station_Type;
 			Descriptor_Index	: in		Positive;

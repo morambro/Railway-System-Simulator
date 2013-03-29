@@ -14,6 +14,30 @@ Un diagramma infromale delle componenti distribuite che compongono il sistema è
 	Da questa scelta consegue inoltre l'introduzione di un semplice Server dei Nomi che mantiene traccia di ciascuna Regione, in modo tale da rendere agevole la risoluzione della locazione alla quale l'entità si trova. 
 	
 	
+	\subsubsection{Stazioni di Gateway}
+	
+	\begin{figure}[htbp]
+		\begin{center}
+			\includegraphics[width=\textwidth,keepaspectratio]{imgs/gateway_stations.pdf}
+			\caption{\footnotesize{Utilizzo di stazioni di Gateway per collegare tre Regioni.}}
+			\label{fig:gateway_stations}
+		\end{center}
+	\end{figure}
+
+	
+	Nella progettazione di un simulatore distribuito su più Regioni, è necessario prevedere uno o più punti di collegamento tre di esse. A tal proposito, il progetto prevede \ii{Stazioni di Gateway} (\ttt{Gateway\_Station}), che permettono di raggiungere determinate Regioni remote. Le Stazioni di Gateway che collegano $N$ Regioni in modo diretto, sono da considerare come un'unica Stazione logica, e ciascuna delle $N$ Stazioni può essere vista come una porzione della Stazione globale accessibile dalla Regione corrente. Una rappresentazione dell'idea generale è visibile in figura \ref{fig:gateway_stations}. 
+	
+	Per evitare sincronizzazioni tra thread distribuiti, sono posti dei vincoli nella struttura interna di questo tipo di stazoni. Ciascuna Stazione di Gateway $G$ sarà dotata di un numero $M$ di Piattaforme $\{P_1,...,P_M\}$. Le Piattaforme saranno tali per cui esse potranno essere percorse in un \ii{unico senso di marcia}, ovvero:
+		
+		\begin{itemize}
+			\item Le prime $\{P_1,...,P_K\}$ saranno disponibili all'accesso dalla Regione in cui $G$ risiede.
+			\item Le Piattaforme $\{P_K+1,..,P_M\}$ saranno invece dedicate all'accoglimento di Treni provenienti da nodi diversi.
+		\end{itemize}.
+	
+	Questa scelta, vincola così il numero di Piattaforme per Stazione di Gateway: siano infatti $\{K_1, K_2,...,K_N$\} il numero di Piattaforme che permettono ad un Treno di lasciare la Regione per ciascuna delle $N$ Stazioni di Gateway dislocate su $N$ Regioni; allora ciascuna Stazione dovra complessivamente mantenere un numero di Piattaforme pari a $\sum_{i = 1}^{N}{K_i}$.
+	
+	 Tali vincoli sono sufficienti a mantenere locale ai nodi la sincronizzazione tra i thread che permettono l'esecuzione dei Treni. Una descrizione dettagliata del protocollo di accesso alle Stazioni di Gateway e di migrazione dei Treni, e presentata in sezione \ref{subsubsec:gateway_stations_func}.
+	
 	
 	\subsection{Biglietterie}
 	
