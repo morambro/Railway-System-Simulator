@@ -1,6 +1,6 @@
 	\subsection{Percorrenza di un Treno}
 	
-	A ciascuna entità Treno, è assegnato un Percorso (\ttt{Route}) di andata e un Percorso di ritorno, ovvero sequenze di Tappe (\ttt{Stage}) successive, ciascuna composta dalla n-upla:
+	A ciascuna entità Treno, è assegnato un Percorso (\ttt{Route}) di andata e un Percorso di ritorno, ovvero sequenze di Tappe (\ttt{Stage}) successive, ciascuna composta dalla tupla:
 				\begin{center}
 					\begin{verbatim}
 						       <next_segment,next_station,next_platfom,action>
@@ -15,6 +15,7 @@ Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di anda
 					\item Uscita dal Segmento e richiesta di Accesso alla Stazione successiva (\ttt{next\_station}) presso la Piattaforma indicata da \ttt{next\_platfom}, per eseguire l'azione \ttt{action}.
 					\item Se \ttt{action = ENTER} allore effettua discesa e salita dei Viaggiatori in attesa dell'arrivo del Treno.
 					\item Uscita dalla Piattaforma \ttt{next\_platfom}.
+					\item Se ci sono ancora Tappe da percorrere nel percorso (\ttt{Route}), allora il Descrittore del Treno viene inserito nella coda di \ttt{Train\_Pool}. 
 				\end{itemize}
 
 % ############################################################################################################
@@ -89,10 +90,10 @@ Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di anda
 	La semantica descritta, garantisce ingresso sequenziale a molteplicità limitata, e uscita ordinata secondo l'ordine di ingresso. Il passo successivo consiste nel garantire l'accesso alla Stazione con lo stesso ordine di uscita per tutti i Treni provenienti dallo stesso Segmento.
 
 % ############################################################################################################
-% ################################################# ACCESSO_STAZIONE #########################################
+% ####################################### ACCESSO_STAZIONE_REGIONALE #########################################
 % ############################################################################################################
 
-		\subsubsection{Accesso ad una Stazione Regionale}
+		\subsubsection{Accesso ad una Stazione Regionale}\label{sec:regional_station_access}
 		
 		I prerequisiti alla richiesta da parte di un Treno $T$ di accesso ad una Stazione sono:
 		
@@ -184,10 +185,39 @@ Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di anda
 				\item Se $T$ invece non è il Treno atteso da $V$, quest'ultimo viene reinserito nella coda \ttt{Leaving\_Queue}.
 			\end {itemize}
 		\end{itemize}
-		
-		
+	\end {description}
+
+% ############################################################################################################
+% ########################################### ACCESSO_STAZIONE_GATEWAY #######################################
+% ############################################################################################################		
+
 	\subsubsection{Accesso ad una Stazione di Gateway}\label{subsubsec:gateway_stations_func}
 	
-	\end {description}
+	Alcuni Treni seguono percorsi che attraversano più Regioni. Tra le tappe che compongono tali percorsi, alcune indicheranno l'attraversamento di Regioni di Gateway, introdotte nella sezione \ref{sec:gateway_stations}. 
+	L'azione di ingresso a tali stazioni segue le stesse regole descritte per le stazioni Regionali nella sezione \ref{sec:regional_station_access}, e viene quindi effettuata localmente alla singola Regione (nodo) di provenienza.
+	Le azioni di Discesa e Salita dei Viaggiatori, se indicate dal valore \ttt{ENTER} del parametro \ttt{action} della prossima Tappa, vengono invece ripetute su entrambe le Regioni sulle Piattaforme corrispondenti. Questo comporta che sarà effettuata:
 	
-		
+		\begin{itemize}
+			\item La discesa dei Viaggiatori in attesa di arrivare alla stazione $S$ presso la Regione $R$ sulla Piattaforma $P$, con il Treno corrente $T$.
+			\item La salita dei Viaggiatori che attendono presso la Piattaforma $P$ il Treno $T$, in una Regione o nell'altra.
+		\end{itemize}
+	
+	Il Passaggio di un Treno da una regione all'altra può essere schematizzato come segue: sia $G1$ la Stazione di Gateway che connette la regione $R1$ ad $R2$, con $G1$ appartente ad $R1$. Un Percorso che attraversa i due Gateway conterrà almeno una Tappe $T$ tale per cui il campo \ttt{next\_station} avrà il valore $G1$, e come \ttt{destination\_platform} una delle Piattaforme possibili per effettuare l'accesso, mentre il campo \ttt{region} conterrà invece la \ii{Regione di destinazione}.
+	Le operazioni eseguite saranno le seguenti:
+	\begin{itemize}
+		\item Il Treno corrente $T$ effettua l'accesso alla Stazione $G1$, Piattaforma $P$.
+		\item $T$, se previsto dal Percorso, effettua Discesa dei Viaggiatori.
+		\item Il thread che gestisce $T$ viene interrotto, ovvero viene modificato il flusso di esecuzione delle operazioni cicliche da esso eseguite.
+		\item Il descrittore del Treno corrente $D_T$ viene serializzato (\ii{marshalling}), e inviato tramite invocazione remota alla Stazione di Gateway della Regione $G2$ ad essa connessa. L'individuazione dell'indirizzo della regione specificata nel parametro \ttt{region}, avviene interrogando il \ttt{Name\_Server}, se esso non è già presente in una cache locale.
+		\item Presso la regione $R2$, stazione di Gateway $G2$, vengono eseguite le seguenti operazioni:
+			\begin{itemize}
+				\item Il Descrittore viene de-serializzato (\ii{unmarshalling}).
+				\item I dati del Descrittore $D_{T'}$ presenti nella regione $R2$ vengono aggiornati con quelli ricevuti.
+				\item Viene ottenuta la Piattaforma in mutua esclusione, in modo da effettuare, se previsto dal Percorso, la Discesa dei Viaggiatori, e ne viene impostato il campo \ttt{Free} a \ttt{False}.
+				\item Vengono operate attesa fino all'orario di partenza previsto (secondo il clock del nodo corrente), Salita dei Viaggiatori e Partenza dalla Stazione come per le Stazioni Regionali.
+			\end{itemize}
+	\end{itemize}
+
+	Si noti che data la conseguenza \ref{cons:gateway_unique}, questa soluzione garantisce una risoluzione univoca della Stazione di Gateway di arrivo.
+	 
+	

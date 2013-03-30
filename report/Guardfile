@@ -1,6 +1,6 @@
 guard :shell, :all_on_start => false do
   watch /^(.+\/)+.+\.tex/ do |m|
-    n m[0], 'Changed'
+   
     `make`
   end
 end

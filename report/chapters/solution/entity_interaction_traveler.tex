@@ -11,13 +11,14 @@
 					- destination_platform
 				\end{verbatim}
 			e da un indice della prossima tappa del Percorso (\ttt{Next\_Stage}).
+			
 			\item Una volta ottenuto un Ticket, vengono eseguite le seguenti operazioni per ciascuna Tappa del Biglietto:
 				\begin{itemize}
 					\item Accodamento presso la Piattaforma \ttt{start\_platform} della Stazione \ttt{start\_station} in attesa del Treno \ttt{train\_id}.
 					\item All'arrivo del treno \ttt{train\_id}, Accodamento presso la Piattaforma \ttt{destination\_platform} della Stazione \ttt{next\_station} in attesa dell'arrivo di \ttt{train\_id}. 
 				\end{itemize}
 		\end{itemize} 
-	Le tre operazioni sopraelencate possono essere incapsulate in strutture dati che rappresentano una specifica operazione. In questo modo viene generata una gerarchia di operazioni, tutte derivanti da un'unica \ii{operazione generica}. Di seguito identificheremo tali operazioni rispettivamente con \ttt{BUY\_TICKET}, \ttt{LEAVE} e \ttt{ARRIVE}.
+	Le azioni sopraelencate possono essere incapsulate in strutture dati che rappresentano una specifica operazione. In questo modo viene generata una \ii{gerarchia di operazioni}, tutte derivanti da un'unica \ii{operazione generica}. Di seguito identificheremo tali operazioni rispettivamente con \ttt{BUY\_TICKET}, \ttt{LEAVE} e \ttt{ARRIVE}.
 	
 	Il protocollo di operazioni che vengono eseguite da un Viaggiatore, è stato mantenuto il più semplice possibile, e l'intero percorso viene regolato dagli eventi generati dalle entità Treno alla partenza e all'arrivo dalle/nelle Stazioni. 
 	
@@ -28,13 +29,19 @@
 	\\
 	\\
 	
-	Una volta ottenuto un Biglietto, ciascun Viaggiatore percorre la serie di Tappe ivi contenute. Sia $t$ la prima tappa (\ttt{Next\_Stage} sarà inizialmente $1$). L'ultima azione eseguita dall'Operazione di acquisto di un biglietto consiste nel caricare nella coda della struttura dati \ttt{Traveler\_Pool} descritta nella sezione \ref{subsec:traveler_def}, l'operazione \ttt{LEAVE} del Viaggiatore corrente.
+	L'ultima azione eseguita dall'Operazione di acquisto di un biglietto consiste nel caricare nella coda della struttura dati \ttt{Traveler\_Pool} descritta nella sezione \ref{subsec:traveler_def}, l'operazione \ttt{LEAVE} del Viaggiatore corrente.
 	
 	\subsubsection{Partenza da una Stazione}
 	
-	Denominiamo $t$ la tappa di indice \ttt{Next\_Stage}, ovvero la tappa corrente. Perché l'operazione di Partenza dalla stazione corrente venga effettuata, è necessaria la precondizione secondo la quale l'operazione \ttt{LEAVE} è stata inserita nella apposita coda di \ttt{Traveler\_Pool}, e che in qualche momento essa venga prelevata (rimossa) da tale luogo ed eseguita da uno dei thread nel Pool della struttura. Le azioni compiute dall'operazione \ttt{LEAVE} sono:
+	Denominiamo $t$ la tappa di indice \ttt{Next\_Stage}, ovvero la tappa corrente. Perché l'operazione di Partenza dalla stazione corrente venga effettuata, è necessaria la precondizione per la quale:
 	\begin{itemize}
-		\item Estrai \ttt{start\_station} da $t$;
+		\item l'operazione \ttt{LEAVE} è stata inserita nella apposita coda di \ttt{Traveler\_Pool};
+		\item in qualche momento essa venga prelevata (rimossa) da tale luogo ed eseguita da uno dei thread nel Pool della struttura. 
+	\end{itemize}
+Le azioni compiute dall'operazione \ttt{LEAVE} sono:
+	
+	\begin{itemize}
+		\item Estrazione \ttt{start\_station} da $t$;
 		\item Tramite l'interfaccia esposta dalla Stazione \ttt{start\_station} (una procedura che identifichiamo con \ttt{Wait\_For\_Train\_To\_Go}), viene richiesto di attendere presso la Piattaforma \ttt{start\_platform}.
 	\end{itemize} 
 	
@@ -42,9 +49,11 @@
 	
 	\subsubsection{Arrivo alla Destinazione successiva}
 		
-	Similmente a quanto descritto per la partenza, l'arrivo a destinazione prevede che l'operazione \ttt{ARRIVE} sia già stata inserita all'interno della coda di operazioni in \ttt{Traveler\_Pool}, e che un thread del Pool la esegua (rimuovendola). Tale operazione prevede le seguenti azioni:
+	Similmente a quanto descritto per la partenza, l'arrivo a destinazione prevede che l'operazione \ttt{ARRIVE} sia già stata inserita all'interno della coda di operazioni in \ttt{Traveler\_Pool}, e che un thread del pool la esegua (rimuovendola dalla coda).
+	
+	Tale operazione prevede le seguenti azioni:
 		\begin{itemize}
-			\item Estrai \ttt{next\_station} dalla tappa corrente $t$.
+			\item Estrazione \ttt{next\_station} dalla tappa corrente $t$.
 			\item Tramite l'interfaccia esposta dalla Stazione \ttt{next\_station} (procedura identificata con ), viene effettuata una richiesta di attsa presso la Piattaforma \ttt{destination\_platform}.
 		\end{itemize} 
 		

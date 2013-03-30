@@ -43,15 +43,15 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 			\item una velocità corrente;
 		\end{itemize}
 	
-	Anche in questo caso come per le entità di tipo Viaggiatore, ciascuna entità non viene mappata su un singolo processo. Infatti anche per le entità di tipo Treno ciò comporterebbe una complessa e costosa, in termini computazionali e di memoria, gestione del passaggio da un nodo (Regione) ad un altro. Ho optato invece nel progettare una struttura dati che mantiene:
+	Anche in questo caso come per le entità di tipo Viaggiatore, ciascuna entità non viene mappata su un singolo processo. Infatti anche per le entità di tipo Treno ciò comporterebbe una complessa e costosa, in termini computazionali e di memoria, gestione del passaggio da un nodo (Regione) ad un altro. Ho optato invece nel progettare una struttura dati \ttt{Train\_Pool} che mantiene:
 		\begin{itemize}
 			\item una coda di Descrittori di Treno, che contengono tutte le informazioni che distinguono una entità Treno;
 			\item un pool di processi a dimensionato in maniera opportuna; ciascun processo sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni.
 		\end{itemize}
 	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta.
 				
-	%  ################################################# STAZIONE ######################################################
-	\subsection{Stazione}
+	%  ################################################# STAZIONE ###################################################
+	\subsection{Stazione} \label{subsec:station}
 	
 	Una Stazione (\ttt{Station}) è modellata come una struttura dati contenete:
 		\begin{itemize}
@@ -63,13 +63,14 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 		
 		\subsubsection{Piattaforma}
 	
-		Una Piattaforma è modellata come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di potervi sostare ed effettuare discesa e salita delle entità Passeggero o di poter superare la stazione, e alle entità Passeggero di accodarsi in attesa di uno specifico Treno.
+		Una Piattaforma è modellata come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di potervi sostare ed effettuare discesa e salita delle entità Viaggiatore o di poter superare la stazione, e alle entità Viaggiatore di accodarsi in attesa di uno specifico Treno.
 		Internamente essa mantiene due code di \ttt{Traveler\_Descriptor}:
 		\begin{itemize}
 			\item \ttt{Leaving\_Queue}, che conterrà i descrittori dei Viaggiatori in attesa di Treni per poter effettuare la partenza.
 			\item \ttt{Arrival\_Queue}, che conterrà i descrittori dei Viaggiatori in attesa di Treni per poter effettuare l'arrivo alla stazione.
 		\end{itemize}
 		Inoltre contiene un flag booleano \ttt{Free} che ne indica lo stato di occupazione.
+		Ciascuna Piattaforma, in base al tipo di Stazione avrà percorrenza bidirezionale o uniderezionale.
 				
 		\subsubsection{Biglietteria}
 		
