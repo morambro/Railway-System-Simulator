@@ -1,3 +1,30 @@
 \chapter{Tecnologie Adottate}
 
 La scelta delle tecnologie per l'implementazione del prototipo realizzato, è stata operata nell'ottica di individuare strumenti che permettessero una agevole attuazione della soluzione presentata.
+
+Sono stati utilizzati principalmente due linguaggi di programmazione.
+	\begin{description}
+		\item {\bb{Scala}} \\
+		Il linguaggio Scala è un linguaggio funzionale Object Oriented. Ho utilizzato questo linguaggio per la realizzazione di 
+			\begin{itemize}
+				\item \bb{Controller Centrale}
+				\item \bb{Biglietteria Centrale}
+				\item \bb{Application Server}, al quale i client HTTP possono collegarsi mediante protocollo Web Socket per poter fornire una rappresentazione grafica della simulazione, in linguaggio HTML e Javascript. Per la sua realizzazione è stato utilizzato il framework MVC \ttt{Play 2.0} (disponibile all'indirizzo \url{http://www.playframework.com/}).
+			\end{itemize}
+		Le interazione tra thread interne alle componenti distribuite, sono state gestite adottando il modello di concorrenza ad Attori nativo. 
+		\item {\bb{Ada}} \\
+		Il linguaggio Ada è stato utilizzato per realizzare il core di simulazione presente in ciascuna regione. Il modello di concorrenza fornito dal linguaggio è risultato più adatto per rappresentare le interazioni tra le entità descritte al capitolo precedente rispetto ai modelli offerti da altri linguaggi. Il modello di concorrenza ad Attori di Scala, per esempio, avrebbe reso infatti necessaria l'adozione di entità attive Server a protezione delle entità reattive come Segmenti e Piattaforme. Questo comporta:
+			\begin{itemize}
+				\item Maggiore utilizzo di thread, per poter eseguire gli attori a protezione delle entità;
+				\item Maggiore complessità di terminazione;
+			\end{itemize}
+		Tuttavia avrebbe avuto il vantaggio di fornire nativamente il meccanismo descritto in sezione \ref{}.
+		
+		Ada ha fornito un alto livello di controllo di thread e risorse protette, e il suo sistema di tipi molto restrittivo ha consentito di ridurre i possibili errori in fase di sviluppo.
+		  
+	\end{description}
+	
+L'interazione tra componenti remote realizzate con tecnologie omogenee, è stata possibile mediante il middleware yami4 (\url{http://www.inspirel.com/yami4/}), compatibile, tra l'altro, con Ada e Java (e quindi di conseguenza anche con Scala).
+
+
+
