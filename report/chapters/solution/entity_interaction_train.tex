@@ -3,10 +3,10 @@
 	A ciascuna entità Treno, è assegnato un Percorso (\ttt{Route}) di andata e un Percorso di ritorno, ovvero sequenze di Tappe (\ttt{Stage}) successive, ciascuna composta dalla tupla:
 				\begin{center}
 					\begin{verbatim}
-						       <next_segment,next_station,next_platfom,action>
+						       <next_segment,next_station,next_platfom,actio,region>
 					\end{verbatim}
 				\end{center}
-dove \ttt{action} indica quello che un Treno dovrà compiere presso la prossima stazione, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione.
+dove \ttt{action} indica quello che un Treno dovrà compiere presso la prossima stazione, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione; il campo \ttt{region} invece, indica la regione di destinazione, e viene utilizzato nel caso di transito su stazione di Gateway.
 
 Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di andata o di ritorno):
 				\begin{itemize} 
