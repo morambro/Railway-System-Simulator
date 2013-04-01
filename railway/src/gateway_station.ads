@@ -26,6 +26,7 @@
 
 with Generic_Station;use Generic_Station;
 with Train;
+with Gateway_Platform;
 with Platform;
 with Traveler;
 with Notice_Panel;
@@ -41,86 +42,57 @@ with Ada.Containers.Vectors;
 with Queue;
 with Route;
 
-package Regional_Station is
-
-
-	package Positive_Vector_Package is new Ada.Containers.Vectors(
-		Element_Type	=> Positive,
-		Index_Type		=> Positive
-	);
-
-	type Vector_Ref is access all Positive_Vector_Package.Vector;
-
-   	package Segments_Map is new Ada.Containers.Ordered_Maps(
-   		Key_Type 		=> Positive,
-      	Element_Type 	=> Vector_Ref
-    );
+package Gateway_Station is
 
 
 	package Unbounded_Strings renames Ada.Strings.Unbounded;
 
 	use Unbounded_Strings;
 
-
-	package Trains_Queue_Package is new Queue (Element => Positive);
-
-	protected type Access_Controller is
-
-		entry Enter;
-
-	private
-
-		entry Wait;
-
-		-- # Unbounded queue which will contain the Trains order
-		Trains_Order : Trains_Queue_Package.Terminable_Queue;
-
- 	end Access_Controller;
-
 	-- #
 	-- # Array Containing Platforms references
 	-- #
-	type Platforms_List is array (Positive range <>) of access Platform.Platform_Type;
+	type Platforms_List is array (Positive range <>) of access Gateway_Platform.Gateway_Platform_Type;
 
 	type Platform_Booking is array (Positive range <>) of Boolean;
 
 	-- #
 	-- # Definition of Regional Station Type implementing Station_Interface --
 	-- #
-	type Regional_Station_Type(Platforms_Number : Positive) is
+	type Gateway_Station_Type(Platforms_Number : Positive) is
 		new Ada.Finalization.Controlled
 		and Station_Interface
 	with private;
 
 		overriding procedure Enter(
-			This 				: in		Regional_Station_Type;
+			This 				: in		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Action				: in 		Route.Action);
 
 		overriding procedure Leave(
-			This 				: in 		Regional_Station_Type;
+			This 				: in 		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive);
 
 		overriding procedure Wait_For_Train_To_Go(
-			This 				: in		Regional_Station_Type;
+			This 				: in		Gateway_Station_Type;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 
 		overriding procedure Wait_For_Train_To_Arrive(
-			This 				: in		Regional_Station_Type;
+			This 				: in		Gateway_Station_Type;
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 
 		overriding function Get_Platform(
-			This : Regional_Station_Type;
-			P : Natural) return access Platform.Platform_Type;
+			This 				: in		Gateway_Station_Type;
+			P 					: 			Natural) return access Platform.Platform_Type;
 
 		overriding procedure Add_Train(
-			This				: in 		Regional_Station_Type;
+			This				: in 		Gateway_Station_Type;
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive);
 
@@ -129,41 +101,41 @@ package Regional_Station is
 	-- #
 	-- # @return: A reference of the new created Station
 	-- #
-	function New_Regional_Station(
+	function New_Gateway_Station(
 		Platforms_Number : Positive;
 		Name : String) return Station_Ref;
 
 	-- #
 	-- # Print method used for debug purposes
 	-- #
-	procedure Print(This : Regional_Station_Type);
-
-	----------------------- Procedures to convert Json to Station ------------------------
-
-	-- #
-	-- # Creates a Regional_Station_Type object containing the station defined in the given Json_Value
-	-- #
-	-- # @return A reference to the created Regional_Station_Type object
-	-- #
-	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref;
-
-	-- #
-	-- # Creates a Station_Array object containing the stations defined in the given Json_Value
-	-- #
-	-- # @return A reference to the created Stations_Array
-	-- #
-	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref;
-
-	--------------------------------------------------------------------------------------
+	procedure Print(This : Gateway_Station_Type);
+--
+--  	----------------------- Procedures to convert Json to Station ------------------------
+--
+--  	-- #
+--  	-- # Creates a Regional_Station_Type object containing the station defined in the given Json_Value
+--  	-- #
+--  	-- # @return A reference to the created Regional_Station_Type object
+--  	-- #
+--  	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref;
+--
+--  	-- #
+--  	-- # Creates a Station_Array object containing the stations defined in the given Json_Value
+--  	-- #
+--  	-- # @return A reference to the created Stations_Array
+--  	-- #
+--  	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref;
+--
+--  	--------------------------------------------------------------------------------------
 
 	-- #
 	-- # Overriding of the Finalize method.
 	-- #
-	overriding procedure Finalize(This: in out Regional_Station_Type);
+	overriding procedure Finalize(This: in out Gateway_Station_Type);
 
 private
 
-	type Regional_Station_Type(Platforms_Number : Positive) is
+	type Gateway_Station_Type(Platforms_Number : Positive) is
 		new Ada.Finalization.Controlled and
 		Station_Interface
 	with record
@@ -172,7 +144,6 @@ private
 		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
 		-- Indicates for each platform if it is free or not
 		Platform_Free 		: Platform_Booking(1 .. Platforms_Number) := (others => true);
-		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;
 	end record;
 
-end Regional_Station;
+end Gateway_Station;

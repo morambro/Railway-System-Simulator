@@ -30,6 +30,8 @@ with Regional_Station;
 with Traveler;
 with Move_Operation;
 with Ticket;
+with Gateway_Station;
+with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 
 package Environment Is
 
@@ -39,6 +41,16 @@ package Environment Is
 
     function Get_Operations return Traveler.Travelers_All_Operations_Ref;
 
-    procedure Init;
+	function Get_Node_Name return String;
+
+	function Get_Name_Server return String;
+
+    procedure Init(N_N : in String;N_S : in String);
+
+private
+
+    Node_Name : Unbounded_String;
+
+    Name_Server : Unbounded_String;
 
 end Environment;

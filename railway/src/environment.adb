@@ -50,7 +50,17 @@ package body Environment Is
     	return Operations;
     end Get_Operations;
 
-    procedure Init is
+   	function Get_Node_Name return String is
+   	begin
+   		return To_String(Node_Name);
+    end Get_Node_Name;
+
+	function Get_Name_Server return String is
+	begin
+		return To_String(Name_Server);
+    end Get_Name_Server;
+
+    procedure Init(N_N : in String;N_S : in String) is
     begin
     	-- # Creates regional stations array loading data from file
     	Regional_Stations 	:= Regional_Station.Get_Regional_Station_Array("res/stations.json");
@@ -68,6 +78,10 @@ package body Environment Is
 			Operations(I)(Traveler.LEAVE) := new Move_Operation.Leave_Operation_Type'(Traveler_Manager_Index => I);
 			Operations(I)(Traveler.ENTER) := new Move_Operation.Enter_Operation_Type'(Traveler_Manager_Index => I);
 		end loop;
+
+		Name_Server := To_Unbounded_String(N_S);
+
+		Node_Name := To_Unbounded_String(N_N);
 
     end Init;
 

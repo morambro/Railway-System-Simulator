@@ -92,6 +92,7 @@ package body Route is
 					Next_Segment 		=> Json_Stage.Get("next_segment"),
 					Next_Station 		=> Json_Stage.Get("next_station"),
 					Platform_Index 		=> Json_Stage.Get("platform_index"),
+					Node_Name			=> Json_Stage.Get("node_name"),
 					Leave_At 			=>
 						Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Json_Stage.Get("leave_at")),
 					Train_Action		=> StringToAction(Json_Stage.Get("action"))

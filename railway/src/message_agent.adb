@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -27,13 +27,14 @@
 with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Exceptions;  use Ada.Exceptions;
 with Logger;
+with YAMI.Incoming_Messages;
 
 package body Message_Agent is
 
 	NAME : constant String := "Message_Agent";
 
 	procedure Process_Reply(Content : in out YAMI.Parameters.Parameters_Collection) is
-	 	State : constant String := Content.Get_String("address");
+	 	State : constant String := Content.Get_String("response");
 	begin
 		Put_Line("Result : " & State);
 	end Process_Reply;
@@ -43,7 +44,8 @@ package body Message_Agent is
 		Destination_Address : in String;
 		Object 				: in String;
 		Service 			: in String;
-		Params 				: in YAMI.Parameters.Parameters_Collection)
+		Params 				: in YAMI.Parameters.Parameters_Collection;
+		Callback			: access procedure(Content : in out YAMI.Parameters.Parameters_Collection))
 	is
 		Msg : aliased YAMI.Outgoing_Messages.Outgoing_Message;
       	State : YAMI.Outgoing_Messages.Message_State;
@@ -51,7 +53,11 @@ package body Message_Agent is
 		--  the "content" field name is arbitrary,
 	    --  but needs to be recognized at the server side
         This.Client_Agent.Send(
-        Destination_Address, Object,Service, Params,Msg'Unchecked_Access);
+        	Destination_Address,
+        	Object,
+        	Service,
+        	Params,
+        	Msg'Unchecked_Access);
 
         Msg.Wait_For_Completion;
 
@@ -59,7 +65,11 @@ package body Message_Agent is
 
 		if State = YAMI.Outgoing_Messages.Replied then
 
-        	Msg.Process_Reply_Content(Process_Reply'Access);
+        if Callback /= null then
+        	Msg.Process_Reply_Content(Callback);
+		else
+			Msg.Process_Reply_Content(Process_Reply'Access);
+		end if;
 
       	elsif State = YAMI.Outgoing_Messages.Rejected then
          	Put_Line("The message has been rejected: " & Msg.Exception_Message);
@@ -78,6 +88,57 @@ package body Message_Agent is
     		L => Logger.DEBUG);
 		YAMI.Agents.Free(This.Client_Agent);
     end Close;
+
+
+    type Incoming_Message_Handler is new YAMI.Incoming_Messages.Message_Handler with null record;
+
+    overriding procedure Call(
+    	H 		: in out Incoming_Message_Handler;
+  		Message : in out
+      	YAMI.Incoming_Messages.Incoming_Message'Class)
+    is
+
+		procedure Process
+		    (Content : in out YAMI.Parameters.Parameters_Collection)
+		is
+		begin
+		    --  extract the content field
+		    --  and print it on standard output
+
+		    Ada.Text_IO.Put_Line( "Message Arrived");
+		end Process;
+
+    begin
+		Message.Process_Content (Process'Access);
+    end Call;
+
+    My_Handler : aliased Incoming_Message_Handler;
+
+
+
+	procedure Listen_To(Server_Address : String) is
+
+  		Resolved_Server_Address 		: String (1 .. YAMI.Agents.Max_Target_Length);
+  		Resolved_Server_Address_Last 	: Natural;
+   	begin
+    	Instance.Client_Agent.Add_Listener
+       		(Server_Address,
+         	Resolved_Server_Address,
+         	Resolved_Server_Address_Last);
+
+         Put_Line("Server listening on " & Resolved_Server_Address(1..Resolved_Server_Address_Last));
+
+         Instance.Client_Agent.Register_Object("transfer", My_Handler'Unchecked_Access);
+
+    end Listen_To;
+
+
+	procedure Init is
+		Options : Parameters_Collection_Access := New_Parameters;--Make_Parameters;
+	begin
+	   	Options.Set_Integer (Dispatcher_Threads, 5);
+		Instance := new Message_Agent_Type(Options);
+    end Init;
 
 
 end Message_Agent;

@@ -37,6 +37,10 @@ with Route;
 
 package Generic_Station is
 
+
+	type Generic_Platform is synchronized interface;
+
+
 	---------------------------------- STATION INTERFACE --------------------------------------
 	type Station_Interface is interface;
 

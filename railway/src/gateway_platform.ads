@@ -23,55 +23,54 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
---
--- This package contains a representation of a Route for a Train as an unbounded array
--- of Stage objects.
---
-with Ada.Real_Time;use Ada.Real_Time;
-with Gnatcoll.JSON; use Gnatcoll.JSON;
+with Train;use Train;
+with Queue;
+with Traveler;use Traveler;
 with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 
-package Route is
+-- #
+-- # Represents a Platform for a generic Station, both for Trains and Travelers.
+-- #
+package Gateway_Platform is
 
-	type Action is (ENTER,PASS);
+	Stop_Train_Execution : Exception;
 
---  	type Stage is private;
-	type Stage is record
-	    -- Indexes of next Segment and Station
-		Next_Segment    : Positive;
-	    Next_Station    : Positive;
-        Platform_Index 	: Positive;
-        Node_Name		: Unbounded_String;
-		Leave_At        : Time;
-		Train_Action	: Action;
-	end record;
-
-	type Route_Type is array (Positive range <>) of Stage;
-
-	type Routes is array (Positive range <>) of access Route_Type;
-
---  	function Get_Next_Segment (S : Stage) return Positive;
---  	function Get_Next_Station (S : Stage) return Positive;
---  	function Get_Time_To_Leave (S : Stage) return Time;
---      function Get_Next_Platform (S : Stage) return Positive;
---      function Get_Action (S : Stage) return Action;
-
-	function Get_Route(Json_v : JSON_Value) return access Route_Type;
-
-	function Get_Routes (Json_File : String) return Routes;
-
-	procedure Print(R : Route_Type);
-
---  private
---
---  	type Stage is record
---  	    -- Indexes of next Segment and Station
---  		Next_Segment    : Positive;
---  	    Next_Station    : Positive;
---          Platform_Index 	: Positive;
---  		Leave_At        : Time;
---  		Train_Action	: Action;
---  	end record;
+	-- # Create a queue for Traveler type
+	package Traveler_Queue_Package is new Queue(Element => Positive);
 
 
-end Route;
+	procedure Send_Train(
+		Train_D 		: in	 Positive;
+		Station	 		: in	 Positive;
+		Node_Name		: in	 String );
+
+
+	protected type Gateway_Platform_Type(
+		ID	: Integer;
+		S 	: access Ada.Strings.Unbounded.Unbounded_String) is
+
+		entry Enter(
+			Train_D		: in 		Positive);
+
+		procedure Leave(
+			Train_D 	: in 		Positive);
+
+		procedure Add_Incoming_Traveler(
+			Traveler 	: in 		Positive);
+
+		procedure Add_Outgoing_Traveler(
+			Traveler 	: in 		Positive);
+
+	private
+		Free : Boolean := True;
+		-- # Queue for Arriving Traveler
+		Arrival_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
+
+		-- # Queue for Travelers waiting for the train to leave
+		Leaving_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
+
+		N : Integer := 3;
+
+	end Gateway_Platform_Type;
+
+end Gateway_Platform;

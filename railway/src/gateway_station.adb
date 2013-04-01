@@ -29,11 +29,11 @@ with Logger;
 with Environment;
 with Route;use Route;
 
-package body Regional_Station is
+package body Gateway_Station is
 
 	-- ------------------------ Definition of the inherited abstract methods ------------------------
 	procedure Enter(
-			This 				: in		Regional_Station_Type;
+			This 				: in		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Action				: in 		Route.Action) is
@@ -47,7 +47,7 @@ package body Regional_Station is
 
 
 	procedure Leave(
-			This 				: in 		Regional_Station_Type;
+			This 				: in 		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive) is
 	begin
@@ -59,7 +59,7 @@ package body Regional_Station is
 	-- # waiting for a specific Train
 	-- #
 	procedure Wait_For_Train_To_Go(
-			This 				: in		Regional_Station_Type;
+			This 				: in		Gateway_Station_Type;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive) is
@@ -74,7 +74,7 @@ package body Regional_Station is
 
 
 	overriding procedure Wait_For_Train_To_Arrive(
-			This 				: in		Regional_Station_Type;
+			This 				: in		Gateway_Station_Type;
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive) is
@@ -88,93 +88,58 @@ package body Regional_Station is
 
 
 	overriding procedure Add_Train(
-			This				: in 		Regional_Station_Type;
+			This				: in 		Gateway_Station_Type;
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive) is
 	begin
-		if not This.Segments_Map_Order.Contains(Segment_ID) then
-			Logger.Log(
-				Sender 	=> "Regional_Station",
-				Message => "Created List for Segment " & Integer'Image(Segment_ID),
-				L 		=> Logger.DEBUG
-			);
-			declare
-				R : Vector_Ref := new Positive_Vector_Package.Vector;
-			begin
-				This.Segments_Map_Order.Insert(
-					Key 		=> Segment_ID,
-					New_Item 	=> R);
-			end;
-		end if;
-		Logger.Log(
-			Sender 	=> "Regional_Station",
-			Message => "Adding Train " & Integer'Image(Train_ID),
-			L 		=> Logger.DEBUG
-		);
-		This.Segments_Map_Order.Element(Segment_ID).Append(Train_ID);
+		null;
     end Add_Train;
 
 
-
-
-
-    protected body Access_Controller is
-
-		entry Enter when True is
-		begin
-			null;
-		end Enter;
-
-
-		entry Wait when True is
-		begin
-			null;
-		end Wait;
-
- 	end Access_Controller;
-
-
-
-
-
-	function New_Regional_Station(
+	function New_Gateway_Station(
 			Platforms_Number 	: in		Positive;
 			Name 				: in 		String) return Station_Ref
 	is
-		Station : access Regional_Station_Type := new Regional_Station_Type(Platforms_Number);
+		Station : access Gateway_Station_Type := new Gateway_Station_Type(Platforms_Number);
 	begin
 		Station.Name := Unbounded_Strings.To_Unbounded_String(Name);
 		for I in Positive range 1..Platforms_Number loop
-			Station.Platforms(I) := new Platform.Platform_Type(I,Station.Name'Access);
+			Station.Platforms(I) := new Gateway_Platform.Gateway_Platform_Type(I,Station.Name'Access);
 		end loop;
 		Station.Panel := new Notice_Panel.Notice_Panel_Entity(1);
 		return Station;
 	end;
 
 
-
-
-	overriding procedure Print(This : in Regional_Station_Type) is
+	overriding procedure Print(This : in Gateway_Station_Type) is
 	begin
 		Put_Line ("Name : " & Unbounded_Strings.To_String(This.Name));
 		Put_Line ("Platform Number : " & Integer'Image(This.Platforms_Number));
     end Print;
 
 
-    function Get_Platform(This : Regional_Station_Type;P : Natural) return access Platform.Platform_Type is
+    function Get_Platform(This : Gateway_Station_Type;P : Natural) return access Platform.Platform_Type is
     begin
     	-- # N.B.: Non viene fatta una copia di P, poiché è LIMITED!
-    	return This.Platforms(P);
+    	return  Null;--This.Platforms(P);
     end Get_Platform;
 
--- ################################################ JSON - Regional Station ##########################################
+    overriding procedure Finalize (This: in out Gateway_Station_Type) is
+    begin
+    	Logger.Log(
+    		Sender => "Gateway_Station",
+    		Message => "Finalize Station " & Unbounded_Strings.To_String(This.Name),
+    		L => Logger.DEBUG);
+    end Finalize;
+
+-- ########################################### JSON - Gateway Station ##########################################
 
 	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref
 	is
 		Platforms_Number : Positive := Json_Station.Get("platform_number");
 		Name : String				:= Json_Station.Get("name");
 	begin
-		return New_Regional_Station(Platforms_Number,Name);
+		return New_Gateway_Station(Platforms_Number,Name);
 	end Get_Regional_Station;
 
 
@@ -192,12 +157,4 @@ package body Regional_Station is
     end Get_Regional_Station_Array;
 
 
-    overriding procedure Finalize (This: in out Regional_Station_Type) is
-    begin
-    	Logger.Log(
-    		Sender => "Regional_Station",
-    		Message => "Finalize Station " & Unbounded_Strings.To_String(This.Name),
-    		L => Logger.DEBUG);
-    end Finalize;
-
-end Regional_Station;
+end Gateway_Station;

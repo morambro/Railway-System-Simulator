@@ -32,13 +32,15 @@ with Task_Pool;
 with Ada.Exceptions;
 with Trains;
 with Traveler;
+with Message_Agent;
+with YAMI.Parameters;
 with Routes;
 
-package body Platform is
+package body Gateway_Platform is
 
 	NAME : constant String := "Platfrom.Platform_Type";
 
-	protected body Platform_Type is
+	protected body Gateway_Platform_Type is
 
 		-- #
 		-- # Entry At which trains are re-queued to enter the station. Once a train enters the Platform,
@@ -205,12 +207,17 @@ package body Platform is
 						   Integer'Image(Trains.Trains(Train_D).Sists_Number) & " travelers",
 				L       => Logger.NOTICE);
 
+			-- # Send train with descriptor Train_D to the next Station, and stop current Train Execution
 			declare
-				Next_Station_Index : Positive := Routes.All_Routes(Trains.Get_Trains(Train_D).Route_Index)(Trains.Get_Trains(Train_D).Next_Stage + 1).Next_Station;
+				-- # Retrieve Next Station index
+				Next_Station_Index 	: Positive 	:=
+					Routes.All_Routes(Trains.Get_Trains(Train_D).Route_Index)(Trains.Get_Trains(Train_D).Next_Stage + 1).Next_Station;
+				-- # Retrieve the Node_Name
+				Next_Station_Node	: String 	:= To_String(
+					Routes.All_Routes(Trains.Get_Trains(Train_D).Route_Index)(Trains.Get_Trains(Train_D).Next_Stage + 1).Node_Name);
 			begin
-				Put_Line("YOOOO " & Integer'Image(Next_Station_Index));
+				Send_Train(Train_D,Next_Station_Index,Next_Station_Node);
 			end;
-
 		end Leave;
 
 
@@ -230,6 +237,73 @@ package body Platform is
 
 		end Add_Outgoing_Traveler;
 
-	end Platform_Type;
+	end Gateway_Platform_Type;
 
-end Platform;
+
+	procedure Send_Train(
+		Train_D 		: in	 Positive;
+		Station	 		: in	 Positive;
+		Node_Name		: in	 String )
+	is
+		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+	begin
+
+		-- # First, Resolve destination address
+		declare
+
+			Dest_Address : Unbounded_String;
+
+			-- # Callback function, used to handle the response
+			procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
+
+				Address : String := Content.Get_String("address");
+
+			begin
+				Logger.Log(
+					Sender 	=> "Gateway_Station",
+					Message => "The destination is located at address " & Address,
+					L 		=> Logger.DEBUG
+				);
+		    end Get_Results;
+
+		begin
+
+			Parameters.Set_String("station",Integer'Image(Station));
+			Parameters.Set_String("node_name",Node_Name);
+
+			Message_Agent.Instance.Send(
+				Destination_Address => Environment.Get_Name_Server,
+				Object 				=> "name_server",
+				Service 			=> "get",
+				Params 				=> Parameters,
+				Callback			=> Get_Results'Access
+			);
+
+			-- # Once the address is resolved, send the Train to the destination node, and interrupt
+			-- # the current task Train execution.
+
+			Parameters.Clear;
+
+			Parameters.Set_String("train","{...}");
+			Parameters.Set_String("station",Integer'Image(Station));
+
+			Message_Agent.Instance.Send(
+				Destination_Address => To_String(Dest_Address),
+				Object 				=> "gateway_hadler",
+				Service 			=> "train_transfer",
+				Params 				=> Parameters,
+				Callback			=> null
+			);
+
+		exception
+			when E : others => Put_Line("Exception");
+		end;
+
+
+		-- # Stop current execution raising an exception.
+		raise Gateway_Platform.Stop_Train_Execution;
+
+    end Send_Train;
+
+
+end Gateway_Platform;

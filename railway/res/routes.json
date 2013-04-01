@@ -6,6 +6,7 @@
 					"next_segment" 		: 1,
 					"next_station" 		: 2,
 					"platform_index"  	: 2,
+					"node_name"			: "Node_1",				
 					"leave_at"			: 5000,
 					"action"			: "ENTER"
 				},
@@ -13,6 +14,7 @@
 					"next_segment" 		: 2,
 					"next_station" 		: 3,
 					"platform_index"  	: 1,
+					"node_name"			: "Node_1",
 					"leave_at"			: 10000,
 					"action"			: "ENTER"
 				},
@@ -20,6 +22,7 @@
 					"next_segment" 		: 3,
 					"next_station" 		: 4,
 					"platform_index"  	: 1,
+					"node_name"			: "Node_1",
 					"leave_at"			: 15000,
 					"action"			: "ENTER"
 				}
@@ -31,6 +34,7 @@
 					"next_segment" 		: 1,
 					"next_station" 		: 1,
 					"platform_index"  	: 1,
+					"node_name"			: "Node_1",
 					"leave_at"			: 2000,
 					"action"			: "ENTER"
 				}
@@ -42,6 +46,7 @@
 					"next_segment" 		: 1,
 					"next_station" 		: 1,
 					"platform_index"  	: 1,
+					"node_name"			: "Node_1",
 					"leave_at"			: 2000,
 					"action"			: "ENTER"
 				}

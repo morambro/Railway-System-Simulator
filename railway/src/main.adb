@@ -118,18 +118,37 @@ begin
 			-- Creation of Actors for Travelers
 			Params : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
 
-			Client : Message_Agent_Ref := new Message_Agent_Type;
-
 		begin
+			Message_Agent.Init;
+			Message_Agent.Listen_To("tcp://localhost:4455");
 
-			Params.Set_String("content","{'traveler' : 'lake','action' : 'moved'}");
---  			Params.Set_String("address",Node_Addr);
-
---  			Client.Send(
---  				Name_Server,
---  				"name_server",
---  				"add",
---  				Params);
+--  			Params.Set_String("station","2");
+--  			Params.Set_String("node_name","Node_1");
+--  			Params.Set_String("address","tcp://stocazzo");
+--
+--  			Message_Agent.Instance.Send(
+--  				Destination_Address => Name_Server,
+--  				Object 				=> "name_server",
+--  				Service 			=> "add",
+--  				Params 				=> Params,
+--  				Callback			=> null
+--  			);
+--
+--  			Message_Agent.Instance.Send(
+--  				Destination_Address => Name_Server,
+--  				Object 				=> "name_server",
+--  				Service 			=> "get",
+--  				Params 				=> Params,
+--  				Callback			=> null
+--  			);
+--
+--  --  			Params.Set_String("content","{'traveler' : 'lake','action' : 'moved'}");
+--  --  			Params.Set_String("address",Node_Addr);
+--  			Message_Agent.Instance.Send(
+--  				"tcp://localhost:4455",--Name_Server,
+--  				"transfer",
+--  				"ff",
+--  				Params, null);
 --  			For I in 1 .. Routes.All_Routes'Length loop
 --  --  				for J in 1 .. Routes.All_Routes(I)'Length loop
 --  --  					Put_Line(Routes.All_Routes(I)(J))
@@ -143,13 +162,18 @@ begin
 				Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
 				Pool			: Train_Pool.Train_Task_Pool(3,5);
 			begin
-				Environment.Init;
-				Train_Pool.Associate(1);
-				Train_Pool.Associate(2);
-	--  		Train_Pool.Associate(3);
-	--  		Train_Pool.Associate(4);
 
-				Task_Pool.Execute(Environment.Get_Operations(1)(Traveler.LEAVE));
+				Environment.Init(Node_Name,Name_Server);
+
+				Ada.Text_IO.Put_Line(Environment.Get_Name_Server);
+
+
+--  				Train_Pool.Associate(1);
+--  				Train_Pool.Associate(2);
+--  				Train_Pool.Associate(3);
+--  				Train_Pool.Associate(4);
+
+--  				Task_Pool.Execute(Environment.Get_Operations(1)(Traveler.LEAVE));
 
 --  				delay 4.0;
 --
@@ -164,7 +188,7 @@ begin
 
 				null;
 			end;
-			Client.Close;
+			Message_Agent.Instance.Close;
 
 		exception
    			when E : YAMI.Runtime_Error =>
@@ -172,7 +196,7 @@ begin
 	   				Sender => "Message_Agent.Message_Agent_Type",
 	   				Message => "ERROR : " & Exception_Message(E) & " Impossibile connettersi al Name Server",
 	   				L => Logger.ERROR);
-	   			Client.Close;
+	   			Message_Agent.Instance.Close;
 	   		when Error : others =>
 		    -- Handle all others
 		    	Ada.Text_IO.Put("Exception: ");

@@ -34,6 +34,7 @@ with Helper;
 with Ada.Exceptions;  use Ada.Exceptions;
 with Ada.Text_IO;
 with Train;
+with Gateway_Platform;
 
 package body Train_Pool is
 
@@ -182,6 +183,12 @@ package body Train_Pool is
 					NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
 					" Segment access Error : " & Exception_Message(E),
+					Logger.ERROR);
+			when Ex : Gateway_Platform.Stop_Train_Execution =>
+				Logger.Log(
+					NAME,
+					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
+					" Interruption : " & Exception_Message(Ex),
 					Logger.ERROR);
 		end;
 		end loop MAIN_LOOP;
