@@ -96,6 +96,7 @@ package body Gateway_Station is
     end Add_Train;
 
 
+
 	function New_Gateway_Station(
 			Platforms_Number 	: in		Positive;
 			Name 				: in 		String) return Station_Ref
@@ -120,7 +121,6 @@ package body Gateway_Station is
 
     function Get_Platform(This : Gateway_Station_Type;P : Natural) return Generic_Platform.Platform_Access is
     begin
-    	-- # N.B.: Non viene fatta una copia di P, poiché è LIMITED!
     	return This.Platforms(P);
     end Get_Platform;
 

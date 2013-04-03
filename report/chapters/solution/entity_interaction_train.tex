@@ -93,7 +93,7 @@ Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di anda
 % ####################################### ACCESSO_STAZIONE_REGIONALE #########################################
 % ############################################################################################################
 
-		\subsubsection{Accesso ad una Stazione Regionale}\label{sec:regional_station_access}
+		\subsubsection{Accesso ad una Stazione Regionale}\label{subsubsec:regional_station_access}
 		
 		I prerequisiti alla richiesta da parte di un Treno $T$ di accesso ad una Stazione sono:
 		
@@ -121,7 +121,7 @@ Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di anda
 		
 		Per la soluzione realizzata ho scelto la seconda opzione.
 		
-	% ################################################# INGRESSO_PIATTAFORMA #########################################
+	% ############################################## INGRESSO_PIATTAFORMA #########################################
 		\item{\ii{Ingresso in una Piattaforma}}\\
 		
 		Dopo aver superato la risorsa di controllo, ciascun Treno viene accodato presso la Piattaforma, interna a ciascuna Stazione, prevista dal percorso. La semantica di accodamento su di una generica Piattaforma $P$ (supponiamo disponibile mediante procedura eseguita in mutua esclusione) è la seguente:
@@ -138,7 +138,7 @@ Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di anda
 			\item Se invece la Piattaforma risulta occupata (\ttt{Free = False}), il Treno viene accodato presso una coda di Treni interna alla Piattaforma. Rappresentando la Piattaforma come una risorsa protetta da monitor, l'accodamento si traduce in una attesa su condizione, \ttt{wait(Free = True)}.
 		\end{itemize}
 			
-		L'Operazione di \bb{Discesa dei Viaggiatori}, si basa sulla possibilità che presso la Piattaforma corrente $P$ vi siano Viaggiatori all'interno della coda \ttt{Arrivals\_Queue} in attesa di un evento generato da uno specifico Treno; tale evento coincide con il suo arrivo presso $P$. L'operazione di Discesa dei passeggeri ha come precondizione l'accesso alla Piattaforma da parte di un Treno $T$ descritto in precedenza, ed è realizzata dalle seguenti azioni (eseguite dal thread associato a $T$ in mutua esclusione all'interno della risorsa protetta $P$):
+		L'Operazione di \bb{Discesa dei Viaggiatori}, si basa sulla possibilità che presso la Piattaforma corrente $P$ vi siano Viaggiatori all'interno della coda \ttt{Arrivals\_Queue} in attesa di un evento generato da uno specifico Treno che coincide con il suo arrivo presso $P$. L'operazione di Discesa dei passeggeri ha come precondizione l'accesso alla Piattaforma da parte di un Treno $T$ descritto in precedenza, ed è realizzata dalle seguenti azioni (eseguite dal thread associato a $T$ in mutua esclusione all'interno della risorsa protetta $P$):
 		\begin{itemize}
 			\item Viene estratto ciascun Viaggiatore $V$ dalla coda \ttt{Arrival\_Queue}, e per ciascuno di essi:
 			\begin{itemize}
@@ -194,30 +194,33 @@ Le operazioni effettuate sono, per ciascuna Tappa del Percorso corrente (di anda
 	\subsubsection{Accesso ad una Stazione di Gateway}\label{subsubsec:gateway_stations_func}
 	
 	Alcuni Treni seguono percorsi che attraversano più Regioni. Tra le tappe che compongono tali percorsi, alcune indicheranno l'attraversamento di Regioni di Gateway, introdotte nella sezione \ref{sec:gateway_stations}. 
-	L'azione di ingresso a tali stazioni segue le stesse regole descritte per le stazioni Regionali nella sezione \ref{sec:regional_station_access}, e viene quindi effettuata localmente alla singola Regione (nodo) di provenienza.
-	Le azioni di Discesa e Salita dei Viaggiatori, se indicate dal valore \ttt{ENTER} del parametro \ttt{action} della prossima Tappa, vengono invece ripetute su entrambe le Regioni sulle Piattaforme corrispondenti. Questo comporta che sarà effettuata:
+	Le azioni di Ingresso, Salita dei Viaggiatori, e Ripartenza presso questo tipo di stazioni seguono le stesse regole descritte per le stazioni Regionali nella sezione \ref{sec:regional_station_access}. Esse hanno quindi un effetto locale alle Regioni (nodi) di provenienza e di destinazione.
+	Per quanto riguarda invece la Discesa dei Viaggiatori, essa può prevedere un trasferimento remoto dei Viaggiatori in attesa di arrivo.
 	
-		\begin{itemize}
-			\item La discesa dei Viaggiatori in attesa di arrivare alla stazione $S$ presso la Regione $R$ sulla Piattaforma $P$, con il Treno corrente $T$.
-			\item La salita dei Viaggiatori che attendono presso la Piattaforma $P$ il Treno $T$, in una Regione o nell'altra.
-		\end{itemize}
-	
-	Il Passaggio di un Treno da una regione all'altra può essere schematizzato come segue: sia $G1$ la Stazione di Gateway che connette la regione $R1$ ad $R2$, con $G1$ appartente ad $R1$. Un Percorso che attraversa i due Gateway conterrà almeno una Tappe $T$ tale per cui il campo \ttt{next\_station} avrà il valore $G1$, e come \ttt{destination\_platform} una delle Piattaforme possibili per effettuare l'accesso, mentre il campo \ttt{region} conterrà invece la \ii{Regione di destinazione}.
+	Il Passaggio di un Treno da una regione alla successiva può essere schematizzato come segue: sia $G1$ la Stazione di Gateway che connette la regione $R1$ ad $R2$, con $G1$ appartente ad $R1$. Un Percorso che attraversa i due Gateway conterrà almeno una Tappe $T$ tale per cui il campo \ttt{next\_station} avrà il valore $G1$, e come \ttt{destination\_platform} una delle Piattaforme possibili per effettuare l'accesso, mentre il campo \ttt{region} conterrà invece la \ii{Regione di destinazione}.
 	Le operazioni eseguite saranno le seguenti:
 	\begin{itemize}
 		\item Il Treno corrente $T$ effettua l'accesso alla Stazione $G1$, Piattaforma $P$.
-		\item $T$, se previsto dal Percorso, effettua Discesa dei Viaggiatori.
+		
+		\item $T$, se previsto dal Percorso, effettua Discesa dei Viaggiatori. Tale azione è simile alla Discesa descritta in sezione \ref{sec:regional_station_access}, ma se un Viaggiatore una volta sceso proseguirà il proprio percorso su un nodo diverso da quello corrente, esso verrà trasferito mediante messaggio remoto al nodo successivo, e solo a questo punto verrà inserita l'Operazione \ttt{ENTER} del Viaggiatore nella coda di operazioni di \ttt{Traveler\_Pool} locale al nodo destinazione.
+		
 		\item Il thread che gestisce $T$ viene interrotto, ovvero viene modificato il flusso di esecuzione delle operazioni cicliche da esso eseguite.
 		\item Il descrittore del Treno corrente $D_T$ viene serializzato (\ii{marshalling}), e inviato tramite invocazione remota alla Stazione di Gateway della Regione $G2$ ad essa connessa. L'individuazione dell'indirizzo della regione specificata nel parametro \ttt{region}, avviene interrogando il \ttt{Name\_Server}, se esso non è già presente in una cache locale.
 		\item Presso la regione $R2$, stazione di Gateway $G2$, vengono eseguite le seguenti operazioni:
 			\begin{itemize}
 				\item Il Descrittore viene de-serializzato (\ii{unmarshalling}).
 				\item I dati del Descrittore $D_{T'}$ presenti nella regione $R2$ vengono aggiornati con quelli ricevuti.
-				\item Viene ottenuta la Piattaforma in mutua esclusione, in modo da effettuare, se previsto dal Percorso, la Discesa dei Viaggiatori, e ne viene impostato il campo \ttt{Free} a \ttt{False}.
+				\item Viene ottenuta la Piattaforma in mutua esclusione e ne viene impostato il campo \ttt{Free} a \ttt{False}.
 				\item Vengono operate attesa fino all'orario di partenza previsto (secondo il clock del nodo corrente), Salita dei Viaggiatori e Partenza dalla Stazione come per le Stazioni Regionali.
 			\end{itemize}
 	\end{itemize}
 
 	Si noti che data la conseguenza \ref{cons:gateway_unique}, questa soluzione garantisce una risoluzione univoca della Stazione di Gateway di arrivo.
+	
+	Ciò che garantisce la correttezza della soluzione presentata, relativamente a discesa e salita dei passeggeri locale, è la modalità con la quale il Viaggiatore viene accodato presso la Stazione di Gateway come descritto nella sezione \ref{subsec:percorrenza_viaggiatore}, ovvero in modo tale per cui:
+	\begin{itemize}
+		\item Presso le coda \ttt{Arrival\_Queue} delle Piattaforme nel nodo di partenza vi saranno tutti e soli i passeggeri in attesa di scendere presso la Stazione di Gateway, se previsto dal loro Biglietto.
+		\item Presso le code \ttt{Leaving\_Queue} delle Piattaforme nel nodo di destinazione vi saranno invece solamente i Viaggiatori che vogliono raggiungere una destinazione interna al nodo corrente.
+	\end{itemize}  
 	 
 	

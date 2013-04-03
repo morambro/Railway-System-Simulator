@@ -1,4 +1,4 @@
-\subsection{Percorrenza di un Viaggiatore}
+\subsection{Percorrenza di un Viaggiatore}\label{subsec:percorrenza_viaggiatore}
 	
 	Alla luce della definizione dell'entità Viaggiatore in sezione \ref{subsec:traveler_def}, è possibile definire le azioni che compongono il viaggio:
 		\begin{itemize}
@@ -9,6 +9,7 @@
 					- train_id 
 					- start_platform 
 					- destination_platform
+					- next_region
 				\end{verbatim}
 			e da un indice della prossima tappa del Percorso (\ttt{Next\_Stage}).
 			
@@ -47,19 +48,38 @@ Le azioni compiute dall'operazione \ttt{LEAVE} sono:
 	
 	Internamente alla Stazione, tale richiesta viene tradotta nell'inserimento del Viaggiatore, o meglio del suo Descrittore \ttt{Traveler\_Descriptor}, nella coda \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}.
 	
+	Nel caso in cui la stazione dalla quale il Viaggiatore vuole partire sia una Stazione di Gateway, allora la procedura di accodamento diviene:
+	\begin{itemize}
+		\item Se la Regione di Destinazione \ttt{next\_region} è diversa dalla Regione corrente, allora
+			\begin{itemize}
+				\item I dati relativi al Viaggiatore (Descrittore e Biglietto) vengono serializzati (\ii{marshalling}).
+				\item Viene inviato un messaggio alla prossima Regione (ovvero \ttt{next\_region}, il cui indirizzo viene recuperato dal Server dei Nomi) contente i dati serializzati, destinato alla Stazione di Gateway corrispondente in tale Regione (nodo).
+				\item A destinazione, vengono aggiornati i dati relativi al Viaggiatore locale alla Regione e eseguito un accodamento presso la coda \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}.
+			\end{itemize}
+	\end{itemize}
+	Questo permette di risolvere situazioni nelle quali vi siano coincidenze presso una stazione di Gateway. Si noti che l'eventuale azione di trasferimento del Viaggiatore al nuovo nodo viene effettuata dall'operazione \ttt{LEAVE} e non dalla stazione all'arrivo del Treno (descritto nella sottosezione \ref{subsubsec:regional_station_access}). Questa scelta è stata fatta per limitare il più possibile l'occupazione da parte di un Treno della Piattaforma (risorsa protetta), ed evitare quindi l'esecuzione di operazioni potenzialmente lunghe come l'invio di un messaggio remoto. Queste considerazioni hanno guidato anche la definizione delle azioni eseguite all'Arrivo a Destinazione.
+	
+	
+	
 	\subsubsection{Arrivo alla Destinazione successiva}
 		
-	Similmente a quanto descritto per la partenza, l'arrivo a destinazione prevede che l'operazione \ttt{ARRIVE} sia già stata inserita all'interno della coda di operazioni in \ttt{Traveler\_Pool}, e che un thread del pool la esegua (rimuovendola dalla coda).
+	Similmente a quanto descritto per la partenza, l'arrivo a destinazione prevede che l'operazione \ttt{ARRIVE} sia già stata inserita all'interno della coda di operazioni in \ttt{Traveler\_Pool}, e che un thread del pool la esegua (rimuovendola dalla coda). A differenza della partenza, questa operazione può comportare l'accodamento del Viaggiatore presso una Stazione che non appartiene alla Regione (al nodo) corrente, anche se non di Gateway. 
 	
-	Tale operazione prevede le seguenti azioni:
+	Vengono eseguite le seguenti azioni:
 		\begin{itemize}
-			\item Estrazione \ttt{next\_station} dalla tappa corrente $t$.
-			\item Tramite l'interfaccia esposta dalla Stazione \ttt{next\_station} (procedura identificata con ), viene effettuata una richiesta di attsa presso la Piattaforma \ttt{destination\_platform}.
+			\item Estrazione della prossima stazione (\ttt{next\_station}) e della Regione di destinazione (\ttt{next\_region}) dalla tappa corrente $t$. Si presentano ora due casi:
+				\begin{itemize}
+					\item Se la prossima Regione è la stessa della Regione corrente, allora mediante l'interfaccia esposta dalla Stazione locale \ttt{next\_station}, viene effettuata una richiesta di attesa presso la Piattaforma \\\ttt{destination\_platform}
+					\item Se la destinazione è una Stazione appartenente ad un'altra Regione, allora:
+						\begin{itemize}
+							\item Viene individuato l'indirizzo della Regione remota (richiesto al \ttt{Name\_Server} che gestisce le Regioni).
+							\item Vengono serializzati (\ii{marshalling}) i dati relativi al Viaggiatore (Descrittore del Viaggiatore) e al suo Biglietto.
+							\item Viene inviato un Messaggio Remoto alla Regione specificata che provvederà ad effettuare l'aggiornamento del corrispondente Viaggiatore, e al suo accodamento presso la Stazione corretta.
+						\end{itemize}
+				\end{itemize}
 		\end{itemize} 
 		
 	Internamente alla Stazione, la richiesta si traduce nell'inserimento del Descrittore del Viaggiatore corrente all'interno della coda \ttt{Arrival\_Queue} interna alla Piattaforma \ttt{destination\_platform} selezionata.
-	
-
 
 \newpage
 	

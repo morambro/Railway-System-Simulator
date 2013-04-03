@@ -106,7 +106,7 @@ package body Gateway_Platform is
 							L       => Logger.NOTICE);
 					else
 
-						-- # Go to the next stage (there will be at least another one for sure!)
+						-- # Go to the next stage
 						Environment.Get_Travelers(T_Manager).Ticket.Next_Stage :=
 							Environment.Get_Travelers(T_Manager).Ticket.Next_Stage + 1;
 
@@ -127,11 +127,28 @@ package body Gateway_Platform is
 								    L       => Logger.ERROR);
 						end;
 					end if;
-
 				end if;
 			end loop;
 			Put_Line("END");
 		end Enter;
+
+
+		procedure Add_Incoming_Traveler(Traveler : Positive) is
+			-- # Based on the next stage, decide weather to transfer the Traveler to another node or not.
+			Next_Stage_Region : Unbounded_String :=
+				Environment.Get_Travelers(Traveler).Ticket.Stages(Environment.Get_Travelers(Traveler).Ticket.Next_Stage).Region;
+		begin
+			-- # If the next stage region is different from the current, the Traveler have to be transferred to the corresponding
+			-- # gateway station on the specified region
+			if  Next_Stage_Region/= Environment.Get_Node_Name then
+
+				-- # SEND to the next Station TODO!!!!
+				null;
+			else
+				Arrival_Queue.Enqueue(Traveler);
+			end if;
+		end Add_Incoming_Traveler;
+
 
 
 		-- #
@@ -219,12 +236,6 @@ package body Gateway_Platform is
 				Send_Train(Train_D,Next_Station_Index,Next_Station_Node);
 			end;
 		end Leave;
-
-
-		procedure Add_Incoming_Traveler(Traveler : Positive) is
-		begin
-			Arrival_Queue.Enqueue(Traveler);
-		end Add_Incoming_Traveler;
 
 
 		procedure Add_Outgoing_Traveler(Traveler : Positive) is
