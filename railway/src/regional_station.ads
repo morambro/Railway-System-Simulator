@@ -40,6 +40,7 @@ with Ada.Containers.Ordered_Maps;  use Ada.Containers;
 with Ada.Containers.Vectors;
 with Queue;
 with Route;
+with Generic_Platform;
 
 package Regional_Station is
 
@@ -117,7 +118,7 @@ package Regional_Station is
 
 		overriding function Get_Platform(
 			This : Regional_Station_Type;
-			P : Natural) return access Platform.Platform_Type;
+			P : Natural) return Generic_Platform.Platform_Access;
 
 		overriding procedure Add_Train(
 			This				: in 		Regional_Station_Type;

@@ -15,47 +15,43 @@
 --  the Free Software Foundation, either version 3 of the License, or			--
 --  (at your option) any later version.											--
 --																				--
---  Railway_Simulation is distributed in the hope that it will be useful,			--
+--  Railway_Simulation is distributed in the hope that it will be useful,		--
 --  but WITHOUT ANY WARRANTY; without even the implied warranty of				--
 --  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the				--
 --  GNU General Public License for more details.								--
 --																				--
 --  You should have received a copy of the GNU General Public License			--
---  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>.		--
+--  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
+with Train;use Train;
+with Queue;
+with Traveler;use Traveler;
+with Ada.Strings.Unbounded;
 
-with Unchecked_Deallocation;
-
--- Package which defines an Interface to expose a unique method, to be invoked
--- by worker tasks.
-package Generic_Operation_Interface is
-
-	-- Operation Interface type declaration
-	type Operation_Interface is interface;--abstract tagged null record;
-
-	-- Operation Method declaration
-	procedure Do_Operation (X : in Operation_Interface) is abstract;
-
-   	-- Operation reference type to be used inside records: Type'Class doesn't
-   	-- have a fixed size so it can be not allocated inside a record.
-   	type Any_Operation is access all Operation_Interface'Class;
+-- #
+-- # Declaration of a generic platform interface.
+-- #
+package Generic_Platform is
 
 
-   		type Traveler_Operations is Array(Positive range <>) of Any_Operation;
+	type Platform_Interface is synchronized interface;
 
-	type Traveler_Operations_Ref is access all Traveler_Operations;
+	type Platform_Access is access all Platform_Interface'Class;
 
-	type Travelers_All_Operations is array (Positive range <>) of Traveler_Operations_Ref;
+		procedure Enter(
+			This		: 			access Platform_Interface;
+			Train_D		: in 		Positive) is abstract;
 
-	type Travelers_All_Operations_Ref is access all Travelers_All_Operations;
+		procedure Leave(
+			This		: 			access Platform_Interface;
+			Train_D 	: in 		Positive) is abstract;
 
+		procedure Add_Incoming_Traveler(
+			This		:  			access Platform_Interface;
+			Traveler 	: in 		Positive) is abstract;
 
-	-- Code to manage memory deallocation
- 	procedure Free is new Unchecked_Deallocation (
-      	Operation_Interface'Class,
-		Any_Operation
-	);
+		procedure Add_Outgoing_Traveler(
+			This		:  			access Platform_Interface;
+			Traveler 	: in 		Positive) is abstract;
 
-   	pragma Controlled (Any_Operation);
-
-end Generic_Operation_Interface;
+end Generic_Platform;

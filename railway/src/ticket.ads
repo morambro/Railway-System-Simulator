@@ -24,6 +24,7 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with Gnatcoll.JSON;use Gnatcoll.JSON;
+with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 -- #
 -- # This package contains the definition of a ticket, that is an array of stages the
 -- # traveler will follow to reach the destination.
@@ -39,6 +40,8 @@ package Ticket is
 		Train_ID 	 				: Natural := 0;
 		-- # The Platform index at which the traveler will wait
 		Start_Platform_Index		: Natural := 0;
+		-- # The region to which the next stage belongs to
+		Region 						: Unbounded_String;
 		-- # Destination platform index
 		Destination_Platform_Index	: Natural := 0;
     end record;

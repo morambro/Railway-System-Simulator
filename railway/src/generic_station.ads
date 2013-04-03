@@ -31,14 +31,11 @@ with Traveler;
 with Unchecked_Deallocation;
 
 with Ada.Finalization;
-with Platform;
+with Generic_Platform;
 
 with Route;
 
 package Generic_Station is
-
-
-	type Generic_Platform is synchronized interface;
 
 
 	---------------------------------- STATION INTERFACE --------------------------------------
@@ -74,7 +71,7 @@ package Generic_Station is
 
 		function Get_Platform(
 			This 				: in 		Station_Interface;
-			P 					: in		Natural) return access Platform.Platform_Type
+			P 					: in		Natural) return Generic_Platform.Platform_Access
 		is abstract;
 
 		procedure Print(This : in Station_Interface) is abstract;

@@ -33,6 +33,10 @@ with Ticket;
 with Gateway_Station;
 with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 
+-- #
+-- # This package contains environment's objects, in order to be retrieved easily from each
+-- # other component
+-- #
 package Environment Is
 
     function Get_Regional_Stations return Generic_Station.Stations_array_Ref;

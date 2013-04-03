@@ -46,6 +46,7 @@ package body Ticket is
 				T.Stages(I) := (
 					Start_Station				=> Json_Ticket.Get("start_station"),
 					Next_Station 				=> Json_Ticket.Get("next_station"),
+					Region						=> Json_Ticket.Get("region"),
 					Train_ID 					=> Json_Ticket.Get("train_id"),
 					Start_Platform_Index		=> Json_Ticket.Get("start_platform_index"),
 					Destination_Platform_Index	=> Json_Ticket.Get("destination_platform_index")

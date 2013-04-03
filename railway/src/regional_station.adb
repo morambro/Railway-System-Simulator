@@ -161,9 +161,8 @@ package body Regional_Station is
     end Print;
 
 
-    function Get_Platform(This : Regional_Station_Type;P : Natural) return access Platform.Platform_Type is
+    function Get_Platform(This : Regional_Station_Type;P : Natural) return Generic_Platform.Platform_Access is
     begin
-    	-- # N.B.: Non viene fatta una copia di P, poiché è LIMITED!
     	return This.Platforms(P);
     end Get_Platform;
 

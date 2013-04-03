@@ -27,7 +27,6 @@
 with Generic_Station;use Generic_Station;
 with Train;
 with Gateway_Platform;
-with Platform;
 with Traveler;
 with Notice_Panel;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
@@ -41,6 +40,7 @@ with Ada.Containers.Ordered_Maps;  use Ada.Containers;
 with Ada.Containers.Vectors;
 with Queue;
 with Route;
+with Generic_Platform;
 
 package Gateway_Station is
 
@@ -52,7 +52,7 @@ package Gateway_Station is
 	-- #
 	-- # Array Containing Platforms references
 	-- #
-	type Platforms_List is array (Positive range <>) of access Gateway_Platform.Gateway_Platform_Type;
+	type Platforms_List is array (Positive range <>) of Generic_Platform.Platform_Access;
 
 	type Platform_Booking is array (Positive range <>) of Boolean;
 
@@ -89,7 +89,7 @@ package Gateway_Station is
 
 		overriding function Get_Platform(
 			This 				: in		Gateway_Station_Type;
-			P 					: 			Natural) return access Platform.Platform_Type;
+			P 					: 			Natural) return Generic_Platform.Platform_Access;
 
 		overriding procedure Add_Train(
 			This				: in 		Gateway_Station_Type;

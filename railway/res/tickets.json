@@ -5,6 +5,7 @@
 			"start_station"				: 2,
 			"next_station" 				: 3,
 			"train_id"					: 2222,
+			"region"					: "Node_1",
 			"start_platform_index"		: 2,
 			"destination_platform_index": 1
 		},
@@ -12,6 +13,7 @@
 			"start_station"				: 3,
 			"next_station" 				: 4,
 			"train_id"					: 2222,
+			"region"					: "Node_1",
 			"start_platform_index"		: 1,
 			"destination_platform_index": 1
 		}

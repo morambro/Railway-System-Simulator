@@ -27,6 +27,7 @@ with Train;use Train;
 with Queue;
 with Traveler;use Traveler;
 with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
+with Generic_Platform;
 
 -- #
 -- # Represents a Platform for a generic Station, both for Trains and Travelers.
@@ -47,7 +48,7 @@ package Gateway_Platform is
 
 	protected type Gateway_Platform_Type(
 		ID	: Integer;
-		S 	: access Ada.Strings.Unbounded.Unbounded_String) is
+		S 	: access Ada.Strings.Unbounded.Unbounded_String) is new Generic_Platform.Platform_Interface with
 
 		entry Enter(
 			Train_D		: in 		Positive);
