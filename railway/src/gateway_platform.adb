@@ -111,42 +111,72 @@ package body Gateway_Platform is
 							Environment.Get_Travelers(T_Manager).Ticket.Next_Stage + 1;
 
 						declare
-							Next_Operation : Traveler.Move_Operations := Traveler.LEAVE;
+							-- # Based on the next stage, decide weather to transfer the Traveler to another node or not.
+							Next_Stage_Region : Unbounded_String :=
+								Environment.Get_Travelers(T_Manager).Ticket.Stages(Environment.Get_Travelers(T_Manager).Ticket.Next_Stage).Region;
 						begin
-							-- # Execute the operation number 2 (Traveler waits to leave the train).
-							Task_Pool.Execute(Environment.Get_Operations(T_Manager)(Next_Operation));
-							-- # Set the new Operation Index
-							Environment.Get_Travelers(T_Manager).Next_Operation := Next_Operation;
+							-- # If the next stage region is different from the current, the Traveler have to be transferred to the corresponding
+							-- # gateway station on the specified region
+							if  Next_Stage_Region/= Environment.Get_Node_Name then
 
-						exception
-							when Error : others =>
-								Logger.Log(
-									Sender  => NAME,
-								    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
-								    			Ada.Exceptions.Exception_Message(Error),
-								    L       => Logger.ERROR);
+								-- # SEND to the next Station TODO!!!!
+								null;
+							else
+								declare
+									Next_Operation : Traveler.Move_Operations := Traveler.LEAVE;
+								begin
+									-- # Execute the operation number 2 (Traveler waits to leave the train).
+									Task_Pool.Execute(Environment.Get_Operations(T_Manager)(Next_Operation));
+									-- # Set the new Operation Index
+									Environment.Get_Travelers(T_Manager).Next_Operation := Next_Operation;
+
+								exception
+									when Error : others =>
+										Logger.Log(
+											Sender  => NAME,
+										    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
+										    			Ada.Exceptions.Exception_Message(Error),
+										    L       => Logger.ERROR);
+								end;
+
+							end if;
 						end;
 					end if;
+
 				end if;
 			end loop;
 			Put_Line("END");
 		end Enter;
 
 
-		procedure Add_Incoming_Traveler(Traveler : Positive) is
-			-- # Based on the next stage, decide weather to transfer the Traveler to another node or not.
-			Next_Stage_Region : Unbounded_String :=
-				Environment.Get_Travelers(Traveler).Ticket.Stages(Environment.Get_Travelers(Traveler).Ticket.Next_Stage).Region;
-		begin
-			-- # If the next stage region is different from the current, the Traveler have to be transferred to the corresponding
-			-- # gateway station on the specified region
-			if  Next_Stage_Region/= Environment.Get_Node_Name then
 
-				-- # SEND to the next Station TODO!!!!
+		procedure Add_Outgoing_Traveler(Traveler : Positive) is
+
+			Next_Stage_Region : Unbounded_String :=
+								Environment.Get_Travelers(Traveler).Ticket.Stages(Environment.Get_Travelers(Traveler).Ticket.Next_Stage).Region;
+
+		begin
+
+			if Next_Stage_Region /= Environment.Get_Node_Name then
+				-- # TODO : Tranfer to the corresponding Gateway station
 				null;
 			else
-				Arrival_Queue.Enqueue(Traveler);
+
+				Leaving_Queue.Enqueue(Traveler);
+				Logger.Log(
+					NAME,
+					"Travelers in queue = " & Count_Type'Image(Arrival_Queue.Current_Use),
+					Logger.DEBUG);
 			end if;
+
+		end Add_Outgoing_Traveler;
+
+
+
+
+		procedure Add_Incoming_Traveler(Traveler : Positive) is
+		begin
+			Arrival_Queue.Enqueue(Traveler);
 		end Add_Incoming_Traveler;
 
 
@@ -238,15 +268,6 @@ package body Gateway_Platform is
 		end Leave;
 
 
-		procedure Add_Outgoing_Traveler(Traveler : Positive) is
-		begin
-			Leaving_Queue.Enqueue(Traveler);
-			Logger.Log(
-				NAME,
-				"Travelers in queue = " & Count_Type'Image(Arrival_Queue.Current_Use),
-				Logger.DEBUG);
-
-		end Add_Outgoing_Traveler;
 
 	end Gateway_Platform_Type;
 

@@ -68,10 +68,11 @@ package body Move_Operation is
 	-- # Operation which lets the Traveler (Manager)
 	-- #
 	procedure Do_Operation(This : in Enter_Operation_Type) is
-		Next_Stage 					: Positive 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
-		Next_Station 				: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station;
-		Train_ID	 				: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
-		Destination_Platform_Index 	: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Destination_Platform_Index;
+		Next_Stage 					: Positive 			:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
+		Next_Station 				: Natural 			:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station;
+		Next_Region 				: Unbounded_String 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Region;
+		Train_ID	 				: Natural 			:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
+		Destination_Platform_Index 	: Natural 			:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Destination_Platform_Index;
 	begin
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
@@ -79,10 +80,16 @@ package body Move_Operation is
 					   " will wait to ARRIVE at platform" & Integer'Image(Destination_Platform_Index) & ", station " & Integer'Image(Next_Station),
 			L 		=> Logger.NOTICE);
 
-		Environment.Get_Regional_Stations(Next_Station).Wait_For_Train_To_Arrive(
-			Incoming_Traveler 	=> This.Traveler_Manager_Index,
-			Train_ID 			=> Train_ID,
-			Platform_Index		=> Destination_Platform_Index);
+		-- # Check if the next destination is in the current Region or not
+		if Next_Region = Environment.Get_Node_Name then
+			Environment.Get_Regional_Stations(Next_Station).Wait_For_Train_To_Arrive(
+				Incoming_Traveler 	=> This.Traveler_Manager_Index,
+				Train_ID 			=> Train_ID,
+				Platform_Index		=> Destination_Platform_Index);
+		else
+			-- # TODO: SEND TO NEXT REGION!!!!
+			null;
+		end if;
 
 	exception
 		when Error : others =>

@@ -48,7 +48,7 @@ Le azioni compiute dall'operazione \ttt{LEAVE} sono:
 	
 	Internamente alla Stazione, tale richiesta viene tradotta nell'inserimento del Viaggiatore, o meglio del suo Descrittore \ttt{Traveler\_Descriptor}, nella coda \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}.
 	
-	Nel caso in cui la stazione dalla quale il Viaggiatore vuole partire sia una Stazione di Gateway, allora la procedura di accodamento diviene:
+	Nel caso in cui la stazione dalla quale il Viaggiatore vuole partire sia una Stazione di Gateway, allora la procedura di accodamento presso la Piattafroma designata diviene:
 	\begin{itemize}
 		\item Se la Regione di Destinazione \ttt{next\_region} è diversa dalla Regione corrente, allora
 			\begin{itemize}
@@ -57,7 +57,9 @@ Le azioni compiute dall'operazione \ttt{LEAVE} sono:
 				\item A destinazione, vengono aggiornati i dati relativi al Viaggiatore locale alla Regione e eseguito un accodamento presso la coda \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}.
 			\end{itemize}
 	\end{itemize}
-	Questo permette di risolvere situazioni nelle quali vi siano coincidenze presso una stazione di Gateway. Si noti che l'eventuale azione di trasferimento del Viaggiatore al nuovo nodo viene effettuata dall'operazione \ttt{LEAVE} e non dalla stazione all'arrivo del Treno (descritto nella sottosezione \ref{subsubsec:regional_station_access}). Questa scelta è stata fatta per limitare il più possibile l'occupazione da parte di un Treno della Piattaforma (risorsa protetta), ed evitare quindi l'esecuzione di operazioni potenzialmente lunghe come l'invio di un messaggio remoto. Queste considerazioni hanno guidato anche la definizione delle azioni eseguite all'Arrivo a Destinazione.
+	
+	Il comportamento descritto non è proprio della operazione \ttt{LEAVE}, ma è contenuto nell'operazione della Piattaforma per l'accodamento del Viaggiatore presso la coda \ttt{Leaving\_Queue}. 
+	
 	
 	
 	
@@ -80,6 +82,8 @@ Le azioni compiute dall'operazione \ttt{LEAVE} sono:
 		\end{itemize} 
 		
 	Internamente alla Stazione, la richiesta si traduce nell'inserimento del Descrittore del Viaggiatore corrente all'interno della coda \ttt{Arrival\_Queue} interna alla Piattaforma \ttt{destination\_platform} selezionata.
+	
+	Si noti che l'eventuale azione di trasferimento del Viaggiatore al nuovo nodo viene effettuata dall'operazione \ttt{ARRIVE} e non dalla stazione all'arrivo del Treno (descritto nella sottosezione \ref{subsubsec:regional_station_access}). Questa scelta è stata fatta per limitare il più possibile l'occupazione da parte di un Treno della Piattaforma (risorsa protetta), ed evitare quindi l'esecuzione di operazioni potenzialmente lunghe come l'invio di un messaggio remoto.
 
 \newpage
 	
