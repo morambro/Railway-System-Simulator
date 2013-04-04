@@ -40,12 +40,6 @@ package Gateway_Platform is
 	package Traveler_Queue_Package is new Queue(Element => Positive);
 
 
-	procedure Send_Train(
-		Train_D 		: in	 Positive;
-		Station	 		: in	 Positive;
-		Node_Name		: in	 String );
-
-
 	protected type Gateway_Platform_Type(
 		ID	: Integer;
 		S 	: access Ada.Strings.Unbounded.Unbounded_String) is new Generic_Platform.Platform_Interface with

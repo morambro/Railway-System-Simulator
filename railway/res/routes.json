@@ -19,10 +19,19 @@
 					"action"			: "ENTER"
 				},
 				{
-					"next_segment" 		: 3,
-					"next_station" 		: 4,
+					"comment"			: "This Stage is added as a fake stage, to help reaching the next Gateway Station",
+					"next_segment" 		: 1,
+					"next_station" 		: 1,
 					"platform_index"  	: 1,
-					"node_name"			: "Node_1",
+					"node_name"			: "Node_2",
+					"leave_at"			: 10000,
+					"action"			: "ENTER"
+				},
+				{
+					"next_segment" 		: 1,
+					"next_station" 		: 2,
+					"platform_index"  	: 1,
+					"node_name"			: "Node_2",
 					"leave_at"			: 15000,
 					"action"			: "ENTER"
 				}

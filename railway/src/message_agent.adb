@@ -27,7 +27,6 @@
 with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Exceptions;  use Ada.Exceptions;
 with Logger;
-with YAMI.Incoming_Messages;
 
 package body Message_Agent is
 
@@ -90,76 +89,86 @@ package body Message_Agent is
     end Close;
 
 
-    type Incoming_Message_Handler is new YAMI.Incoming_Messages.Message_Handler with null record;
 
-    overriding procedure Call(
-    	H 		: in out Incoming_Message_Handler;
-  		Message : in out
-      	YAMI.Incoming_Messages.Incoming_Message'Class)
-    is
-
-		procedure Process
-		    (Content : in out YAMI.Parameters.Parameters_Collection)
-		is
-		begin
-		    --  extract the content field
-		    --  and print it on standard output
-
-		    Ada.Text_IO.Put_Line( "Message Arrived");
-		end Process;
-
-    begin
-		Message.Process_Content (Process'Access);
-    end Call;
-
-    My_Handler : aliased Incoming_Message_Handler;
-
-
-
-	procedure Listen_To(Server_Address : String) is
+	procedure Listen_To(
+		This 				: access Message_Agent_Type;
+		Server_Address 		: in	 String)
+	is
 
   		Resolved_Server_Address 		: String (1 .. YAMI.Agents.Max_Target_Length);
   		Resolved_Server_Address_Last 	: Natural;
    	begin
-    	Instance.Client_Agent.Add_Listener
+    	This.Client_Agent.Add_Listener
        		(Server_Address,
          	Resolved_Server_Address,
          	Resolved_Server_Address_Last);
 
          Put_Line("Server listening on " & Resolved_Server_Address(1..Resolved_Server_Address_Last));
 
-         Instance.Client_Agent.Register_Object("transfer", My_Handler'Unchecked_Access);
+         This.Client_Agent.Register_Object("message_handler", Main_Handler'Unchecked_Access);
 
     end Listen_To;
 
 
+
+
+	procedure Add_Handler(
+			This				: access Message_Agent_Type;
+			Service				: in String;
+			The_Handler			: Handler) is
+	begin
+		This.Handlers_Map.Insert(Service,The_Handler);
+    end Add_Handler;
+
+
+
+
 	procedure Init is
-		Options : Parameters_Collection_Access := New_Parameters;--Make_Parameters;
+		Options : Parameters_Collection_Access := New_Parameters;
 	begin
 	   	Options.Set_Integer (Dispatcher_Threads, 5);
 		Instance := new Message_Agent_Type(Options);
+		Main_Handler.Agent := Instance;
     end Init;
 
 
-end Message_Agent;
 
---	declare
---	  	Server_Address : constant String := Ada.Command_Line.Argument (1);
---	  	Client_Agent : YAMI.Agents.Agent := YAMI.Agents.Make_Agent;
---	begin
---		--  read lines of text from standard input
---		--  and post each one for transmission
---    	while not Ada.Text_IO.End_Of_File loop
---       		declare
---				Input_Line : constant String := Ada.Text_IO.Get_Line;
---				Params : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
---			begin
---		        --  the "content" field name is arbitrary,
---		        --  but needs to be recognized at the server side
---		        Params.Set_String ("content", Input_Line);
---		        Params.Set_String ("prova", "Sciao belo");
---		        Client_Agent.Send_One_Way (Server_Address, "printer", "print", Params);
---		    end;
---      	end loop;
---	end;
+
+    overriding procedure Call(
+    	This	: in	out Main_Message_Handler;
+  		Message : in	out YAMI.Incoming_Messages.Incoming_Message'Class)
+    is
+
+		Message_Type 		: String 								:=  Message.Message_Name;
+		Reply_Parameters 	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
+    begin
+
+		if This.Agent.Handlers_Map.Contains(Message_Type) then
+			Ada.Text_IO.Put_Line( "Contains handler for type " & Message_Type);
+			-- # Invoke the correct handler for the given message type
+			Message.Process_Content(This.Agent.Handlers_Map(Message_Type));
+
+		else
+			Logger.Log(
+   				Sender 	=> "Main_Handler",
+   				Message => "No Handler for the given message type : " & Message_Type & "!",
+   				L 		=> Logger.ERROR);
+		end if;
+
+		Reply_Parameters.Set_String("response","RECEIVED");
+
+		Message.Reply(Reply_Parameters);
+
+
+   	exception
+			when E : others =>
+			Logger.Log(
+   				Sender => "",
+   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+   				L => Logger.ERROR);
+    end Call;
+
+
+end Message_Agent;
 

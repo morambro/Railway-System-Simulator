@@ -30,16 +30,11 @@ with Ada.Text_IO;
 with Generic_Operation_Interface;
 
 with Environment;
+with Segments;
 with Trains;
 with Routes;
 with Train_Pool;
 With Task_Pool;
-
-with Route;
-
-with Segment;
-
-with Generic_Station;
 
 with Logger;
 
@@ -53,7 +48,11 @@ with YAMI.Parameters;
 
 with Ticket_Office;
 
+with Train;
+
 with Ada.Exceptions;  use Ada.Exceptions;
+
+with Handlers;
 
 procedure Main is
 
@@ -120,42 +119,19 @@ begin
 
 		begin
 			Message_Agent.Init;
-			Message_Agent.Listen_To("tcp://localhost:4455");
+			Message_Agent.Instance.Listen_To(Node_Addr);
+			Message_Agent.Instance.Add_Handler("train_transfer",Handlers.Station_Train_Transfer_Handler'Access);
 
---  			Params.Set_String("station","2");
---  			Params.Set_String("node_name","Node_1");
---  			Params.Set_String("address","tcp://stocazzo");
---
---  			Message_Agent.Instance.Send(
---  				Destination_Address => Name_Server,
---  				Object 				=> "name_server",
---  				Service 			=> "add",
---  				Params 				=> Params,
---  				Callback			=> null
---  			);
---
---  			Message_Agent.Instance.Send(
---  				Destination_Address => Name_Server,
---  				Object 				=> "name_server",
---  				Service 			=> "get",
---  				Params 				=> Params,
---  				Callback			=> null
---  			);
---
---  --  			Params.Set_String("content","{'traveler' : 'lake','action' : 'moved'}");
---  --  			Params.Set_String("address",Node_Addr);
---  			Message_Agent.Instance.Send(
---  				"tcp://localhost:4455",--Name_Server,
---  				"transfer",
---  				"ff",
---  				Params, null);
---  			For I in 1 .. Routes.All_Routes'Length loop
---  --  				for J in 1 .. Routes.All_Routes(I)'Length loop
---  --  					Put_Line(Routes.All_Routes(I)(J))
---  --  				end loop;
---  				Route.Print(Routes.All_Routes(I).all);
---  			end loop;
+			Params.Set_String("node_name",Node_Name);
+			Params.Set_String("address",Node_Addr);
 
+			Message_Agent.Instance.Send(
+				Destination_Address => Name_Server,
+				Object 				=> "name_server",
+				Service 			=> "add",
+				Params 				=> Params,
+				Callback			=> null
+			);
 
 			declare
 				-- Start the real simulation
@@ -164,12 +140,25 @@ begin
 			begin
 
 				Environment.Init(Node_Name,Name_Server);
+				Segments.Init;
 
-				Ada.Text_IO.Put_Line(Environment.Get_Name_Server);
-
+--  				Params.Set_String("station","2");
+--  				Params.Set_String("train",Train.Get_Json(Trains.Get_Trains(1)));
+--  	--  			Params.Set_String("address","tcp://localhost:4455");
+--  	--
+--  				Message_Agent.Instance.Send(
+--  					Destination_Address => Node_Addr,
+--  					Object 				=> "message_handler",
+--  					Service 			=> "train_transfer",
+--  					Params 				=> Params,
+--  					Callback			=> null
+--  				);
 
 --  				Train_Pool.Associate(1);
---  				Train_Pool.Associate(2);
+--  				delay 4.0;
+				if Environment.Get_Node_Name = "Node_1" then
+					Train_Pool.Associate(2);
+				end if;
 --  				Train_Pool.Associate(3);
 --  				Train_Pool.Associate(4);
 
@@ -185,8 +174,6 @@ begin
 		   				Sender => "",
 		   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
 		   				L => Logger.ERROR);
-
-				null;
 			end;
 			Message_Agent.Instance.Close;
 

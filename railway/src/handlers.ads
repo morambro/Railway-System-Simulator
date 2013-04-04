@@ -23,52 +23,19 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
+with YAMI.Parameters;
+with Environment;
+with Trains;
+with Train;
+with Train_Pool;
+with Logger;
+with Routes;
 
-with Gnatcoll.JSON;use Gnatcoll.JSON;
-with JSON_Helper;use JSON_Helper;
+package Handlers is
 
-package Train is
+	-- #
+	-- # Handler used to Handle Messages to transfer Trains between Gateway Stations
+	-- #
+	procedure Station_Train_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
 
-	type Train_Type is (FB,REGIONAL);
-
-	type Train_Descriptor is
-	record
-	    Id 			    : Positive;
-		Speed 		    : Positive;
-	    Max_Speed 	    : Positive;
-	    -- Id of the current station
-	    Current_Station : Positive;
-	    -- Id of the next stage;
-	    Next_Stage		: Positive;
-	    -- Index of the Route
-	    Route_Index		: Positive;
-	    -- # Number of sits
-	    Sits_Number 	: Natural;
-	    -- # Number of Travelers Currently in the Train
-	    Occupied_Sits 	: Natural := 0;
-		-- # The train type
-		T_Type			: Train_Type;
-
-	End Record;
-
-	type Trains_Array is array (Positive range <>) of Train_Descriptor;
-
-	----------------- Procedures to convert Json to Train_Descriptor ----------------------------
-
-	function Get_Trains_Array (
-		Json_File_Name 	: in String) return Trains_Array;
-
-	function Get_Json(
-		Train 	: Train_Descriptor) return String;
-
-	procedure Print(
-		T 		: Train_Descriptor);
-
-	function Get_Train_Descriptor (
-		Json_Train 		: in Json_Value) return Train_Descriptor;
-
-	function Get_Train_Descriptor (
-		Json_Train 		: in String) return Train_Descriptor;
-
-end Train;
-
+end Handlers;

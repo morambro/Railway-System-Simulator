@@ -23,12 +23,15 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-with Ada.Text_IO;
-with JSON_Helper;
+with Ada.Text_IO;use Ada.Text_IO;
+with JSON_Helper;use JSON_Helper;
+with Logger;
+with Gnatcoll.JSON;use Gnatcoll.JSON;
 
 package body Environment Is
 
-	Regional_Stations 	: Generic_Station.Stations_array_Ref := null;
+
+	Stations 			: Generic_Station.Stations_array_Ref := null;
 
 	-- array of Travelers
     Travelers 			: Traveler.Traveler_Manager_Array_Ref := null;
@@ -42,7 +45,7 @@ package body Environment Is
 
     function Get_Regional_Stations return Generic_Station.Stations_array_Ref is
     begin
-    	return Regional_Stations;
+    	return Stations;
     end Get_Regional_Stations;
 
     function Get_Operations return Traveler.Travelers_All_Operations_Ref is
@@ -60,10 +63,45 @@ package body Environment Is
 		return To_String(Name_Server);
     end Get_Name_Server;
 
-    procedure Init(N_N : in String;N_S : in String) is
+
+	function Get_Station_Array(Json_Station : String) return Generic_Station.Stations_Array_Ref is
+		Json_v  : Json_Value := Get_Json_Value(Json_File_Name => Json_Station);
+		J_Array : constant JSON_Array := Json_v.Get(Field => "stations");
+		Array_Length : constant Natural := Length (J_Array);
+		T : Generic_Station.Stations_Array_Ref := new Generic_Station.Stations_Array(1 .. Array_Length);
+	begin
+		for I in 1 .. T'Length loop
+			declare
+				Json_S : JSON_Value := Get(Arr => J_Array, Index => I);
+				Station_Type : String := Json_S.Get("type");
+			begin
+				if Station_Type = "R" then
+					T(I) := Regional_Station.Get_Regional_Station(Get(Arr => J_Array, Index => I));
+				else
+					T(I) := Gateway_Station.Get_Gateway_Station(Get(Arr => J_Array, Index => I));
+				end if;
+			end;
+
+		end loop;
+
+		return T;
+    end Get_Station_Array;
+
+
+
+    procedure Init(
+ 		N_N 		: in String;
+    	N_S 		: in String)
+    is
     begin
+    	Name_Server := To_Unbounded_String(N_S);
+
+		Node_Name := To_Unbounded_String(N_N);
+
     	-- # Creates regional stations array loading data from file
-    	Regional_Stations 	:= Regional_Station.Get_Regional_Station_Array("res/stations.json");
+    	Stations 	:= Get_Station_Array("res/" & To_String(Node_Name) & "-stations.json");
+
+    	Put_Line("There are " & Integer'Image(Stations'Length) & " stations");
 
 		-- # Creates travelers array loading data from file
     	Travelers 	:= Traveler.Get_Traveler_Manager_array("res/travelers.json");
@@ -79,9 +117,6 @@ package body Environment Is
 			Operations(I)(Traveler.ENTER) := new Move_Operation.Enter_Operation_Type'(Traveler_Manager_Index => I);
 		end loop;
 
-		Name_Server := To_Unbounded_String(N_S);
-
-		Node_Name := To_Unbounded_String(N_N);
 
     end Init;
 

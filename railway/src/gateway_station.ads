@@ -96,6 +96,7 @@ package Gateway_Station is
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive);
 
+
 	-- #
 	-- # Creates a new Station instance
 	-- #
@@ -117,16 +118,15 @@ package Gateway_Station is
 --  	-- #
 --  	-- # @return A reference to the created Regional_Station_Type object
 --  	-- #
---  	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref;
---
---  	-- #
---  	-- # Creates a Station_Array object containing the stations defined in the given Json_Value
---  	-- #
---  	-- # @return A reference to the created Stations_Array
---  	-- #
---  	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref;
---
---  	--------------------------------------------------------------------------------------
+	function Get_Gateway_Station(Json_Station : Json_Value) return Station_Ref;
+
+
+	procedure Send_Train(
+		Train_D 		: in	 Positive;
+		Station	 		: in	 Positive;
+		Platform		: in 	 Positive;
+		Node_Name		: in	 String );
+
 
 	-- #
 	-- # Overriding of the Finalize method.

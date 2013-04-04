@@ -23,52 +23,15 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
+with Segment;
+with Environment;
 
-with Gnatcoll.JSON;use Gnatcoll.JSON;
-with JSON_Helper;use JSON_Helper;
+package body Segments is
 
-package Train is
+	procedure Init is
+	begin
+		Segments := Segment.Get_Segment_Array("res/" & Environment.Get_Node_Name & "-segments.json");
 
-	type Train_Type is (FB,REGIONAL);
+    end Init;
 
-	type Train_Descriptor is
-	record
-	    Id 			    : Positive;
-		Speed 		    : Positive;
-	    Max_Speed 	    : Positive;
-	    -- Id of the current station
-	    Current_Station : Positive;
-	    -- Id of the next stage;
-	    Next_Stage		: Positive;
-	    -- Index of the Route
-	    Route_Index		: Positive;
-	    -- # Number of sits
-	    Sits_Number 	: Natural;
-	    -- # Number of Travelers Currently in the Train
-	    Occupied_Sits 	: Natural := 0;
-		-- # The train type
-		T_Type			: Train_Type;
-
-	End Record;
-
-	type Trains_Array is array (Positive range <>) of Train_Descriptor;
-
-	----------------- Procedures to convert Json to Train_Descriptor ----------------------------
-
-	function Get_Trains_Array (
-		Json_File_Name 	: in String) return Trains_Array;
-
-	function Get_Json(
-		Train 	: Train_Descriptor) return String;
-
-	procedure Print(
-		T 		: Train_Descriptor);
-
-	function Get_Train_Descriptor (
-		Json_Train 		: in Json_Value) return Train_Descriptor;
-
-	function Get_Train_Descriptor (
-		Json_Train 		: in String) return Train_Descriptor;
-
-end Train;
-
+end Segments;

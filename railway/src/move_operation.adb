@@ -87,7 +87,13 @@ package body Move_Operation is
 				Train_ID 			=> Train_ID,
 				Platform_Index		=> Destination_Platform_Index);
 		else
+			-- #
+			-- #
+			-- #
 			-- # TODO: SEND TO NEXT REGION!!!!
+			-- #
+			-- #
+			-- #
 			null;
 		end if;
 

@@ -60,8 +60,6 @@ package body Platform is
 								" plat " & Integer'Image(ID),
 					L       => Logger.NOTICE);
 
-			Put_Line(Count_Type'Image(Arrival_Number));
-
 			for I in 1..Arrival_Number loop
 				-- # in T_Manager there will be the index of the next Traveler
 				Arrival_Queue.Dequeue(T_Manager);
@@ -128,7 +126,6 @@ package body Platform is
 
 				end if;
 			end loop;
-			Put_Line("END");
 		end Enter;
 
 
@@ -202,14 +199,8 @@ package body Platform is
 				Message => "Train " &
 						   Integer'Image(Trains.Trains(Train_D).Id) &
 						   " has" & Integer'Image(Trains.Trains(Train_D).Occupied_Sits) & "/" &
-						   Integer'Image(Trains.Trains(Train_D).Sists_Number) & " travelers",
+						   Integer'Image(Trains.Trains(Train_D).Sits_Number) & " travelers",
 				L       => Logger.NOTICE);
-
-			declare
-				Next_Station_Index : Positive := Routes.All_Routes(Trains.Get_Trains(Train_D).Route_Index)(Trains.Get_Trains(Train_D).Next_Stage + 1).Next_Station;
-			begin
-				Put_Line("YOOOO " & Integer'Image(Next_Station_Index));
-			end;
 
 		end Leave;
 

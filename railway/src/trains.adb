@@ -24,11 +24,32 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 
+with Logger;
+
 package body Trains is
 
-	function Get_Trains return Train.Trains_Array is
+	procedure Update_Train(
+		Train_Index 	: in	Positive;
+		Train_To_Copy	: in 	Train.Train_Descriptor)
+	is
 	begin
-		return Trains;
-	end Get_Trains;
+
+		if Train_Index <= Trains'Length then
+			Trains(Train_Index).Speed 			:= Train_To_Copy.Speed;
+			Trains(Train_Index).Max_Speed 		:= Train_To_Copy.Max_Speed;
+	    	Trains(Train_Index).Current_Station := Train_To_Copy.Current_Station;
+	    	Trains(Train_Index).Next_Stage 		:= Train_To_Copy.Next_Stage;
+	    	Trains(Train_Index).Route_Index 	:= Train_To_Copy.Route_Index;
+	    	Trains(Train_Index).Sits_Number 	:= Train_To_Copy.Sits_Number;
+	    	Trains(Train_Index).Occupied_Sits	:= Train_To_Copy.Occupied_Sits;
+	    	Trains(Train_Index).T_Type			:= Train_To_Copy.T_Type;
+		else
+			Logger.Log(
+				Sender 		=> "Trains",
+				Message 	=> "ERROR: Error while updating Train data. The given Train is not the same as Train " & Integer'Image(Train_Index),
+				L 			=> Logger.ERROR);
+		end if;
+
+    end Update_Train;
 
 end Trains;

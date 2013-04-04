@@ -38,7 +38,6 @@ package body Regional_Station is
 			Platform_Index		: in		Positive;
 			Action				: in 		Route.Action) is
 	begin
-
 		if Action = Route.ENTER then
 			This.Platforms(Platform_Index).Enter(Descriptor_Index);
 		end if;

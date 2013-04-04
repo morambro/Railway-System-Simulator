@@ -55,7 +55,8 @@ package body Segment is
 			if 	(Trains.Trains(To_Add).Current_Station /= First_End) and
 				(Trains.Trains(To_Add).Current_Station /= Second_End)
 			then
-				raise Bad_Segment_Access_Request_Exception with "Invalid Train's origin station";
+				raise Bad_Segment_Access_Request_Exception with "Invalid Train's origin station, found " & Integer'Image(Trains.Trains(To_Add).Current_Station) &
+				" Instead of " & Integer'Image(First_End) & " or " & Integer'Image(Second_End);
 			end if;
 
 			Logger.Log(
@@ -158,6 +159,7 @@ package body Segment is
 		-- #
 		entry Leave(Train_D : in Positive) when not Free is
 		begin
+
 			if(Running_Trains(1) = Trains.Trains(Train_D).ID) then
 
 				-- Shift all the other trains by one
@@ -170,6 +172,7 @@ package body Segment is
 					Retry_Num := Retry'Count;
 					Can_Retry_Leave := True;
 				end if;
+
 
 				Logger.Log(
 					NAME,
@@ -191,25 +194,24 @@ package body Segment is
 				end if;
 
 --  				-- Now re-queue the train to the proper platform.
- 				if Current_Direction /= First_End then
---  					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
---  						-- # At this point, I am sure the Next_Segment index would not have been incremented yet
---  						Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage).Platform_Index
---  					).Enter;
-					Environment.Get_Regional_Stations(First_End).Add_Train(
-						Train_ID 	=> Train_D,
-						Segment_ID	=> Id
-					);
-				else
---  					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
---  						Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage).Platform_Index
---  					).Enter;
-					Environment.Get_Regional_Stations(Second_End).Add_Train(
-						Train_ID 	=> Train_D,
-						Segment_ID	=> Id
-					);
-				end if;
-
+--   				if Current_Direction /= First_End then
+--  --  					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
+--  --  						-- # At this point, I am sure the Next_Segment index would not have been incremented yet
+--  --  						Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage).Platform_Index
+--  --  					).Enter;
+--  --  					Environment.Get_Regional_Stations(First_End).Add_Train(
+--  --  						Train_ID 	=> Train_D,
+--  --  						Segment_ID	=> Id
+--  --  					);
+--  				else
+--  --  					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
+--  --  						Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage).Platform_Index
+--  --  					).Enter;
+--  --  					Environment.Get_Regional_Stations(Second_End).Add_Train(
+--  --  						Train_ID 	=> Train_D,
+--  --  						Segment_ID	=> Id
+--  --  					);
+--  				end if;
 
 			else
 				Logger.Log(
@@ -218,6 +220,7 @@ package body Segment is
 					Logger.DEBUG);
 				requeue Retry;
 			end if;
+
 		end Leave;
 
 

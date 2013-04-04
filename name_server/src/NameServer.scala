@@ -10,7 +10,7 @@ package it.name_server {
 	class ServerAgent extends Actor with IncomingMessageCallback{
 	
 		var serverAgent : Agent = null;
-		var addresses	: Map[(String,String),String] = Map();
+		var addresses	: Map[String,String] = Map();
 	
 		def act() {
 			my_loop
@@ -39,11 +39,10 @@ package it.name_server {
 			im.getMessageName match {
 			
 				case "add" => {
-					val station		= im.getParameters.getString("station")
 					val node_name 	= im.getParameters.getString("node_name") 
 					val address 	= im.getParameters.getString("address")
 		
-					addresses += ((station,node_name) -> address)
+					addresses += (node_name -> address)
 		
 					println("Total entries : ")
 					for( key <- addresses.keys )
@@ -61,7 +60,7 @@ package it.name_server {
 				}
 			
 				case "get" => {
-					val key 	= (im.getParameters.getString("station"),im.getParameters.getString("node_name"))
+					val key 	= im.getParameters.getString("node_name")
 					
 					val replyParams : Parameters = new Parameters;
 					addresses get key match {

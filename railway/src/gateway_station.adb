@@ -28,6 +28,11 @@ with Ada.Text_IO;use Ada.Text_IO;
 with Logger;
 with Environment;
 with Route;use Route;
+with Routes;
+with Trains;
+with YAMI.Parameters;
+with Message_Agent;
+with Ada.Exceptions;
 
 package body Gateway_Station is
 
@@ -46,12 +51,128 @@ package body Gateway_Station is
 
 
 
+	procedure Send_Train(
+		Train_D 		: in	 Positive;
+		Station	 		: in	 Positive;
+		Platform		: in 	 Positive;
+		Node_Name		: in	 String )
+	is
+		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+	begin
+
+		-- # First, Resolve destination address
+		declare
+
+			-- # Callback function, used to handle the response
+			procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
+
+				Address : String := Content.Get_String("response");
+				Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
+			begin
+				Logger.Log(
+					Sender 	=> "Gateway_Station",
+					Message => "The destination is located at address " & Address,
+					L 		=> Logger.DEBUG
+				);
+
+				if Address /= "_" then
+					-- # Once the address is resolved, send the Train to the destination node, and interrupt
+					-- # the current task Train execution.
+
+					Parameters.Set_String("station",Integer'Image(Station));
+					Parameters.Set_String("platform",Integer'Image(Platform));
+					Parameters.Set_String("train_index",Integer'Image(Train_D));
+					Parameters.Set_String("train",Train.Get_Json(Trains.Trains(Train_D)));
+
+					Message_Agent.Instance.Send(
+						Destination_Address => Address,
+						Object 				=> "message_handler",
+						Service 			=> "train_transfer",
+						Params 				=> Parameters,
+						Callback			=> null
+					);
+
+					Put_Line ("NEXT STAGE = " & Integer'Image(Trains.Trains(Train_D).Next_Stage));
+				end if;
+
+		    end Get_Results;
+
+		begin
+
+			Parameters.Set_String("station",Integer'Image(Station));
+			Parameters.Set_String("node_name",Node_Name);
+
+			Put_Line(Environment.Get_Name_Server);
+
+			Message_Agent.Instance.Send(
+				Destination_Address => Environment.Get_Name_Server,
+				Object 				=> "name_server",
+				Service 			=> "get",
+				Params 				=> Parameters,
+				Callback			=> Get_Results'Access
+			);
+
+		exception
+			when E : others =>
+				Logger.Log(
+	   				Sender => "Gateway_Station.Send_Train",
+	   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+	   				L => Logger.ERROR);
+		end;
+
+		-- # Stop current execution raising an exception.
+		raise Gateway_Platform.Stop_Train_Execution;
+
+    end Send_Train;
+
+
+
 	procedure Leave(
 			This 				: in 		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive) is
 	begin
-		This.Platforms(Platform_Index).Leave(Descriptor_Index);
+		-- # Send train with descriptor Train_D to the next Station, if defined and on another node, and stop current Train Execution
+
+		Put_Line("Next_Stage = " & Integer'Image(Trains.Trains(Descriptor_Index).Next_Stage));
+
+		if Trains.Trains(Descriptor_Index).Next_Stage + 1 <= Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)'Length then
+
+			Trains.Trains(Descriptor_Index).Next_Stage := Trains.Trains(Descriptor_Index).Next_Stage + 1;
+
+			declare
+
+				-- # Retrieve Next Station index
+				Next_Station_Index 	: Positive 	:=
+					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage).Next_Station;
+				-- # Retrieve the Node_Name
+				Next_Station_Node	: String 	:= To_String(
+					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage).Node_Name);
+
+			begin
+
+				if  Next_Station_Node/= Environment.Get_Node_Name then
+					-- #
+					-- #
+					-- #
+					-- # SEND to the next Station TODO!!!!
+					-- #
+					-- #
+					-- #
+					Put_Line("DEST_REGION : " & Next_Station_Node & " NEXT STATION INDEX " & Integer'Image(Next_Station_Index));
+					Send_Train(
+						Train_D		=>	Descriptor_Index,
+						Station 	=> 	Next_Station_Index,
+						-- # The platform index will be the same!!
+						Platform	=>	Platform_Index,
+						Node_Name 	=>	Next_Station_Node);
+				else
+					-- # If the next Stage is in the same Region, proceed with a local Leave operation
+					This.Platforms(Platform_Index).Leave(Descriptor_Index);
+				end if;
+			end;
+		end if;
 	end Leave;
 
 	-- #
@@ -134,27 +255,27 @@ package body Gateway_Station is
 
 -- ########################################### JSON - Gateway Station ##########################################
 
-	function Get_Regional_Station(Json_Station : Json_Value) return Station_Ref
+	function Get_Gateway_Station(Json_Station : Json_Value) return Station_Ref
 	is
 		Platforms_Number : Positive := Json_Station.Get("platform_number");
 		Name : String				:= Json_Station.Get("name");
 	begin
 		return New_Gateway_Station(Platforms_Number,Name);
-	end Get_Regional_Station;
+	end Get_Gateway_Station;
 
 
-	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref is
-		Json_v  : Json_Value := Get_Json_Value(Json_File_Name => Json_Station);
-		J_Array : constant JSON_Array := Json_v.Get(Field => "stations");
-		Array_Length : constant Natural := Length (J_Array);
-		T : Stations_Array_Ref := new Stations_Array(1 .. Array_Length);
-	begin
-		for I in 1 .. T'Length loop
-			T(I) := Get_Regional_Station(Get(Arr => J_Array, Index => I));
-		end loop;
-
-		return T;
-    end Get_Regional_Station_Array;
+--  	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref is
+--  		Json_v  : Json_Value := Get_Json_Value(Json_File_Name => Json_Station);
+--  		J_Array : constant JSON_Array := Json_v.Get(Field => "stations");
+--  		Array_Length : constant Natural := Length (J_Array);
+--  		T : Stations_Array_Ref := new Stations_Array(1 .. Array_Length);
+--  	begin
+--  		for I in 1 .. T'Length loop
+--  			T(I) := Get_Regional_Station(Get(Arr => J_Array, Index => I));
+--  		end loop;
+--
+--  		return T;
+--      end Get_Regional_Station_Array;
 
 
 end Gateway_Station;

@@ -32,7 +32,7 @@ with Route;
 with Routes;
 with Helper;
 with Ada.Exceptions;  use Ada.Exceptions;
-with Ada.Text_IO;
+with Ada.Text_IO;use Ada.Text_IO;
 with Train;
 with Gateway_Platform;
 
@@ -81,7 +81,7 @@ package body Train_Pool is
 
 				Leg_Length 			: Positive;
 
-				Time_In_Segment 		: Float;
+				Time_In_Segment 	: Float;
 
 			-- # ######################## NEXT Segment ACCESS ############################
 			begin
@@ -106,7 +106,7 @@ package body Train_Pool is
 					Trains.Trains(Current_Descriptor_Index).Speed := Max_Speed;
 				end if;
 
-				Time_In_Segment := 3.0;--Float(Leg_Length) / (Float(Current_Descriptor_Index.Speed)*0.277777778);
+				Time_In_Segment := 2.0;--Float(Leg_Length) / (Float(Current_Descriptor_Index.Speed)*0.277777778);
 
 				Logger.Log(NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) & " running at speed "
@@ -121,7 +121,6 @@ package body Train_Pool is
 				delay Duration (Time_In_Segment);
 
 				Segments.Segments(Next_Segment).Leave(Current_Descriptor_Index);
-
 
 				-- # ######################## NEXT STATION ACCESS ############################
 
@@ -165,7 +164,7 @@ package body Train_Pool is
 
 				-- # Re-enqueue the descriptor only if it has more stages to travel
 				if(Trains.Trains(Current_Descriptor_Index).Next_Stage <= Routes.All_Routes(Route_Index)'Length) then
-					Low_Priority_Trains_Queue.Enqueue(Current_Descriptor_Index);
+					Associate(Current_Descriptor_Index);
 				else
 					Logger.Log(NAME,
 				      	"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
@@ -190,6 +189,8 @@ package body Train_Pool is
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
 					" Interruption : " & Exception_Message(Ex),
 					Logger.ERROR);
+			when Exc : others =>
+				Put_Line("ERROR : Exception: " & Ada.Exceptions.Exception_Name(Exc) & "  " & Ada.Exceptions.Exception_Message(Exc));
 		end;
 		end loop MAIN_LOOP;
 

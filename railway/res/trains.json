@@ -9,7 +9,8 @@
 			"route_index" 		: 1,
 			"sits_number"		: 20,
 			"occupied_sits"		: 0,
-			"type"				: "fb"
+			"type"				: "fb",
+			"start_node"		: "Node_1"
 		},
 		{
 			"id" 				: 2222,
@@ -20,7 +21,8 @@
 			"route_index" 		: 1,
 			"sits_number"		: 20,
 			"occupied_sits"		: 0,
-			"type"				: "regionale"
+			"type"				: "regionale",
+			"start_node"		: "Node_1"
 		},
 		{	
 			"id" 				: 3333,
@@ -31,7 +33,8 @@
 			"route_index" 		: 1,
 			"sits_number"		: 20,
 			"occupied_sits"		: 0,
-			"type"				: "regionale"
+			"type"				: "regionale",
+			"start_node"		: "Node_1"
 		},
 		{
 			"id" 				: 4444,
@@ -42,7 +45,8 @@
 			"route_index" 		: 1,
 			"sits_number"		: 20,
 			"occupied_sits"		: 0,
-			"type"				: "regionale"
+			"type"				: "regionale",
+			"start_node"		: "Node_1"
 		}
 	]
 }

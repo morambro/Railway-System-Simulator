@@ -24,9 +24,12 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with Segment;
+with Environment;
 
 package Segments is
 
-	Segments : access Segment.Segments_Array := Segment.Get_Segment_Array("res/segments.json");
+	Segments : access Segment.Segments_Array := null;
+
+	procedure Init;
 
 end Segments;

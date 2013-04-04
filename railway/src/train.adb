@@ -27,6 +27,27 @@ with Ada.Text_IO;
 
 package body Train is
 
+
+    function String_To_Train_Type (
+		T_Type			: in String) return Train_Type is
+	begin
+		if T_Type = "FB" or T_Type = "fb" then
+			return FB;
+		else
+			return REGIONAL;
+		end if;
+	end String_To_Train_Type;
+
+	function Train_Type_To_String(
+		T_Type	: in Train_Type) return String is
+	begin
+		if T_Type = FB then
+			return "fb";
+		end if;
+		return "regional";
+
+	end Train_Type_To_String;
+
 	function Get_Trains_Array(Json_File_Name : String) return Trains_Array is
 		Json_v  : Json_Value := Get_Json_Value(Json_File_Name => Json_File_Name);
 		J_Array : constant JSON_Array := Json_v.Get(Field => "trains");
@@ -47,7 +68,7 @@ package body Train is
 		    Current_Station => Json_Train.Get("current_station"),
 		    Next_Stage		=> Json_Train.Get("next_stage"),
 		    Route_Index		=> Json_Train.Get("route_index"),
-		    Sists_Number 	=> Json_Train.Get("sits_number"),
+		    Sits_Number 	=> Json_Train.Get("sits_number"),
 		    Occupied_Sits	=> Json_Train.Get("occupied_sits"),
 		    T_Type			=> String_To_Train_Type(Json_Train.Get("type"))
 		);
@@ -56,19 +77,35 @@ package body Train is
     end Get_Train_Descriptor;
 
 
-
-    function String_To_Train_Type (
-		T_Type			: in String) return Train_Type is
+	function Get_Train_Descriptor (
+		Json_Train 		: in String) return Train_Descriptor is
 	begin
-		if T_Type = "FB" or T_Type = "fb" then
-			return FB;
-		else
-			return REGIONAL;
-		end if;
-	end String_To_Train_Type;
+		return Get_Train_Descriptor(Get_Json_Value(Json_Train));
+    end Get_Train_Descriptor;
 
 
-	procedure Print(T : access Train_Descriptor) is
+	function Get_Json(
+		Train 	: Train_Descriptor) return String
+	is
+		Json_Train : JSON_Value := Create_Object;
+	begin
+
+		Json_Train.Set_Field("id",Train.Id);
+		Json_Train.Set_Field("speed",Train.Speed);
+		Json_Train.Set_Field("max_speed",Train.Max_Speed);
+		Json_Train.Set_Field("current_station",Train.Current_Station);
+		Json_Train.Set_Field("next_stage",Train.Next_Stage);
+		Json_Train.Set_Field("route_index",Train.Route_Index);
+		Json_Train.Set_Field("sits_number",Train.Sits_Number);
+		Json_Train.Set_Field("occupied_sits",Train.Occupied_Sits);
+		Json_Train.Set_Field("type",Train_Type_To_String(Train.T_Type));
+
+
+		return Json_Train.Write;
+	end;
+
+
+	procedure Print(T : Train_Descriptor) is
 	begin
 		Ada.Text_IO.Put_Line("");
 		Ada.Text_IO.Put_Line("Train Descriptor:");

@@ -1,0 +1,19 @@
+{
+	"stations" : [
+		{
+			"platform_number" 	: 3,
+			"name" 				: "0001",
+			"type"				: "regional"
+		},
+		{
+			"platform_number" 	: 2,
+			"name" 				: "0002",
+			"type"				: "regional"
+		},
+		{
+			"platform_number" 	: 3,
+			"name" 				: "0003",
+			"type"				: "gateway"
+		}
+	]
+}

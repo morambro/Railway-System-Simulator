@@ -33,11 +33,16 @@ with Ticket;
 with Gateway_Station;
 with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 
+WITH YAMI.Parameters;
+
 -- #
 -- # This package contains environment's objects, in order to be retrieved easily from each
 -- # other component
 -- #
 package Environment Is
+
+--  	procedure Station_Message_Handler(
+--  		Content 	: in out YAMI.Parameters.Parameters_Collection);
 
     function Get_Regional_Stations return Generic_Station.Stations_array_Ref;
 
@@ -49,7 +54,10 @@ package Environment Is
 
 	function Get_Name_Server return String;
 
-    procedure Init(N_N : in String;N_S : in String);
+    procedure Init(
+    	N_N 		: in String;
+    	N_S 		: in String);
+
 
 private
 
