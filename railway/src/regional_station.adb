@@ -68,7 +68,7 @@ package body Regional_Station is
 	begin
 		This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
 		This.Panel.SetStatus(
-			"Traveler " & Traveler.Get_Name(Environment.Get_Travelers(Outgoing_Traveler)) &
+			"Traveler " & Traveler.Get_Name(Environment.Travelers(Outgoing_Traveler)) &
 			" waits by platform " & Integer'Image(Platform_Index) & " station " &
 			Unbounded_Strings.To_String(This.Name) & " to GO");
 	end Wait_For_Train_To_Go;
@@ -83,7 +83,7 @@ package body Regional_Station is
 	begin
 		This.Platforms(Platform_Index).Add_Incoming_Traveler(Incoming_Traveler);
 		This.Panel.SetStatus(
-			"Traveler " & Traveler.Get_Name(Environment.Get_Travelers(Incoming_Traveler)) &
+			"Traveler " & Traveler.Get_Name(Environment.Travelers(Incoming_Traveler)) &
 			" waits by station " & Unbounded_Strings.To_String(This.Name)
 			& " at platform " & Integer'Image(Platform_Index) & " to ARRIVE");
     end Wait_For_Train_To_Arrive;

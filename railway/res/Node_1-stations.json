@@ -13,7 +13,17 @@
 		{
 			"platform_number" 	: 3,
 			"name" 				: "0003",
-			"type"				: "G"
+			"type"				: "G",
+			"links"				: [
+				{
+					"region" 	: "Node_2",
+					"station"	: 1
+				},
+				{
+					"region" 	: "Node_3",
+					"station"	: 5
+				}
+			]
 		}
 	]
 }

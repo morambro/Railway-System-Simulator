@@ -72,6 +72,9 @@ package Traveler is
 
 	function Get_Traveler_Manager(Json_Traveler : String) return Traveler_Manager;
 
+	function Get_Json(
+		Traveler : Traveler_Manager) return String;
+
 private
 
 	-- #

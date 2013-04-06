@@ -36,8 +36,11 @@ with Ada.Strings.Unbounded;
 with Ada.Finalization;
 with Unchecked_Deallocation;
 
-with Ada.Containers.Ordered_Maps;  use Ada.Containers;
-with Ada.Containers.Vectors;
+with Ada.Strings.Hash;
+
+with Ada.Containers.Indefinite_Hashed_Maps;
+use Ada.Containers;
+with Ada.Containers.Ordered_Maps;
 with Queue;
 with Route;
 with Generic_Platform;
@@ -97,6 +100,12 @@ package Gateway_Station is
       	Element_Type 	=> Access_Controller_Ref
     );
 
+	package String_Positive_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
+		Key_Type 		=> String,
+		Element_Type 	=> Positive,
+		Hash			=> Ada.Strings.Hash,
+		Equivalent_Keys => "="
+	);
 
 
 	package Unbounded_Strings renames Ada.Strings.Unbounded;
@@ -151,8 +160,9 @@ package Gateway_Station is
 	-- # @return: A reference of the new created Station
 	-- #
 	function New_Gateway_Station(
-		Platforms_Number : Positive;
-		Name : String) return Station_Ref;
+		Platforms_Number 	: Positive;
+		Name 				: String;
+		Destinations		: access String_Positive_Maps.Map) return Station_Ref;
 
 	-- #
 	-- # Print method used for debug purposes
@@ -176,6 +186,15 @@ package Gateway_Station is
 		Node_Name		: in	 String );
 
 
+	procedure Send_Traveler_To_Leave(
+		Traveler_Index	: in	 Positive;
+		Train_ID		: in 	 Positive;
+		Station	 		: in	 Positive;
+		Platform		: in 	 Positive;
+		Node_Name		: in	 String );
+
+
+
 	-- #
 	-- # Overriding of the Finalize method.
 	-- #
@@ -193,6 +212,7 @@ private
 		-- Indicates for each platform if it is free or not
 		Platform_Free 		: Platform_Booking(1 .. Platforms_Number) := (others => true);
 		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;
+		Destinations 		: access String_Positive_Maps.Map := null;
 	end record;
 
 end Gateway_Station;

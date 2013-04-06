@@ -3,17 +3,27 @@
 		{
 			"platform_number" 	: 3,
 			"name" 				: "0001",
-			"type"				: "regional"
+			"type"				: "G",
+			"links"				: [
+				{
+					"region" 	: "Node_1",
+					"station"	: 3
+				},
+				{
+					"region" 	: "Node_3",
+					"station"	: 5
+				}
+			]
 		},
 		{
 			"platform_number" 	: 2,
-			"name" 				: "0002",
-			"type"				: "regional"
+			"name" 				: "021212",
+			"type"				: "R"
 		},
 		{
 			"platform_number" 	: 3,
 			"name" 				: "0003",
-			"type"				: "gateway"
+			"type"				: "R"
 		}
 	]
 }

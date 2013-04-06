@@ -135,7 +135,7 @@ package body Train_Pool is
 				-- # ######################## NEXT STATION ACCESS ############################
 
 		    	-- # Train enters Next Station
-				Environment.Get_Regional_Stations(Next_Station).Enter(
+				Environment.Stations(Next_Station).Enter(
 					Descriptor_Index	=> Current_Descriptor_Index,
 					Platform_Index		=> Next_Platform,
 					Segment_ID 			=> Segments.Segments(Next_Segment).Id,
@@ -158,7 +158,7 @@ package body Train_Pool is
 				delay Duration(Num);
 
 				-- # Train Leaves the station
-		    	Environment.Get_Regional_Stations(Next_Station).Leave(Current_Descriptor_Index,Next_Platform);
+		    	Environment.Stations(Next_Station).Leave(Current_Descriptor_Index,Next_Platform);
 
 
 		   		Logger.Log(

@@ -92,4 +92,30 @@ package body Traveler is
 		return T;
     end Get_Traveler_Manager_Array;
 
+
+	function Get_Json(
+		Traveler : Traveler_Manager) return String
+	is
+		Json_Traveler_M : JSON_Value := Create_Object;
+		Json_Traveler 	: JSON_Value := Create_Object;
+	begin
+
+		Json_Traveler.Set_Field("id",Traveler.Traveler.ID);
+		Json_Traveler.Set_Field("name",Traveler.Traveler.Name);
+		Json_Traveler.Set_Field("surname",Traveler.Traveler.Surname);
+
+		Json_Traveler_M.Set_Field("traveler",Json_Traveler);
+		Json_Traveler_M.Set_Field("destination",Traveler.Destination);
+
+		case Traveler.Next_Operation is
+			when BUY_TICKET => Json_Traveler_M.Set_Field("next_operation","buy_ticket");
+			when LEAVE		=> Json_Traveler_M.Set_Field("next_operation","leave");
+			when ENTER		=> Json_Traveler_M.Set_Field("next_operation","enter");
+		end case;
+
+
+
+		return Json_Traveler_M.Write;
+    end Get_Json;
+
 end Traveler;

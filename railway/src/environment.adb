@@ -30,29 +30,6 @@ with Gnatcoll.JSON;use Gnatcoll.JSON;
 
 package body Environment Is
 
-
-	Stations 			: Generic_Station.Stations_array_Ref := null;
-
-	-- array of Travelers
-    Travelers 			: Traveler.Traveler_Manager_Array_Ref := null;
-
-	Operations 			: Traveler.Travelers_All_Operations_Ref := null;
-
-	function Get_Travelers return Traveler.Traveler_Manager_Array_Ref is
-	begin
-		return Travelers;
-    end Get_Travelers;
-
-    function Get_Regional_Stations return Generic_Station.Stations_array_Ref is
-    begin
-    	return Stations;
-    end Get_Regional_Stations;
-
-    function Get_Operations return Traveler.Travelers_All_Operations_Ref is
-    begin
-    	return Operations;
-    end Get_Operations;
-
    	function Get_Node_Name return String is
    	begin
    		return To_String(Node_Name);
@@ -125,7 +102,10 @@ package body Environment Is
 		Trav_To_Copy 	: in		Traveler.Traveler_Manager;
 		Ticket_To_Copy 	: access 	Ticket.Ticket_Type) is
 	begin
-		null;
+		if Traveler_Index <= Travelers'Length then
+			Travelers(Traveler_Index) := Trav_To_Copy;
+			Travelers(Traveler_Index).Ticket := Ticket_To_Copy;
+		end if;
     end Update_Traveler;
 
 end Environment;

@@ -122,6 +122,7 @@ begin
 			Message_Agent.Instance.Listen_To(Node_Addr);
 			Message_Agent.Instance.Add_Handler("train_transfer",Handlers.Station_Train_Transfer_Handler'Access);
 			Message_Agent.Instance.Add_Handler("traveler_leave_transfer",Handlers.Station_Traveler_Leave_Transfer_Handler'Access);
+			Message_Agent.Instance.Add_Handler("traveler_enter_transfer",Handlers.Station_Traveler_Enter_Transfer_Handler'Access);
 
 			Params.Set_String("node_name",Node_Name);
 			Params.Set_String("address",Node_Addr);
@@ -150,8 +151,9 @@ begin
 --  				Train_Pool.Associate(3);
 --  				Train_Pool.Associate(4);
 
-				Task_Pool.Execute(Environment.Get_Operations(1)(Traveler.LEAVE));
-
+				if Node_Name = "Node_1" then
+					Task_Pool.Execute(Environment.Operations(1)(Traveler.ENTER));
+				end if;
 --  				delay 4.0;
 --
 --  				Train_Pool.Stop;

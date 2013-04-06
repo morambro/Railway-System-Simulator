@@ -41,14 +41,12 @@ WITH YAMI.Parameters;
 -- #
 package Environment Is
 
---  	procedure Station_Message_Handler(
---  		Content 	: in out YAMI.Parameters.Parameters_Collection);
+	Stations 			: Generic_Station.Stations_array_Ref := null;
 
-    function Get_Regional_Stations return Generic_Station.Stations_array_Ref;
+	-- array of Travelers
+    Travelers 			: Traveler.Traveler_Manager_Array_Ref := null;
 
-    function Get_Travelers return Traveler.Traveler_Manager_Array_Ref;
-
-    function Get_Operations return Traveler.Travelers_All_Operations_Ref;
+	Operations 			: Traveler.Travelers_All_Operations_Ref := null;
 
 	function Get_Node_Name return String;
 

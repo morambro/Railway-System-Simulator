@@ -57,11 +57,17 @@ package Ticket is
 
     -- ############################## Json -> Ticket ###############################
 
-    function Get_Ticket (Json_String	: in String) return access Ticket_Type;
+    function Get_Ticket (
+    	Json_String	: in String) return access Ticket_Type;
 
-    function Get_Ticket (Json_V 		: in JSON_Value) return access Ticket_Type;
+    function Get_Ticket (
+    	Json_V 		: in JSON_Value) return access Ticket_Type;
 
-    function Get_All_Tickets (Json_File : in String) return access Tickets_Array;
+    function Get_All_Tickets (
+    	Json_File 	: in String) return access Tickets_Array;
+
+    function Get_Json(
+		Ticket 		: access Ticket_Type) return String;
 
 
 end Ticket;

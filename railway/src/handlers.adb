@@ -42,7 +42,7 @@ package body Handlers Is
 
 
 	begin
-		if Station_Index <= Environment.Get_Regional_Stations'Length then
+		if Station_Index <= Environment.Stations'Length then
 
 			Trains.Update_Train(
 				Train_Index 	=> Train_Index,
@@ -61,7 +61,7 @@ package body Handlers Is
 			-- # NEED A PROCEDURE TO OCCUPY THE SAME PLATFORM AS AT THE OTHER SIDE!!!!
 			--
 
-			Environment.Get_Regional_Stations(Station_Index).Leave(
+			Environment.Stations(Station_Index).Leave(
 				Descriptor_Index	=> Train_Index,
 				Platform_Index 		=> Platform_Index
 			);
@@ -100,11 +100,12 @@ package body Handlers Is
 		Station_Index 	: Integer	:= Integer'Value(Content.Get_String("station"));
 		Platform_Index 	: Integer	:= Integer'Value(Content.Get_String("platform"));
 		Traveler_Index	: Integer	:= Integer'Value(Content.Get_String("traveler_index"));
+		Train_ID		: Integer	:= Integer'Value(Content.Get_String("train_id"));
 		Traveler_Data	: String 	:= Content.Get_String("traveler");
 		Ticket_Data		: String 	:= Content.Get_String("ticket");
 
 	begin
-		if Station_Index <= Environment.Get_Regional_Stations'Length then
+		if Station_Index <= Environment.Stations'Length then
 
 			Environment.Update_Traveler(
 				Traveler_Index 	=> Traveler_Index,
@@ -112,10 +113,17 @@ package body Handlers Is
 				Ticket_To_Copy  => Ticket.Get_Ticket(Ticket_Data));
 
 			Logger.Log(
-				Sender		=> "Station_Message_Handler",
+				Sender		=> "Station_Traveler_Leave_Transfer_Handler",
 				Message		=> "Updated Traveler : " & Traveler_Data & " Ticket : " & Ticket_Data,
 				L 			=> Logger.DEBUG
 			);
+
+			Put_Line("Station : " & Integer'Image(Station_Index));
+
+			Environment.Stations(Station_Index).Wait_For_Train_To_Go(
+				Outgoing_Traveler 	=> Traveler_Index,
+				Train_ID 			=> Train_ID,
+				Platform_Index		=> Platform_Index);
 
 
 		end if;
@@ -128,6 +136,50 @@ package body Handlers Is
 
 
 	end Station_Traveler_Leave_Transfer_Handler;
+
+
+	procedure Station_Traveler_Enter_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection) is
+
+		-- # First Retrieve all the parameters from the given content
+		Station_Index 	: Integer	:= Integer'Value(Content.Get_String("station"));
+		Platform_Index 	: Integer	:= Integer'Value(Content.Get_String("platform"));
+		Traveler_Index	: Integer	:= Integer'Value(Content.Get_String("traveler_index"));
+		Train_ID		: Integer	:= Integer'Value(Content.Get_String("train_id"));
+		Traveler_Data	: String 	:= Content.Get_String("traveler");
+		Ticket_Data		: String 	:= Content.Get_String("ticket");
+
+	begin
+		if Station_Index <= Environment.Stations'Length then
+
+			Environment.Update_Traveler(
+				Traveler_Index 	=> Traveler_Index,
+				Trav_To_Copy	=> Traveler.Get_Traveler_Manager(Traveler_Data),
+				Ticket_To_Copy  => Ticket.Get_Ticket(Ticket_Data));
+
+			Logger.Log(
+				Sender		=> "Station_Traveler_Arrive_Transfer_Handler",
+				Message		=> "Updated Traveler : " & Traveler_Data & " Ticket : " & Ticket_Data,
+				L 			=> Logger.DEBUG
+			);
+
+			Put_Line("Station : " & Integer'Image(Station_Index));
+
+			Environment.Stations(Station_Index).Wait_For_Train_To_Arrive(
+				Incoming_Traveler 	=> Traveler_Index,
+				Train_ID 			=> Train_ID,
+				Platform_Index		=> Platform_Index);
+
+
+		end if;
+	exception
+		when E : others =>
+		Logger.Log(
+			Sender => "",
+			Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+			L => Logger.ERROR);
+
+
+	end Station_Traveler_Enter_Transfer_Handler;
 
 
 end Handlers;

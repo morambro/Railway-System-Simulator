@@ -198,12 +198,12 @@ package body Segment is
 
 				-- # Add the current Train ID to the next station's Access control queue
  				if Current_Direction /= First_End then
-					Environment.Get_Regional_Stations(First_End).Add_Train(
+					Environment.Stations(First_End).Add_Train(
 						Train_ID 	=> Train_D,
 						Segment_ID	=> Id
 					);
 				else
-					Environment.Get_Regional_Stations(Second_End).Add_Train(
+					Environment.Stations(Second_End).Add_Train(
 						Train_ID 	=> Train_D,
 						Segment_ID	=> Id
 					);
@@ -264,12 +264,12 @@ package body Segment is
 
 				-- # Add the current Train ID to the next station's Access control queue
  				if Current_Direction /= First_End then
-					Environment.Get_Regional_Stations(Second_End).Add_Train(
+					Environment.Stations(Second_End).Add_Train(
 						Train_ID 	=> Train_D,
 						Segment_ID	=> Id
 					);
 				else
-					Environment.Get_Regional_Stations(Second_End).Add_Train(
+					Environment.Stations(Second_End).Add_Train(
 						Train_ID 	=> Train_D,
 						Segment_ID	=> Id
 					);

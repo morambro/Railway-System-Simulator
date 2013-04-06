@@ -40,4 +40,6 @@ package Handlers is
 
 	procedure Station_Traveler_Leave_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
 
+	procedure Station_Traveler_Enter_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
+
 end Handlers;

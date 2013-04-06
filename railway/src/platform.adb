@@ -66,8 +66,8 @@ package body Platform is
 				Arrival_Queue.Dequeue(Traveler_Manager_Index);
 
 				-- # Retrieve the next stage from the ticket of the current Traveler
-				Next_Stage := Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Next_Stage;
-				if Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
+				Next_Stage := Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage;
+				if Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Arrival_Queue.Enqueue(Traveler_Manager_Index);
 				else
@@ -86,34 +86,34 @@ package body Platform is
 					Logger.Log(
 							Sender  => NAME,
 							Message => "Traveler " &
-										Integer'Image(Environment.Get_Travelers(Traveler_Manager_Index).Traveler.ID) &
+										Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
 									   " Leaves the train at station " &
-									   Integer'Image(Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
+									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
 							L       => Logger.NOTICE);
 
 					-- # Check if there are more stages, otherwise STOP
-					if 	Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Next_Stage =
-						Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Stages'Length then
+					if 	Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage =
+						Environment.Travelers(Traveler_Manager_Index).Ticket.Stages'Length then
 						Logger.Log(
 							Sender  => NAME,
 							Message => "Traveler " &
-										Integer'Image(Environment.Get_Travelers(Traveler_Manager_Index).Traveler.ID) &
+										Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
 									   " FINISHED HIS TRAVEL" &
-									   Integer'Image(Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
+									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
 							L       => Logger.NOTICE);
 					else
 
 						-- # Go to the next stage (there will be at least another one for sure!)
-						Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Next_Stage :=
-							Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Next_Stage + 1;
+						Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage :=
+							Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage + 1;
 
 						declare
 							Next_Operation : Traveler.Move_Operations := Traveler.LEAVE;
 						begin
 							-- # Execute the operation number 2 (Traveler waits to leave the train).
-							Task_Pool.Execute(Environment.Get_Operations(Traveler_Manager_Index)(Next_Operation));
+							Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
 							-- # Set the new Operation Index
-							Environment.Get_Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
+							Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
 
 						exception
 							when Error : others =>
@@ -154,9 +154,9 @@ package body Platform is
 
 
 				-- # Retrieve the Next_Stage Index
-				Next_Stage := Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Next_Stage;
+				Next_Stage := Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage;
 
-				if Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
+				if Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
 					-- # If the current Traveler was not waiting for this train, re-queue it
 					Leaving_Queue.Enqueue(Traveler_Manager_Index);
 				else
@@ -167,9 +167,9 @@ package body Platform is
 					Logger.Log(
 						Sender  => NAME,
 						Message => "Traveler " &
-								   Integer'Image(Environment.Get_Travelers(Traveler_Manager_Index).Traveler.ID) &
+								   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
 								   " boarding at station " &
-								   Integer'Image(Environment.Get_Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
+								   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
 						L       => Logger.NOTICE);
 
 
@@ -178,9 +178,9 @@ package body Platform is
 						Next_Operation : Traveler.Move_Operations := Traveler.ENTER;
 					begin
 						-- # Execute the operation number 2 (Traveler waits to leave the train).
-						Task_Pool.Execute(Environment.Get_Operations(Traveler_Manager_Index)(Next_Operation));
+						Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
 						-- # Set the new Operation Index
-						Environment.Get_Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
+						Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
 
 					exception
 						when Error : others =>

@@ -33,10 +33,11 @@ with Trains;
 with YAMI.Parameters;
 with Message_Agent;
 with Ada.Exceptions;
+with Ticket;
 
 package body Gateway_Station is
 
-
+	-- ########################################## ACCESS_CONTROL #############################################
 	overriding procedure Add_Train(
 		This				: in 		Gateway_Station_Type;
 		Train_ID			: in 		Positive;
@@ -132,7 +133,10 @@ package body Gateway_Station is
  	end Access_Controller;
 
 
-	-- ------------------------ Definition of the inherited abstract methods ------------------------
+	-- ###################################################################################################
+	-- ######################### Definition of the inherited abstract methods ############################
+	-- ###################################################################################################
+
 	procedure Enter(
 			This 				: in		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
@@ -147,6 +151,112 @@ package body Gateway_Station is
 	end Enter;
 
 
+	procedure Leave(
+			This 				: in 		Gateway_Station_Type;
+			Descriptor_Index	: in		Positive;
+			Platform_Index		: in		Positive) is
+	begin
+		-- # Send train with descriptor Train_D to the next Station, if defined and on another node, and stop current Train Execution
+
+		Put_Line("Next_Stage = " & Integer'Image(Trains.Trains(Descriptor_Index).Next_Stage));
+
+		if Trains.Trains(Descriptor_Index).Next_Stage + 1 <= Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)'Length then
+
+			Trains.Trains(Descriptor_Index).Next_Stage := Trains.Trains(Descriptor_Index).Next_Stage + 1;
+
+			declare
+
+				-- # Retrieve Next Station index
+				Next_Station_Index 	: Positive 	:=
+					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage).Next_Station;
+				-- # Retrieve the Node_Name
+				Next_Station_Node	: String 	:= To_String(
+					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage).Node_Name);
+
+			begin
+
+				if  Next_Station_Node/= Environment.Get_Node_Name then
+					-- #
+					-- #
+					-- #
+					-- # FREE THE PLATFORM BEFORE SENDING THE TRAIN!!!!!!!!!!
+					-- #
+					-- #
+					-- #
+					Put_Line("DEST_REGION : " & Next_Station_Node & " NEXT STATION INDEX " & Integer'Image(Next_Station_Index));
+					Send_Train(
+						Train_D		=>	Descriptor_Index,
+						Station 	=> 	Next_Station_Index,
+						-- # The platform index will be the same!!
+						Platform	=>	Platform_Index,
+						Node_Name 	=>	Next_Station_Node);
+				else
+					-- # If the next Stage is in the same Region, proceed with a local Leave operation
+					This.Platforms(Platform_Index).Leave(Descriptor_Index);
+				end if;
+			end;
+		end if;
+	end Leave;
+
+
+
+	-- #
+	-- # Procedure called by a Traveler to enqueue at a given Platform
+	-- # waiting for a specific Train
+	-- #
+	procedure Wait_For_Train_To_Go(
+			This 				: in		Gateway_Station_Type;
+			Outgoing_Traveler 	: in		Positive;
+			Train_ID 			: in		Positive;
+			Platform_Index		: in		Positive)
+	is
+		Next_Stage_Region : Unbounded_String :=
+			Environment.Travelers(Outgoing_Traveler).Ticket.Stages(
+				Environment.Travelers(Outgoing_Traveler).Ticket.Next_Stage).Region;
+	begin
+		if Next_Stage_Region /= Environment.Get_Node_Name then
+
+			declare
+				Next_Station_Index : Positive := This.Destinations.Element(To_String(Next_Stage_Region));
+			begin
+				Put_Line("The next station index for " & To_String(Next_Stage_Region) & " is = " &
+					Integer'Image(Next_Station_Index));
+
+				Send_Traveler_To_Leave (
+					Traveler_Index	=> Outgoing_Traveler,
+					Train_ID 		=> Train_ID,
+					Station 		=> Next_Station_Index,
+					Platform 		=> Platform_Index,
+					Node_Name		=> To_String(Next_Stage_Region)
+				);
+			end;
+
+		else
+			This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
+			This.Panel.SetStatus(
+				"Traveler " & Traveler.Get_Name(Environment.Travelers(Outgoing_Traveler)) &
+				" waits by platform " & Integer'Image(Platform_Index) & " station " &
+				Unbounded_Strings.To_String(This.Name) & " to GO");
+		end if;
+	end Wait_For_Train_To_Go;
+
+
+
+	overriding procedure Wait_For_Train_To_Arrive(
+			This 				: in		Gateway_Station_Type;
+			Incoming_Traveler 	: in		Positive;
+			Train_ID 			: in		Positive;
+			Platform_Index		: in		Positive) is
+	begin
+		This.Platforms(Platform_Index).Add_Incoming_Traveler(Incoming_Traveler);
+		This.Panel.SetStatus(
+			"Traveler " & Traveler.Get_Name(Environment.Travelers(Incoming_Traveler)) &
+			" waits by station " & Unbounded_Strings.To_String(This.Name)
+			& " at platform " & Integer'Image(Platform_Index) & " to ARRIVE");
+    end Wait_For_Train_To_Arrive;
+
+
+	-- ############################### REMOTE SEND PROCEDURES #########################################
 
 	procedure Send_Train(
 		Train_D 		: in	 Positive;
@@ -224,105 +334,84 @@ package body Gateway_Station is
     end Send_Train;
 
 
-
-	procedure Leave(
-			This 				: in 		Gateway_Station_Type;
-			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive) is
-	begin
-		-- # Send train with descriptor Train_D to the next Station, if defined and on another node, and stop current Train Execution
-
-		Put_Line("Next_Stage = " & Integer'Image(Trains.Trains(Descriptor_Index).Next_Stage));
-
-		if Trains.Trains(Descriptor_Index).Next_Stage + 1 <= Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)'Length then
-
-			Trains.Trains(Descriptor_Index).Next_Stage := Trains.Trains(Descriptor_Index).Next_Stage + 1;
-
-			declare
-
-				-- # Retrieve Next Station index
-				Next_Station_Index 	: Positive 	:=
-					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage).Next_Station;
-				-- # Retrieve the Node_Name
-				Next_Station_Node	: String 	:= To_String(
-					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage).Node_Name);
-
-			begin
-
-				if  Next_Station_Node/= Environment.Get_Node_Name then
-					-- #
-					-- #
-					-- #
-					-- # FREE THE PLATFORM BEFORE SENDING THE TRAIN!!!!!!!!!!
-					-- #
-					-- #
-					-- #
-					Put_Line("DEST_REGION : " & Next_Station_Node & " NEXT STATION INDEX " & Integer'Image(Next_Station_Index));
-					Send_Train(
-						Train_D		=>	Descriptor_Index,
-						Station 	=> 	Next_Station_Index,
-						-- # The platform index will be the same!!
-						Platform	=>	Platform_Index,
-						Node_Name 	=>	Next_Station_Node);
-				else
-					-- # If the next Stage is in the same Region, proceed with a local Leave operation
-					This.Platforms(Platform_Index).Leave(Descriptor_Index);
-				end if;
-			end;
-		end if;
-	end Leave;
-
 	-- #
-	-- # Procedure called by a Traveler to enqueue at a given Platform
-	-- # waiting for a specific Train
+	-- # Retrieves the address for the destination Node, then sends the Traveler data
 	-- #
-	procedure Wait_For_Train_To_Go(
-			This 				: in		Gateway_Station_Type;
-			Outgoing_Traveler 	: in		Positive;
-			Train_ID 			: in		Positive;
-			Platform_Index		: in		Positive)
+    procedure Send_Traveler_To_Leave(
+		Traveler_Index	: in	 Positive;
+		Train_ID		: in 	 Positive;
+		Station	 		: in	 Positive;
+		Platform		: in 	 Positive;
+		Node_Name		: in	 String )
 	is
-		Next_Stage_Region : Unbounded_String :=
-			Environment.Get_Travelers(Outgoing_Traveler).Ticket.Stages(
-				Environment.Get_Travelers(Outgoing_Traveler).Ticket.Next_Stage).Region;
+		-- # Callback function, used to handle the response
+		procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
+
+				Address : String := Content.Get_String("response");
+				Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
+		begin
+			Logger.Log(
+				Sender 	=> "Gateway_Station",
+				Message => "The destination is located at address " & Address,
+				L 		=> Logger.DEBUG
+			);
+
+			if Address /= "_" then
+
+				Parameters.Set_String("station",Integer'Image(Station));
+				Parameters.Set_String("platform",Integer'Image(Platform));
+				Parameters.Set_String("traveler_index",Integer'Image(Traveler_Index));
+				Parameters.Set_String("train_id",Integer'Image(Train_ID));
+				Parameters.Set_String("traveler",Traveler.Get_Json(Environment.Travelers(Traveler_Index)));
+				Parameters.Set_String("ticket",Ticket.Get_Json(Environment.Travelers(Traveler_Index).Ticket));
+
+				Message_Agent.Instance.Send(
+					Destination_Address => Address,
+					Object 				=> "message_handler",
+					Service 			=> "traveler_leave_transfer",
+					Params 				=> Parameters,
+					Callback			=> null
+				);
+
+			end if;
+
+	    end Get_Results;
+
+		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
 	begin
-		if Next_Stage_Region /= Environment.Get_Node_Name then
-			-- #
-			-- #
-			-- #
-			-- # TODO : Transfer to the corresponding Gateway station (to "the other side")
-			-- #
-			-- #
-			-- #
-			null;
-		else
-			This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
-			This.Panel.SetStatus(
-				"Traveler " & Traveler.Get_Name(Environment.Get_Travelers(Outgoing_Traveler)) &
-				" waits by platform " & Integer'Image(Platform_Index) & " station " &
-				Unbounded_Strings.To_String(This.Name) & " to GO");
-		end if;
-	end Wait_For_Train_To_Go;
+
+		Parameters.Set_String("station",Integer'Image(Station));
+		Parameters.Set_String("node_name",Node_Name);
+
+		Put_Line(Environment.Get_Name_Server);
+
+		Message_Agent.Instance.Send(
+			Destination_Address => Environment.Get_Name_Server,
+			Object 				=> "name_server",
+			Service 			=> "get",
+			Params 				=> Parameters,
+			Callback			=> Get_Results'Access
+		);
+
+	exception
+		when E : others =>
+			Logger.Log(
+   				Sender => "Gateway_Station.Send_Train",
+   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+   				L => Logger.ERROR);
 
 
+    end Send_Traveler_To_Leave;
 
-	overriding procedure Wait_For_Train_To_Arrive(
-			This 				: in		Gateway_Station_Type;
-			Incoming_Traveler 	: in		Positive;
-			Train_ID 			: in		Positive;
-			Platform_Index		: in		Positive) is
-	begin
-		This.Platforms(Platform_Index).Add_Incoming_Traveler(Incoming_Traveler);
-		This.Panel.SetStatus(
-			"Traveler " & Traveler.Get_Name(Environment.Get_Travelers(Incoming_Traveler)) &
-			" waits by station " & Unbounded_Strings.To_String(This.Name)
-			& " at platform " & Integer'Image(Platform_Index) & " to ARRIVE");
-    end Wait_For_Train_To_Arrive;
 
+    -- ##############################################################################################
 
 	function New_Gateway_Station(
 			Platforms_Number 	: in		Positive;
-			Name 				: in 		String) return Station_Ref
+			Name 				: in 		String;
+			Destinations		: access String_Positive_Maps.Map) return Station_Ref
 	is
 		Station : access Gateway_Station_Type := new Gateway_Station_Type(Platforms_Number);
 	begin
@@ -331,6 +420,7 @@ package body Gateway_Station is
 			Station.Platforms(I) := new Gateway_Platform.Gateway_Platform_Type(I,Station.Name'Access);
 		end loop;
 		Station.Panel := new Notice_Panel.Notice_Panel_Entity(1);
+		Station.Destinations := Destinations;
 		return Station;
 	end;
 
@@ -357,27 +447,34 @@ package body Gateway_Station is
 
 -- ########################################### JSON - Gateway Station ##########################################
 
+	function Load_Destinations(J_Array : in JSON_Array) return access String_Positive_Maps.Map
+	is
+		Array_Length : constant Natural := Length (J_Array);
+		Map_To_Return : access String_Positive_Maps.Map := new String_Positive_Maps.Map;
+	begin
+
+		for I in 1 .. Array_Length loop
+			Map_To_Return.Insert(
+				Get(Arr => J_Array, Index => I).Get("region"),
+				Get(Arr => J_Array, Index => I).Get("station")
+			);
+
+		end loop;
+
+		return Map_To_Return;
+	end Load_Destinations;
+
 	function Get_Gateway_Station(Json_Station : Json_Value) return Station_Ref
 	is
-		Platforms_Number : Positive := Json_Station.Get("platform_number");
-		Name : String				:= Json_Station.Get("name");
+		Platforms_Number 	: Positive := Json_Station.Get("platform_number");
+		Name 				: String := Json_Station.Get("name");
+		New_Station 		: Station_Ref := New_Gateway_Station(
+			Platforms_Number,
+			Name,
+			Load_Destinations(Json_Station.Get("links")));
 	begin
-		return New_Gateway_Station(Platforms_Number,Name);
+		return New_Station;
 	end Get_Gateway_Station;
-
-
---  	function Get_Regional_Station_Array(Json_Station : String) return Stations_Array_Ref is
---  		Json_v  : Json_Value := Get_Json_Value(Json_File_Name => Json_Station);
---  		J_Array : constant JSON_Array := Json_v.Get(Field => "stations");
---  		Array_Length : constant Natural := Length (J_Array);
---  		T : Stations_Array_Ref := new Stations_Array(1 .. Array_Length);
---  	begin
---  		for I in 1 .. T'Length loop
---  			T(I) := Get_Regional_Station(Get(Arr => J_Array, Index => I));
---  		end loop;
---
---  		return T;
---      end Get_Regional_Station_Array;
 
 
 end Gateway_Station;

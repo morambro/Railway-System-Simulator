@@ -29,6 +29,9 @@ with Ada.Strings.Unbounded;
 with Environment;
 with Logger;
 with Ada.Exceptions;
+with YAMI.Parameters;
+with Ticket;
+with Message_Agent;
 
 package body Move_Operation is
 
@@ -37,19 +40,19 @@ package body Move_Operation is
 	NAME_LEAVE : constant String := "Move_Operation.Leave_Operation_Type";
 
 	procedure Do_Operation(This : in Leave_Operation_Type) is
-		Next_Stage 				: Positive 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
-		Start_Station 			: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Start_Station;
-		Train_ID	 			: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
-		Start_Platform_Index 	: Natural 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Start_Platform_Index;
+		Next_Stage 				: Positive 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
+		Start_Station 			: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Start_Station;
+		Train_ID	 			: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
+		Start_Platform_Index 	: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Start_Platform_Index;
 	begin
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
-			Message => "Traveler" & Integer'Image(Environment.Get_Travelers(This.Traveler_Manager_Index).Traveler.ID) &
+			Message => "Traveler" & Integer'Image(Environment.Travelers(This.Traveler_Manager_Index).Traveler.ID) &
 					   " will wait to LEAVE at platform" & Integer'Image(Start_Platform_Index) &
 					   ", station" & Integer'Image(Start_Station),
 			L 		=> Logger.NOTICE);
 
-		Environment.Get_Regional_Stations(Start_Station).Wait_For_Train_To_Go(
+		Environment.Stations(Start_Station).Wait_For_Train_To_Go(
 			Outgoing_Traveler 	=> This.Traveler_Manager_Index,
 			Train_ID 			=> Train_ID,
 			Platform_Index		=> Start_Platform_Index);
@@ -68,33 +71,85 @@ package body Move_Operation is
 	-- # Operation which lets the Traveler (Manager)
 	-- #
 	procedure Do_Operation(This : in Enter_Operation_Type) is
-		Next_Stage 					: Positive 			:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
-		Next_Station 				: Natural 			:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station;
-		Next_Region 				: Unbounded_String 	:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Region;
-		Train_ID	 				: Natural 			:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
-		Destination_Platform_Index 	: Natural 			:= Environment.Get_Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Destination_Platform_Index;
+		Next_Stage 					: Positive 			:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
+		Next_Station 				: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station;
+		Next_Region 				: Unbounded_String 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Region;
+		Train_ID	 				: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
+		Destination_Platform_Index 	: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Destination_Platform_Index;
 	begin
 		Logger.Log(
 			Sender 	=> NAME_LEAVE,
-			Message => "Traveler" & Integer'Image(Environment.Get_Travelers(This.Traveler_Manager_Index).Traveler.ID) &
+			Message => "Traveler" & Integer'Image(Environment.Travelers(This.Traveler_Manager_Index).Traveler.ID) &
 					   " will wait to ARRIVE at platform" & Integer'Image(Destination_Platform_Index) & ", station " & Integer'Image(Next_Station),
 			L 		=> Logger.NOTICE);
 
 		-- # Check if the next destination is in the current Region or not
 		if Next_Region = Environment.Get_Node_Name then
-			Environment.Get_Regional_Stations(Next_Station).Wait_For_Train_To_Arrive(
+			Environment.Stations(Next_Station).Wait_For_Train_To_Arrive(
 				Incoming_Traveler 	=> This.Traveler_Manager_Index,
 				Train_ID 			=> Train_ID,
 				Platform_Index		=> Destination_Platform_Index);
 		else
-			-- #
-			-- #
-			-- #
-			-- # TODO: SEND TO NEXT REGION!!!!
-			-- #
-			-- #
-			-- #
-			null;
+			declare
+
+					-- # Callback function, used to handle the response
+				procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
+
+					Address : String := Content.Get_String("response");
+					Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
+				begin
+					Logger.Log(
+						Sender 	=> "Move_Operation",
+						Message => "The destination is located at address " & Address,
+						L 		=> Logger.DEBUG
+					);
+
+					if Address /= "_" then
+
+						Parameters.Set_String("station",Integer'Image(Next_Station));
+						Parameters.Set_String("traveler_index",Integer'Image(This.Traveler_Manager_Index));
+						Parameters.Set_String("train_id",Integer'Image(Train_ID));
+						Parameters.Set_String("platform",Integer'Image(Destination_Platform_Index));
+						Parameters.Set_String("traveler",Traveler.Get_Json(Environment.Travelers(This.Traveler_Manager_Index)));
+						Parameters.Set_String("ticket",Ticket.Get_Json(Environment.Travelers(This.Traveler_Manager_Index).Ticket));
+
+						Message_Agent.Instance.Send(
+							Destination_Address => Address,
+							Object 				=> "message_handler",
+							Service 			=> "traveler_enter_transfer",
+							Params 				=> Parameters,
+							Callback			=> null
+						);
+
+					end if;
+
+			    end Get_Results;
+
+
+				Parameters	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+			begin
+
+				Parameters.Set_String("station",Integer'Image(Next_Station));
+				Parameters.Set_String("node_name",To_String(Next_Region));
+
+				Put_Line(Environment.Get_Name_Server);
+
+				Message_Agent.Instance.Send(
+					Destination_Address => Environment.Get_Name_Server,
+					Object 				=> "name_server",
+					Service 			=> "get",
+					Params 				=> Parameters,
+					Callback			=> Get_Results'Access
+				);
+
+			exception
+				when E : others =>
+					Logger.Log(
+		   				Sender => "Move_Operation",
+		   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+		   				L => Logger.ERROR);
+			end;
 		end if;
 
 	exception
