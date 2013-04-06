@@ -53,7 +53,31 @@ package Queue is
 		Q 			: Unbounded_Queue.Queue;
     end Terminable_Queue;
 
+	Simple_Queue_Element : Exception;
+
+--  	type Limited_Simple_Queue(Size : Positive) is tagged private;
+
+	type Limited_Simple_Queue_Array is array (Positive range <>) of Element;
+
+	type Limited_Simple_Queue(Size : Positive) is tagged record
+		Queue 			: Limited_Simple_Queue_Array(1..Size);
+		Elements_Number : Natural := 0;
+	end record;
+
+		procedure Enqueue(
+			This 		: access Limited_Simple_Queue;
+			The_Element : in	Element);
+
+		procedure Dequeue(
+			This 		: access Limited_Simple_Queue;
+			The_Element : 		out	Element);
+
+		function Get(
+			This 		: access Limited_Simple_Queue;
+			I 			: in Positive) return Element;
 
 private
+
+
 
 end Queue;

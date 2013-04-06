@@ -90,7 +90,8 @@ package body Segment is
 			-- parameters settings.
 			-- Add the train to the train queue
 			Trains_Number := Trains_Number + 1;
-			Running_Trains(Trains_Number) := Trains.Trains(To_Add).ID;
+
+			Running_Trains.Enqueue(Trains.Trains(To_Add).ID);
 
 			if Trains.Trains(To_Add).Max_Speed < Current_Max_Speed then
 				Current_Max_Speed := Trains.Trains(To_Add).Max_Speed;
@@ -135,7 +136,7 @@ package body Segment is
 
 			-- # Add the train to the train queue
 			Trains_Number := Trains_Number + 1;
-			Running_Trains(Trains_Number) := Trains.Trains(To_Add).ID;
+			Running_Trains.Enqueue(Trains.Trains(To_Add).ID);
 
 			-- Set parameters
 			if Segment_Max_Speed > Current_Max_Speed then
@@ -160,12 +161,14 @@ package body Segment is
 		entry Leave(Train_D : in Positive) when not Free is
 		begin
 
-			if(Running_Trains(1) = Trains.Trains(Train_D).ID) then
+			if(Running_Trains.Get(1) = Trains.Trains(Train_D).ID) then
 
-				-- Shift all the other trains by one
-				for I in Integer range 2 .. Max_Trains loop
-					Running_Trains(I-1) := Running_Trains(I);
-				end loop;
+				-- # Remove the Train ID from the queue
+				declare
+					T : Positive;
+				begin
+					Running_Trains.Dequeue(T);
+				end;
 
 				-- If there is at least one train in queue, open the guard.
 				if(Retry'Count > 0) then
@@ -193,25 +196,18 @@ package body Segment is
 					end if;
 				end if;
 
---  				-- Now re-queue the train to the proper platform.
---   				if Current_Direction /= First_End then
---  --  					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
---  --  						-- # At this point, I am sure the Next_Segment index would not have been incremented yet
---  --  						Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage).Platform_Index
---  --  					).Enter;
---  --  					Environment.Get_Regional_Stations(First_End).Add_Train(
---  --  						Train_ID 	=> Train_D,
---  --  						Segment_ID	=> Id
---  --  					);
---  				else
---  --  					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
---  --  						Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage).Platform_Index
---  --  					).Enter;
---  --  					Environment.Get_Regional_Stations(Second_End).Add_Train(
---  --  						Train_ID 	=> Train_D,
---  --  						Segment_ID	=> Id
---  --  					);
---  				end if;
+				-- # Add the current Train ID to the next station's Access control queue
+ 				if Current_Direction /= First_End then
+					Environment.Get_Regional_Stations(First_End).Add_Train(
+						Train_ID 	=> Train_D,
+						Segment_ID	=> Id
+					);
+				else
+					Environment.Get_Regional_Stations(Second_End).Add_Train(
+						Train_ID 	=> Train_D,
+						Segment_ID	=> Id
+					);
+				end if;
 
 			else
 				Logger.Log(
@@ -235,10 +231,15 @@ package body Segment is
 				Can_Retry_Leave := False;
 			end if;
 
-			if(Running_Trains(1) = Trains.Trains(Train_D).ID) then
-				for I in Integer range 2 .. 10 loop
-					Running_Trains(I-1) := Running_Trains(I);
-				end loop;
+			if(Running_Trains.Get(1) = Trains.Trains(Train_D).ID) then
+
+				-- # Remove the Train ID from the queue
+				declare
+					T : Positive;
+				begin
+					Running_Trains.Dequeue(T);
+				end;
+
 				if(Retry'Count > 0) then
 					Retry_Num := Retry'Count;
 					Can_Retry_Leave := True;
@@ -261,16 +262,18 @@ package body Segment is
 					end if;
 				end if;
 
---  				-- Now re-queue the train to the proper platform.
---   				if Current_Direction /= First_End then
---  					requeue Environment.Get_Regional_Stations(First_End).Get_Platform(
---  						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
---  					).Enter;
---  				else
---  					requeue Environment.Get_Regional_Stations(Second_End).Get_Platform(
---  						Route.Get_Next_Platform(Routes.All_Routes(Trains.Trains(Train_D).Route_Index)(Trains.Trains(Train_D).Next_Stage))
---  					).Enter;
---  				end if;
+				-- # Add the current Train ID to the next station's Access control queue
+ 				if Current_Direction /= First_End then
+					Environment.Get_Regional_Stations(Second_End).Add_Train(
+						Train_ID 	=> Train_D,
+						Segment_ID	=> Id
+					);
+				else
+					Environment.Get_Regional_Stations(Second_End).Add_Train(
+						Train_ID 	=> Train_D,
+						Segment_ID	=> Id
+					);
+				end if;
 
 			else
 				Logger.Log(

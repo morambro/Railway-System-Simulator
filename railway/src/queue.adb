@@ -25,6 +25,7 @@
 ----------------------------------------------------------------------------------
 
 with Ada.Containers;use Ada.Containers;
+with Ada.Text_IO;use Ada.Text_IO;
 
 package body Queue is
 
@@ -51,5 +52,36 @@ package body Queue is
 		end Stop;
 
     end Terminable_Queue;
+
+
+   -- ################## SIMPLE_QUEUE ##########################
+	procedure Enqueue(
+		This 		: access Limited_Simple_Queue;
+		The_Element : in	Element) is
+	begin
+		if This.Elements_Number = This.Size then
+			raise Simple_Queue_Element with "Queue is Full!";
+		end if;
+		This.Queue(This.Elements_Number + 1) := The_Element;
+		This.Elements_Number := This.Elements_Number + 1;
+    end Enqueue;
+
+	procedure Dequeue(
+		This 		: access Limited_Simple_Queue;
+		The_Element	:		out	Element) is
+	begin
+		The_Element := This.Queue(1);
+		for I in 2 .. This.Elements_Number loop
+			This.Queue(I-1) := This.Queue(I);
+		end loop;
+		This.Elements_Number := This.Elements_Number - 1;
+    end Dequeue;
+
+    function Get(
+    	This 		: access Limited_Simple_Queue;
+    	I 			: in 	Positive) return Element is
+    begin
+    	return This.Queue(I);
+    end Get;
 
 end Queue;

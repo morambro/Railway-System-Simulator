@@ -37,11 +37,15 @@ package body Traveler is
 		Ada.Text_IO.Put_Line("ID : " & Integer'Image(T.Traveler.ID));
 		Ada.Text_IO.Put_Line("Name : " & Unbounded_Strings.To_String(T.Traveler.Name));
 		Ada.Text_IO.Put_Line("Surname : " & Unbounded_Strings.To_String(T.Traveler.Surname));
-		--Ada.Text_IO.Put_Line("Next Op : " & Integer'Image(T.Next_Operation));
 		Ada.Text_IO.Put_Line("Destination : " & Integer'Image(T.Destination));
     end Print;
 
 ---------------------------------------- JSON-Traveler Creation ----------------------------------------------
+
+	function Get_Traveler_Manager(Json_Traveler : String) return Traveler_Manager is
+	begin
+		return Get_Traveler_Manager(Get_Json_Value(Json_Traveler));
+    end Get_Traveler_Manager;
 
     function Get_Traveler(Json_Traveler : JSON_Value) return Traveler_Type is
     	T : Traveler_Type;

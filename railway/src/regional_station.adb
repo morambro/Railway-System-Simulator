@@ -28,6 +28,8 @@ with Ada.Text_IO;use Ada.Text_IO;
 with Logger;
 with Environment;
 with Route;use Route;
+with Trains;
+with Routes;
 
 package body Regional_Station is
 
@@ -36,10 +38,11 @@ package body Regional_Station is
 			This 				: in		Regional_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
+			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action) is
 	begin
 		if Action = Route.ENTER then
-			This.Platforms(Platform_Index).Enter(Descriptor_Index);
+			This.Segments_Map_Order.Element(Segment_ID).Enter(Descriptor_Index);
 		end if;
 	end Enter;
 
@@ -98,7 +101,8 @@ package body Regional_Station is
 				L 		=> Logger.DEBUG
 			);
 			declare
-				R : Vector_Ref := new Positive_Vector_Package.Vector;
+				-- # Create a new Access Controller for the Segment.
+				R : Access_Controller_Ref := new Access_Controller(This.Platforms);
 			begin
 				This.Segments_Map_Order.Insert(
 					Key 		=> Segment_ID,
@@ -110,7 +114,7 @@ package body Regional_Station is
 			Message => "Adding Train " & Integer'Image(Train_ID),
 			L 		=> Logger.DEBUG
 		);
-		This.Segments_Map_Order.Element(Segment_ID).Append(Train_ID);
+		This.Segments_Map_Order.Element(Segment_ID).Add_Train(Trains.Trains(Train_ID).ID);
     end Add_Train;
 
 
@@ -119,16 +123,66 @@ package body Regional_Station is
 
     protected body Access_Controller is
 
-		entry Enter when True is
+		entry Enter(
+			Train_ID : in 	 Positive) when True
+		is
+			T	: Positive;
 		begin
-			null;
+			Put_Line ("Trains_ID = " & Integer'Image(Trains.Trains(Train_ID).ID) & ", first = " & Integer'Image(Trains_Order.Get(1)));
+			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
+				-- # Dequeue
+				Trains_Order.Dequeue(T);
+
+				-- # If some task is waiting on Wait entry, open the guard
+				if Wait'Count > 0 then
+					Can_Retry := True;
+				end if;
+
+				requeue  Platforms(
+					Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
+				).Enter;
+			else
+				Can_Retry := False;
+				Logger.Log(
+					Sender 	=> "Access_Controller",
+					Message	=> "Train " & Integer'Image(Trains.Trains(Train_ID).ID) & " cannot enter, it is not" &
+					  				Integer'Image(Trains_Order.Get(1)),
+					L 		=> Logger.DEBUG
+				);
+				requeue Wait;
+			end if;
+
 		end Enter;
 
 
-		entry Wait when True is
+		entry Wait(
+			Train_ID : in 	 Positive) when Can_Retry
+		is
+			T	: Positive;
 		begin
-			null;
+			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
+				-- # Dequeue
+				Trains_Order.Dequeue(T);
+
+				-- # If some task is waiting on Wait entry, open the guard
+				if Wait'Count > 0 then
+					Can_Retry := True;
+				end if;
+
+				requeue  Platforms(
+					Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
+				).Enter;
+			else
+				Can_Retry := False;
+				requeue Wait;
+			end if;
 		end Wait;
+
+		procedure Add_Train(
+			Train_ID : in 	 Positive) is
+		begin
+			Trains_Order.Enqueue(Train_ID);
+		end Add_Train;
 
  	end Access_Controller;
 

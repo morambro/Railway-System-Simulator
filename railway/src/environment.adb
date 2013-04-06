@@ -120,4 +120,12 @@ package body Environment Is
 
     end Init;
 
+    procedure Update_Traveler(
+		Traveler_Index	: in 		Positive;
+		Trav_To_Copy 	: in		Traveler.Traveler_Manager;
+		Ticket_To_Copy 	: access 	Ticket.Ticket_Type) is
+	begin
+		null;
+    end Update_Traveler;
+
 end Environment;

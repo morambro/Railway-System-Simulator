@@ -39,7 +39,7 @@ Un diagramma infromale delle componenti distribuite che compongono il sistema è
 	Per ogni coppia $G$ e $G'$ di Stazioni di Gateway connesse (ovvero mutuamente raggiungibili in modo diretto) appartenenti a Regioni diverse rispettivamente $R_G$ ed $R_{G'}$, $\nexists$ altra Stazione di Gateway $G'' \in R_{G'}$ tale per cui $G''$ è connesso a $G$.
 	\end{consequence}
 
-	Per evitare sincronizzazioni tra thread distribuiti, sono posti dei vincoli nella struttura interna di questo tipo di stazoni. Ciascuna Stazione di Gateway $G$ sarà dotata di un numero $M$ di Piattaforme $\{P_1,...,P_M\}$. Le Piattaforme saranno tali da permettere un \ii{unico senso di percorrenza} delle Piattaforme, ovvero:
+	Per evitare sincronizzazioni tra thread distribuiti, sono posti dei vincoli nella struttura interna di questo tipo di stazoni. Ciascuna Stazione di Gateway $G$ sarà dotata di un numero $M$ di Piattaforme $\{P_1,...,P_M\}$, le quali permettono un \ii{unico senso di percorrenza}, ovvero:
 		
 		\begin{itemize}
 			\item Le prime $\{P_1,...,P_K\}$ saranno disponibili all'accesso dalla Regione in cui $G$ risiede.

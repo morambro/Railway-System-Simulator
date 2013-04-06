@@ -13,10 +13,47 @@ class DebugSender(val addr : String) extends Actor{
 		
 			case Event(message) => {
 				val params : Parameters = new Parameters()
-				params.setString("station","5");
-				params.setString("train",message);
+				params.setString("station","5")
+				params.setString("platform","1")
+				params.setString("traveler_index","1")
+				params.setString("traveler","""
+					{
+						"traveler": {
+						    "id": 1,
+						    "name": "Gero",
+						    "surname": "Caccamo"
+						},
+						"next_operation": 1,
+						"destination": 2
+					}
+					
+				""")
+				params.setString("ticket","""
+					
+					{
+						"next" 	 : 1,
+						"ticket" : [
+							{
+								"start_station"				: 2,
+								"next_station" 				: 3,
+								"train_id"					: 2222,
+								"region"					: "Node_1",
+								"start_platform_index"		: 2,
+								"destination_platform_index": 1
+							},
+							{
+								"start_station"				: 3,
+								"next_station" 				: 4,
+								"train_id"					: 2222,
+								"region"					: "Node_1",
+								"start_platform_index"		: 1,
+								"destination_platform_index": 1
+							}
+						]
+					}
+				""")
 				println("Sending message to " + addr + " : " + message)
-				agent.sendOneWay(addr,"message_handler", "train_transfer", params);
+				agent.sendOneWay(addr,"message_handler", "traveler_leave_transfer", params);
 				
 				debugLoop
 			}

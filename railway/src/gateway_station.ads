@@ -45,16 +45,63 @@ with Generic_Platform;
 package Gateway_Station is
 
 
-	package Unbounded_Strings renames Ada.Strings.Unbounded;
-
-	use Unbounded_Strings;
-
 	-- #
 	-- # Array Containing Platforms references
 	-- #
-	type Platforms_List is array (Positive range <>) of Generic_Platform.Platform_Access;
+	type Platforms_List is array (Positive range <>) of access Gateway_Platform.Gateway_Platform_Type;
+
+	type Platforms_List_Ref is access all Platforms_List;
 
 	type Platform_Booking is array (Positive range <>) of Boolean;
+
+
+	-- ############################### ACCESS_CONTROLLER ########################################
+
+	package Trains_Queue_Package is new Queue (Element => Positive);
+
+	protected type Access_Controller(Platforms : Platforms_List_Ref) is
+
+		-- #
+		-- # Entry called by the train task to regulate the entrance order for a Segment
+		-- #
+		entry Enter(
+			Train_ID : in 	 Positive);
+
+		-- #
+		-- # Simply Adds the Given Train ID to the internal Queue
+		-- #
+		procedure Add_Train(
+			Train_ID : in 	 Positive);
+
+	private
+
+		entry Wait(
+			Train_ID : in 	 Positive);
+
+		-- # Unbounded queue which will contain the Trains order
+--  		Trains_Order : Trains_Queue_Package.Terminable_Queue;
+
+		Trains_Order 	: access Trains_Queue_Package.Limited_Simple_Queue := new Trains_Queue_Package.Limited_Simple_Queue(10);
+
+		Can_Retry 		: Boolean := False;
+
+ 	end Access_Controller;
+
+ 	type Access_Controller_Ref is access all Access_Controller;
+
+	-- ##########################################################################################
+
+
+   	package Segments_Map is new Ada.Containers.Ordered_Maps(
+   		Key_Type 		=> Positive,
+      	Element_Type 	=> Access_Controller_Ref
+    );
+
+
+
+	package Unbounded_Strings renames Ada.Strings.Unbounded;
+
+	use Unbounded_Strings;
 
 	-- #
 	-- # Definition of Regional Station Type implementing Station_Interface --
@@ -68,6 +115,7 @@ package Gateway_Station is
 			This 				: in		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
+			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action);
 
 		overriding procedure Leave(
@@ -140,10 +188,11 @@ private
 		Station_Interface
 	with record
 		Name 				: aliased  Unbounded_Strings.Unbounded_String;
-		Platforms 			: Platforms_List(1..Platforms_Number);
+		Platforms 			: Platforms_List_Ref := new Platforms_List(1..Platforms_Number);
 		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
 		-- Indicates for each platform if it is free or not
 		Platform_Free 		: Platform_Booking(1 .. Platforms_Number) := (others => true);
+		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;
 	end record;
 
 end Gateway_Station;

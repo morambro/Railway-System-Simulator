@@ -70,6 +70,8 @@ package Traveler is
 
 	function Get_Traveler_Manager_Array(Json_Traveler : String) return Traveler_Manager_Array_Ref;
 
+	function Get_Traveler_Manager(Json_Traveler : String) return Traveler_Manager;
+
 private
 
 	-- #

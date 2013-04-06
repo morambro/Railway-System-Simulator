@@ -59,6 +59,11 @@ package Environment Is
     	N_S 		: in String);
 
 
+	procedure Update_Traveler(
+		Traveler_Index	: in 		Positive;
+		Trav_To_Copy 	: in		Traveler.Traveler_Manager;
+		Ticket_To_Copy 	: access 	Ticket.Ticket_Type);
+
 private
 
     Node_Name : Unbounded_String;

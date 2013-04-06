@@ -44,17 +44,55 @@ with Generic_Platform;
 
 package Regional_Station is
 
+	-- #
+	-- # Array Containing Platforms references
+	-- #
+	type Platforms_List is array (Positive range <>) of access Platform.Platform_Type;
 
-	package Positive_Vector_Package is new Ada.Containers.Vectors(
-		Element_Type	=> Positive,
-		Index_Type		=> Positive
-	);
+	type Platforms_List_Ref is access all Platforms_List;
 
-	type Vector_Ref is access all Positive_Vector_Package.Vector;
+	type Platform_Booking is array (Positive range <>) of Boolean;
+
+	-- ############################### ACCESS_CONTROLLER ########################################
+
+	package Trains_Queue_Package is new Queue (Element => Positive);
+
+	protected type Access_Controller(Platforms : Platforms_List_Ref) is
+
+		-- #
+		-- # Entry called by the train task to regulate the entrance order for a Segment
+		-- #
+		entry Enter(
+			Train_ID : in 	 Positive);
+
+		-- #
+		-- # Simply Adds the Given Train ID to the internal Queue
+		-- #
+		procedure Add_Train(
+			Train_ID : in 	 Positive);
+
+	private
+
+		entry Wait(
+			Train_ID : in 	 Positive);
+
+		-- # Unbounded queue which will contain the Trains order
+--  		Trains_Order : Trains_Queue_Package.Terminable_Queue;
+
+		Trains_Order 	: access Trains_Queue_Package.Limited_Simple_Queue := new Trains_Queue_Package.Limited_Simple_Queue(10);
+
+		Can_Retry 		: Boolean := False;
+
+ 	end Access_Controller;
+
+ 	type Access_Controller_Ref is access all Access_Controller;
+
+	-- ##########################################################################################
+
 
    	package Segments_Map is new Ada.Containers.Ordered_Maps(
    		Key_Type 		=> Positive,
-      	Element_Type 	=> Vector_Ref
+      	Element_Type 	=> Access_Controller_Ref
     );
 
 
@@ -62,28 +100,6 @@ package Regional_Station is
 
 	use Unbounded_Strings;
 
-
-	package Trains_Queue_Package is new Queue (Element => Positive);
-
-	protected type Access_Controller is
-
-		entry Enter;
-
-	private
-
-		entry Wait;
-
-		-- # Unbounded queue which will contain the Trains order
-		Trains_Order : Trains_Queue_Package.Terminable_Queue;
-
- 	end Access_Controller;
-
-	-- #
-	-- # Array Containing Platforms references
-	-- #
-	type Platforms_List is array (Positive range <>) of access Platform.Platform_Type;
-
-	type Platform_Booking is array (Positive range <>) of Boolean;
 
 	-- #
 	-- # Definition of Regional Station Type implementing Station_Interface --
@@ -97,6 +113,7 @@ package Regional_Station is
 			This 				: in		Regional_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
+			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action);
 
 		overriding procedure Leave(
@@ -168,8 +185,8 @@ private
 		new Ada.Finalization.Controlled and
 		Station_Interface
 	with record
-		Name 				: aliased  Unbounded_Strings.Unbounded_String;
-		Platforms 			: Platforms_List(1..Platforms_Number);
+		Name 				: aliased Unbounded_Strings.Unbounded_String;
+		Platforms 			: Platforms_List_Ref := new Platforms_List(1..Platforms_Number);
 		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
 		-- Indicates for each platform if it is free or not
 		Platform_Free 		: Platform_Booking(1 .. Platforms_Number) := (others => true);

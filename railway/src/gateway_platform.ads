@@ -45,10 +45,10 @@ package Gateway_Platform is
 		S 	: access Ada.Strings.Unbounded.Unbounded_String) is new Generic_Platform.Platform_Interface with
 
 		entry Enter(
-			Train_D		: in 		Positive);
+			Train_Descriptor_Index		: in 		Positive);
 
 		procedure Leave(
-			Train_D 	: in 		Positive);
+			Train_Descriptor_Index 	: in 		Positive);
 
 		procedure Add_Incoming_Traveler(
 			Traveler 	: in 		Positive);

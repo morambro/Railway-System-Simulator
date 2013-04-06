@@ -122,12 +122,23 @@ package body Train_Pool is
 
 				Segments.Segments(Next_Segment).Leave(Current_Descriptor_Index);
 
+
+				if Current_Descriptor_Index = 2 then
+					Logger.Log(NAME,
+						"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
+						" waits 2 seconds, to let the other train to pass it :D ",
+						Logger.NOTICE);
+					delay 5.0;
+				end if;
+
+
 				-- # ######################## NEXT STATION ACCESS ############################
 
 		    	-- # Train enters Next Station
 				Environment.Get_Regional_Stations(Next_Station).Enter(
 					Descriptor_Index	=> Current_Descriptor_Index,
 					Platform_Index		=> Next_Platform,
+					Segment_ID 			=> Segments.Segments(Next_Segment).Id,
 					Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Train_Action
 				);
 

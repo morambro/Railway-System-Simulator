@@ -18,20 +18,21 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	%  ################################################# VIAGGIATORE ######################################################
 	\subsection{Viaggiatore}\label{subsec:traveler_def}		
 	
-	In prima analisi, un Viaggiatore (\ttt{Traveler}) può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici.
-	La modellazione dell'entità Viaggiatore come Attiva non può però essere semplicemente associata ad un processo, soprattutto in presenza di un modello di distribuzione come quello presentato in sezione \ref{sec:distr_regioni}.
-	In questa ipotesi infatti, nel caso in cui un Viaggiatore si spostasse da una Regione ad un'altre, avremmo a disposizione solo due possibili soluzioni:
+	In prima analisi, un Viaggiatore (\ttt{Traveler}) può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici. In presenza di un modello di distribuzione come quello presentato in sezione \ref{sec:distr_regioni} però, si presenta il problema di modellare il passaggio da una Regione (nodo) ad un'altra del Viaggiatore, nel caso in cui il viaggio da esso percorso lo preveda.
+	
+	Nel caso in cui il Viaggiatore fosse messo in relazione univoca con un thread, si presenterebbero solo due possibili soluzioni:
 		\begin{itemize}
 			\item La migrazione del processo che rappresenta il Viaggiatore sul nodo (Regioni) di destinazione, come distruzione del processo sul nodo di partenza e creazione dinamica dello stesso sul nodo destinazione. Questa operazione è in generale computazionalmente molto costosa. 
-			\item La replicazione del processo che rappresenta il Viaggiatore su tutti i nodi, e l'attivazione, intesa come cambio di stato del processo in modo tale che possa competere per la CPU; tale soluzione è molto costosa in termini di memoria utilizzata, e non scala all'aumentare del numero di passeggeri.
+			\item La replicazione del thread che rappresenta il Viaggiatore su tutti i nodi, e l'attivazione, intesa come cambio di stato del processo in modo tale che possa competere per la CPU; tale soluzione è molto costosa in termini di memoria utilizzata, e non scalabile all'aumentare del numero di passeggeri.
 		\end{itemize}
-	La soluzione adottata consiste nel disaccoppiare le operazioni svolte da ciascun Viaggiatore dal processo che le esegue, prevedendo una struttura dati (\ttt{Traveler\_Pool}) costituita da:
+		
+	La soluzione che ho adottato, consiste nel disaccoppiare le operazioni svolte da ciascun Viaggiatore dal processo che le esegue, prevedendo una struttura dati (\ttt{Traveler\_Pool}) costituita da:
 		\begin{itemize}
 			\item un \ii{pool di M processi} dimensionato in maniera opportuna;
 			\item una \ii{coda di operazioni} che man mano vengono estratte ed eseguite dai processi nel pool.
 		\end{itemize}
 	In questo modo è sufficiente replicare per ciascun Viaggiatore, su tutti i nodi che compongono il sistema, una struttura dati che contiene i suoi dati e le operazioni che esso eseguirà, e cioè un Descrittore (\ttt{Traveler\_Descriptor}). 
-	Il cambio di Regione di un Viaggiatore sarà quindi potrà essere ottenuto semplicemente inserendo la prossima operazione da eseguire per il Viaggiatore nella coda del pool di processi del nodo destinazione.
+	Il cambio di Regione di un Viaggiatore potrà quindi essere ottenuto semplicemente inserendo la prossima operazione da eseguire per il Viaggiatore nella coda del pool di processi del nodo destinazione.
 	
 	%  ################################################# TRENO ######################################################
 	\subsection{Treno} \label{subsec:train_def}
@@ -43,10 +44,11 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 			\item una velocità corrente;
 		\end{itemize}
 	
-	Anche in questo caso come per le entità di tipo Viaggiatore, ciascuna entità non viene mappata su un singolo processo. Infatti anche per le entità di tipo Treno ciò comporterebbe una complessa e costosa, in termini computazionali e di memoria, gestione del passaggio da un nodo (Regione) ad un altro. Ho optato invece nel progettare una struttura dati \ttt{Train\_Pool} che mantiene:
+	Anche in questo caso come per le entità di tipo Viaggiatore, ciascuna entità non viene mappata su un singolo processo. Infatti anche per le entità di tipo Treno ciò comporterebbe una complessa e costosa gestione del passaggio da un nodo (Regione) ad un altro, in termini computazionali e di memoria. 
+	Ho optato invece nel progettare una struttura dati \ttt{Train\_Pool} che mantiene:
 		\begin{itemize}
-			\item una coda di Descrittori di Treno, che contengono tutte le informazioni che distinguono una entità Treno;
-			\item un pool di processi a dimensionato in maniera opportuna; ciascun processo sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni.
+			\item una \ii{coda di Descrittori di Treno}, che contengono tutte le informazioni che distinguono una entità Treno;
+			\item un \ii{pool di thread} dimensionato in maniera opportuna; ciascun processo sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni.
 		\end{itemize}
 	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta.
 				
@@ -63,7 +65,12 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 		
 		\subsubsection{Piattaforma}
 	
-		Una Piattaforma è modellata come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di potervi sostare ed effettuare discesa e salita delle entità Viaggiatore o di poter superare la stazione, e alle entità Viaggiatore di accodarsi in attesa di uno specifico Treno.
+		Una Piattaforma è modellata come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di
+		\begin{itemize}
+			\item poter sostare ed effettuare discesa e salita dei Viaggiatori;
+			\item poter superare la stazione.
+		\end{itemize}
+	mentre alle entità Viaggiatore di accodarsi in attesa di uno specifico Treno.
 		Internamente essa mantiene due code di \ttt{Traveler\_Descriptor}:
 		\begin{itemize}
 			\item \ttt{Leaving\_Queue}, che conterrà i descrittori dei Viaggiatori in attesa di Treni per poter effettuare la partenza.

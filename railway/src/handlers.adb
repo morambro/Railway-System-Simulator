@@ -26,6 +26,8 @@
 with Ada.Exceptions;
 with Ada.Text_IO;use Ada.Text_IO;
 with Routes;
+with Traveler;
+with Ticket;
 
 package body Handlers Is
 
@@ -90,6 +92,42 @@ package body Handlers Is
 
 
 	end Station_Train_Transfer_Handler;
+
+
+	procedure Station_Traveler_Leave_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection) is
+
+		-- # First Retrieve all the parameters from the given content
+		Station_Index 	: Integer	:= Integer'Value(Content.Get_String("station"));
+		Platform_Index 	: Integer	:= Integer'Value(Content.Get_String("platform"));
+		Traveler_Index	: Integer	:= Integer'Value(Content.Get_String("traveler_index"));
+		Traveler_Data	: String 	:= Content.Get_String("traveler");
+		Ticket_Data		: String 	:= Content.Get_String("ticket");
+
+	begin
+		if Station_Index <= Environment.Get_Regional_Stations'Length then
+
+			Environment.Update_Traveler(
+				Traveler_Index 	=> Traveler_Index,
+				Trav_To_Copy	=> Traveler.Get_Traveler_Manager(Traveler_Data),
+				Ticket_To_Copy  => Ticket.Get_Ticket(Ticket_Data));
+
+			Logger.Log(
+				Sender		=> "Station_Message_Handler",
+				Message		=> "Updated Traveler : " & Traveler_Data & " Ticket : " & Ticket_Data,
+				L 			=> Logger.DEBUG
+			);
+
+
+		end if;
+	exception
+		when E : others =>
+		Logger.Log(
+			Sender => "",
+			Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+			L => Logger.ERROR);
+
+
+	end Station_Traveler_Leave_Transfer_Handler;
 
 
 end Handlers;

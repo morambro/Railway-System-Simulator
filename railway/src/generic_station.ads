@@ -46,6 +46,7 @@ package Generic_Station is
 			This 				: in		Station_Interface;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
+			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action)
 		is abstract;
 

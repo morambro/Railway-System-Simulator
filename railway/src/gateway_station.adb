@@ -36,16 +36,113 @@ with Ada.Exceptions;
 
 package body Gateway_Station is
 
+
+	overriding procedure Add_Train(
+		This				: in 		Gateway_Station_Type;
+		Train_ID			: in 		Positive;
+		Segment_ID			: in 		Positive) is
+	begin
+		if not This.Segments_Map_Order.Contains(Segment_ID) then
+			Logger.Log(
+				Sender 	=> "Regional_Station",
+				Message => "Created List for Segment " & Integer'Image(Segment_ID),
+				L 		=> Logger.DEBUG
+			);
+			declare
+				-- # Create a new Access Controller for the Segment.
+				R : Access_Controller_Ref := new Access_Controller(This.Platforms);
+			begin
+				This.Segments_Map_Order.Insert(
+					Key 		=> Segment_ID,
+					New_Item 	=> R);
+			end;
+		end if;
+		Logger.Log(
+			Sender 	=> "Regional_Station",
+			Message => "Adding Train " & Integer'Image(Train_ID),
+			L 		=> Logger.DEBUG
+		);
+		This.Segments_Map_Order.Element(Segment_ID).Add_Train(Trains.Trains(Train_ID).ID);
+    end Add_Train;
+
+	protected body Access_Controller is
+
+		entry Enter(
+			Train_ID : in 	 Positive) when True
+		is
+			T	: Positive;
+		begin
+			Put_Line ("Trains_ID = " & Integer'Image(Trains.Trains(Train_ID).ID) & ", first = " & Integer'Image(Trains_Order.Get(1)));
+			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
+				-- # Dequeue
+				Trains_Order.Dequeue(T);
+
+				-- # If some task is waiting on Wait entry, open the guard
+				if Wait'Count > 0 then
+					Can_Retry := True;
+				end if;
+
+				requeue Platforms(
+					Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage)
+						.Platform_Index
+					).Enter;
+			else
+				Can_Retry := False;
+				Logger.Log(
+					Sender 	=> "Access_Controller",
+					Message	=> "Train " & Integer'Image(Trains.Trains(Train_ID).ID) & " cannot enter, it is not" &
+					  				Integer'Image(Trains_Order.Get(1)),
+					L 		=> Logger.DEBUG
+				);
+				requeue Wait;
+			end if;
+
+		end Enter;
+
+
+		entry Wait(
+			Train_ID : in 	 Positive) when Can_Retry
+		is
+			T	: Positive;
+		begin
+			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
+				-- # Dequeue
+				Trains_Order.Dequeue(T);
+
+				-- # If some task is waiting on Wait entry, open the guard
+				if Wait'Count > 0 then
+					Can_Retry := True;
+				end if;
+
+				requeue  Platforms(
+					Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
+				).Enter;
+			else
+				Can_Retry := False;
+				requeue Wait;
+			end if;
+		end Wait;
+
+		procedure Add_Train(
+			Train_ID : in 	 Positive) is
+		begin
+			Trains_Order.Enqueue(Train_ID);
+		end Add_Train;
+
+ 	end Access_Controller;
+
+
 	-- ------------------------ Definition of the inherited abstract methods ------------------------
 	procedure Enter(
 			This 				: in		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
+			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action) is
 	begin
 
 		if Action = Route.ENTER then
-			This.Platforms(Platform_Index).Enter(Descriptor_Index);
+			This.Segments_Map_Order.Element(Segment_ID).Enter(Descriptor_Index);
 		end if;
 	end Enter;
 
@@ -156,7 +253,7 @@ package body Gateway_Station is
 					-- #
 					-- #
 					-- #
-					-- # SEND to the next Station TODO!!!!
+					-- # FREE THE PLATFORM BEFORE SENDING THE TRAIN!!!!!!!!!!
 					-- #
 					-- #
 					-- #
@@ -183,13 +280,28 @@ package body Gateway_Station is
 			This 				: in		Gateway_Station_Type;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
-			Platform_Index		: in		Positive) is
+			Platform_Index		: in		Positive)
+	is
+		Next_Stage_Region : Unbounded_String :=
+			Environment.Get_Travelers(Outgoing_Traveler).Ticket.Stages(
+				Environment.Get_Travelers(Outgoing_Traveler).Ticket.Next_Stage).Region;
 	begin
-		This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
-		This.Panel.SetStatus(
-			"Traveler " & Traveler.Get_Name(Environment.Get_Travelers(Outgoing_Traveler)) &
-			" waits by platform " & Integer'Image(Platform_Index) & " station " &
-			Unbounded_Strings.To_String(This.Name) & " to GO");
+		if Next_Stage_Region /= Environment.Get_Node_Name then
+			-- #
+			-- #
+			-- #
+			-- # TODO : Transfer to the corresponding Gateway station (to "the other side")
+			-- #
+			-- #
+			-- #
+			null;
+		else
+			This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
+			This.Panel.SetStatus(
+				"Traveler " & Traveler.Get_Name(Environment.Get_Travelers(Outgoing_Traveler)) &
+				" waits by platform " & Integer'Image(Platform_Index) & " station " &
+				Unbounded_Strings.To_String(This.Name) & " to GO");
+		end if;
 	end Wait_For_Train_To_Go;
 
 
@@ -206,16 +318,6 @@ package body Gateway_Station is
 			" waits by station " & Unbounded_Strings.To_String(This.Name)
 			& " at platform " & Integer'Image(Platform_Index) & " to ARRIVE");
     end Wait_For_Train_To_Arrive;
-
-
-	overriding procedure Add_Train(
-			This				: in 		Gateway_Station_Type;
-			Train_ID			: in 		Positive;
-			Segment_ID			: in 		Positive) is
-	begin
-		null;
-    end Add_Train;
-
 
 
 	function New_Gateway_Station(

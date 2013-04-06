@@ -121,6 +121,7 @@ begin
 			Message_Agent.Init;
 			Message_Agent.Instance.Listen_To(Node_Addr);
 			Message_Agent.Instance.Add_Handler("train_transfer",Handlers.Station_Train_Transfer_Handler'Access);
+			Message_Agent.Instance.Add_Handler("traveler_leave_transfer",Handlers.Station_Traveler_Leave_Transfer_Handler'Access);
 
 			Params.Set_String("node_name",Node_Name);
 			Params.Set_String("address",Node_Addr);
@@ -142,27 +143,14 @@ begin
 				Environment.Init(Node_Name,Name_Server);
 				Segments.Init;
 
---  				Params.Set_String("station","2");
---  				Params.Set_String("train",Train.Get_Json(Trains.Get_Trains(1)));
---  	--  			Params.Set_String("address","tcp://localhost:4455");
---  	--
---  				Message_Agent.Instance.Send(
---  					Destination_Address => Node_Addr,
---  					Object 				=> "message_handler",
---  					Service 			=> "train_transfer",
---  					Params 				=> Params,
---  					Callback			=> null
---  				);
-
---  				Train_Pool.Associate(1);
---  				delay 4.0;
-				if Environment.Get_Node_Name = "Node_1" then
-					Train_Pool.Associate(2);
-				end if;
+--  				if Environment.Get_Node_Name = "Node_1" then
+--  					Train_Pool.Associate(2);
+--  				end if;
+--  				delay 2.0;
 --  				Train_Pool.Associate(3);
 --  				Train_Pool.Associate(4);
 
---  				Task_Pool.Execute(Environment.Get_Operations(1)(Traveler.LEAVE));
+				Task_Pool.Execute(Environment.Get_Operations(1)(Traveler.LEAVE));
 
 --  				delay 4.0;
 --

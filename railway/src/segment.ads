@@ -27,11 +27,12 @@
 with Train;use Train;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with JSON_Helper;use JSON_Helper;
+with Queue;
 
 package Segment is
 
-	-- # IDs of currently traveling trains
-	type Train_Queue is array (Positive range <>) of Integer;
+	package Train_Queue_Package is new Queue(Element => Positive);
+	use Train_Queue_Package;
 
 	Bad_Segment_Access_Request_Exception : exception;
 
@@ -86,7 +87,7 @@ package Segment is
 		Current_Direction : Natural := 0;
 
 		-- # Queue of all the running trains
-		Running_Trains : Train_Queue (1..Queue_Dim);
+		Running_Trains : access Limited_Simple_Queue := new Limited_Simple_Queue(Queue_Dim);
 
 		-- # Boolean guard telling if a train can retry to Leave the Segment
 		Can_Retry_Leave : Boolean := False;
