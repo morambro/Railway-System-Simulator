@@ -1,21 +1,27 @@
 	\subsection{Percorrenza di un Treno}
 	
-	A ciascuna entità Treno, è assegnato un Percorso (\ttt{Route}) di andata e un Percorso di ritorno, ovvero sequenze di Tappe (\ttt{Stage}) successive, ciascuna composta dalla tupla:
+	A ciascuna entità Treno, è assegnato un Percorso (\ttt{Route}) di andata e un Percorso di ritorno, ovvero sequenze di Tappe (\ttt{Stage}) successive, ciascuna composta dai seguenti campi:
 				\begin{center}
 					\begin{verbatim}
-						       <next_segment,next_station,next_platfom,action,region>
+    - start_station,
+    - start_platform,
+    - next_segment,
+    - next_station,
+    - next_platfom,
+    - action,
+    - region
 					\end{verbatim}
 				\end{center}
 dove \ttt{action} indica quello che un Treno dovrà compiere presso la prossima stazione, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione; il campo \ttt{region} invece, indica la regione di destinazione, e viene utilizzato nel caso di transito su stazione di Gateway.
 
 Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un Descrittore, effettua le seguenti  operazioni, per ciascuna Tappa del Percorso corrente (di andata o di ritorno):
 				\begin{itemize} 
-					\item Accesso al prossimo Segmento \ttt{next\_segment} previsto.
+					\item Partenza dalla Stazione \ttt{start\_station}, Piattaforma \ttt{start\_platfom}.
+					\item Accesso al prossimo Segmento \ttt{next\_segment}.
 					\item Percorrenza all'interno del Segmento come attesa finita di durata proporzionale alla lunghezza del Segmento e alla velocità massima alla quale il Treno può percorrerlo.
 					\item Uscita dal Segmento e richiesta di Accesso alla Stazione successiva (\ttt{next\_station}) presso la Piattaforma indicata da \ttt{next\_platfom}, per eseguire l'azione \ttt{action}.
 					\item Se \ttt{action = ENTER} allore effettua discesa e salita dei Viaggiatori in attesa dell'arrivo del Treno.
-					\item Uscita dalla Piattaforma \ttt{next\_platfom}.
-					\item Se ci sono ancora Tappe da percorrere nel percorso (\ttt{Route}), allora il Descrittore del Treno viene inserito nella coda di \ttt{Train\_Pool}. 
+					\item Se ci sono ancora Tappe da percorrere nel percorso (\ttt{Route}), allora il l'indice della prossima tappa del Descrittore del Treno corrente viene incrementato, e lo stesso Descrittore viene inserito in una delle code di \ttt{Train\_Pool} (in base alla priorità). 
 				\end{itemize}
 
 % ############################################################################################################

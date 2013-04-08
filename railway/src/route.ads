@@ -42,8 +42,9 @@ package Route is
 	    Next_Station    : Positive;
         Platform_Index 	: Positive;
         Node_Name		: Unbounded_String;
-		Leave_At        : Time;
 		Train_Action	: Action;
+		Start_Station	: Positive;
+		Start_Platform	: Positive;
 	end record;
 
 	type Route_Type is array (Positive range <>) of Stage;

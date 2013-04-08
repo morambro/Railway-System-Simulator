@@ -39,7 +39,7 @@ package Train is
 	    -- Id of the current station
 	    Current_Station : Positive;
 	    -- Id of the next stage;
-	    Next_Stage		: Positive;
+	    Next_Stage		: Natural;
 	    -- Index of the Route
 	    Route_Index		: Positive;
 	    -- # Number of sits

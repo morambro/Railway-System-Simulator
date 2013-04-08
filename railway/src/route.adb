@@ -31,31 +31,6 @@ package body Route is
 
 	use JSON_Helper;
 
---  	function Get_Next_Segment (S : Stage) return Positive is
---  	begin
---  		return S.Next_Segment;
---  	end Get_Next_Segment;
---
---  	function Get_Next_Station (S : Stage) return Positive is
---  	begin
---  		return S.Next_Station;
---  	end Get_Next_Station;
---
---  	function Get_Time_To_Leave (S : Stage) return Time is
---  	begin
---  		return S.Leave_At;
---      End Get_Time_To_Leave;
---
---      function Get_Next_Platform (S : Stage) return Positive is
---      begin
---  		return S.Platform_Index;
---      end Get_Next_Platform;
---
---      function Get_Action (S : Stage) return Action is
---      begin
---      	return S.Train_Action;
---      end Get_Action;
-
 	function Get_Routes (Json_File : String) return Routes is
 		Json_v 			: JSON_Value := Get_Json_Value(Json_File_Name => Json_File);
 		J_Array 		: JSON_Array := Json_v.Get(Field => "routes");
@@ -93,9 +68,9 @@ package body Route is
 					Next_Station 		=> Json_Stage.Get("next_station"),
 					Platform_Index 		=> Json_Stage.Get("platform_index"),
 					Node_Name			=> Json_Stage.Get("node_name"),
-					Leave_At 			=>
-						Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Json_Stage.Get("leave_at")),
-					Train_Action		=> StringToAction(Json_Stage.Get("action"))
+					Train_Action		=> StringToAction(Json_Stage.Get("action")),
+					Start_Station 		=> Json_Stage.Get("start_station"),
+					Start_Platform		=> Json_Stage.Get("start_platform")
 				);
 			end;
 		end loop;

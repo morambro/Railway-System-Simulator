@@ -30,13 +30,13 @@ package body Notice_Panel is
 
 	protected body Notice_Panel_Entity is
 
-		procedure SetStatus(Status : String) is
+		procedure Set_Status(Status : String) is
 		begin
 			Logger.Log(
-				"Notice_Panel",
+				"Station " & Station_ID.all & "-Notice_Panel",
 				Status,
 				Logger.NOTICE);
-		end SetStatus;
+		end Set_Status;
 
 	end Notice_Panel_Entity;
 

@@ -144,16 +144,17 @@ begin
 				Environment.Init(Node_Name,Name_Server);
 				Segments.Init;
 
---  				if Environment.Get_Node_Name = "Node_1" then
---  					Train_Pool.Associate(2);
---  				end if;
+				if Environment.Get_Node_Name = "Node_1" then
+					Ada.Text_IO.Put_Line("yo");
+					Train_Pool.Associate(1);
+				end if;
 --  				delay 2.0;
 --  				Train_Pool.Associate(3);
 --  				Train_Pool.Associate(4);
 
-				if Node_Name = "Node_1" then
-					Task_Pool.Execute(Environment.Operations(1)(Traveler.ENTER));
-				end if;
+--  				if Node_Name = "Node_1" then
+--  					Task_Pool.Execute(Environment.Operations(1)(Traveler.ENTER));
+--  				end if;
 --  				delay 4.0;
 --
 --  				Train_Pool.Stop;

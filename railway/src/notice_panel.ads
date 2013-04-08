@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -25,8 +25,8 @@
 ----------------------------------------------------------------------------------
 package Notice_Panel is
 
-	protected type Notice_Panel_Entity(Station_ID : Integer) is
-		procedure SetStatus(Status : String);
+	protected type Notice_Panel_Entity(Station_ID : access String) is
+		procedure Set_Status(Status : String);
 	end Notice_Panel_Entity;
 
 end Notice_Panel;

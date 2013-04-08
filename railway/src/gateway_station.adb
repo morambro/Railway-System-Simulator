@@ -144,10 +144,11 @@ package body Gateway_Station is
 			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action) is
 	begin
-
-		if Action = Route.ENTER then
-			This.Segments_Map_Order.Element(Segment_ID).Enter(Descriptor_Index);
-		end if;
+		This.Segments_Map_Order.Element(Segment_ID).Enter(Descriptor_Index);
+		This.Panel.Set_Status(
+			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " gained access to Platform " &
+			Integer'Image(Platform_Index)
+		);
 	end Enter;
 
 
@@ -183,6 +184,7 @@ package body Gateway_Station is
 					-- #
 					-- #
 					-- #
+
 					Put_Line("DEST_REGION : " & Next_Station_Node & " NEXT STATION INDEX " & Integer'Image(Next_Station_Index));
 					Send_Train(
 						Train_D		=>	Descriptor_Index,
@@ -190,9 +192,15 @@ package body Gateway_Station is
 						-- # The platform index will be the same!!
 						Platform	=>	Platform_Index,
 						Node_Name 	=>	Next_Station_Node);
+
+					This.Platforms(Platform_Index).Free_Platform(Descriptor_Index);
 				else
 					-- # If the next Stage is in the same Region, proceed with a local Leave operation
 					This.Platforms(Platform_Index).Leave(Descriptor_Index);
+					This.Panel.Set_Status(
+						"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " leaved Platform " &
+						Integer'Image(Platform_Index)
+					);
 				end if;
 			end;
 		end if;
@@ -233,7 +241,7 @@ package body Gateway_Station is
 
 		else
 			This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
-			This.Panel.SetStatus(
+			This.Panel.Set_Status(
 				"Traveler " & Traveler.Get_Name(Environment.Travelers(Outgoing_Traveler)) &
 				" waits by platform " & Integer'Image(Platform_Index) & " station " &
 				Unbounded_Strings.To_String(This.Name) & " to GO");
@@ -249,7 +257,7 @@ package body Gateway_Station is
 			Platform_Index		: in		Positive) is
 	begin
 		This.Platforms(Platform_Index).Add_Incoming_Traveler(Incoming_Traveler);
-		This.Panel.SetStatus(
+		This.Panel.Set_Status(
 			"Traveler " & Traveler.Get_Name(Environment.Travelers(Incoming_Traveler)) &
 			" waits by station " & Unbounded_Strings.To_String(This.Name)
 			& " at platform " & Integer'Image(Platform_Index) & " to ARRIVE");
@@ -419,7 +427,7 @@ package body Gateway_Station is
 		for I in Positive range 1..Platforms_Number loop
 			Station.Platforms(I) := new Gateway_Platform.Gateway_Platform_Type(I,Station.Name'Access);
 		end loop;
-		Station.Panel := new Notice_Panel.Notice_Panel_Entity(1);
+		Station.Panel := new Notice_Panel.Notice_Panel_Entity(new String'(To_String(Station.Name)));
 		Station.Destinations := Destinations;
 		return Station;
 	end;

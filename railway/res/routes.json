@@ -1,62 +1,52 @@
 {
 	"routes" : [
 		{
+			"id"	:  1,
 			"route" : [
 				{
+					"start_station"		: 1,
+					"start_platform"	: 3,
 					"next_segment" 		: 1,
 					"next_station" 		: 2,
 					"platform_index"  	: 2,
 					"node_name"			: "Node_1",				
-					"leave_at"			: 5000,
 					"action"			: "ENTER"
 				},
 				{
-					"next_segment" 		: 2,
-					"next_station" 		: 3,
-					"platform_index"  	: 1,
+					"start_station"		: 2,
+					"start_platform"	: 2,
+					"next_segment" 		: 4,
+					"next_station" 		: 5,
+					"platform_index"  	: 2,
 					"node_name"			: "Node_1",
-					"leave_at"			: 10000,
 					"action"			: "ENTER"
 				},
 				{
 					"comment"			: "This Stage is added as a fake stage, to help reaching the next Gateway Station",
+					"start_station" 	: 5,
+					"start_platform"  	: 2,
 					"next_segment" 		: 1,
 					"next_station" 		: 1,
-					"platform_index"  	: 1,
+					"platform_index"  	: 2,
 					"node_name"			: "Node_2",
-					"leave_at"			: 10000,
 					"action"			: "ENTER"
 				},
 				{
+					"start_station" 	: 1,
+					"start_platform"  	: 2,
 					"next_segment" 		: 1,
 					"next_station" 		: 2,
+					"platform_index"  	: 3,
+					"node_name"			: "Node_2",
+					"action"			: "ENTER"
+				},
+				{
+					"start_station" 	: 2,
+					"start_platform"  	: 3,
+					"next_segment" 		: 2,
+					"next_station" 		: 4,
 					"platform_index"  	: 1,
 					"node_name"			: "Node_2",
-					"leave_at"			: 15000,
-					"action"			: "ENTER"
-				}
-			]
-		},
-		{
-			"route" : [
-				{
-					"next_segment" 		: 1,
-					"next_station" 		: 1,
-					"platform_index"  	: 1,
-					"node_name"			: "Node_1",
-					"leave_at"			: 2000,
-					"action"			: "ENTER"
-				}
-			]
-		},
-		{
-			"route" : [
-				{
-					"next_segment" 		: 1,
-					"next_station" 		: 1,
-					"platform_index"  	: 1,
-					"node_name"			: "Node_1",
-					"leave_at"			: 2000,
 					"action"			: "ENTER"
 				}
 			]

@@ -56,7 +56,7 @@ package body Gateway_Platform is
 					Sender  => NAME,
 					Message => "Train " & Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) & " Performs Alighting of travelers" &
 								" plat " & Integer'Image(ID),
-					L       => Logger.NOTICE);
+					L       => Logger.DEBUG);
 
 			for I in 1..Arrival_Number loop
 				-- # in Traveler_Manager_Index there will be the index of the next Traveler
@@ -86,7 +86,7 @@ package body Gateway_Platform is
 										Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
 									   " Leaves the train at station " &
 									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
-							L       => Logger.NOTICE);
+							L       => Logger.DEBUG);
 
 					-- # Check if there are more stages, otherwise STOP
 					if 	Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage =
@@ -97,7 +97,7 @@ package body Gateway_Platform is
 										Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
 									   " FINISHED HIS TRAVEL" &
 									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
-							L       => Logger.NOTICE);
+							L       => Logger.DEBUG);
 					else
 
 						-- # Go to the next stage
@@ -167,7 +167,7 @@ package body Gateway_Platform is
 			Logger.Log(
 					Sender  => NAME,
 					Message => "Train " & Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) & " Performs Boarding of travelers",
-					L       => Logger.NOTICE);
+					L       => Logger.DEBUG);
 			for I in 1..Leaving_Number loop
 
 				-- # Retrieve the next Traveler Manager Index
@@ -191,7 +191,7 @@ package body Gateway_Platform is
 								   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
 								   " boarding at station " &
 								   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
-						L       => Logger.NOTICE);
+						L       => Logger.DEBUG);
 
 
 					declare
@@ -222,9 +222,22 @@ package body Gateway_Platform is
 						   Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) &
 						   " has" & Integer'Image(Trains.Trains(Train_Descriptor_Index).Occupied_Sits) & "/" &
 						   Integer'Image(Trains.Trains(Train_Descriptor_Index).Sits_Number) & " travelers",
-				L       => Logger.NOTICE);
+				L       => Logger.DEBUG);
 
 		end Leave;
+
+
+		procedure Free_Platform(
+			Train_D		: in 		Positive) is
+		begin
+			Free := True;
+		end Free_Platform;
+
+		procedure Lock_Platform(
+			Train_D		: in 		Positive) is
+		begin
+			Free := False;
+		end Lock_Platform;
 
 
 

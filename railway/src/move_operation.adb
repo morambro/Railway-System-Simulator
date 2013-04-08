@@ -84,6 +84,7 @@ package body Move_Operation is
 			L 		=> Logger.NOTICE);
 
 		-- # Check if the next destination is in the current Region or not
+
 		if Next_Region = Environment.Get_Node_Name then
 			Environment.Stations(Next_Station).Wait_For_Train_To_Arrive(
 				Incoming_Traveler 	=> This.Traveler_Manager_Index,

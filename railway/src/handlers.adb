@@ -61,10 +61,10 @@ package body Handlers Is
 			-- # NEED A PROCEDURE TO OCCUPY THE SAME PLATFORM AS AT THE OTHER SIDE!!!!
 			--
 
-			Environment.Stations(Station_Index).Leave(
-				Descriptor_Index	=> Train_Index,
-				Platform_Index 		=> Platform_Index
-			);
+--  			Environment.Stations(Station_Index).Leave(
+--  				Descriptor_Index	=> Train_Index,
+--  				Platform_Index 		=> Platform_Index
+--  			);
 
 			-- # At this point the Stage Index will have been incremented by Leave, so we are
 			-- # sure that the fake stage is passed, and that at the index Next_Stage there will be

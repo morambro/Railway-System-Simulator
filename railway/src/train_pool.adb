@@ -56,7 +56,7 @@ package body Train_Pool is
 
 			Logger.Log(NAME,"Train waits for a Descriptor",Logger.DEBUG);
 
-			Low_Priority_Trains_Queue.Dequeue(
+			High_Priority_Trains_Queue.Dequeue(
 				To_Get 		=> Current_Descriptor_Index,
 				Terminated 	=> Terminated
 			);
@@ -72,6 +72,13 @@ package body Train_Pool is
 				Route_Index 		: Positive := Trains.Trains(Current_Descriptor_Index).Route_Index;
 
 				Next_Stage 			: Positive := Trains.Trains(Current_Descriptor_Index).Next_Stage;
+
+				-- # Retrieve start Station from which start
+				Start_Station 	    : Positive := Routes.All_Routes(Route_Index)(Next_Stage).Start_Station;
+
+				-- # Retrieve start Platfrom from which start
+				Start_Platform 	    : Positive := Routes.All_Routes(Route_Index)(Next_Stage).Start_Platform;
+
 				-- # Retrieve next Segment to travel
 				Next_Station 	    : Positive := Routes.All_Routes(Route_Index)(Next_Stage).Next_Station;
 				-- # Retrieve next platform number
@@ -85,18 +92,29 @@ package body Train_Pool is
 
 			-- # ######################## NEXT Segment ACCESS ############################
 			begin
-	--  			-- # TODO : REMOVE DEBUG CODE!!!
-	--  			if ( Trains.Trains(Current_Descriptor_Index).Id = 3333 ) then
-	--  				Trains.Trains(Current_Descriptor_Index).Current_Station := 3;
-	--  			end if;
+
+				Logger.Log(
+					NAME,
+					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
+					" leaves Station " & Integer'Image(Start_Station) & ", platform " & Integer'Image(Start_Platform),
+					Logger.DEBUG
+				);
+
+				-- # Update Current Station!!
+				Trains.Trains(Current_Descriptor_Index).Current_Station := Start_Station;
+
+				Put_Line("NEXT_STAGE = " & Integer'Image(Next_Stage));
+
+				-- # Train Leaves the station
+		    	Environment.Stations(Start_Station).Leave(Current_Descriptor_Index,Start_Platform);
 
 				Segments.Segments(Next_Segment).Enter(Current_Descriptor_Index,Max_Speed,Leg_Length);
 
 				Logger.Log(
 					NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
-					" entered Segment Number " & Integer'Image(Next_Segment),
-					Logger.NOTICE
+					" entered Segment " & Integer'Image(Next_Segment),
+					Logger.DEBUG
 				);
 
 				-- # Calculate Time to Travel the current Segment
@@ -106,30 +124,31 @@ package body Train_Pool is
 					Trains.Trains(Current_Descriptor_Index).Speed := Max_Speed;
 				end if;
 
-				Time_In_Segment := 2.0;--Float(Leg_Length) / (Float(Current_Descriptor_Index.Speed)*0.277777778);
+				Time_In_Segment := 3.0;	-- Float(Leg_Length) * 60.0 /
+									-- (Float(Trains.Trains(Current_Descriptor_Index).Speed) * (Float(1000)/Float(60)));
 
 				Logger.Log(NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) & " running at speed "
-					& Integer'Image(Trains.Trains(Current_Descriptor_Index).Speed) & " km/h",
-					Logger.NOTICE);
-
-				Logger.Log(NAME,
-					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
-					" will run for " & Helper.Get_String(Time_In_Segment,10) & " seconds",
-					Logger.NOTICE);
+					& Integer'Image(Trains.Trains(Current_Descriptor_Index).Speed) & " km/h;"
+					& " will wait for " & Helper.Get_String(Time_In_Segment,10) & " seconds",
+					Logger.DEBUG);
 
 				delay Duration (Time_In_Segment);
 
 				Segments.Segments(Next_Segment).Leave(Current_Descriptor_Index);
 
+				Logger.Log(NAME,
+		      		"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
+		      		" leaved Segment " & Integer'Image(Next_Segment),
+		      		Logger.DEBUG);
 
-				if Current_Descriptor_Index = 2 then
-					Logger.Log(NAME,
-						"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
-						" waits 2 seconds, to let the other train to pass it :D ",
-						Logger.NOTICE);
-					delay 5.0;
-				end if;
+--  				if Current_Descriptor_Index = 2 then
+--  					Logger.Log(NAME,
+--  						"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
+--  						" waits 2 seconds, to let the other train to pass it :D ",
+--  						Logger.DEBUG);
+--  					delay 5.0;
+--  				end if;
 
 
 				-- # ######################## NEXT STATION ACCESS ############################
@@ -146,30 +165,11 @@ package body Train_Pool is
 
 				Num := Rand_Int.Random(seed);
 
-		    	Logger.Log(NAME,
-		      		"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
-		      		" leaved Segment Number" & Integer'Image(Next_Segment) &
-			  		" entered Platform " & Integer'Image(Next_Platform) &
-		      		" at Station " & Integer'Image(Next_Station), Logger.NOTICE);
-
-				-- # Update Current Station!!
-				Trains.Trains(Current_Descriptor_Index).Current_Station := Next_Station;
-
 				delay Duration(Num);
 
-				-- # Train Leaves the station
-		    	Environment.Stations(Next_Station).Leave(Current_Descriptor_Index,Next_Platform);
-
-
-		   		Logger.Log(
-		   			NAME,
-			      	"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
-				  	" leaved Platform " & Integer'Image(Next_Platform) &
-				  	" at Station " & Integer'Image(Next_Station),
-				  	Logger.NOTICE);
-
-
-				Trains.Trains(Current_Descriptor_Index).Next_Stage := Trains.Trains(Current_Descriptor_Index).Next_Stage + 1;
+				-- # Go to the next Stage!
+				Trains.Trains(Current_Descriptor_Index).Next_Stage :=
+					Trains.Trains(Current_Descriptor_Index).Next_Stage + 1;
 
 				delay Duration (Num);
 
@@ -179,7 +179,7 @@ package body Train_Pool is
 				else
 					Logger.Log(NAME,
 				      	"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
-					  	" finished its run!",Logger.NOTICE);
+					  	" finished its run!",Logger.DEBUG);
 				end if;
 
 			-- # ############################ ERROR HANDLING ###############################

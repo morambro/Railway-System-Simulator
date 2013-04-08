@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -89,7 +89,7 @@ package body Logger is
 				when NOTICE =>
 					Put("[N] ");
 					Put(ASCII.ESC & "[34m");
-					Put_Line(Message);
+					Put_Line(Sender & " : " & Message);
 					Put(ASCII.ESC & "[00m");
 				when ERROR =>
 					Put("[E] ");

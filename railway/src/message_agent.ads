@@ -35,6 +35,8 @@ with YAMI.Incoming_Messages;
 
 package Message_Agent is
 
+	No_Destination_For_Name : exception;
+
 	type Handler is access procedure(Content : in out YAMI.Parameters.Parameters_Collection);
 
 	package Maps is new Ada.Containers.Indefinite_Hashed_Maps(
