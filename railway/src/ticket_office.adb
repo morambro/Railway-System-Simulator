@@ -29,9 +29,5 @@ with Ada.Text_IO;use Ada.Text_IO;
 
 package body Ticket_Office is
 
-	function Get_Ticket return Positive is
-	begin
-		return 1;
-    end Get_Ticket;
 
 end Ticket_Office;

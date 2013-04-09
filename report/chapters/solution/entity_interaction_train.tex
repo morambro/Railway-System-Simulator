@@ -8,11 +8,12 @@
     - next_segment,
     - next_station,
     - next_platfom,
-    - action,
-    - region
+    - leave_action,
+    - enter_action,
+    - node_name
 					\end{verbatim}
 				\end{center}
-dove \ttt{action} indica quello che un Treno dovrà compiere presso la prossima stazione, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione; il campo \ttt{region} invece, indica la regione di destinazione, e viene utilizzato nel caso di transito su stazione di Gateway.
+dove \ttt{leave\_action} e \ttt{enter\_action} indicano rispettivamente quello che un Treno dovrà compiere alla partenza dalla stazione \ttt{start\_station} e all'arrivo presso la prossima stazione \ttt{next\_station}, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione; il campo \ttt{node\_name} invece, indica la regione di destinazione, e viene utilizzato nel caso di transito su stazione di Gateway.
 
 Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un Descrittore, effettua le seguenti  operazioni, per ciascuna Tappa del Percorso corrente (di andata o di ritorno):
 				\begin{itemize} 
@@ -208,6 +209,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		\item $T$, se previsto dal Percorso, effettua Discesa dei Viaggiatori. Tale azione è simile alla Discesa descritta in sezione \ref{subsubsec:regional_station_access}, ma se un Viaggiatore una volta sceso proseguirà il proprio percorso su un nodo diverso da quello corrente, esso verrà trasferito mediante messaggio remoto al nodo successivo, e solo a questo punto verrà inserita l'Operazione \ttt{ENTER} del Viaggiatore nella coda di operazioni di \ttt{Traveler\_Pool} locale al nodo destinazione.
 		
 		\item Il descrittore del Treno corrente $D_T$ viene serializzato (\ii{marshalling}), e inviato tramite invocazione remota alla Stazione di Gateway della Regione $G2$ ad essa connessa. L'individuazione dell'indirizzo della regione specificata nel parametro \ttt{region}, avviene interrogando il \ttt{Name\_Server}, se esso non è già presente in una cache locale.
+		\item Il flusso ciclico di istruzioni eseguite dal thread che gestisce $T$ viene interrotto (esso potrà così ottenere un nuovo Descrittore di Treno ed eseguire per esso le proprie operazioni).
 		\item Presso la regione $R2$, stazione di Gateway $G2$, vengono eseguite le seguenti operazioni:
 			\begin{itemize}
 				\item Il Descrittore viene de-serializzato (\ii{unmarshalling}).
@@ -216,11 +218,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 				\item Vengono operate attesa fino all'orario di partenza previsto (secondo il clock del nodo corrente), Salita dei Viaggiatori e Partenza dalla Stazione come per le Stazioni Regionali.
 				\item Viene restituito un messaggio di \ii{acknowledgement} al nodo $R1$, che comunica l'avvenuta esecuzione delle operazioni.
 			\end{itemize}
-		\item Una volta ricevuto il messaggio di \ii{acknowledgement}, presso il nodo $R1$ vengono eseguite le seguenti operazioni:
-			\begin{itemize}
-				\item Il flusso ciclico di istruzioni eseguite dal thread che gestisce $T$ viene interrotto (esso potrà così ottenere un nuovo Descrittore di Treno ed eseguire per esso le proprie operazioni).
-				\item Viene liberata la piattaforma corrente (\ttt{Free} viene impostato a \ttt{True}).
-			\end {itemize}
+		\item Una volta ricevuto il messaggio di \ii{acknowledgement}, presso il nodo $R1$, viene liberata la piattaforma corrente (\ttt{Free} viene impostato a \ttt{True}) in modo tale da permettere ad altri Treni di occuparla.
 	\end{itemize}
 	
 	Ciò che garantisce la correttezza della soluzione presentata, relativamente a discesa e salita dei passeggeri locale, è la modalità con la quale il Viaggiatore viene accodato presso la Stazione di Gateway come descritto nella sezione \ref{subsec:percorrenza_viaggiatore}, ovvero in modo tale per cui:
@@ -228,5 +226,10 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		\item Presso le coda \ttt{Arrival\_Queue} delle Piattaforme nel nodo di partenza vi saranno tutti e soli i passeggeri in attesa di scendere presso la Stazione di Gateway, se previsto dal loro Biglietto.
 		\item Presso le code \ttt{Leaving\_Queue} delle Piattaforme nel nodo di destinazione vi saranno invece solamente i Viaggiatori che vogliono raggiungere una destinazione interna al nodo corrente.
 	\end{itemize}  
+	Si noti che la soluzione riportata prevede lo scambio di due messaggi remoti, il primo per la transizione del Treni tra le Regioni, e il secondo di acknowledgement per poter liberare la risorsa Piattaforma presso il nodo di partenza. Di fatto, data l'inaffidabilità della rete, è possibile che uno dei due messaggi scambiati non venga ricevuto dal nodo di destinazione. Abbiamo quindi due casi:
+		\begin{itemize}
+			\item \ii{L'invio del primo messaggio fallisce.} In questo caso, il flusso di esecuzione del thread che gestisce il Treno viene interrotto. Per semplicità si può pensare che il Treno sia cancellato a causa di un guasto, o si può ridurre il Percorso fino alla Tappa che ha causato l'errore, dopo essersi accertati dell'effettiva irraggiungibilità del nodo destinazione.
+			\item \ii{Il messaggio di acknowledgement non viene consegnato.} In questo caso il problema è più grave. Il Treno presso il nodo di destinazione continua la propria corsa, mentre la Piattaforma abbandonata rimane occupata, e quindi inutilizzabile dai Treni che sopraggiungono. Per risolvere questo tipo di problema è possibile prevedere un tempo massimo di occupazione della Piattaforma, oltre il quale richiedere l'effettivo stato di occupazione della Piattaforma presso la Stazione di Gateway della Regione di destinazione e, nel caso in cui risultasse libera, procedere alla liberazione della stessa, impostando \ttt{Free} a \ttt{True}. 
+		\end{itemize}
 	 
 	

@@ -1,0 +1,39 @@
+{
+	"topology" : [
+		{
+			"station" 		: 1,
+			"neighbours" 	: [2],
+			"distance"		: [6000]
+		},
+		{
+			"station" 		: 2,
+			"neighbours" 	: [1   ,3	 ,4   ,5],
+			"distance"		: [6000,2000,3000,1000]
+		},
+		{
+			"station" 		: 3,
+			"neighbours" 	: [2],
+			"distance"		: [2000]
+		},
+		{
+			"station" 		: 4,
+			"neighbours" 	: [2   ,6],
+			"distance"		: [3000,1000]
+		},
+		{
+			"station" 		: 5,
+			"neighbours" 	: [2   ,6],
+			"distance"		: [1000,2000]
+		},
+		{
+			"station" 		: 6,
+			"neighbours" 	: [4   ,5],
+			"distance"		: [1000,2000]
+		},
+		{
+			"station" 		: 7,
+			"neighbours" 	: [1   ,3],
+			"distance"		: [1000,2000]
+		}
+	]
+}

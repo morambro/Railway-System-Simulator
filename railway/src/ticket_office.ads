@@ -24,16 +24,30 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with Ticket;
+with Ada.Containers.Indefinite_Hashed_Maps;
 
 package Ticket_Office is
 
+	package String_String_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
+		Key_Type 		=> String,
+		Element_Type 	=> String,
+		Hash			=> Ada.Strings.Hash,
+		Equivalent_Keys => "="
+	);
+
 	All_Tickets : access Ticket.Tickets_Array := Ticket.Get_All_Tickets("res/all_tickets.json");
 
-	function Get_Ticket return Positive;
 
-	type Regional_Ticket_Office is tagged null record;
+	type Regional_Ticket_Office is tagged record
+	end record;
+
+		procedure Init(
+			This 	: in	Regional_Ticket_Office);
+
+
 
 	type Station_Ticket_Office is tagged private;
+
 
 
 

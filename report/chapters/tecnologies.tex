@@ -29,7 +29,7 @@ L'interazione tra componenti remote del sistema, realizzate con tecnologie omoge
 		\item \ttt{Object}: un oggetto remoto raggiungibile ad un dato indirizzo, identificato univocamente da una stringa.
 		\item \ttt{Service}: Insieme di servizi offerti da un oggetto remoto, identificati univocamente da una stringa.
 	\end{itemize}
-Per quanto riguarda i nodi di simulazione, ho utilizzato quindi un unico \ttt{Object}, il quale mette a disposizione vari \ttt{Service} a seconda del tipo di azione da prendere.
+Per quanto riguarda i nodi di simulazione, ho utilizzato quindi un unico \ttt{Object}, il quale mette a disposizione vari \ttt{Service} a seconda del tipo di azione da prendere. Questa soluzione mi è sembrata la più semplice e estendibile possibile.
 % Tale azione è definita mediante un puntatore a procedura (access procedure), che viene utilizzata quindi da Callback procedure. In questo modo, l'aggiunta di un nuovo \ttt{Service} è resa immediata, 
 
 
