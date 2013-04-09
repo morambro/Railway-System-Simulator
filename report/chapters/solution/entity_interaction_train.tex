@@ -207,7 +207,6 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		
 		\item $T$, se previsto dal Percorso, effettua Discesa dei Viaggiatori. Tale azione è simile alla Discesa descritta in sezione \ref{subsubsec:regional_station_access}, ma se un Viaggiatore una volta sceso proseguirà il proprio percorso su un nodo diverso da quello corrente, esso verrà trasferito mediante messaggio remoto al nodo successivo, e solo a questo punto verrà inserita l'Operazione \ttt{ENTER} del Viaggiatore nella coda di operazioni di \ttt{Traveler\_Pool} locale al nodo destinazione.
 		
-		\item Il thread che gestisce $T$ viene interrotto, ovvero viene modificato il flusso di esecuzione delle operazioni cicliche da esso eseguite.
 		\item Il descrittore del Treno corrente $D_T$ viene serializzato (\ii{marshalling}), e inviato tramite invocazione remota alla Stazione di Gateway della Regione $G2$ ad essa connessa. L'individuazione dell'indirizzo della regione specificata nel parametro \ttt{region}, avviene interrogando il \ttt{Name\_Server}, se esso non è già presente in una cache locale.
 		\item Presso la regione $R2$, stazione di Gateway $G2$, vengono eseguite le seguenti operazioni:
 			\begin{itemize}
@@ -215,7 +214,13 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 				\item I dati del Descrittore $D_{T'}$ presenti nella regione $R2$ vengono aggiornati con quelli ricevuti.
 				\item Viene ottenuta la Piattaforma in mutua esclusione e ne viene impostato il campo \ttt{Free} a \ttt{False}.
 				\item Vengono operate attesa fino all'orario di partenza previsto (secondo il clock del nodo corrente), Salita dei Viaggiatori e Partenza dalla Stazione come per le Stazioni Regionali.
+				\item Viene restituito un messaggio di \ii{acknowledgement} al nodo $R1$, che comunica l'avvenuta esecuzione delle operazioni.
 			\end{itemize}
+		\item Una volta ricevuto il messaggio di \ii{acknowledgement}, presso il nodo $R1$ vengono eseguite le seguenti operazioni:
+			\begin{itemize}
+				\item Il flusso ciclico di istruzioni eseguite dal thread che gestisce $T$ viene interrotto (esso potrà così ottenere un nuovo Descrittore di Treno ed eseguire per esso le proprie operazioni).
+				\item Viene liberata la piattaforma corrente (\ttt{Free} viene impostato a \ttt{True}).
+			\end {itemize}
 	\end{itemize}
 	
 	Ciò che garantisce la correttezza della soluzione presentata, relativamente a discesa e salita dei passeggeri locale, è la modalità con la quale il Viaggiatore viene accodato presso la Stazione di Gateway come descritto nella sezione \ref{subsec:percorrenza_viaggiatore}, ovvero in modo tale per cui:

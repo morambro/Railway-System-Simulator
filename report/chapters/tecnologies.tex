@@ -10,8 +10,9 @@ Sono stati utilizzati principalmente due linguaggi di programmazione.
 				\item \bb{Controller Centrale}
 				\item \bb{Biglietteria Centrale}
 				\item \bb{Application Server}, al quale i client HTTP possono collegarsi mediante protocollo Web Socket per poter fornire una rappresentazione grafica della simulazione, in linguaggio HTML e Javascript. Per la sua realizzazione è stato utilizzato il framework MVC \ttt{Play 2.0} (disponibile all'indirizzo \url{http://www.playframework.com/}).
+				\item \bb{Name Server} per la gestione delle Regioni di simulazione.
 			\end{itemize}
-		Le interazione tra thread interne alle componenti distribuite, sono state gestite adottando il modello di concorrenza ad Attori nativo. 
+		Le interazione tra thread interne alle componenti distribuite, sono state gestite adottando il modello di concorrenza ad Attori fornito nativamente dal linguaggio Scala. 
 		\item {\bb{Ada}} \\
 		Il linguaggio Ada è stato utilizzato per realizzare il core di simulazione presente in ciascuna Regione. Il modello di concorrenza fornito dal linguaggio è sembrato per me più adatto, rispetto ai modelli offerti da altri linguaggi, per rappresentare le interazioni tra le entità introdotte al capitolo precedente. 
 		In prima battuta, ho valutato l'utilizzo del modello di concorrenza ad Attori di Scala; esso avrebbe fornito un meccanismo di linguaggio per l'esecuzione delle entità Viaggiatore e Treno, simile a quello descritto per nelle sezioni \ref{subsec:traveler_def} e \ref{subsec:train_def}. Tuttavia, il modello ad Attori avrebbe reso necessaria l'adozione di entità attive Server a protezione delle entità reattive come Segmenti e Piattaforme, e ciò avrebbe comportato:
@@ -23,7 +24,13 @@ Sono stati utilizzati principalmente due linguaggi di programmazione.
 		  
 	\end{description}
 	
-L'interazione tra componenti remote del sistema, realizzate con tecnologie omogenee, è stata possibile mediante il middleware per lo scambio di messaggi Yami4 (\url{http://www.inspirel.com/yami4/}), compatibile, tra gli altri linguaggi, con Ada e Java (e quindi di conseguenza anche con Scala). Questo strumendo è stato preferito agli altri possibili middleware (Distributed Systems Annex per RPC in Ada e CORBA) in quanto si è rivelato molto semplice da utilizzare e ha permesso di adottare un certo grado di disaccoppiamento tecnologico tra le componenti. Per ciascun Nodo di simulazione del Sistema è stato utilizzato un singolo Attore, sia per quanto riguarda l'invio che la ricezione di messaggi remoti, in ascolto ad un singolo indirizzo (adottando il protocollo TCP). 
+L'interazione tra componenti remote del sistema, realizzate con tecnologie omogenee, è stata possibile mediante il middleware per lo scambio di messaggi Yami4 (\url{http://www.inspirel.com/yami4/}), compatibile, tra gli altri linguaggi, con Ada e Java (e quindi di conseguenza anche con Scala). Questo strumendo è stato preferito agli altri possibili middleware (Distributed Systems Annex per RPC in Ada e CORBA) in quanto si è rivelato molto semplice da utilizzare e ha permesso di adottare un certo grado di disaccoppiamento tecnologico tra le componenti. Per ciascun Nodo di simulazione del Sistema è stato utilizzato un singolo Attore (definito da yami4), sia per quanto riguarda l'invio che la ricezione di messaggi remoti, in ascolto ad un singolo indirizzo (adottando il protocollo TCP). Per ciascun Attore, è possibile definire:
+	\begin{itemize}
+		\item \ttt{Object}: un oggetto remoto raggiungibile ad un dato indirizzo, identificato univocamente da una stringa.
+		\item \ttt{Service}: Insieme di servizi offerti da un oggetto remoto, identificati univocamente da una stringa.
+	\end{itemize}
+Per quanto riguarda i nodi di simulazione, ho utilizzato quindi un unico \ttt{Object}, il quale mette a disposizione vari \ttt{Service} a seconda del tipo di azione da prendere.
+% Tale azione è definita mediante un puntatore a procedura (access procedure), che viene utilizzata quindi da Callback procedure. In questo modo, l'aggiunta di un nuovo \ttt{Service} è resa immediata, 
 
 
 

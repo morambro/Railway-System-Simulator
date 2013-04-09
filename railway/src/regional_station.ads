@@ -63,7 +63,8 @@ package Regional_Station is
 		-- # Entry called by the train task to regulate the entrance order for a Segment
 		-- #
 		entry Enter(
-			Train_ID : in 	 Positive);
+			Train_ID 	: in 	 Positive;
+			Action		: in 	 Route.Action);
 
 		-- #
 		-- # Simply Adds the Given Train ID to the internal Queue
@@ -74,7 +75,8 @@ package Regional_Station is
 	private
 
 		entry Wait(
-			Train_ID : in 	 Positive);
+			Train_ID 	: in 	Positive;
+			Action 		: in	Route.Action);
 
 		-- # Unbounded queue which will contain the Trains order
 --  		Trains_Order : Trains_Queue_Package.Terminable_Queue;
@@ -119,7 +121,8 @@ package Regional_Station is
 		overriding procedure Leave(
 			This 				: in 		Regional_Station_Type;
 			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive);
+			Platform_Index		: in		Positive;
+			Action				: in 		Route.Action);
 
 		overriding procedure Wait_For_Train_To_Go(
 			This 				: in		Regional_Station_Type;
@@ -132,10 +135,6 @@ package Regional_Station is
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
-
-		overriding function Get_Platform(
-			This : Regional_Station_Type;
-			P : Natural) return Generic_Platform.Platform_Access;
 
 		overriding procedure Add_Train(
 			This				: in 		Regional_Station_Type;

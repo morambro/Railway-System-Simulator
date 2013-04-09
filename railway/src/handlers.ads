@@ -38,6 +38,11 @@ package Handlers is
 	-- #
 	procedure Station_Train_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
 
+	-- #
+	-- # This Handler will be used to Free the Platform at the sender side, when a remote Train transfer is made.
+	-- #
+	procedure Station_Train_Transfer_Ack_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
+
 	procedure Station_Traveler_Leave_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
 
 	procedure Station_Traveler_Enter_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection);

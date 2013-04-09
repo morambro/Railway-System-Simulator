@@ -42,7 +42,7 @@ package body Train_Pool is
 	-- #
 	-- # Train task implementation
 	-- #
-	task body Low_Priority_Train_Type is
+	task body Train_Executor_Task is
 
 		NAME : constant String := "Train_Pool.Train_Type";
 
@@ -56,10 +56,18 @@ package body Train_Pool is
 
 			Logger.Log(NAME,"Train waits for a Descriptor",Logger.DEBUG);
 
-			High_Priority_Trains_Queue.Dequeue(
-				To_Get 		=> Current_Descriptor_Index,
-				Terminated 	=> Terminated
-			);
+			if Priority_Level = HIGH then
+
+				High_Priority_Trains_Queue.Dequeue(
+					To_Get 		=> Current_Descriptor_Index,
+					Terminated 	=> Terminated
+				);
+			else
+				Low_Priority_Trains_Queue.Dequeue(
+					To_Get 		=> Current_Descriptor_Index,
+					Terminated 	=> Terminated
+				);
+			end if;
 
 
 			exit MAIN_LOOP when Terminated;
@@ -105,8 +113,14 @@ package body Train_Pool is
 
 				Put_Line("NEXT_STAGE = " & Integer'Image(Next_Stage));
 
+				-- # Wait Until time to leave
+				delay 2.0;
+
 				-- # Train Leaves the station
-		    	Environment.Stations(Start_Station).Leave(Current_Descriptor_Index,Start_Platform);
+		    	Environment.Stations(Start_Station).Leave(
+		    		Descriptor_Index 	=> Current_Descriptor_Index,
+		    		Platform_Index		=> Start_Platform,
+		    		Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Leave_Action);
 
 				Segments.Segments(Next_Segment).Enter(Current_Descriptor_Index,Max_Speed,Leg_Length);
 
@@ -153,25 +167,24 @@ package body Train_Pool is
 
 				-- # ######################## NEXT STATION ACCESS ############################
 
+				Put_Line("NEXT_STAGESSSSSSS = " & Integer'Image(Trains.Trains(Current_Descriptor_Index).Next_Stage));
+
+				Put_Line("ROUTE_LENGTH = " & Integer'Image(Routes.All_Routes(Route_Index)'Length));
+
 		    	-- # Train enters Next Station
 				Environment.Stations(Next_Station).Enter(
 					Descriptor_Index	=> Current_Descriptor_Index,
 					Platform_Index		=> Next_Platform,
 					Segment_ID 			=> Segments.Segments(Next_Segment).Id,
-					Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Train_Action
+					Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Enter_Action
 				);
+
+				-- # Go to the next Stage!
+				Trains.Trains(Current_Descriptor_Index).Next_Stage := Trains.Trains(Current_Descriptor_Index).Next_Stage + 1;
 
 				Rand_Int.Reset(seed);
 
 				Num := Rand_Int.Random(seed);
-
-				delay Duration(Num);
-
-				-- # Go to the next Stage!
-				Trains.Trains(Current_Descriptor_Index).Next_Stage :=
-					Trains.Trains(Current_Descriptor_Index).Next_Stage + 1;
-
-				delay Duration (Num);
 
 				-- # Re-enqueue the descriptor only if it has more stages to travel
 				if(Trains.Trains(Current_Descriptor_Index).Next_Stage <= Routes.All_Routes(Route_Index)'Length) then
@@ -210,13 +223,8 @@ package body Train_Pool is
 			"Task Received Termination Signal. Bye!",
 			Logger.DEBUG);
 
-	end Low_Priority_Train_Type;
+	end Train_Executor_Task;
 
-
-	task body High_Priority_Train_Type is
-	begin
-		null;
-    end High_Priority_Train_Type;
 
 	procedure Associate(Train_D : Positive) is
 	begin

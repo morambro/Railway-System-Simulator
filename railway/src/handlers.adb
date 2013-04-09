@@ -28,9 +28,12 @@ with Ada.Text_IO;use Ada.Text_IO;
 with Routes;
 with Traveler;
 with Ticket;
+with Gateway_Station;
+with Route;
 
 package body Handlers Is
 
+-- #################################################### TRAIN ##############################################################
 
 	procedure Station_Train_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection) is
 
@@ -57,14 +60,6 @@ package body Handlers Is
 				L 			=> Logger.DEBUG
 			);
 
-			--
-			-- # NEED A PROCEDURE TO OCCUPY THE SAME PLATFORM AS AT THE OTHER SIDE!!!!
-			--
-
---  			Environment.Stations(Station_Index).Leave(
---  				Descriptor_Index	=> Train_Index,
---  				Platform_Index 		=> Platform_Index
---  			);
 
 			-- # At this point the Stage Index will have been incremented by Leave, so we are
 			-- # sure that the fake stage is passed, and that at the index Next_Stage there will be
@@ -74,6 +69,12 @@ package body Handlers Is
 
 			-- # Re-enqueue the descriptor only if it has more stages to travel
 			if(Trains.Trains(Train_Index).Next_Stage <= Routes.All_Routes(Trains.Trains(Train_Index).Route_Index)'Length) then
+
+				-- # First set Occupied the platform.
+				Gateway_Station.Gateway_Station_Type(Environment.Stations(Station_Index).all).Occupy_Platform(
+					Platform_Index 	=> Platform_Index,
+					Train_Index 	=> Train_Index);
+
 				Train_Pool.Associate(Train_Index);
 			else
 				Logger.Log(
@@ -82,6 +83,12 @@ package body Handlers Is
 			      	L			=> Logger.DEBUG);
 			end if;
 
+		else
+			Logger.Log(
+				Sender		=> "Station_Traveler_Arrive_Transfer_Handler",
+				Message		=> "Invalid Station index : " & Integer'Image(Station_Index),
+				L 			=> Logger.ERROR
+			);
 		end if;
 	exception
 		when E : others =>
@@ -93,6 +100,43 @@ package body Handlers Is
 
 	end Station_Train_Transfer_Handler;
 
+
+	procedure Station_Train_Transfer_Ack_Handler(Content : in out YAMI.Parameters.Parameters_Collection) is
+		-- # First Retrieve all the parameters from the given content
+		Station_Index 	: Integer	:= Integer'Value(Content.Get_String("station"));
+		Platform_Index 	: Integer	:= Integer'Value(Content.Get_String("platform"));
+		Train_Index		: Integer	:= Integer'Value(Content.Get_String("train_index"));
+	begin
+		-- # Check the given Station Index
+		if Station_Index <= Environment.Stations'Length then
+			Logger.Log(
+				Sender		=> "Station_Train_Transfer_Ack_Handler",
+				Message		=> "Freeing platform " & Integer'Image(Platform_Index) & " at station " & Integer'Image(Station_Index),
+				L 			=> Logger.DEBUG
+			);
+
+			-- # Free the current Platform to let other Trains enter the Platform
+			Environment.Stations(Station_Index).Leave(
+				Descriptor_Index 		=>	Train_Index,
+				Platform_Index			=> 	Platform_Index,
+				Action					=> 	Route.FREE);
+
+		else
+			Logger.Log(
+				Sender		=> "Station_Traveler_Arrive_Transfer_Handler",
+				Message		=> "Invalid Station index : " & Integer'Image(Station_Index),
+				L 			=> Logger.ERROR
+			);
+		end if;
+	exception
+		when E : others =>
+		Logger.Log(
+			Sender => "",
+			Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+			L => Logger.ERROR);
+    end Station_Train_Transfer_Ack_Handler;
+
+-- #################################################### TRAVELER ##############################################################
 
 	procedure Station_Traveler_Leave_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection) is
 
@@ -125,6 +169,12 @@ package body Handlers Is
 				Train_ID 			=> Train_ID,
 				Platform_Index		=> Platform_Index);
 
+		else
+			Logger.Log(
+				Sender		=> "Station_Traveler_Arrive_Transfer_Handler",
+				Message		=> "Invalid Station index : " & Integer'Image(Station_Index),
+				L 			=> Logger.ERROR
+			);
 
 		end if;
 	exception
@@ -169,7 +219,12 @@ package body Handlers Is
 				Train_ID 			=> Train_ID,
 				Platform_Index		=> Platform_Index);
 
-
+		else
+			Logger.Log(
+				Sender		=> "Station_Traveler_Arrive_Transfer_Handler",
+				Message		=> "Invalid Station index : " & Integer'Image(Station_Index),
+				L 			=> Logger.ERROR
+			);
 		end if;
 	exception
 		when E : others =>

@@ -38,9 +38,10 @@ with Unchecked_Deallocation;
 
 with Ada.Strings.Hash;
 
+with Ada.Containers;use Ada.Containers;
 with Ada.Containers.Indefinite_Hashed_Maps;
-use Ada.Containers;
 with Ada.Containers.Ordered_Maps;
+
 with Queue;
 with Route;
 with Generic_Platform;
@@ -68,18 +69,20 @@ package Gateway_Station is
 		-- # Entry called by the train task to regulate the entrance order for a Segment
 		-- #
 		entry Enter(
-			Train_ID : in 	 Positive);
+			Train_ID 	: in 	Positive;
+			Action 		: in	Route.Action);
 
 		-- #
 		-- # Simply Adds the Given Train ID to the internal Queue
 		-- #
 		procedure Add_Train(
-			Train_ID : in 	 Positive);
+			Train_ID 	: in 	Positive);
 
 	private
 
 		entry Wait(
-			Train_ID : in 	 Positive);
+			Train_ID 	: in 	Positive;
+			Action 		: in	Route.Action);
 
 		-- # Unbounded queue which will contain the Trains order
 --  		Trains_Order : Trains_Queue_Package.Terminable_Queue;
@@ -108,6 +111,17 @@ package Gateway_Station is
 	);
 
 
+	package String_String_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
+		Key_Type 		=> String,
+		Element_Type 	=> String,
+		Hash			=> Ada.Strings.Hash,
+		Equivalent_Keys => "="
+	);
+
+	-- # String-String Map used as a cache to maintain last addresses
+	Last_Addresses : String_String_Maps.Map;
+
+
 	package Unbounded_Strings renames Ada.Strings.Unbounded;
 
 	use Unbounded_Strings;
@@ -130,7 +144,8 @@ package Gateway_Station is
 		overriding procedure Leave(
 			This 				: in 		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive);
+			Platform_Index		: in		Positive;
+			Action				: in 		Route.Action);
 
 		overriding procedure Wait_For_Train_To_Go(
 			This 				: in		Gateway_Station_Type;
@@ -144,14 +159,40 @@ package Gateway_Station is
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 
-		overriding function Get_Platform(
-			This 				: in		Gateway_Station_Type;
-			P 					: 			Natural) return Generic_Platform.Platform_Access;
-
+		-- #
+		-- # Class method used by segments to add a Train to the proper order queue, to allow
+		-- # future ordered access.
+		-- #
 		overriding procedure Add_Train(
 			This				: in 		Gateway_Station_Type;
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive);
+
+		-- #
+		-- # Class method used to Transfer a Train via remote message to a given destination.
+		-- #
+		procedure Send_Train(
+			This					: in 	 Gateway_Station_Type;
+			Train_Descriptor_Index 	: in	 Positive;
+			Station	 				: in	 Positive;
+			Platform				: in 	 Positive;
+			Node_Name				: in	 String );
+
+		-- #
+		-- # Class method used to Send an Acknowledge message to notify the sender Gateway Station
+		-- # that the sent Train left the destination Gateway Station.
+		-- #
+		procedure Send_Ack(
+			This					: in 	 Gateway_Station_Type;
+			Train_Descriptor_Index 	: in	 Positive;
+			Station	 				: in	 Positive;
+			Platform				: in 	 Positive;
+			Node_Name				: in	 String );
+
+		procedure Occupy_Platform(
+			This					: in 	 Gateway_Station_Type;
+			Platform_Index			: in 	 Positive;
+			Train_Index				: in 	 Positive);
 
 
 	-- #
@@ -177,13 +218,6 @@ package Gateway_Station is
 --  	-- # @return A reference to the created Regional_Station_Type object
 --  	-- #
 	function Get_Gateway_Station(Json_Station : Json_Value) return Station_Ref;
-
-
-	procedure Send_Train(
-		Train_D 		: in	 Positive;
-		Station	 		: in	 Positive;
-		Platform		: in 	 Positive;
-		Node_Name		: in	 String );
 
 
 	procedure Send_Traveler_To_Leave(

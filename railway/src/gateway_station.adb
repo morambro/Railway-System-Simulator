@@ -69,11 +69,11 @@ package body Gateway_Station is
 	protected body Access_Controller is
 
 		entry Enter(
-			Train_ID : in 	 Positive) when True
+			Train_ID 	: in 	Positive;
+			Action 		: in	Route.Action) when True
 		is
 			T	: Positive;
 		begin
-			Put_Line ("Trains_ID = " & Integer'Image(Trains.Trains(Train_ID).ID) & ", first = " & Integer'Image(Trains_Order.Get(1)));
 			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
 				-- # Dequeue
 				Trains_Order.Dequeue(T);
@@ -102,7 +102,8 @@ package body Gateway_Station is
 
 
 		entry Wait(
-			Train_ID : in 	 Positive) when Can_Retry
+			Train_ID 	: in 	Positive;
+			Action 		: in	Route.Action) when Can_Retry
 		is
 			T	: Positive;
 		begin
@@ -142,68 +143,88 @@ package body Gateway_Station is
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Segment_ID			: in 		Positive;
-			Action				: in 		Route.Action) is
+			Action				: in 		Route.Action)
+	is
 	begin
-		This.Segments_Map_Order.Element(Segment_ID).Enter(Descriptor_Index);
+
+		This.Segments_Map_Order.Element(Segment_ID).Enter(
+			Train_ID 	=> Descriptor_Index,
+			Action		=> Action);
 		This.Panel.Set_Status(
 			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " gained access to Platform " &
 			Integer'Image(Platform_Index)
 		);
+
+		-- # If we have to cross to other region, we are positioned a stage before the first stage on the next region.
+		-- # So, let's check for Trains.Trains(Descriptor_Index).Next_Stage + 1!
+		if 	Trains.Trains(Descriptor_Index).Next_Stage + 1 <= Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)'Length then
+			declare
+				-- # Retrieve Next Station index
+				Next_Station_Index 	: Positive 	:=
+					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage + 1).Start_Station;
+				-- # Retrieve the Node_Name
+				Next_Station_Node	: String 	:= To_String(
+					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage + 1).Node_Name);
+
+			begin
+			  	if Next_Station_Node /= Environment.Get_Node_Name then
+				-- # Send train with descriptor Train_D to the next Station, if defined and on another node, and stop current Train Execution
+
+					-- # Go to the next stage, to let the train start to the right position on the next region
+					Trains.Trains(Descriptor_Index).Next_Stage := Trains.Trains(Descriptor_Index).Next_Stage + 1;
+
+					This.Send_Train(
+						Train_Descriptor_Index		=>	Descriptor_Index,
+						Station 					=> 	Next_Station_Index,
+						-- # The platform index will be the same!!
+						Platform					=>	Platform_Index,
+						Node_Name 					=>	Next_Station_Node);
+				end if;
+			end;
+		end if;
+
 	end Enter;
 
 
 	procedure Leave(
 			This 				: in 		Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive) is
+			Platform_Index		: in		Positive;
+			Action				: in 		Route.Action)
+	is
+
 	begin
-		-- # Send train with descriptor Train_D to the next Station, if defined and on another node, and stop current Train Execution
+		-- # If the next Stage is in the same Region, proceed with a local Leave operation
+		This.Platforms(Platform_Index).Leave(
+			Train_Descriptor_Index 	=> Descriptor_Index,
+			Action						=> Action);
+		This.Panel.Set_Status(
+			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " leaved Platform " &
+			Integer'Image(Platform_Index)
+		);
 
-		Put_Line("Next_Stage = " & Integer'Image(Trains.Trains(Descriptor_Index).Next_Stage));
-
-		if Trains.Trains(Descriptor_Index).Next_Stage + 1 <= Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)'Length then
-
-			Trains.Trains(Descriptor_Index).Next_Stage := Trains.Trains(Descriptor_Index).Next_Stage + 1;
-
+		if Trains.Trains(Descriptor_Index).Next_Stage - 1 > 0 then
 			declare
-
-				-- # Retrieve Next Station index
-				Next_Station_Index 	: Positive 	:=
-					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage).Next_Station;
-				-- # Retrieve the Node_Name
-				Next_Station_Node	: String 	:= To_String(
-					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage).Node_Name);
+				-- # Retrieve previous Station index
+				Previous_Station_Index 	: Positive 	:=
+					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage - 1).Next_Station;
+				-- # Retrieve previous Node
+				Previous_Station_Node	: String 	:= To_String(
+					Routes.All_Routes(Trains.Trains(Descriptor_Index).Route_Index)(Trains.Trains(Descriptor_Index).Next_Stage - 1).Node_Name);
 
 			begin
-
-				if  Next_Station_Node/= Environment.Get_Node_Name then
-					-- #
-					-- #
-					-- #
-					-- # FREE THE PLATFORM BEFORE SENDING THE TRAIN!!!!!!!!!!
-					-- #
-					-- #
-					-- #
-
-					Put_Line("DEST_REGION : " & Next_Station_Node & " NEXT STATION INDEX " & Integer'Image(Next_Station_Index));
-					Send_Train(
-						Train_D		=>	Descriptor_Index,
-						Station 	=> 	Next_Station_Index,
-						-- # The platform index will be the same!!
-						Platform	=>	Platform_Index,
-						Node_Name 	=>	Next_Station_Node);
-
-					This.Platforms(Platform_Index).Free_Platform(Descriptor_Index);
-				else
-					-- # If the next Stage is in the same Region, proceed with a local Leave operation
-					This.Platforms(Platform_Index).Leave(Descriptor_Index);
-					This.Panel.Set_Status(
-						"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " leaved Platform " &
-						Integer'Image(Platform_Index)
-					);
+				if Previous_Station_Node /= Environment.Get_Node_Name then
+					-- # The train was sent by remote Region. So notify it left the Platform!
+					This.Send_Ack(
+						Train_Descriptor_Index		=>	Descriptor_Index,
+						Station 					=> 	Previous_Station_Index,
+						-- # The platform index were the same!!
+						Platform					=>	Platform_Index,
+						Node_Name 					=>	Previous_Station_Node);
 				end if;
 			end;
 		end if;
+
 	end Leave;
 
 
@@ -227,9 +248,6 @@ package body Gateway_Station is
 			declare
 				Next_Station_Index : Positive := This.Destinations.Element(To_String(Next_Stage_Region));
 			begin
-				Put_Line("The next station index for " & To_String(Next_Stage_Region) & " is = " &
-					Integer'Image(Next_Station_Index));
-
 				Send_Traveler_To_Leave (
 					Traveler_Index	=> Outgoing_Traveler,
 					Train_ID 		=> Train_ID,
@@ -264,26 +282,34 @@ package body Gateway_Station is
     end Wait_For_Train_To_Arrive;
 
 
+    procedure Occupy_Platform(
+			This					: in 	 Gateway_Station_Type;
+			Platform_Index			: in 	 Positive;
+			Train_Index				: in 	 Positive) is
+	begin
+		This.Platforms(Platform_Index).Enter(Train_Index,Route.FREE);
+    end Occupy_Platform;
+
+
 	-- ############################### REMOTE SEND PROCEDURES #########################################
 
 	procedure Send_Train(
-		Train_D 		: in	 Positive;
-		Station	 		: in	 Positive;
-		Platform		: in 	 Positive;
-		Node_Name		: in	 String )
+		This					: in 	 Gateway_Station_Type;
+		Train_Descriptor_Index 	: in	 Positive;
+		Station	 				: in	 Positive;
+		Platform				: in 	 Positive;
+		Node_Name				: in	 String )
 	is
 		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
 	begin
-
 		-- # First, Resolve destination address
 		declare
 
-			-- # Callback function, used to handle the response
-			procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
 
-				Address : String := Content.Get_String("response");
+			procedure Send (
+				Address 	: in	String)
+			is
 				Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
-
 			begin
 				Logger.Log(
 					Sender 	=> "Gateway_Station",
@@ -291,42 +317,56 @@ package body Gateway_Station is
 					L 		=> Logger.DEBUG
 				);
 
+				-- # Once the address is resolved, send the Train to the destination node, and interrupt
+				-- # the current task Train execution.
+
+				Parameters.Set_String("station",Integer'Image(Station));
+				Parameters.Set_String("platform",Integer'Image(Platform));
+				Parameters.Set_String("train_index",Integer'Image(Train_Descriptor_Index));
+				Parameters.Set_String("train",Train.Get_Json(Trains.Trains(Train_Descriptor_Index)));
+
+				Message_Agent.Instance.Send(
+					Destination_Address => Address,
+					Object 				=> "message_handler",
+					Service 			=> "train_transfer",
+					Params 				=> Parameters,
+					Callback			=> null
+				);
+
+	 	  	end Send;
+
+			-- # Callback function, used to handle the response
+			procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
+				Address : String := Content.Get_String("response");
+
+			begin
 				if Address /= "_" then
-					-- # Once the address is resolved, send the Train to the destination node, and interrupt
-					-- # the current task Train execution.
-
-					Parameters.Set_String("station",Integer'Image(Station));
-					Parameters.Set_String("platform",Integer'Image(Platform));
-					Parameters.Set_String("train_index",Integer'Image(Train_D));
-					Parameters.Set_String("train",Train.Get_Json(Trains.Trains(Train_D)));
-
-					Message_Agent.Instance.Send(
-						Destination_Address => Address,
-						Object 				=> "message_handler",
-						Service 			=> "train_transfer",
-						Params 				=> Parameters,
-						Callback			=> null
-					);
-
-					Put_Line ("NEXT STAGE = " & Integer'Image(Trains.Trains(Train_D).Next_Stage));
+					-- # Add the found Address to the List
+					Last_Addresses.Insert(Node_Name,Address);
+					Send(Address);
+				else
+					Logger.Log(
+						Sender 		=> "Gateway_Station.Send_Train",
+						Message		=> "Unable to locate " & Node_Name,
+						L			=> Logger.ERROR);
 				end if;
-
 		    end Get_Results;
 
 		begin
 
-			Parameters.Set_String("station",Integer'Image(Station));
-			Parameters.Set_String("node_name",Node_Name);
+			if Last_Addresses.Contains(Node_Name) then
+				Send(Last_Addresses.Element(Node_Name));
+			else
+				Parameters.Set_String("node_name",Node_Name);
 
-			Put_Line(Environment.Get_Name_Server);
-
-			Message_Agent.Instance.Send(
-				Destination_Address => Environment.Get_Name_Server,
-				Object 				=> "name_server",
-				Service 			=> "get",
-				Params 				=> Parameters,
-				Callback			=> Get_Results'Access
-			);
+				Message_Agent.Instance.Send(
+					Destination_Address => Environment.Get_Name_Server,
+					Object 				=> "name_server",
+					Service 			=> "get",
+					Params 				=> Parameters,
+					Callback			=> Get_Results'Access
+				);
+			end if;
 
 		exception
 			when E : others =>
@@ -342,6 +382,94 @@ package body Gateway_Station is
     end Send_Train;
 
 
+	procedure Send_Ack(
+		This					: in 	 Gateway_Station_Type;
+		Train_Descriptor_Index 	: in	 Positive;
+		Station	 				: in	 Positive;
+		Platform				: in 	 Positive;
+		Node_Name				: in	 String )
+	is
+		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+	begin
+
+		-- # First, Resolve destination address
+		declare
+
+			procedure Send(
+				Address 	: in	String)
+			is
+				Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
+			begin
+				Logger.Log(
+					Sender 	=> "Gateway_Station.Send_Ack",
+					Message => "The destination is located at address " & Address,
+					L 		=> Logger.DEBUG
+				);
+
+
+					-- # Once the address is resolved, send the Train to the destination node, and interrupt
+					-- # the current task Train execution.
+
+					Parameters.Set_String("station",Integer'Image(Station));
+					Parameters.Set_String("platform",Integer'Image(Platform));
+					Parameters.Set_String("train_index",Integer'Image(Train_Descriptor_Index));
+
+					Message_Agent.Instance.Send(
+						Destination_Address => Address,
+						Object 				=> "message_handler",
+						Service 			=> "train_transfer_ack",
+						Params 				=> Parameters,
+						Callback			=> null
+					);
+
+		    end Send;
+
+			-- # Callback function, used to handle the response
+			procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
+
+				Address : String := Content.Get_String("response");
+			begin
+				if Address /= "_" then
+					-- # Add the found Address to the List
+					Last_Addresses.Insert(Node_Name,Address);
+					Send(Address);
+				else
+					Logger.Log(
+						Sender 		=> "Gateway_Station.Send_Train",
+						Message		=> "Unable to locate " & Node_Name,
+						L			=> Logger.ERROR);
+				end if;
+			end Get_Results;
+
+
+
+		begin
+			if Last_Addresses.Contains(Node_Name) then
+				Send(Last_Addresses.Element(Node_Name));
+			else
+				Parameters.Set_String("node_name",Node_Name);
+
+				Message_Agent.Instance.Send(
+					Destination_Address => Environment.Get_Name_Server,
+					Object 				=> "name_server",
+					Service 			=> "get",
+					Params 				=> Parameters,
+					Callback			=> Get_Results'Access
+				);
+			end if;
+
+		exception
+			when E : others =>
+				Logger.Log(
+	   				Sender => "Gateway_Station.Send_Train",
+	   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+	   				L => Logger.ERROR);
+		end;
+
+    end Send_Ack;
+
+
 	-- #
 	-- # Retrieves the address for the destination Node, then sends the Traveler data
 	-- #
@@ -352,11 +480,11 @@ package body Gateway_Station is
 		Platform		: in 	 Positive;
 		Node_Name		: in	 String )
 	is
-		-- # Callback function, used to handle the response
-		procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
 
-				Address : String := Content.Get_String("response");
-				Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+		procedure Send(
+			Address 	: in 	String)
+		is
+			Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
 
 		begin
 			Logger.Log(
@@ -383,26 +511,41 @@ package body Gateway_Station is
 				);
 
 			end if;
+		end Send;
 
+		-- # Callback function, used to handle the response
+		procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
+			Address : String := Content.Get_String("response");
+		begin
+			if Address /= "_" then
+					-- # Add the found Address to the List
+					Last_Addresses.Insert(Node_Name,Address);
+					Send(Address);
+				else
+					Logger.Log(
+						Sender 		=> "Gateway_Station.Send_Train",
+						Message		=> "Unable to locate " & Node_Name,
+						L			=> Logger.ERROR);
+				end if;
 	    end Get_Results;
 
 		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
 
 	begin
 
-		Parameters.Set_String("station",Integer'Image(Station));
-		Parameters.Set_String("node_name",Node_Name);
+		if Last_Addresses.Contains(Node_Name) then
+			Send(Last_Addresses.Element(Node_Name));
+		else
+			Parameters.Set_String("node_name",Node_Name);
 
-		Put_Line(Environment.Get_Name_Server);
-
-		Message_Agent.Instance.Send(
-			Destination_Address => Environment.Get_Name_Server,
-			Object 				=> "name_server",
-			Service 			=> "get",
-			Params 				=> Parameters,
-			Callback			=> Get_Results'Access
-		);
-
+			Message_Agent.Instance.Send(
+				Destination_Address => Environment.Get_Name_Server,
+				Object 				=> "name_server",
+				Service 			=> "get",
+				Params 				=> Parameters,
+				Callback			=> Get_Results'Access
+			);
+		end if;
 	exception
 		when E : others =>
 			Logger.Log(
@@ -439,11 +582,6 @@ package body Gateway_Station is
 		Put_Line ("Platform Number : " & Integer'Image(This.Platforms_Number));
     end Print;
 
-
-    function Get_Platform(This : Gateway_Station_Type;P : Natural) return Generic_Platform.Platform_Access is
-    begin
-    	return This.Platforms(P);
-    end Get_Platform;
 
     overriding procedure Finalize (This: in out Gateway_Station_Type) is
     begin

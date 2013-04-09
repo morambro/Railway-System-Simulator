@@ -10,7 +10,8 @@
 					"next_station" 		: 2,
 					"platform_index"  	: 2,
 					"node_name"			: "Node_1",				
-					"action"			: "ENTER"
+					"leave_action"		: "ENTER",
+					"enter_action"		: "ENTER"
 				},
 				{
 					"start_station"		: 2,
@@ -19,17 +20,8 @@
 					"next_station" 		: 5,
 					"platform_index"  	: 2,
 					"node_name"			: "Node_1",
-					"action"			: "ENTER"
-				},
-				{
-					"comment"			: "This Stage is added as a fake stage, to help reaching the next Gateway Station",
-					"start_station" 	: 5,
-					"start_platform"  	: 2,
-					"next_segment" 		: 1,
-					"next_station" 		: 1,
-					"platform_index"  	: 2,
-					"node_name"			: "Node_2",
-					"action"			: "ENTER"
+					"leave_action"		: "ENTER",
+					"enter_action"		: "PASS"
 				},
 				{
 					"start_station" 	: 1,
@@ -38,7 +30,8 @@
 					"next_station" 		: 2,
 					"platform_index"  	: 3,
 					"node_name"			: "Node_2",
-					"action"			: "ENTER"
+					"leave_action"		: "PASS",
+					"enter_action"		: "ENTER"
 				},
 				{
 					"start_station" 	: 2,
@@ -47,7 +40,8 @@
 					"next_station" 		: 4,
 					"platform_index"  	: 1,
 					"node_name"			: "Node_2",
-					"action"			: "ENTER"
+					"leave_action"		: "ENTER",
+					"enter_action"		: "ENTER"
 				}
 			]
 		}

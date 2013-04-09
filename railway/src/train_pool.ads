@@ -36,21 +36,20 @@ with System;use System;
 package Train_Pool is
 
 
+	type Priority is (LOW,HIGH);
+
 	-- # Low priority Task, which will be used by REGIONAL trains
-	task type Low_Priority_Train_Type is
-    end Low_Priority_Train_Type;
+	task type Train_Executor_Task(
+		-- # Tells from which queue read
+		Priority_Level 	:  	Priority)
+	is
+    end Train_Executor_Task;
 
 
-
-	-- # High priority Task, which will be used by FB trains
-	task type High_Priority_Train_Type is
-    end High_Priority_Train_Type;
+	type Low_Priority_Vector is array (Positive range <>) of Train_Executor_Task(LOW);
 
 
-	type Low_Priority_Vector is array (Positive range <>) of Low_Priority_Train_Type;
-
-
-	type High_Priority_Vector is array (Positive range <>) of High_Priority_Train_Type;
+	type High_Priority_Vector is array (Positive range <>) of Train_Executor_Task(HIGH);
 
 
 	type Train_Task_Pool(
@@ -93,8 +92,8 @@ private
 		Low_Priority_Pool_Size 	: Positive;
 		High_Priority_Pool_Size : Positive) is record
 
-		Low_Tasks : Low_Priority_Vector(1 .. Low_Priority_Pool_Size);
---  		High_Tasks : High_Priority_Vector(1 .. High_Priority_Pool_Size);
+		Low_Tasks 	: Low_Priority_Vector(1 .. Low_Priority_Pool_Size);
+		High_Tasks 	: High_Priority_Vector(1 .. High_Priority_Pool_Size);
 
 	end record;
 

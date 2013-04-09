@@ -28,6 +28,7 @@ with Queue;
 with Traveler;use Traveler;
 with Ada.Strings.Unbounded;
 with Generic_Platform;
+with Route;use Route;
 
 -- #
 -- # Represents a Platform for a generic Station, both for Trains and Travelers.
@@ -42,18 +43,29 @@ package Platform is
 		S 	: access Ada.Strings.Unbounded.Unbounded_String) is new Generic_Platform.Platform_Interface with
 
 		entry Enter(
-			Train_Descriptor_Index		: in 		Positive);
+			Train_Descriptor_Index 	: in 	Positive;
+			Action 					: in	Route.Action);
 
 		procedure Leave(
-			Train_Descriptor_Index 	: in 		Positive);
+			Train_Descriptor_Index 	: in 	Positive;
+			Action 					: in	Route.Action);
 
 		procedure Add_Incoming_Traveler(
-			Traveler 	: in 		Positive);
+			Traveler 				: in 	Positive);
 
 		procedure Add_Outgoing_Traveler(
-			Traveler 	: in 		Positive);
+			Traveler 				: in 	Positive);
+
+		entry Enter_Regional (
+			Train_Descriptor_Index 	: in 	Positive;
+			Action 					: in	Route.Action);
+
+		entry Enter_FB (
+			Train_Descriptor_Index 	: in 	Positive;
+			Action 					: in	Route.Action);
 
 	private
+
 		Free : Boolean := True;
 		-- # Queue for Arriving Traveler
 		Arrival_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;

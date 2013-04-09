@@ -57,11 +57,13 @@ package Segment is
 		-- # Trains ask to Enter the Segment
 		-- #
 		entry Enter(
-			To_Add 		:	in 		Positive;
-			Max_Speed 	: 	 	out Positive;
-			Leg_Length 	:		out	Positive);
+			To_Add 		: in	 Positive;
+			Max_Speed 	: 	 out Positive;
+			Leg_Length 	:	 out Positive);
 
 	private
+
+
 
 		-- #
 		-- # Private Entry used to enqueue trains whose direction are not the same
@@ -78,28 +80,30 @@ package Segment is
 		entry Retry(Train_D : in Positive);
 
 		-- # Tells weather a train is already running or not
-		Free : Boolean := True;
+		Free 				: Boolean := True;
 
 		-- # Current maximum speed
-		Current_Max_Speed : Positive := Segment_Max_Speed;
+		Current_Max_Speed 	: Positive := Segment_Max_Speed;
 
 		-- # Current direction. Is set to 0 when the Segment is free
-		Current_Direction : Natural := 0;
+		Current_Direction 	: Natural := 0;
 
 		-- # Queue of all the running trains
-		Running_Trains : access Limited_Simple_Queue := new Limited_Simple_Queue(Queue_Dim);
+		Running_Trains 		: access Limited_Simple_Queue := new Limited_Simple_Queue(Queue_Dim);
 
 		-- # Boolean guard telling if a train can retry to Leave the Segment
-		Can_Retry_Leave : Boolean := False;
+		Can_Retry_Leave 	: Boolean := False;
 
 		-- # Boolean guard telling if a train can retry to Enter the Segment
-		Can_Retry_Enter : Boolean := False;
+		Can_Retry_Enter 	: Boolean := False;
 
 		-- # Number of exit attempt
-		Retry_Num : Integer := 0;
+		Retry_Num 			: Integer := 0;
 
 		-- # Number of trains currently running
-		Trains_Number : Natural := 0;
+		Trains_Number 		: Natural := 0;
+
+		Max_Train_Occupied	: Natural := 0;
 
 	end Segment_Type;
 

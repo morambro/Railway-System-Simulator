@@ -53,7 +53,8 @@ package Generic_Station is
 		procedure Leave(
 			This 				: in 		Station_Interface;
 			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive)
+			Platform_Index		: in		Positive;
+			Action				: in 		Route.Action)
 		is abstract;
 
 		procedure Wait_For_Train_To_Go(
@@ -68,11 +69,6 @@ package Generic_Station is
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive)
-		is abstract;
-
-		function Get_Platform(
-			This 				: in 		Station_Interface;
-			P 					: in		Natural) return Generic_Platform.Platform_Access
 		is abstract;
 
 		procedure Print(This : in Station_Interface) is abstract;

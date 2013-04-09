@@ -27,6 +27,7 @@ with Train;use Train;
 with Queue;
 with Traveler;use Traveler;
 with Ada.Strings.Unbounded;
+with Route;
 
 -- #
 -- # Declaration of a generic platform interface.
@@ -40,11 +41,13 @@ package Generic_Platform is
 
 		procedure Enter(
 			This		: 			access Platform_Interface;
-			Train_D		: in 		Positive) is abstract;
+			Train_D 	: in 		Positive;
+			Action 		: in		Route.Action) is abstract;
 
 		procedure Leave(
 			This		: 			access Platform_Interface;
-			Train_D 	: in 		Positive) is abstract;
+			Train_D 	: in 		Positive;
+			Action 		: in		Route.Action) is abstract;
 
 		procedure Add_Incoming_Traveler(
 			This		:  			access Platform_Interface;
@@ -53,5 +56,6 @@ package Generic_Platform is
 		procedure Add_Outgoing_Traveler(
 			This		:  			access Platform_Interface;
 			Traveler 	: in 		Positive) is abstract;
+
 
 end Generic_Platform;

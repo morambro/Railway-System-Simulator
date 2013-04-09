@@ -33,7 +33,7 @@ with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 
 package Route is
 
-	type Action is (ENTER,PASS);
+	type Action is (ENTER,PASS,FREE);
 
 --  	type Stage is private;
 	type Stage is record
@@ -42,7 +42,8 @@ package Route is
 	    Next_Station    : Positive;
         Platform_Index 	: Positive;
         Node_Name		: Unbounded_String;
-		Train_Action	: Action;
+		Enter_Action	: Action;
+		Leave_Action	: Action;
 		Start_Station	: Positive;
 		Start_Platform	: Positive;
 	end record;

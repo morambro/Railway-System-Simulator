@@ -31,6 +31,7 @@ with Route;use Route;
 with Trains;
 with Routes;
 with Ada.Exceptions;
+with Train;use Train;
 
 package body Regional_Station is
 
@@ -42,7 +43,9 @@ package body Regional_Station is
 			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action) is
 	begin
-		This.Segments_Map_Order.Element(Segment_ID).Enter(Descriptor_Index);
+		This.Segments_Map_Order.Element(Segment_ID).Enter(
+			Train_ID 	=> Descriptor_Index,
+			Action		=> Action);
 		This.Panel.Set_Status(
 			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " gained access to Platform " &
 			Integer'Image(Platform_Index)
@@ -54,9 +57,12 @@ package body Regional_Station is
 	procedure Leave(
 			This 				: in 		Regional_Station_Type;
 			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive) is
+			Platform_Index		: in		Positive;
+			Action				: in 		Route.Action) is
 	begin
-		This.Platforms(Platform_Index).Leave(Descriptor_Index);
+		This.Platforms(Platform_Index).Leave(
+			Train_Descriptor_Index 	=> Descriptor_Index,
+			Action						=> Action);
 		This.Panel.Set_Status(
 			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " leaved Platform " &
 			Integer'Image(Platform_Index)
@@ -136,11 +142,11 @@ package body Regional_Station is
     protected body Access_Controller is
 
 		entry Enter(
-			Train_ID : in 	 Positive) when True
+			Train_ID 	: in 	 Positive;
+			Action		: in 	 Route.Action) when True
 		is
 			T	: Positive;
 		begin
-			Put_Line ("Trains_ID = " & Integer'Image(Trains.Trains(Train_ID).ID) & ", first = " & Integer'Image(Trains_Order.Get(1)));
 			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
 				-- # Dequeue
 				Trains_Order.Dequeue(T);
@@ -150,9 +156,16 @@ package body Regional_Station is
 					Can_Retry := True;
 				end if;
 
-				requeue  Platforms(
-					Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
-				).Enter;
+				if Trains.Trains(Train_ID).T_Type = Train.FB then
+
+					requeue  Platforms(
+						Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
+					).Enter_FB;
+				else
+					requeue  Platforms(
+						Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
+					).Enter_Regional;
+				end if;
 			else
 				Can_Retry := False;
 				Logger.Log(
@@ -168,7 +181,8 @@ package body Regional_Station is
 
 
 		entry Wait(
-			Train_ID : in 	 Positive) when Can_Retry
+			Train_ID 	: in 	 Positive;
+			Action 		: in	Route.Action) when Can_Retry
 		is
 			T	: Positive;
 		begin
@@ -181,9 +195,15 @@ package body Regional_Station is
 					Can_Retry := True;
 				end if;
 
-				requeue  Platforms(
-					Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
-				).Enter;
+				if Trains.Trains(Train_ID).T_Type = Train.FB then
+					requeue  Platforms(
+						Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
+					).Enter_FB;
+				else
+					requeue  Platforms(
+						Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
+					).Enter_Regional;
+				end if;
 			else
 				Can_Retry := False;
 				requeue Wait;
@@ -197,7 +217,6 @@ package body Regional_Station is
 		end Add_Train;
 
  	end Access_Controller;
-
 
 
 
@@ -225,11 +244,6 @@ package body Regional_Station is
 		Put_Line ("Platform Number : " & Integer'Image(This.Platforms_Number));
     end Print;
 
-
-    function Get_Platform(This : Regional_Station_Type;P : Natural) return Generic_Platform.Platform_Access is
-    begin
-    	return This.Platforms(P);
-    end Get_Platform;
 
 -- ################################################ JSON - Regional Station ##########################################
 

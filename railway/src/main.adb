@@ -123,6 +123,7 @@ begin
 			Message_Agent.Instance.Add_Handler("train_transfer",Handlers.Station_Train_Transfer_Handler'Access);
 			Message_Agent.Instance.Add_Handler("traveler_leave_transfer",Handlers.Station_Traveler_Leave_Transfer_Handler'Access);
 			Message_Agent.Instance.Add_Handler("traveler_enter_transfer",Handlers.Station_Traveler_Enter_Transfer_Handler'Access);
+			Message_Agent.Instance.Add_Handler("train_transfer_ack",Handlers.Station_Train_Transfer_Ack_Handler'Access);
 
 			Params.Set_String("node_name",Node_Name);
 			Params.Set_String("address",Node_Addr);
@@ -144,27 +145,31 @@ begin
 				Environment.Init(Node_Name,Name_Server);
 				Segments.Init;
 
-				if Environment.Get_Node_Name = "Node_1" then
-					Ada.Text_IO.Put_Line("yo");
-					Train_Pool.Associate(1);
+				if Node_Name = "Node_1" then
+					Train_Pool.Associate(2);
+--  					Train_Pool.Associate(1);
 				end if;
+
+--  				if Environment.Get_Node_Name = "Node_1" then
+--  					Train_Pool.Associate(1);
+--  				end if;
 --  				delay 2.0;
 --  				Train_Pool.Associate(3);
 --  				Train_Pool.Associate(4);
 
---  				if Node_Name = "Node_1" then
---  					Task_Pool.Execute(Environment.Operations(1)(Traveler.ENTER));
---  				end if;
+				if Node_Name = "Node_1" then
+					Task_Pool.Execute(Environment.Operations(1)(Traveler.LEAVE));
+				end if;
 --  				delay 4.0;
 --
 --  				Train_Pool.Stop;
 --  				Task_Pool.Stop;
-				exception
-					when E : others =>
-					Logger.Log(
-		   				Sender => "",
-		   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
-		   				L => Logger.ERROR);
+			exception
+				when E : others =>
+				Logger.Log(
+	   				Sender => "",
+	   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+	   				L => Logger.ERROR);
 			end;
 			Message_Agent.Instance.Close;
 

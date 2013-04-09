@@ -68,7 +68,8 @@ package body Route is
 					Next_Station 		=> Json_Stage.Get("next_station"),
 					Platform_Index 		=> Json_Stage.Get("platform_index"),
 					Node_Name			=> Json_Stage.Get("node_name"),
-					Train_Action		=> StringToAction(Json_Stage.Get("action")),
+					Enter_Action		=> StringToAction(Json_Stage.Get("enter_action")),
+					Leave_Action		=> StringToAction(Json_Stage.Get("leave_action")),
 					Start_Station 		=> Json_Stage.Get("start_station"),
 					Start_Platform		=> Json_Stage.Get("start_platform")
 				);
@@ -84,7 +85,8 @@ package body Route is
     			"Next Segment     : " & Integer'Image(R(I).Next_Segment) & ASCII.LF &
     			"Next Station     : " & Integer'Image(R(I).Next_Station) & ASCII.LF &
     			"Platform Index   : " & Integer'Image(R(I).Platform_Index) & ASCII.LF &
-    			"Action           : " & (if (R(I).Train_Action = PASS) then "PASS" else "ENTER") & ASCII.LF
+    			"Leave Action     : " & (if (R(I).Leave_Action = PASS) then "PASS" else "ENTER") & ASCII.LF &
+    			"Enter Action     : " & (if (R(I).Enter_Action = PASS) then "PASS" else "ENTER") & ASCII.LF
     		);
     	end loop;
     end Print;
