@@ -35,6 +35,8 @@ with Ada.Exceptions;  use Ada.Exceptions;
 with Ada.Text_IO;use Ada.Text_IO;
 with Train;
 with Gateway_Platform;
+with Ada	.Calendar;
+with Time_Table;
 
 package body Train_Pool is
 
@@ -114,7 +116,27 @@ package body Train_Pool is
 				Put_Line("NEXT_STAGE = " & Integer'Image(Next_Stage));
 
 				-- # Wait Until time to leave
-				delay 2.0;
+				declare
+					Current_Array_Index 	: Positive :=
+						Environment.T(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Array_Index;
+
+					Current_Array_Position	: Positive :=
+						Environment.T(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Array_Position;
+
+					Time_To_Wait : Ada.Calendar.Time := Environment.T(Trains.Trains(Current_Descriptor_Index).Route_Index).Table
+						(Current_Array_Index)(Current_Array_Position);
+				begin
+					Logger.Log(
+						NAME,
+						"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
+						" wait until " & Time_Table.Get_Time_Representation(Time_To_Wait),
+						Logger.DEBUG
+					);
+					delay until Time_To_Wait;
+
+					Time_Table.Update_Time_Table(Environment.T(Trains.Trains(Current_Descriptor_Index).Route_Index));
+
+				end;
 
 				-- # Train Leaves the station
 		    	Environment.Stations(Start_Station).Leave(
@@ -138,12 +160,14 @@ package body Train_Pool is
 					Trains.Trains(Current_Descriptor_Index).Speed := Max_Speed;
 				end if;
 
-				Time_In_Segment := 3.0;	-- Float(Leg_Length) * 60.0 /
-									-- (Float(Trains.Trains(Current_Descriptor_Index).Speed) * (Float(1000)/Float(60)));
+				-- # The time to spent running inside the segment is simply calculated by the quotient
+				-- # between the length of the Segment and the Speed of the train; the first is
+				-- # expressed in [unit], the second in [unit]/[sec]
+				Time_In_Segment := Float(Leg_Length)/Float(Trains.Trains(Current_Descriptor_Index).Speed);
 
 				Logger.Log(NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) & " running at speed "
-					& Integer'Image(Trains.Trains(Current_Descriptor_Index).Speed) & " km/h;"
+					& Integer'Image(Trains.Trains(Current_Descriptor_Index).Speed) & " u/s;"
 					& " will wait for " & Helper.Get_String(Time_In_Segment,10) & " seconds",
 					Logger.DEBUG);
 
@@ -155,15 +179,6 @@ package body Train_Pool is
 		      		"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
 		      		" leaved Segment " & Integer'Image(Next_Segment),
 		      		Logger.DEBUG);
-
---  				if Current_Descriptor_Index = 2 then
---  					Logger.Log(NAME,
---  						"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
---  						" waits 2 seconds, to let the other train to pass it :D ",
---  						Logger.DEBUG);
---  					delay 5.0;
---  				end if;
-
 
 				-- # ######################## NEXT STATION ACCESS ############################
 

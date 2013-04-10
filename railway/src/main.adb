@@ -144,6 +144,7 @@ begin
 
 				Environment.Init(Node_Name,Name_Server);
 				Segments.Init;
+				--Ticket_Office.Init;
 
 				if Node_Name = "Node_1" then
 					Train_Pool.Associate(2);

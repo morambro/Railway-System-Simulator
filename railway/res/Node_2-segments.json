@@ -4,7 +4,7 @@
 			"id" 			: 1,
 			"max_speed" 	: 160,
 			"queue_dim" 	: 10,
-			"length" 		: 6000,
+			"length" 		: 600,
 			"first_end"		: 1,
 			"second_end"	: 2,
 			"max_trains"	: 10
@@ -13,7 +13,7 @@
 			"id" 			: 2,
 			"max_speed" 	: 160,
 			"queue_dim" 	: 10,
-			"length" 		: 3500,
+			"length" 		: 400,
 			"first_end"		: 2,
 			"second_end"	: 4,
 			"max_trains"	: 10
@@ -22,7 +22,7 @@
 			"id" 			: 3,
 			"max_speed" 	: 160,
 			"queue_dim" 	: 10,
-			"length" 		: 5000,
+			"length" 		: 500,
 			"first_end"		: 3,
 			"second_end"	: 4,
 			"max_trains"	: 10
@@ -31,7 +31,7 @@
 			"id" 			: 4,
 			"max_speed" 	: 160,
 			"queue_dim" 	: 10,
-			"length" 		: 4000,
+			"length" 		: 400,
 			"first_end"		: 4,
 			"second_end"	: 5,
 			"max_trains"	: 10

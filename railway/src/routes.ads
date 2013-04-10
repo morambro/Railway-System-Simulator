@@ -24,9 +24,12 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with Route;
+with Time_Table;
 
 package Routes is
 
 	All_Routes : Route.Routes := Route.Get_Routes("res/routes.json");
+
+--  	Time_Table : Time_Table.
 
 end Routes;

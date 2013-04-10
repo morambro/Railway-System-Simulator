@@ -23,52 +23,31 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
+with Ada.Calendar; use Ada.Calendar;
+with Gnatcoll.JSON; use Gnatcoll.JSON;
 
-with Segment;
-with Generic_Station;
-with Regional_Station;
-with Traveler;
-with Move_Operation;
-with Ticket;
-with Gateway_Station;
-with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
-with Time_Table;
+package Time_Table is
 
-WITH YAMI.Parameters;
+	type Time_Array is array (Positive range <>) of Time;
 
--- #
--- # This package contains environment's objects, in order to be retrieved easily from each
--- # other component
--- #
-package Environment Is
+	type Time_Matrix is array (Positive range <>) of access Time_Array;
 
-	Stations 			: Generic_Station.Stations_array_Ref := null;
+	type Time_Table_Type(Entry_Size : Positive) is record
+		Route_Index 			: Positive;
+		Current_Array_Index 	: Positive := 1;
+		Current_Array_Position 	: Positive := 1;
+		Table 					: Time_Matrix(1..Entry_Size);
+    end record;
 
-	-- array of Travelers
-    Travelers 			: Traveler.Traveler_Manager_Array_Ref := null;
+	type Time_Table_Array is array (Positive range <>) of access Time_Table_Type;
 
-	Operations 			: Traveler.Travelers_All_Operations_Ref := null;
+	procedure Update_Time_Table(
+		This 	: access Time_Table_Type);
 
-	T			 		: Time_Table.Time_Table_Array := Time_Table.Get_Time_Table_Array("res/time_table.json");
+	function Get_Time_Table(Json_v : JSON_Value) return access Time_Table_Type;
 
-	function Get_Node_Name return String;
+	function Get_Time_Table_Array(Json_File : String) return Time_Table_Array;
 
-	function Get_Name_Server return String;
+	function Get_Time_Representation(T : Time) return String;
 
-    procedure Init(
-    	N_N 		: in String;
-    	N_S 		: in String);
-
-
-	procedure Update_Traveler(
-		Traveler_Index	: in 		Positive;
-		Trav_To_Copy 	: in		Traveler.Traveler_Manager;
-		Ticket_To_Copy 	: access 	Ticket.Ticket_Type);
-
-private
-
-    Node_Name : Unbounded_String;
-
-    Name_Server : Unbounded_String;
-
-end Environment;
+end Time_Table;

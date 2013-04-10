@@ -2,8 +2,8 @@
 	"topology" : [
 		{
 			"station" 		: 1,
-			"neighbours" 	: [2],
-			"distance"		: [6000]
+			"neighbours" 	: [2   ,7],
+			"distance"		: [6000,1000]
 		},
 		{
 			"station" 		: 2,
@@ -12,8 +12,8 @@
 		},
 		{
 			"station" 		: 3,
-			"neighbours" 	: [2],
-			"distance"		: [2000]
+			"neighbours" 	: [2   ,7],
+			"distance"		: [2000,2000]
 		},
 		{
 			"station" 		: 4,

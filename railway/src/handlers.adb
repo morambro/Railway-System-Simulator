@@ -38,10 +38,12 @@ package body Handlers Is
 	procedure Station_Train_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection) is
 
 		-- # First Retrieve all the parameters from the given content
-		Station_Index 	: Integer	:= Integer'Value(Content.Get_String("station"));
-		Platform_Index 	: Integer	:= Integer'Value(Content.Get_String("platform"));
-		Train_Index		: Integer	:= Integer'Value(Content.Get_String("train_index"));
-		Train_Data		: String 	:= Content.Get_String("train");
+		Station_Index 			: Integer	:= Integer'Value(Content.Get_String("station"));
+		Platform_Index 			: Integer	:= Integer'Value(Content.Get_String("platform"));
+		Train_Index				: Integer	:= Integer'Value(Content.Get_String("train_index"));
+		Time_Table_Index		: Positive	:= Integer'Value(Content.Get_String("current_time_table_index"));
+		Time_Table_Position		: Positive	:= Integer'Value(Content.Get_String("current_time_table_position"));
+		Train_Data				: String 	:= Content.Get_String("train");
 
 
 	begin
@@ -60,6 +62,13 @@ package body Handlers Is
 				L 			=> Logger.DEBUG
 			);
 
+			Put_Line("Time_Table_Position = " & Integer'Image(Time_Table_Position));
+			Put_Line("Time_Table_Index = " & Integer'Image(Time_Table_Index));
+
+
+			Environment.T(Trains.Trains(Train_Index).Route_Index).Current_Array_Position := Time_Table_Position;
+
+			Environment.T(Trains.Trains(Train_Index).Route_Index).Current_Array_Index := Time_Table_Index;
 
 			-- # At this point the Stage Index will have been incremented by Leave, so we are
 			-- # sure that the fake stage is passed, and that at the index Next_Stage there will be

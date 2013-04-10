@@ -25,6 +25,8 @@
 ----------------------------------------------------------------------------------
 with Ticket;
 with Ada.Containers.Indefinite_Hashed_Maps;
+with Ada.Strings;
+with Ada.Strings.Hash;
 
 package Ticket_Office is
 
@@ -38,8 +40,7 @@ package Ticket_Office is
 	All_Tickets : access Ticket.Tickets_Array := Ticket.Get_All_Tickets("res/all_tickets.json");
 
 
-	type Regional_Ticket_Office is tagged record
-	end record;
+	type Regional_Ticket_Office is tagged null record;
 
 		procedure Init(
 			This 	: in	Regional_Ticket_Office);

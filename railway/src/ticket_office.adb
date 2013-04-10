@@ -29,5 +29,10 @@ with Ada.Text_IO;use Ada.Text_IO;
 
 package body Ticket_Office is
 
+	procedure Init(
+			This 	: in	Regional_Ticket_Office) is
+	begin
+		null;
+    end Init;
 
 end Ticket_Office;
