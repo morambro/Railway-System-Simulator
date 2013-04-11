@@ -28,16 +28,38 @@ with JSON_Helper;use JSON_Helper;
 
 package body Ticket is
 
+
+	procedure Print(
+		The_Ticket : access Ticket_Type) is
+	begin
+		if The_Ticket = null then
+			Ada.Text_IO.Put_Line("Null Ticket!");
+			return;
+		end if;
+		Ada.Text_IO.Put_Line("Ticket Print : ");
+		for I in 1 .. The_Ticket.Stages'Length loop
+			Ada.Text_IO.Put_Line("Stage " & Integer'Image(I));
+			Ada.Text_IO.Put_Line("    Start_Station : " & Integer'Image(The_Ticket.Stages(I).Start_Station));
+			Ada.Text_IO.Put_Line("    Next_Station : " & Integer'Image(The_Ticket.Stages(I).Next_Station));
+			Ada.Text_IO.Put_Line("    Region : " & To_String(The_Ticket.Stages(I).Region));
+			Ada.Text_IO.Put_Line("    Train_ID : " & Integer'Image(The_Ticket.Stages(I).Train_ID));
+			Ada.Text_IO.Put_Line("    Start_Platform_Index : " & Integer'Image(The_Ticket.Stages(I).Start_Platform_Index));
+			Ada.Text_IO.Put_Line("    Destination_Platform_Index : " & Integer'Image(The_Ticket.Stages(I).Destination_Platform_Index));
+		end loop;
+    end Print;
+
+
 	function Get_Ticket(Json_V : in JSON_Value) return access Ticket_Type is
 		-- Extract "ticket" json array in J_Array variable
 		J_Array : JSON_Array := Json_V.Get(Field => "ticket");
 --  		-- Extract J_Array length
 		Array_Length : constant Natural := Length (J_Array);
 --  		-- Instantiate a new Ticket_Type with Array_Length elements
-		T : access Ticket_Type := new Ticket_Type(Array_Length);
+		T : access Ticket_Type := new Ticket_Type;
 
 	begin
-		T.Next_Stage := Json_v.Get("next");
+		T.Next_Stage 	:= Json_v.Get("next");
+		T.Stages 		:= new Ticket_Stages(1..Array_Length);
 		-- For each element of the json array, create a new Ticket stage
 		for I in 1 .. T.Stages'Length loop
 			declare

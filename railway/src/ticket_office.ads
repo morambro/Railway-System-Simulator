@@ -27,8 +27,40 @@ with Ticket;
 with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Strings;
 with Ada.Strings.Hash;
+with Ada.Exceptions;
 
 package Ticket_Office is
+
+	No_Route_For_Destination : exception;
+
+
+	procedure Init_Path_Map(
+		File_Name	: in 	String);
+
+	function Create_Ticket(
+		From	: in 	String;
+		To		: in 	String) return access Ticket.Ticket_Type;
+
+
+	procedure Get_Ticket (
+		Traveler_Index 	: in 	Positive;
+		From			: in 	String;
+		To				: in 	String);-- return access Ticket.Ticket_Type;
+
+	type Station_Ticket_Office is tagged private;
+
+		procedure Buy_Ticket(
+			This			: in 	Station_Ticket_Office;
+			Traveler_Index 	: in 	Positive;
+			From			: in 	String;
+			To				: in 	String);-- return access Ticket.Ticket_Type;
+
+
+private
+
+	type Station_Ticket_Office is tagged record
+		Id : Integer;
+	end record;
 
 	package String_String_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
 		Key_Type 		=> String,
@@ -37,25 +69,30 @@ package Ticket_Office is
 		Equivalent_Keys => "="
 	);
 
+	type Destinations is array (Positive range <>) of Natural;
+
+	type Destinations_Ref is access all Destinations;
+
+	package String_Array_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
+		Key_Type 		=> String,
+		Element_Type 	=> Destinations_Ref,
+		Hash			=> Ada.Strings.Hash,
+		Equivalent_Keys => "="
+	);
+
+	type String_Array_Map_Ref is access all String_Array_Maps.Map;
+
+	package Shortest_Path_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
+		Key_Type 		=> String,
+		Element_Type 	=> String_Array_Map_Ref,
+		Hash			=> Ada.Strings.Hash,
+		Equivalent_Keys => "="
+	);
+
 	All_Tickets : access Ticket.Tickets_Array := Ticket.Get_All_Tickets("res/all_tickets.json");
 
 
-	type Regional_Ticket_Office is tagged null record;
+	Paths : Shortest_Path_Maps.Map;
 
-		procedure Init(
-			This 	: in	Regional_Ticket_Office);
-
-
-
-	type Station_Ticket_Office is tagged private;
-
-
-
-
-private
-
-	type Station_Ticket_Office is tagged record
-		Id : Integer;
-	end record;
 
 end Ticket_Office;

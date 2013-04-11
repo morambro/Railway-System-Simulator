@@ -23,34 +23,45 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
+with Ada.Text_IO;use Ada.Text_IO;
 
-with Generic_Operation_Interface;use Generic_Operation_Interface;
-with Queue;
+package body Routes is
 
-package Task_Pool is
-
-
-	-- Adds a new operation to the executing queue
-	procedure Execute(Operation : Any_Operation);
-
-	procedure Stop;
-
-	-- Task which Executes an operation taken from Operations_Queue
-	task type Actor;
-
-	type Actors_Vector is array(Integer range <>) of Actor;
-
-	type Task_Pool_Type(Pool_Dimension : Positive) is record
-		Actors : Actors_Vector(1..Pool_Dimension);
-	end record;
-
-private
-
-	-- Declaration of a new Queue package with Element => Any_Operation
-	package Operations_Queue_Package is new Queue(Element => Any_Operation);
-
-	-- Queue used to manage Traveler operations
-	Operations_Queue : Operations_Queue_Package.Terminable_Queue;
+	function Contains(
+		Route_Index : in 	Positive;
+		From		: in 	Positive;
+		To			: in 	Positive) return Natural
+	is
+		Found 	: Natural := 0;
+		I 		: Positive := 1;
+	begin
+		while (I <= All_Routes(Route_Index)'Length) and (Found = 0) loop
+			if 	(All_Routes(Route_Index)(I).Start_Station = From) and
+				(All_Routes(Route_Index)(I).Next_Station = To) and
+				(All_Routes(Route_Index)(I).Leave_Action = ENTER) then
+				Found := I;
+			end if;
+			I := I + 1;
+		end loop;
+		return Found;
+    end Contains;
 
 
-end Task_Pool;
+	function Get_Routes_Containing(
+		From		: in 	Positive;
+		To			: in 	Positive) return Routes_Indexes
+	is
+		Size 			: Natural := 0;
+		Routes_Found	: Routes_Indexes(1..All_Routes'Length);
+	begin
+		for I in 1 .. All_Routes'Length loop
+			if Contains(I,From,To) /= 0 then
+				Size := Size + 1;
+				Routes_Found(Size) := I;
+			end if;
+		end loop;
+		return Routes_Found(1..Size);
+	end;
+
+
+end Routes;

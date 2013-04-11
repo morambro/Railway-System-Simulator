@@ -65,6 +65,9 @@ package Environment Is
 		Trav_To_Copy 	: in		Traveler.Traveler_Manager;
 		Ticket_To_Copy 	: access 	Ticket.Ticket_Type);
 
+	function Get_Index_For_Name(
+		Name 			: in 	String) return Natural;
+
 private
 
     Node_Name : Unbounded_String;

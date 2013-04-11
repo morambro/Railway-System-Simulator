@@ -47,37 +47,35 @@ package Generic_Station is
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Segment_ID			: in 		Positive;
-			Action				: in 		Route.Action)
-		is abstract;
+			Action				: in 		Route.Action) is abstract;
 
 		procedure Leave(
 			This 				: in 		Station_Interface;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
-			Action				: in 		Route.Action)
-		is abstract;
+			Action				: in 		Route.Action) is abstract;
 
 		procedure Wait_For_Train_To_Go(
 			This 				: in 		Station_Interface;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
-			Platform_Index		: in		Positive)
-		is abstract;
+			Platform_Index		: in		Positive) is abstract;
 
 		procedure Wait_For_Train_To_Arrive(
 			This 				: in 		Station_Interface;
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
-			Platform_Index		: in		Positive)
-		is abstract;
+			Platform_Index		: in		Positive) is abstract;
 
 		procedure Print(This : in Station_Interface) is abstract;
 
 		procedure Add_Train(
 			This				: in 		Station_Interface;
 			Train_ID			: in 		Positive;
-			Segment_ID			: in 		Positive
-		) is abstract;
+			Segment_ID			: in 		Positive) is abstract;
+
+		function Get_Name(
+			This				: in 		Station_Interface) return String is abstract;
 
 
 	-- End Of the Interface

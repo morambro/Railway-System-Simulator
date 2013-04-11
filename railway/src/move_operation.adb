@@ -32,6 +32,7 @@ with Ada.Exceptions;
 with YAMI.Parameters;
 with Ticket;
 with Message_Agent;
+with Task_Pool;
 
 package body Move_Operation is
 
@@ -160,6 +161,18 @@ package body Move_Operation is
 				"Exception: " & Ada.Exceptions.Exception_Name(Error) & " , " & Ada.Exceptions.Exception_Message(Error),
 				Logger.ERROR
 			);
+    end Do_Operation;
+
+
+    procedure Do_Operation(This : in Buy_Ticket_Operation_Type) is
+    begin
+		null;
+    end Do_Operation;
+
+    procedure Do_Operation(This : in Ticket_Ready_Operation_Type) is
+    begin
+    	-- # Once the ticket is ready, let's start the travel!
+    	Task_Pool.Execute(Environment.Operations(This.Traveler_Manager_Index)(Traveler.LEAVE));
     end Do_Operation;
 
 end Move_Operation;

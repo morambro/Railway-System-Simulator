@@ -2,22 +2,22 @@
 	"stations" : [
 		{
 			"platform_number" 	: 3,
-			"name" 				: "0001",
+			"name" 				: "1",
 			"type"				: "R"
 		},
 		{
 			"platform_number" 	: 2,
-			"name" 				: "0002",
+			"name" 				: "2",
 			"type"				: "R"
 		},
 		{
 			"platform_number" 	: 2,
-			"name" 				: "0003",
+			"name" 				: "3",
 			"type"				: "R"
 		},
 		{
 			"platform_number" 	: 2,
-			"name" 				: "0004",
+			"name" 				: "4",
 			"type"				: "R"
 		},
 		{

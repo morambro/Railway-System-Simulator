@@ -89,9 +89,6 @@ package body Time_Table is
 		for I in 1 .. Array_Length loop
 			T_T_Array(I) := Get_Time_Table(Get(Arr => J_Array,Index => I));
 		end loop;
-
---  		Print(T_T_Array);
-
 		return T_T_Array;
     end Get_Time_Table_Array;
 

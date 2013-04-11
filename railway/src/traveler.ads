@@ -35,9 +35,9 @@ package Traveler is
 
 	package Unbounded_Strings renames Ada.Strings.Unbounded;
 
-	type Move_Operations is (BUY_TICKET,LEAVE,ENTER);
+	type Traveler_Operations_Types is (BUY_TICKET,LEAVE,ENTER,TICKET_READY);
 
-	type Traveler_Operations is Array(Move_Operations range <>) of Any_Operation;
+	type Traveler_Operations is Array(Traveler_Operations_Types range <>) of Any_Operation;
 
 	type Traveler_Operations_Ref is access all Traveler_Operations;
 
@@ -55,7 +55,7 @@ package Traveler is
 	-- # Traveler Manager
 	type Traveler_Manager is record
 		Traveler 		: Traveler_Type;
-		Next_Operation 	: Move_Operations := LEAVE;
+		Next_Operation 	: Traveler_Operations_Types := LEAVE;
 		Destination 	: Positive := 1;
 		Ticket 			: access Ticket.Ticket_Type := null;
 	end record;

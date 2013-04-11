@@ -168,6 +168,9 @@ package Gateway_Station is
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive);
 
+		overriding function Get_Name(
+			This				: in 		Gateway_Station_Type) return String;
+
 		-- #
 		-- # Class method used to Transfer a Train via remote message to a given destination.
 		-- #

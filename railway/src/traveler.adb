@@ -108,9 +108,10 @@ package body Traveler is
 		Json_Traveler_M.Set_Field("destination",Traveler.Destination);
 
 		case Traveler.Next_Operation is
-			when BUY_TICKET => Json_Traveler_M.Set_Field("next_operation","buy_ticket");
-			when LEAVE		=> Json_Traveler_M.Set_Field("next_operation","leave");
-			when ENTER		=> Json_Traveler_M.Set_Field("next_operation","enter");
+			when BUY_TICKET 	=> Json_Traveler_M.Set_Field("next_operation","buy_ticket");
+			when LEAVE			=> Json_Traveler_M.Set_Field("next_operation","leave");
+			when ENTER			=> Json_Traveler_M.Set_Field("next_operation","enter");
+			when TICKET_READY 	=> Json_Traveler_M.Set_Field("next_operation","ticket_ready");
 		end case;
 
 

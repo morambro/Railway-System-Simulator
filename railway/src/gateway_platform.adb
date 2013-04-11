@@ -116,7 +116,7 @@ package body Gateway_Platform is
 
 
 								declare
-									Next_Operation : Traveler.Move_Operations := Traveler.LEAVE;
+									Next_Operation : Traveler.Traveler_Operations_Types := Traveler.LEAVE;
 								begin
 									-- # Execute the operation number 2 (Traveler waits to leave the train).
 									Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
@@ -230,7 +230,7 @@ package body Gateway_Platform is
 
 								declare
 									-- # The next Traveler operation
-									Next_Operation : Traveler.Move_Operations := Traveler.ENTER;
+									Next_Operation : Traveler.Traveler_Operations_Types := Traveler.ENTER;
 								begin
 									-- # Execute the operation number 2 (Traveler waits to leave the train).
 									Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));

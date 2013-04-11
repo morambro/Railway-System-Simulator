@@ -36,6 +36,14 @@ with Train;use Train;
 package body Regional_Station is
 
 	-- ------------------------ Definition of the inherited abstract methods ------------------------
+
+	function Get_Name(
+			This				: in 		Regional_Station_Type) return String
+	is
+	begin
+		return To_String(This.Name);
+    end Get_Name;
+
 	procedure Enter(
 			This 				: in		Regional_Station_Type;
 			Descriptor_Index	: in		Positive;

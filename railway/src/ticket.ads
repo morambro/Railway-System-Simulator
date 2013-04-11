@@ -48,12 +48,15 @@ package Ticket is
 
     type Ticket_Stages is array (Positive range <>) of Ticket_Stage;
 
-    type Ticket_Type(Stages_Number : Positive) is record
+    type Ticket_Type is record
     	Next_Stage 	: Positive := 1;
-    	Stages 		: Ticket_Stages(1 .. Stages_Number);
+    	Stages 		: access Ticket_Stages := null;
 	end record;
 
 	type Tickets_Array is array (Positive range <>) of access Ticket_Type;
+
+	procedure Print(
+		The_Ticket : access Ticket_Type);
 
     -- ############################## Json -> Ticket ###############################
 

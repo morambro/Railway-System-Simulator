@@ -40,6 +40,8 @@ with Logger;
 
 with Traveler;
 
+with Route;
+
 with Message_Agent;
 
 with YAMI.Outgoing_Messages; use YAMI.Outgoing_Messages;
@@ -53,6 +55,8 @@ with Train;
 with Ada.Exceptions;  use Ada.Exceptions;
 
 with Handlers;
+
+with Ticket;
 
 procedure Main is
 
@@ -146,10 +150,10 @@ begin
 				Segments.Init;
 				--Ticket_Office.Init;
 
-				if Node_Name = "Node_1" then
-					Train_Pool.Associate(2);
---  					Train_Pool.Associate(1);
-				end if;
+--  				if Node_Name = "Node_1" then
+--  					Train_Pool.Associate(2);
+--  --  					Train_Pool.Associate(1);
+--  				end if;
 
 --  				if Environment.Get_Node_Name = "Node_1" then
 --  					Train_Pool.Associate(1);
@@ -158,9 +162,19 @@ begin
 --  				Train_Pool.Associate(3);
 --  				Train_Pool.Associate(4);
 
-				if Node_Name = "Node_1" then
-					Task_Pool.Execute(Environment.Operations(1)(Traveler.LEAVE));
-				end if;
+--  				for I in 1 .. Routes.Get_Routes_Containing(1,2)'Length loop
+--  					Ada.Text_IO.Put_Line(" *** Found : ");
+--  					Route.Print(Routes.All_Routes(Routes.Get_Routes_Containing(1,2)(I)).all);
+--  				end loop;
+				Ticket_Office.Init_Path_Map("res/" & Node_Name & "-paths.json");
+
+				Ticket.Print(Ticket_Office.Create_Ticket("G1","4"));
+
+				Ticket_Office.Get_Ticket(1,"G1","4");
+
+--  				if Node_Name = "Node_1" then
+--  					Task_Pool.Execute(Environment.Operations(1)(Traveler.LEAVE));
+--  				end if;
 --  				delay 4.0;
 --
 --  				Train_Pool.Stop;

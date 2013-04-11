@@ -23,13 +23,23 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-with Route;
+with Route;use ROute;
 with Time_Table;
 
 package Routes is
 
 	All_Routes : Route.Routes := Route.Get_Routes("res/routes.json");
 
---  	Time_Table : Time_Table.
+	type Routes_Indexes is array (Positive range <>) of Positive;
+
+	function Contains(
+		Route_Index : in 	Positive;
+		From		: in 	Positive;
+		To			: in 	Positive) return Natural;
+
+	function Get_Routes_Containing(
+		From		: in 	Positive;
+		To			: in 	Positive) return Routes_Indexes;
+
 
 end Routes;

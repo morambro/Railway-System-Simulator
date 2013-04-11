@@ -49,4 +49,24 @@ package Move_Operation is
 
 	overriding procedure Do_Operation(This : in Enter_Operation_Type);
 
+	-- ############################ BUY_TICKET OPERATION ##########################
+	-- #
+	-- # Operation used to make the Traveler wait at the next station to arrive
+	-- #
+	type Buy_Ticket_Operation_Type is new Operation_Interface with record
+		Traveler_Manager_Index : Positive;
+	end record;
+
+	overriding procedure Do_Operation(This : in Buy_Ticket_Operation_Type);
+
+	-- ############################ TICKET_READY OPERATION ##########################
+	-- #
+	-- # Operation used to make the Traveler wait at the next station to arrive
+	-- #
+	type Ticket_Ready_Operation_Type is new Operation_Interface with record
+		Traveler_Manager_Index : Positive;
+	end record;
+
+	overriding procedure Do_Operation(This : in Ticket_Ready_Operation_Type);
+
 end Move_Operation;

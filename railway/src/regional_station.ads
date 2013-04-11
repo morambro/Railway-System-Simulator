@@ -141,6 +141,9 @@ package Regional_Station is
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive);
 
+		overriding function Get_Name(
+			This				: in 		Regional_Station_Type) return String;
+
 	-- #
 	-- # Creates a new Station instance
 	-- #

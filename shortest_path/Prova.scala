@@ -110,8 +110,8 @@ object Main extends App {
 		
 		if (argv.size < 2) {
 			println("ERROR: Specify :")
-			println(" 1) input file")
-			println(" 2) Node Name")
+			println("   1) Input file")
+			println("   2) Node Name")
 			return
 		}
 		
@@ -175,7 +175,7 @@ object Main extends App {
 		json += ("  ]\n")
 		json += ("}\n")
 		
-		val out = new java.io.FileWriter("../" + nodeName + "-paths.json")
+		val out = new java.io.FileWriter("../../railway/res/" + nodeName + "-paths.json")
 		out.write(json)
 		out.close
 		

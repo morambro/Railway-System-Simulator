@@ -89,9 +89,11 @@ package body Environment Is
     	Operations	:= new Traveler.Travelers_All_Operations(1 .. Travelers'Length);
 
 		for I in 1 .. Operations'Length loop
-			Operations(I) := new Traveler.Traveler_Operations(Traveler.LEAVE .. Traveler.ENTER);
+			Operations(I) := new Traveler.Traveler_Operations(Traveler.BUY_TICKET .. Traveler.TICKET_READY);
+			Operations(I)(Traveler.BUY_TICKET) := new Move_Operation.Buy_Ticket_Operation_Type'(Traveler_Manager_Index => I);
 			Operations(I)(Traveler.LEAVE) := new Move_Operation.Leave_Operation_Type'(Traveler_Manager_Index => I);
 			Operations(I)(Traveler.ENTER) := new Move_Operation.Enter_Operation_Type'(Traveler_Manager_Index => I);
+			Operations(I)(Traveler.TICKET_READY) := new Move_Operation.Ticket_Ready_Operation_Type'(Traveler_Manager_Index => I);
 		end loop;
 
 
@@ -107,5 +109,17 @@ package body Environment Is
 			Travelers(Traveler_Index).Ticket := Ticket_To_Copy;
 		end if;
     end Update_Traveler;
+
+	function Get_Index_For_Name(
+		Name 			: in 	String) return Natural
+	is
+	begin
+		for I in 1 .. Stations'Length loop
+			if Stations(I).Get_Name = Name then
+				return I;
+			end if;
+		end loop;
+		return 0;
+    end Get_Index_For_Name;
 
 end Environment;

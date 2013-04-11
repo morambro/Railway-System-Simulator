@@ -37,6 +37,13 @@ with Ticket;
 
 package body Gateway_Station is
 
+	function Get_Name(
+			This			: in 		Gateway_Station_Type) return String
+	is
+	begin
+		return To_String(This.Name);
+    end Get_Name;
+
 	-- ########################################## ACCESS_CONTROL #############################################
 	overriding procedure Add_Train(
 		This				: in 		Gateway_Station_Type;

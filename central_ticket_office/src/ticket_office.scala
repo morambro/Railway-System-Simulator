@@ -4,6 +4,7 @@ import scala.util.parsing.json._
 
 case class Stop()
 case class Resolve(from:String,to:String)
+case class Path(path : String)
 
 
 class RegionalStation(parId : String, parAddress : String) {
@@ -81,6 +82,11 @@ class PathResolver extends Actor {
 				
 				println("Station " + to + " is in Region " + region._1)
 				
+				sender ! Path("ciao")
+				
+				reply {
+					Path("ciao")
+				}
 				resolverLoop
 			}
 			case Stop() => {
@@ -102,7 +108,8 @@ class RequestReceiver(address : String, resolver : Actor) extends Actor with Inc
 	
 	def receiverLoop() {
 		react {
-			case Stop()	=> println("Bye") 
+			case Stop()	=> println("Bye")
+			case Path(path) => println("The path is " + path)
 		}
 	}
 		
@@ -114,10 +121,11 @@ class RequestReceiver(address : String, resolver : Actor) extends Actor with Inc
 		
 			case "resolve"	=>	{
 				
+				
 				val start 		= im.getParameters.getString("start")
 				val destination = im.getParameters.getString("destination")			
 				
-				resolver ! Resolve(start,destination)
+				resolver ! Resolve(start,destination) 
 				
 			}
 			
@@ -131,8 +139,6 @@ object Main extends App {
 	
 	val receiver = new RequestReceiver("tcp://localhost:9999",resolver)
 	receiver.start
-	
-	resolver ! Resolve("f","t")
 	
 }
 
