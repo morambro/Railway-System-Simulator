@@ -33,6 +33,7 @@ with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 with Route;use Route;
 with Task_Pool;
 with Traveler;
+with Trains;
 
 package body Ticket_Office is
 
@@ -156,7 +157,7 @@ package body Ticket_Office is
 						Stages(Stages_Cursor) := (
 							Start_Station 				=> Start_Station,
 							Next_Station  				=> Next_Station,
-							Train_ID 	  				=> 2222,
+							Train_ID 	  				=> Trains.Train_For_Route(Matches(Max_Match)),
 							Start_Platform_Index 		=> Start_Platform,
 							-- # The region to which the next stage belongs to
 							Region						=> To_Unbounded_String(Environment.Get_Node_Name),

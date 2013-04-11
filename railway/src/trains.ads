@@ -33,4 +33,7 @@ package Trains is
 		Train_Index 	: in	Positive;
 		Train_To_Copy	: in 	Train.Train_Descriptor);
 
+	function Train_For_Route(
+		Route_Index		: in 	Positive) return Natural;
+
 end Trains;

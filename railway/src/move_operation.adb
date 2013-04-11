@@ -50,7 +50,7 @@ package body Move_Operation is
 			Sender 	=> NAME_LEAVE,
 			Message => "Traveler" & Integer'Image(Environment.Travelers(This.Traveler_Manager_Index).Traveler.ID) &
 					   " will wait to LEAVE at platform" & Integer'Image(Start_Platform_Index) &
-					   ", station" & Integer'Image(Start_Station),
+					   ", station" & Integer'Image(Start_Station) & " for train " & Integer'Image(Train_ID),
 			L 		=> Logger.NOTICE);
 
 		Environment.Stations(Start_Station).Wait_For_Train_To_Go(

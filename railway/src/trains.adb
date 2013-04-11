@@ -23,7 +23,7 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-
+with Ada.Text_IO;
 with Logger;
 
 package body Trains is
@@ -51,5 +51,18 @@ package body Trains is
 		end if;
 
     end Update_Train;
+
+    function Train_For_Route(
+		Route_Index		: in 	Positive) return Natural
+	is
+	begin
+		for I in 1 .. Trains'Length loop
+			Ada.Text_IO.Put_Line(Integer'Image(Route_Index) & "  " & Integer'Image(Trains(I).Route_Index));
+			if Route_Index = Trains(I).Route_Index then
+				return Trains(I).ID;
+			end if;
+		end loop;
+		return 0;
+    end Train_For_Route;
 
 end Trains;
