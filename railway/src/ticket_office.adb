@@ -98,8 +98,10 @@ package body Ticket_Office is
 						-- # The index of the routes with maximum match length
 						Max_Match	: Natural := 0;
 
-						Start_Station 	: Natural := Best_Path(I);
-						Next_Station 	: Natural := Best_Path(I);
+						Start_Station 			: Natural := Best_Path(I);
+						Next_Station 			: Natural := Best_Path(I);
+						Start_Platform  		: Natural := 0;
+						Destination_Platform	: Natural := 0;
 					begin
 						if Matches'Length = 0 then
 							raise No_Route_For_Destination with "Can not create a ticket from " & S_From & " to " & S_To;
@@ -118,6 +120,10 @@ package body Ticket_Office is
 							begin
 								-- # Continue extending the match if and only if Start_Index and K are under their limits, and
 								-- # (Best_Path(K),Best_Path(K+1)) is equals to the current route stage
+
+								-- # Start Platform for the current examined leg
+								Start_Platform := Routes.All_Routes(Matches(J))(Start_Index).Start_Platform;
+
 								while 	(Start_Index <= Routes.All_Routes(Matches(J))'Length) and
 										(K < Best_Path'Length) and
 										Equals loop
@@ -128,6 +134,7 @@ package body Ticket_Office is
 										if Equals then
 
 											Next_Station := Best_Path(K+1);
+											Destination_Platform := Routes.All_Routes(Matches(J))(Start_Index).Platform_Index;
 
 											K := K + 1;
 											Len := Len + 1;
@@ -150,10 +157,10 @@ package body Ticket_Office is
 							Start_Station 				=> Start_Station,
 							Next_Station  				=> Next_Station,
 							Train_ID 	  				=> 2222,
-							Start_Platform_Index 		=> 1,
+							Start_Platform_Index 		=> Start_Platform,
 							-- # The region to which the next stage belongs to
 							Region						=> To_Unbounded_String(Environment.Get_Node_Name),
-							Destination_Platform_Index	=> 1
+							Destination_Platform_Index	=> Destination_Platform
 						);
 						Stages_Cursor := Stages_Cursor + 1;
 						I := I + Max_Length;
