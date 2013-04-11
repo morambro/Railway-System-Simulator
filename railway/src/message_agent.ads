@@ -31,13 +31,14 @@ with YAMI.Option_Names; use YAMI.Option_Names;
 with Unchecked_Deallocation;
 with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Strings.Hash;
-with YAMI.Incoming_Messages;
+with YAMI.Incoming_Messages;use YAMI.Incoming_Messages;
 
 package Message_Agent is
 
 	No_Destination_For_Name : exception;
 
-	type Handler is access procedure(Content : in out YAMI.Parameters.Parameters_Collection);
+	type Handler is access procedure(
+		Msg : in Incoming_Message'Class);
 
 	package Maps is new Ada.Containers.Indefinite_Hashed_Maps(
 		Key_Type 		=> String,

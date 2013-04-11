@@ -116,6 +116,7 @@ package body Train_Pool is
 				Put_Line("NEXT_STAGE = " & Integer'Image(Next_Stage));
 
 				-- # Wait Until time to leave
+
 				declare
 					Current_Array_Index 	: Positive :=
 						Environment.T(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Array_Index;

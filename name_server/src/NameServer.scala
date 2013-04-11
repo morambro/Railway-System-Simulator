@@ -77,6 +77,36 @@ package it.name_server {
 					im.reply(replyParams)
 				}
 			
+				case "all" => {
+					
+					addresses += ("Node_1" -> "tcp://localhost:5544")
+					addresses += ("Node_2" -> "tcp://localhost:5546")
+				
+					val replyParams : Parameters = new Parameters;
+				
+					var response = """{ "nodes" : [ """
+					
+					var i = 0
+					addresses.keys.foreach( k => {
+						response += "{"
+						response += """ "name"    : """ + "\""+ k +"\","
+						response += """ "address" : """ + "\""+ addresses(k) +"\""
+						response += "}"
+						if (i < addresses.keys.size-1)
+							response += ","
+						i += 1
+					})
+					
+					response += "]}"
+					
+					println(response)
+					
+					replyParams.setString("result",response)
+					
+					im.reply(replyParams)
+					
+					
+				}
 				case _ => println("Invalid operation " + im.getMessageName)
 			
 			}

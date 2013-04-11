@@ -139,15 +139,18 @@ package body Message_Agent is
   		Message : in	out YAMI.Incoming_Messages.Incoming_Message'Class)
     is
 
-		Message_Type 		: String 								:=  Message.Message_Name;
-		Reply_Parameters 	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+		Message_Type : String :=  Message.Message_Name;
 
     begin
 
 		if This.Agent.Handlers_Map.Contains(Message_Type) then
 			Ada.Text_IO.Put_Line( "Contains handler for type " & Message_Type);
 			-- # Invoke the correct handler for the given message type
-			Message.Process_Content(This.Agent.Handlers_Map(Message_Type));
+			declare
+				Proced : Handler := This.Agent.Handlers_Map(Message_Type);
+			begin
+				Proced(Message);
+			end;
 
 		else
 			Logger.Log(
@@ -155,11 +158,6 @@ package body Message_Agent is
    				Message => "No Handler for the given message type : " & Message_Type & "!",
    				L 		=> Logger.ERROR);
 		end if;
-
-		Reply_Parameters.Set_String("response","RECEIVED");
-
-		Message.Reply(Reply_Parameters);
-
 
    	exception
 			when E : others =>

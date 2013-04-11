@@ -100,7 +100,7 @@ package body Ticket is
     end Get_All_Tickets;
 
 
-    function Get_Json(
+    function To_Json(
 		Ticket 		: access Ticket_Type) return String
 	is
 		Json_Ticket : JSON_Value := Create_Object;
@@ -117,6 +117,7 @@ package body Ticket is
 				JSon_Stage.Set_Field("next_station",Ticket.Stages(I).Next_Station);
 				JSon_Stage.Set_Field("train_id",Ticket.Stages(I).Train_ID);
 				JSon_Stage.Set_Field("region",Ticket.Stages(I).Region);
+				JSon_Stage.Set_Field("start_platform_index",Ticket.Stages(I).Start_Platform_Index);
 				JSon_Stage.Set_Field("destination_platform_index",Ticket.Stages(I).Destination_Platform_Index);
 
 				Append(Json_Fields,JSon_Stage);
@@ -125,7 +126,7 @@ package body Ticket is
 
 		Json_Ticket.Set_Field("ticket",Json_Fields);
 		return Json_Ticket.Write;
-	end Get_Json;
+	end To_Json;
 
 
 end Ticket;

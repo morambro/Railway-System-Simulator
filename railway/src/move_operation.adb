@@ -114,7 +114,7 @@ package body Move_Operation is
 						Parameters.Set_String("train_id",Integer'Image(Train_ID));
 						Parameters.Set_String("platform",Integer'Image(Destination_Platform_Index));
 						Parameters.Set_String("traveler",Traveler.Get_Json(Environment.Travelers(This.Traveler_Manager_Index)));
-						Parameters.Set_String("ticket",Ticket.Get_Json(Environment.Travelers(This.Traveler_Manager_Index).Ticket));
+						Parameters.Set_String("ticket",Ticket.To_Json(Environment.Travelers(This.Traveler_Manager_Index).Ticket));
 
 						Message_Agent.Instance.Send(
 							Destination_Address => Address,

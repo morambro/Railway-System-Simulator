@@ -24,6 +24,7 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with YAMI.Parameters;
+with YAMI.Incoming_Messages;use YAMI.Incoming_Messages;
 with Environment;
 with Trains;
 with Train;
@@ -36,15 +37,37 @@ package Handlers is
 	-- #
 	-- # Handler used to Handle Messages to transfer Trains between Gateway Stations
 	-- #
-	procedure Station_Train_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
+	procedure Station_Train_Transfer_Handler(
+		Msg : in 	Incoming_Message'Class);
 
 	-- #
 	-- # This Handler will be used to Free the Platform at the sender side, when a remote Train transfer is made.
 	-- #
-	procedure Station_Train_Transfer_Ack_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
+	procedure Station_Train_Transfer_Ack_Handler(
+		Msg : in 	Incoming_Message'Class);
 
-	procedure Station_Traveler_Leave_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
+	-- #
+	-- # This handler is used by the message agent to handle messages of traveler remote transfer; the case is
+	-- # the traveler next stage is on a different node, so is transfered to the proper Gateway Station,
+	-- #
+	procedure Station_Traveler_Leave_Transfer_Handler(
+		Msg : in 	Incoming_Message'Class);
 
-	procedure Station_Traveler_Enter_Transfer_Handler(Content : in out YAMI.Parameters.Parameters_Collection);
+	-- #
+	-- # This handler is used by the message agent to handle messages of traveler remote transfer, entering a platform
+	-- #
+	-- #
+	procedure Station_Traveler_Enter_Transfer_Handler(
+		Msg : in 	Incoming_Message'Class);
+
+	-- #
+	-- # Handles ticket creation requests from the Central Ticket Office
+	-- #
+	procedure Get_Ticket_Handler(
+		Msg : in 	Incoming_Message'Class);
+
+
+    procedure Is_Station_Present_Handler(
+		Msg : in 	Incoming_Message'Class);
 
 end Handlers;

@@ -1,0 +1,38 @@
+{
+	"links" : [
+		{
+			"region1" 	: "Node_1",
+			"region2" 	: "Node_2",
+			"paths"		: [
+				{	
+					"node" 		: "Node_2",
+					"station" 	: "G1"
+				}
+			]
+		},
+		{
+			"region1" 	: "Node_2",
+			"region2" 	: "Node_1",
+			"paths"		: [
+				{	
+					"node" 		: "Node_1",
+					"station" 	: "G1"
+				}
+			]
+		},
+		{
+			"region1" 	: "Node_1",
+			"region2" 	: "Node_3",
+			"paths"		: [
+				{	
+					"node" 		: "Node_2",
+					"station" 	: "G1"
+				},
+				{	
+					"node" 		: "Node_3",
+					"station" 	: "G2"
+				}
+			]
+		}
+	]
+}

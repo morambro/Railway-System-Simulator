@@ -69,7 +69,7 @@ package Ticket is
     function Get_All_Tickets (
     	Json_File 	: in String) return access Tickets_Array;
 
-    function Get_Json(
+    function To_Json(
 		Ticket 		: access Ticket_Type) return String;
 
 

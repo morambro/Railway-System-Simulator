@@ -512,7 +512,7 @@ package body Gateway_Station is
 				Parameters.Set_String("traveler_index",Integer'Image(Traveler_Index));
 				Parameters.Set_String("train_id",Integer'Image(Train_ID));
 				Parameters.Set_String("traveler",Traveler.Get_Json(Environment.Travelers(Traveler_Index)));
-				Parameters.Set_String("ticket",Ticket.Get_Json(Environment.Travelers(Traveler_Index).Ticket));
+				Parameters.Set_String("ticket",Ticket.To_Json(Environment.Travelers(Traveler_Index).Ticket));
 
 				Message_Agent.Instance.Send(
 					Destination_Address => Address,

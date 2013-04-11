@@ -2,6 +2,50 @@
 	"routes" : [
 		
 		{
+			"id"	:  4,
+			"route" : [
+				{
+					"start_station"		: 1,
+					"start_platform"	: 3,
+					"next_segment" 		: 1,
+					"next_station" 		: 2,
+					"platform_index"  	: 2,
+					"node_name"			: "Node_1",				
+					"leave_action"		: "ENTER",
+					"enter_action"		: "ENTER"
+				},
+				{
+					"start_station"		: 2,
+					"start_platform"	: 2,
+					"next_segment" 		: 4,
+					"next_station" 		: 5,
+					"platform_index"  	: 2,
+					"node_name"			: "Node_1",
+					"leave_action"		: "ENTER",
+					"enter_action"		: "PASS"
+				},
+				{
+					"start_station" 	: 1,
+					"start_platform"  	: 2,
+					"next_segment" 		: 1,
+					"next_station" 		: 2,
+					"platform_index"  	: 3,
+					"node_name"			: "Node_2",
+					"leave_action"		: "PASS",
+					"enter_action"		: "ENTER"
+				},
+				{
+					"start_station" 	: 2,
+					"start_platform"  	: 3,
+					"next_segment" 		: 2,
+					"next_station" 		: 4,
+					"platform_index"  	: 1,
+					"node_name"			: "Node_2",
+					"leave_action"		: "ENTER",
+					"enter_action"		: "ENTER"
+				}
+			]
+		},{
 			"id"	:  1,
 			"route" : [
 				{

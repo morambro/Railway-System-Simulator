@@ -1,0 +1,4 @@
+cd out
+scala Main $@
+cd ..
+

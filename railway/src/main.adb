@@ -128,6 +128,8 @@ begin
 			Message_Agent.Instance.Add_Handler("traveler_leave_transfer",Handlers.Station_Traveler_Leave_Transfer_Handler'Access);
 			Message_Agent.Instance.Add_Handler("traveler_enter_transfer",Handlers.Station_Traveler_Enter_Transfer_Handler'Access);
 			Message_Agent.Instance.Add_Handler("train_transfer_ack",Handlers.Station_Train_Transfer_Ack_Handler'Access);
+			Message_Agent.Instance.Add_Handler("ticket_creation",Handlers.Get_Ticket_Handler'Access);
+			Message_Agent.Instance.Add_Handler("is_present",Handlers.Is_Station_Present_Handler'Access);
 
 			Params.Set_String("node_name",Node_Name);
 			Params.Set_String("address",Node_Addr);
