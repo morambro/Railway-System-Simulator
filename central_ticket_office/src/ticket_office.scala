@@ -7,6 +7,141 @@ case class Resolve(startNode:String,from:String,to:String)
 case class Path(path : String)
 case class Error(message:String)
 
+object Ticket {
+	
+	def mergeTickets (T1:Ticket,T2:Ticket) : Ticket =  {
+		val ticket = new Ticket(T1.next)
+		if ((T1.stages.last.destinationPlatform == T2.stages(0).startPlatform) && (T1.stages.last.trainId == T2.stages(0).trainId)) {
+			ticket.stages = T1.stages.drop(1) ++ ( new Ticket_Stage(
+				T1.stages.last.startStation,
+				T2.stages(0).nextStation,
+				T1.stages.last.trainId,
+				T1.stages.last.startPlatform,
+				T2.stages(0).destinationPlatform,
+				T2.stages(0).nextRegion) :: T2.stages.tail
+			)
+		} else {
+			ticket.stages = T1.stages ++ T2.stages
+		}
+		ticket
+	}
+	
+	implicit def stringToTicket(json : String) : Ticket = {
+		var ticket : Ticket = null
+		JSONValue.parseStrict(json) match {
+			case o : JSONObject => {
+				o.get("next") match {
+					case n : java.lang.Integer => {
+						ticket = new Ticket(n)
+					}
+				}
+				if (ticket != null) {
+					o.get("ticket") match {
+						case stages : JSONArray => {
+							for (i <- 0 until stages.size) {
+								stages.get(i) match {
+									case stage : JSONObject => {
+										val startStation : Int = stage.get("start_station") match {
+											case s : java.lang.Integer => s
+										}
+										val nextStation : Int = stage.get("next_station") match {
+											case s : java.lang.Integer => s
+										}
+										val trainId : Int = stage.get("train_id") match {
+											case s : java.lang.Integer => s
+										}
+										val startPlatform : Int = stage.get("start_platform_index") match {
+											case s : java.lang.Integer => s
+										}
+										val destinationPlatform : Int = 
+											stage.get("destination_platform_index") match {
+											case s : java.lang.Integer => s
+										}
+										val nextRegion : String = 
+											stage.get("region") match {
+											case s : String => s
+										}
+										ticket.stages = ticket.stages :+ new Ticket_Stage(
+											startStation,
+											nextStation ,
+											trainId,
+											startPlatform, 
+											destinationPlatform,
+											nextRegion)
+									}
+								} 
+							}
+						}
+					}
+				}
+			}
+		}
+		ticket
+	}
+	
+	implicit def ticket2Json(T:Ticket) : String = {
+		var json : String = ""
+		
+		json += "{"
+			
+		json += """ "next" : """ + T.next + ","
+		
+		json += """ "ticket" : ["""
+		
+		var i = 0
+		T.stages.foreach ( stage => {
+			json += "{"
+			
+			json += """ "start_node" : """ + stage.startStation + ","
+			json += """ "next_node" : """ + stage.nextStation + ","
+			json += """ "train_id" : """ + stage.trainId + ","
+			json += """ "start_platform_index" : """ + stage.startPlatform + ","
+			json += """ "destination_platform_index" : """ + stage.destinationPlatform + ","
+			json += """ "region" : """ + "\"" + stage.nextRegion + "\""
+			
+			json += "}"
+			if (i < T.stages.length - 1) json += ","
+			i += 1
+		})
+		
+		json += "]"
+		json += "}"
+		
+		json
+	}
+}
+
+class Ticket (n : Int){
+	val next : Int = n
+	var stages : List[Ticket_Stage] = List()
+	
+	def print {
+		println ("Ticket")
+		println ("next = "+next)
+		stages.foreach( stage =>
+			stage.print
+		)
+	}
+}
+
+class Ticket_Stage (
+	val startStation : Int,
+	val nextStation : Int,
+	val trainId : Int,
+	val startPlatform  : Int, 
+	val destinationPlatform  : Int,
+	val	nextRegion : String) {
+	
+	def print {
+		println ("start station  : " + startStation)
+		println ("next station   : " + nextStation)
+		println ("train id       : " + trainId)
+		println ("start platform : " + startPlatform)
+		println ("dest platform  : " + destinationPlatform)
+		println ("next region    : " + nextRegion)
+	}
+}
+
 object PathResolver {
 	
 	val SERVICE_NAME = "ticket_creation";
@@ -174,7 +309,7 @@ class PathResolver(fileName : String) extends Actor {
 	/**
 	 * Ask a node to create a ticket from [form] to [to]
 	 **/
-	def ask (node:String,from:String,to:String) {
+	def ask (node:String,from:String,to:String) : Ticket = {
 
 		val p = new Parameters
 
@@ -193,10 +328,17 @@ class PathResolver(fileName : String) extends Actor {
 			case OutgoingMessage.MessageState.REPLIED => {
 			
 		    	val reply = message.getReply();
-			
-				val ticket = reply.getString("ticket")
 				
-				println(ticket)
+				reply.getString("response") match {
+					case "ERROR" => {
+						println(reply.getString("type"))
+					}
+					case "RECEIVED" => {
+						println("Ticket Found!")
+						println(reply.getString("ticket"))
+						return reply.getString("ticket")
+					}
+				}
 				
 		    } 
 		    case OutgoingMessage.MessageState.REJECTED => {
@@ -206,6 +348,7 @@ class PathResolver(fileName : String) extends Actor {
 				println("The message has been abandoned.")
 			}
 		}
+		null
 	}
 
 	def resolverLoop() {
@@ -231,6 +374,9 @@ class PathResolver(fileName : String) extends Actor {
 				
 						// Now we have startNode and region to reach. We have to find
 						// the gateways to cross to build a path					
+						
+						var tickets : List[Ticket] = List()
+						
 						regionsMap get (startNode,region) match {
 							case Some(item) => {
 								var node = startNode
@@ -239,12 +385,12 @@ class PathResolver(fileName : String) extends Actor {
 									case l : List[_] => {
 										l.foreach(c => {
 											println("Search from "+f+" to "+c._2+" region " +  node)
-											ask(node,f,c._2)
+											tickets = tickets :+ ask(node,f,c._2)
 											node = c._1
 											f = c._2
 										})
 										println("Search from "+f+" to "+to+" region " +  node)
-										ask(node,f,to)
+										tickets = tickets :+ ask(node,f,to) 
 									}
 								}
 							}
@@ -252,6 +398,21 @@ class PathResolver(fileName : String) extends Actor {
 								Error("No path to reach " + region + " from " + startNode)
 							}
 						}
+						
+						tickets.foreach ( t => t.print)
+						
+						var result_ticket : Ticket = tickets(0)
+						
+						for (i <- 1 until tickets.length) {
+							result_ticket = Ticket.mergeTickets(result_ticket,tickets(i))
+						}
+						
+						result_ticket.print
+						
+						// Send the Ticket Back to the Node 
+						
+						print(Ticket.ticket2Json(result_ticket))
+						
 					}
 				}
 				resolverLoop
@@ -291,11 +452,11 @@ class RequestReceiver(address : String, resolver : Actor) extends Actor with Inc
 		
 			case "resolve"	=>	{
 				
-				val start 		= im.getParameters.getString("start")
+				val from 		= im.getParameters.getString("from")
 				val startNode 	= im.getParameters.getString("start_node")
-				val destination = im.getParameters.getString("destination")			
+				val to = im.getParameters.getString("to")			
 				
-				val ticket 		= resolver !? Resolve(startNode,start,destination) 
+				val ticket 		= resolver !? Resolve(startNode,from,to) 
 				
 				
 				// SEND RESPONSE TO CLIENT!!

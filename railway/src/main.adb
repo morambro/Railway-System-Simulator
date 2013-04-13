@@ -65,10 +65,11 @@ procedure Main is
 	INSTRUCTIONS : constant String :=
 	"------------------------------------------------------------------------" & ASCII.LF &
 	"The following parameters must be specified:" & ASCII.LF &
-  		"  1) Log level, choosen from [ -i | -n | -d ] \n" & ASCII.LF &
+  		"  1) Log level, chosen from [ -i | -n | -d ] \n" & ASCII.LF &
   		"  2) Name Server tcp Address [ -ns ] (e.g. -ns tcp://localhost:9000)" & ASCII.LF &
   		"  3) Node name identifier [ -nn ] (e.g. -nn Node1) " & ASCII.LF &
   		"  4) Node address [ -na ] (e.g. -na tcp://...)" & ASCII.LF &
+  		"  5) Central ticket office address [ -ct ] (e.g. -ct tcp://...)" & ASCII.LF &
   	"------------------------------------------------------------------------";
 
 begin
@@ -90,6 +91,8 @@ begin
 		Node_Name  	: constant String := Ada.Command_Line.Argument (5);
 		Par_3 	  	: constant String := Ada.Command_Line.Argument (6);
 		Node_Addr  	: constant String := Ada.Command_Line.Argument (7);
+		Par_4 	  	: constant String := Ada.Command_Line.Argument (8);
+		Central_T  	: constant String := Ada.Command_Line.Argument (9);
 
 	begin
 
@@ -113,6 +116,12 @@ begin
 
 		if Par_3 /= "-na" then
 			Ada.Text_IO.Put_Line("ERROR : You must specify node address, invalid option " & Par_3);
+			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
+			return;
+		end if;
+
+		if Par_4 /= "-ct" then
+			Ada.Text_IO.Put_Line("ERROR : You must specify central ticket office address, invalid option " & Par_4);
 			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
 			return;
 		end if;
@@ -148,7 +157,7 @@ begin
 				Pool			: Train_Pool.Train_Task_Pool(3,5);
 			begin
 
-				Environment.Init(Node_Name,Name_Server);
+				Environment.Init(Node_Name,Name_Server,Central_T);
 				Segments.Init;
 				--Ticket_Office.Init;
 
@@ -170,9 +179,9 @@ begin
 --  				end loop;
 				Ticket_Office.Init_Path_Map("res/" & Node_Name & "-paths.json");
 
-				Ticket.Print(Ticket_Office.Create_Ticket("G1","4"));
+				Ticket.Print(Ticket_Office.Create_Ticket("1","G1"));
 
-				Ticket_Office.Get_Ticket(1,"G1","4");
+				--Ticket_Office.Get_Ticket(1,"G1","4");
 
 --  				if Node_Name = "Node_1" then
 --  					Task_Pool.Execute(Environment.Operations(1)(Traveler.LEAVE));

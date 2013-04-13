@@ -24,6 +24,8 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with Ada.Text_IO;use Ada.Text_IO;
+with Ada.Strings.Unbounded;use  Ada.Strings.Unbounded;
+with Environment;
 
 package body Routes is
 
@@ -38,7 +40,8 @@ package body Routes is
 		while (I <= All_Routes(Route_Index)'Length) and (Found = 0) loop
 			if 	(All_Routes(Route_Index)(I).Start_Station = From) and
 				(All_Routes(Route_Index)(I).Next_Station = To) and
-				(All_Routes(Route_Index)(I).Leave_Action = ENTER) then
+				(All_Routes(Route_Index)(I).Leave_Action = ENTER) and
+				(To_String(All_Routes(Route_Index)(I).Node_Name) = Environment.Get_Node_Name)	then
 				Found := I;
 			end if;
 			I := I + 1;

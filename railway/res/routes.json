@@ -6,37 +6,46 @@
 			"route" : [
 				{
 					"start_station"		: 1,
-					"start_platform"	: 3,
-					"next_segment" 		: 1,
 					"next_station" 		: 2,
+					
+					"start_platform"	: 1,
 					"platform_index"  	: 2,
+					
+					"next_segment" 		: 1,
+					
 					"node_name"			: "Node_1",				
 					"leave_action"		: "ENTER",
 					"enter_action"		: "ENTER"
 				},
 				{
 					"start_station"		: 2,
-					"start_platform"	: 2,
-					"next_segment" 		: 4,
 					"next_station" 		: 5,
+					
+					"start_platform"	: 2,
 					"platform_index"  	: 2,
+					
+					"next_segment" 		: 4,
+					
 					"node_name"			: "Node_1",
 					"leave_action"		: "ENTER",
-					"enter_action"		: "PASS"
+					"enter_action"		: "ENTER"
 				},
 				{
 					"start_station" 	: 1,
-					"start_platform"  	: 2,
-					"next_segment" 		: 1,
 					"next_station" 		: 2,
+					
+					"start_platform"  	: 2,
 					"platform_index"  	: 3,
+					
+					"next_segment" 		: 1,
+					
 					"node_name"			: "Node_2",
-					"leave_action"		: "PASS",
+					"leave_action"		: "ENTER",
 					"enter_action"		: "ENTER"
 				},
 				{
 					"start_station" 	: 2,
-					"start_platform"  	: 3,
+					"start_platform"  	: 4,
 					"next_segment" 		: 2,
 					"next_station" 		: 4,
 					"platform_index"  	: 1,
@@ -50,20 +59,25 @@
 			"route" : [
 				{
 					"start_station"		: 1,
-					"start_platform"	: 3,
-					"next_segment" 		: 1,
 					"next_station" 		: 2,
+					
+					"start_platform"	: 3,
 					"platform_index"  	: 2,
+					
+					"next_segment" 		: 1,
+					
 					"node_name"			: "Node_1",				
 					"leave_action"		: "ENTER",
 					"enter_action"		: "ENTER"
 				},
 				{
 					"start_station"		: 2,
-					"start_platform"	: 3,
-					"next_segment" 		: 1,
 					"next_station" 		: 3,
+					
+					"start_platform"	: 3,
 					"platform_index"  	: 2,
+					
+					"next_segment" 		: 1,
 					"node_name"			: "Node_1",				
 					"leave_action"		: "ENTER",
 					"enter_action"		: "ENTER"

@@ -42,29 +42,43 @@ WITH YAMI.Parameters;
 -- #
 package Environment Is
 
-	Stations 			: Generic_Station.Stations_array_Ref := null;
+	-- # All the Stations
+	Stations 		: Generic_Station.Stations_array_Ref := null;
 
-	-- array of Travelers
-    Travelers 			: Traveler.Traveler_Manager_Array_Ref := null;
+	-- # All the Travelers
+    Travelers 		: Traveler.Traveler_Manager_Array_Ref := null;
 
-	Operations 			: Traveler.Travelers_All_Operations_Ref := null;
+	-- # Operations for each Traveler
+	Operations 		: Traveler.Travelers_All_Operations_Ref := null;
 
-	T			 		: Time_Table.Time_Table_Array := Time_Table.Get_Time_Table_Array("res/time_table.json");
+	-- # Time Table
+	T			 	: Time_Table.Time_Table_Array := Time_Table.Get_Time_Table_Array("res/time_table.json");
 
 	function Get_Node_Name return String;
 
 	function Get_Name_Server return String;
 
+	function Get_Central_Ticket_Office return String;
+
+	-- #
+	-- # Environment package initialization.
+	-- #
     procedure Init(
-    	N_N 		: in String;
-    	N_S 		: in String);
+    	N_N 		: in 	String;
+    	N_S 		: in 	String;
+    	C_T			: in 	String);
 
-
+	-- #
+	-- # Procedure used to update traveler information.
+	-- #
 	procedure Update_Traveler(
 		Traveler_Index	: in 		Positive;
 		Trav_To_Copy 	: in		Traveler.Traveler_Manager;
 		Ticket_To_Copy 	: access 	Ticket.Ticket_Type);
 
+	-- #
+	-- # Function used to get the index of the Station, given its unique name.
+	-- #
 	function Get_Index_For_Name(
 		Name 			: in 	String) return Natural;
 
@@ -73,5 +87,7 @@ private
     Node_Name : Unbounded_String;
 
     Name_Server : Unbounded_String;
+
+    Central_Ticket_Office : Unbounded_String;
 
 end Environment;

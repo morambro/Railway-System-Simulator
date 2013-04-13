@@ -59,7 +59,7 @@ Un diagramma infromale delle componenti distribuite che compongono il sistema è
 % ############################################### BIGLIETTERIE ####################################################
 % #################################################################################################################	
 
-	\subsection{Biglietterie}
+	\subsection{Biglietterie}\label{subsec:ticket_offices}
 	
 	Per poter gestire meglio la definizione di un percorso e l'erogazione di un Biglietto per un Viaggiatore, ho pensato di introdurre una gerarchia su due livelli, di Biglietterie. Ci saranno dunque tre categorie di Biglietterie:
 		\begin{description}
@@ -68,7 +68,7 @@ Un diagramma infromale delle componenti distribuite che compongono il sistema è
 			\item {\bb{Biglietterie Regionali}}\\
 			Hanno conoscenza regionale della topologia del grafo composto da Stazioni e Segmenti.
 			\item {\bb{Biglietteria Cantrale}} \\ 
-			Ha conoscenza di più alto livello; in particolare, essa mantiene traccia delle connessioni tra le varie regioni ( ovvero i collegamenti tra Stazioni di Gateway di regioni diverse).
+			Ha conoscenza di più alto livello; in particolare, essa mantiene traccia delle connessioni tra le varie regioni ( ovvero i collegamenti tra Stazioni di Gateway di regioni diverse). Tale conoscenza si può immaginare sia memorizzata in una mappa chiave-valore \ttt{Links} dove per ciascuna coppia di Regioni, è mentenuta una lista di tappe successive Regione-Stazione di Gateway da percorrere per andare dalla prima alla seconda.
 		\end{description} 
 	
 	\subsection{Controller Centrale}

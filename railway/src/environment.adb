@@ -40,6 +40,11 @@ package body Environment Is
 		return To_String(Name_Server);
     end Get_Name_Server;
 
+    function Get_Central_Ticket_Office return String is
+    begin
+    	return To_String(Central_Ticket_Office);
+    end Get_Central_Ticket_Office;
+
 
 	function Get_Station_Array(Json_Station : String) return Generic_Station.Stations_Array_Ref is
 		Json_v  : Json_Value := Get_Json_Value(Json_File_Name => Json_Station);
@@ -67,13 +72,16 @@ package body Environment Is
 
 
     procedure Init(
- 		N_N 		: in String;
-    	N_S 		: in String)
+ 		N_N 		: in 	String;
+    	N_S 		: in 	String;
+    	C_T			: in 	String)
     is
     begin
     	Name_Server := To_Unbounded_String(N_S);
 
 		Node_Name := To_Unbounded_String(N_N);
+
+		Central_Ticket_Office := To_Unbounded_String(C_T);
 
     	-- # Creates regional stations array loading data from file
     	Stations 	:= Get_Station_Array("res/" & To_String(Node_Name) & "-stations.json");

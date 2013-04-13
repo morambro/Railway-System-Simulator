@@ -34,6 +34,8 @@ with Route;use Route;
 with Task_Pool;
 with Traveler;
 with Trains;
+with YAMI.Parameters;
+with Message_Agent;
 
 package body Ticket_Office is
 
@@ -79,6 +81,7 @@ package body Ticket_Office is
 		S_From 	: String := Integer'Image(Environment.Get_Index_For_Name(From));
 		S_To	: String := Integer'Image(Environment.Get_Index_For_Name(To));
 	begin
+		Put_Line("" & boolean'image(Paths.Contains(Key => S_From) and Paths.Element(Key => S_From).Contains(Key => S_To)));
 		if Paths.Contains(Key => S_From) and Paths.Element(Key => S_From).Contains(Key => S_To) then
 			declare
 				Best_Path 		: Destinations_Ref := Paths.Element(Key => S_From).Element(Key => S_To);
@@ -104,14 +107,20 @@ package body Ticket_Office is
 						Start_Platform  		: Natural := 0;
 						Destination_Platform	: Natural := 0;
 					begin
+
 						if Matches'Length = 0 then
-							raise No_Route_For_Destination with "Can not create a ticket from " & S_From & " to " & S_To;
+							raise No_Route_For_Destination with "Cannot create a ticket from " & S_From & " to " & S_To;
 						end if;
+
 						-- # Now we have to find the longest match!
 						for J in 1 .. Matches'Length loop
+
 							declare
 								-- # The current route index from where to start searching for a match
 								Start_Index 	: Natural := Routes.Contains(Matches(J),Best_Path(I),Best_Path(I+1));
+
+								-- # Index
+								Index : Natural := Start_Index;
 								-- # A copy of I to modify
 								K 				: Positive := I;
 								-- # The Length of the current Match
@@ -122,38 +131,40 @@ package body Ticket_Office is
 								-- # Continue extending the match if and only if Start_Index and K are under their limits, and
 								-- # (Best_Path(K),Best_Path(K+1)) is equals to the current route stage
 
-								-- # Start Platform for the current examined leg
-								Start_Platform := Routes.All_Routes(Matches(J))(Start_Index).Start_Platform;
-
-								while 	(Start_Index <= Routes.All_Routes(Matches(J))'Length) and
+								while 	(Index <= Routes.All_Routes(Matches(J))'Length) and
 										(K < Best_Path'Length) and
 										Equals loop
 
-										Equals 	:=	(Best_Path(K+1) = Routes.All_Routes(Matches(J))(Start_Index).Next_Station) and
-													(Best_Path(K) 	= Routes.All_Routes(Matches(J))(Start_Index).Start_Station);
+										Equals 	:=	(Best_Path(K+1) = Routes.All_Routes(Matches(J))(Index).Next_Station) and
+													(Best_Path(K) 	= Routes.All_Routes(Matches(J))(Index).Start_Station);
 
 										if Equals then
-
-											Next_Station := Best_Path(K+1);
-											Destination_Platform := Routes.All_Routes(Matches(J))(Start_Index).Platform_Index;
-
 											K := K + 1;
 											Len := Len + 1;
-											Start_Index := Start_Index + 1;
+											Index := Index + 1;
 										end if;
 								end loop;
-								if Routes.All_Routes(Matches(J))(Start_Index-1).Enter_Action /= Route.ENTER then
+								if Routes.All_Routes(Matches(J))(Index-1).Enter_Action /= Route.ENTER then
 									Len := 0;
 								end if;
+
 								if Len > Max_Length then
 									Max_Length := Len;
 									Max_Match := J;
+									-- # Start Platform for the current examined leg
+									Start_Platform := Routes.All_Routes(Matches(J))(Start_Index).Start_Platform;
+									-- # The next station of the stage
+									Next_Station := Best_Path(K);
+									-- # Destination Platform will be the index of the platform found on the last visited route's stage.
+									Destination_Platform := Routes.All_Routes(Matches(J))(Index-1).Platform_Index;
+
 								end if;
 							end;
 						end loop;
 						if Max_Match = 0 then
 							raise No_Route_For_Destination with "Can not create a ticket from " & S_From & " to " & S_To;
 						end if;
+
 						Stages(Stages_Cursor) := (
 							Start_Station 				=> Start_Station,
 							Next_Station  				=> Next_Station,
@@ -181,19 +192,34 @@ package body Ticket_Office is
 		From			: in 	String;
 		To				: in 	String)
 	is
-		procedure Callback (
-			The_Ticket 		: access Ticket.Ticket_Type)
-		is
-		begin
-			Environment.Travelers(Traveler_Index).Ticket := The_Ticket;
+	begin
+		-- # If the Stations are contained in the current Region, create the ticket and return it directly.
+		if Environment.Get_Index_For_Name(From) /= 0 and Environment.Get_Index_For_Name(To) /= 0 then
+
+			Environment.Travelers(Traveler_Index).Ticket := Create_Ticket(
+				From 	=> From,
+				To		=> To);
 			Task_Pool.Execute(
 				Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
-		end Callback;
-	begin
-		if Environment.Get_Index_For_Name(From) /= 0 and Environment.Get_Index_For_Name(To) /= 0 then
-			Callback(Create_Ticket(
-				From 	=> From,
-				To		=> To));
+
+		else
+		-- # The resolution of the Ticket is not local, so perform a remote request.
+			declare
+				Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+			begin
+
+				Parameters.Set_String("from",From);
+				Parameters.Set_String("to",To);
+				Parameters.Set_String("start_node",Environment.Get_Node_Name);
+
+				Message_Agent.Instance.Send(
+					Destination_Address => Environment.Get_Central_Ticket_Office,
+					Object 				=> "cantral_ticket_server",
+					Service 			=> "resolve",
+					Params 				=> Parameters,
+					Callback			=> null
+				);
+			end;
 		end if;
     end Get_Ticket;
 
@@ -202,7 +228,7 @@ package body Ticket_Office is
 		This			: in 	Station_Ticket_Office;
 		Traveler_Index 	: in 	Positive;
 		From			: in 	String;
-		To				: in 	String)-- return access Ticket.Ticket_Type is
+		To				: in 	String)
 	is
 	begin
 		Get_Ticket(Traveler_Index,From,To);

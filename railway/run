@@ -1,1 +1,2 @@
-./trainsimulation $@
+# ./trainsimulation $@
+./trainsimulation -d -ns tcp://localhost:1234 -nn $1 -na $2 -ct tcp://localhost:3333
