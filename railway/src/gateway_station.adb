@@ -34,6 +34,7 @@ with YAMI.Parameters;
 with Message_Agent;
 with Ada.Exceptions;
 with Ticket;
+with Ticket_Office;
 
 package body Gateway_Station is
 
@@ -301,6 +302,16 @@ package body Gateway_Station is
 			" waits by station " & Unbounded_Strings.To_String(This.Name)
 			& " at platform " & Integer'Image(Platform_Index) & " to ARRIVE");
     end Wait_For_Train_To_Arrive;
+
+
+	procedure Buy_Ticket(
+		This 			: in	 Gateway_Station_Type;
+		Traveler_Index	: in	 Positive;
+		To				: in 	 String)
+	is
+	begin
+		Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
+    end Buy_Ticket;
 
 
     procedure Occupy_Platform(

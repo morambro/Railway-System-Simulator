@@ -33,7 +33,7 @@ with Ticket;
 
 package Traveler is
 
-	package Unbounded_Strings renames Ada.Strings.Unbounded;
+	use Ada.Strings.Unbounded;
 
 	type Traveler_Operations_Types is (BUY_TICKET,LEAVE,ENTER,TICKET_READY);
 
@@ -48,16 +48,17 @@ package Traveler is
 	-- # Traveler type declaration
 	type Traveler_Type is record
 		ID 			: Integer;
-		Name 		: Unbounded_Strings.Unbounded_String;
-		Surname 	: Unbounded_Strings.Unbounded_String;
+		Name 		: Unbounded_String;
+		Surname 	: Unbounded_String;
 	end record;
 
 	-- # Traveler Manager
 	type Traveler_Manager is record
 		Traveler 		: Traveler_Type;
 		Next_Operation 	: Traveler_Operations_Types := LEAVE;
-		Destination 	: Positive := 1;
+		Destination 	: Unbounded_String;
 		Ticket 			: access Ticket.Ticket_Type := null;
+		Start_Station 	: Positive;
 	end record;
 
 	type Traveler_Manager_Array is Array(Positive range <>) of aliased Traveler_Manager;

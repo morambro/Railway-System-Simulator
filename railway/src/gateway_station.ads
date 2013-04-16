@@ -172,6 +172,11 @@ package Gateway_Station is
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive);
 
+		overriding procedure Buy_Ticket(
+			This				: in 		Gateway_Station_Type;
+			Traveler_Index		: in		Positive;
+			To					: in 		String);
+
 		overriding function Get_Name(
 			This				: in 		Gateway_Station_Type) return String;
 

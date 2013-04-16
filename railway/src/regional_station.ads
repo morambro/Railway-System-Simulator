@@ -144,6 +144,11 @@ package Regional_Station is
 		overriding function Get_Name(
 			This				: in 		Regional_Station_Type) return String;
 
+		overriding procedure Buy_Ticket(
+			This				: in 		Regional_Station_Type;
+			Traveler_Index		: in		Positive;
+			To					: in 		String);
+
 	-- #
 	-- # Creates a new Station instance
 	-- #

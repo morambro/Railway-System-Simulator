@@ -166,7 +166,9 @@ package body Move_Operation is
 
     procedure Do_Operation(This : in Buy_Ticket_Operation_Type) is
     begin
-		null;
+		Environment.Stations(Environment.Travelers(This.Traveler_Manager_Index).Start_Station).Buy_Ticket(
+			Traveler_Index	=> This.Traveler_Manager_Index,
+			To 				=> To_String(Environment.Travelers(This.Traveler_Manager_Index).Destination));
     end Do_Operation;
 
     procedure Do_Operation(This : in Ticket_Ready_Operation_Type) is

@@ -1,49 +1,54 @@
 {
     "travelers": [
     	 {
-            "traveler": {
-                "id": 1,
-                "name": "Gero",
-                "surname": "Caccamo"
+            "traveler"	: {
+                "id"		: 1,
+                "name"		: "Gero",
+                "surname"	: "Caccamo"
             },
-            "next_operation": 1,
-            "destination": 2
+            "next_operation"	: 1,
+            "destination"		: "2",
+            "start_station" 	: 1 
         },
         {
             "traveler": {
-                "id": 2,
-                "name": "Moreno",
-                "surname": "Ambrosin"
+                "id"		: 2,
+                "name"		: "Moreno",
+                "surname"	: "Ambrosin"
             },
-            "next_operation": 1,
-            "destination": 1
+            "next_operation"	: 1,
+            "destination"		: "3",
+            "start_station" 	: 1 
         },
         {
-            "traveler": {
-                "id": 3,
-                "name": "Giacomo",
-                "surname": "Rossi"
+            "traveler"	: {
+                "id"		: 3,
+                "name"		: "Giacomo",
+                "surname"	: "Rossi"
             },
-            "next_operation": 1,
-            "destination": 3
+            "next_operation"	: 1,
+            "destination"		: "4",
+            "start_station" 	: 1 
         },
         {
-            "traveler": {
-                "id": 4,
-                "name": "John",
-                "surname": "Doe"
+            "traveler"	: {
+                "id"		: 4,
+                "name"		: "John",
+                "surname"	: "Doe"
             },
-            "next_operation": 1,
-            "destination": 3
+            "next_operation"	: 1,
+            "destination"		: "G1",
+            "start_station" 	: 1 
         },
         {
-            "traveler": {
-                "id": 5,
-                "name": "Giuseppe",
-                "surname": "Verdi"
+            "traveler"	: {
+                "id"		: 5,
+                "name"		: "Giuseppe",
+                "surname"	: "Verdi"
             },
-            "next_operation": 1,
-            "destination": 3
+            "next_operation"	: 1,
+            "destination"		: "H",
+            "start_station" 	: 1 
         }
     ]
 }

@@ -32,6 +32,7 @@ with Trains;
 with Routes;
 with Ada.Exceptions;
 with Train;use Train;
+with Ticket_Office;
 
 package body Regional_Station is
 
@@ -159,6 +160,15 @@ package body Regional_Station is
 		);
     end Add_Train;
 
+
+	procedure Buy_Ticket(
+		This 			: in	 Regional_Station_Type;
+		Traveler_Index	: in	 Positive;
+		To				: in 	 String)
+	is
+	begin
+		Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
+	end Buy_Ticket;
 
 
 

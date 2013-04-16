@@ -74,6 +74,11 @@ package Generic_Station is
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive) is abstract;
 
+		procedure Buy_Ticket(
+			This				: in 		Station_Interface;
+			Traveler_Index		: in		Positive;
+			To					: in 		String ) is abstract;
+
 		function Get_Name(
 			This				: in 		Station_Interface) return String is abstract;
 

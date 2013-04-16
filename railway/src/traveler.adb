@@ -29,15 +29,15 @@ package body Traveler is
 
 	function Get_Name(Traveler : Traveler_Manager) return String is
 	begin
-		return Unbounded_Strings.To_String(Traveler.Traveler.Name);
+		return To_String(Traveler.Traveler.Name);
 	end Get_Name;
 
 	procedure Print(T : Traveler_Manager) is
 	begin
 		Ada.Text_IO.Put_Line("ID : " & Integer'Image(T.Traveler.ID));
-		Ada.Text_IO.Put_Line("Name : " & Unbounded_Strings.To_String(T.Traveler.Name));
-		Ada.Text_IO.Put_Line("Surname : " & Unbounded_Strings.To_String(T.Traveler.Surname));
-		Ada.Text_IO.Put_Line("Destination : " & Integer'Image(T.Destination));
+		Ada.Text_IO.Put_Line("Name : " & To_String(T.Traveler.Name));
+		Ada.Text_IO.Put_Line("Surname : " & To_String(T.Traveler.Surname));
+		Ada.Text_IO.Put_Line("Destination : " & To_String(T.Destination));
     end Print;
 
 ---------------------------------------- JSON-Traveler Creation ----------------------------------------------
@@ -50,9 +50,9 @@ package body Traveler is
     function Get_Traveler(Json_Traveler : JSON_Value) return Traveler_Type is
     	T : Traveler_Type;
     begin
-		T.ID 		:= Json_Traveler.Get("id");
-		T.Name 		:= Json_Traveler.Get("name");
-		T.Surname 	:= Json_Traveler.Get("surname");
+		T.ID 			:= Json_Traveler.Get("id");
+		T.Name 			:= Json_Traveler.Get("name");
+		T.Surname 		:= Json_Traveler.Get("surname");
 		return T;
     end;
 
@@ -71,8 +71,13 @@ package body Traveler is
 				when others => T.Next_Operation := LEAVE;
 			end case;
 		end;
+		declare
+			Dest : String := Json_Traveler.Get("destination");
+		begin
+			T.Destination := To_Unbounded_String(Dest);
+		end;
 
-		T.Destination	 := Json_Traveler.Get("destination");
+		T.Start_Station	:= Json_Traveler.Get("start_station");
 
 		return T;
     end Get_Traveler_Manager;
