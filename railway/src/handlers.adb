@@ -79,8 +79,6 @@ package body Handlers Is
 				-- # sure that the fake stage is passed, and that at the index Next_Stage there will be
 				-- # the next stage to travel.
 
-				Put_Line("Next_Stage = " & Integer'Image(Trains.Trains(Train_Index).Next_Stage));
-
 				-- # Re-enqueue the descriptor only if it has more stages to travel
 				if(Trains.Trains(Train_Index).Next_Stage <= Routes.All_Routes(Trains.Trains(Train_Index).Route_Index)'Length) then
 

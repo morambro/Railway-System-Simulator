@@ -113,8 +113,6 @@ package body Train_Pool is
 				-- # Update Current Station!!
 				Trains.Trains(Current_Descriptor_Index).Current_Station := Start_Station;
 
-				Put_Line("NEXT_STAGE = " & Integer'Image(Next_Stage));
-
 				-- # Wait Until time to leave
 
 				declare
@@ -182,10 +180,6 @@ package body Train_Pool is
 		      		Logger.DEBUG);
 
 				-- # ######################## NEXT STATION ACCESS ############################
-
-				Put_Line("NEXT_STAGESSSSSSS = " & Integer'Image(Trains.Trains(Current_Descriptor_Index).Next_Stage));
-
-				Put_Line("ROUTE_LENGTH = " & Integer'Image(Routes.All_Routes(Route_Index)'Length));
 
 		    	-- # Train enters Next Station
 				Environment.Stations(Next_Station).Enter(

@@ -98,7 +98,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		I prerequisiti alla richiesta da parte di un Treno $T$ di accesso ad una Stazione sono:
 		
 			\begin{itemize}
-				\item Il Treno $T$ ha avuto accesso ad un Segmento $S$ che collega la stazione corrente a quella dalla quale proviene. Ciò significa che il suo Descrittore sarà stato inserito nella coda \ttt{Train\_Queue} di $ S $.
+				\item Il Treno $T$ ha avuto accesso ad un Segmento $S$ che collega la stazione corrente a quella dalla quale proviene. Ciò significa che il suo Descrittore sarà stato inserito nella coda \ttt{Train\_Queue} di $S$.
 				\item Il Treno $T$ ha simulato la percorrenza su $S$ 
 				\item Il Treno $T$ uscito dal Segmento $S$, quindi è stato rimosso dalla coda \ttt{Train\_Queue} di $S$.
 			\end{itemize}
@@ -112,23 +112,31 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 
 		Ho vagliato le seguenti soluzioni possibili:
 		\begin{enumerate}
-			\item Rappresentazione della Stazione come entità passiva ad accesso mutuamente esclusivo. Essa manterrà al suo interno una coda per Segmento, del tutto simile alla coda \ttt{Train\_Queue} interna ai Segmenti, e popolata parallelamente a \ttt{Train\_Queue}. In questo modo sarà semplice garantire (con un meccanismo simile a quello utilizzato per l'uscita da un Segmento) un accesso ordinato. Questa soluzione ha però uno svantaggio evidente: la richiesta di accesso avverrà in mutua esclusione anche tra i Treni provenienti da Segmenti diversi, e che quindi si ritroveranno a dover superare un punto di sincronizzazione inutile, se diretti a Piattaforme diverse della Stazione.
+			\item Rappresentazione della Stazione come entità passiva ad accesso mutuamente esclusivo. Essa mantiene al suo interno una coda per Segmento, del tutto simile alla coda \ttt{Train\_Queue} interna ai Segmenti, e popolata parallelamente a \ttt{Train\_Queue}. In questo modo è semplice garantire (con un meccanismo simile a quello utilizzato per l'uscita da un Segmento) un accesso ordinato. Questa soluzione ha però uno svantaggio evidente: la richiesta di accesso avviene in mutua esclusione anche tra i Treni provenienti da Segmenti diversi, e che quindi si ritroveranno a dover superare un punto di sincronizzazione inutile, se diretti a Piattaforme diverse della Stazione.
 			
-			\item Una seconda possibilità prevede la presenza, all'interno di ciascuna Stazione, di una risorsa ad accesso mututamente esclusivo per ciascun Segmento entrante, la quale si occuperà di garantire l'ordine di accesso (tale ordine sarà dato da una coda interna aggiornata in modo analogo alla soluzione precedentemente illustrata). Una volta che il Treno ha guadagnato il permesso di accedere in mutua esclusione alla risorsa protetta di controllo, esso verrà inserito su una coda di Treni presso la Piattaforma corretta. La coda che indicherà l'ordine di accesso, sarà aggiornata dal Segmento mediante un'invocazione ad una procedura di interfaccia della Stazione (ad esempio \ttt{Add\_Train}).
+			\item Una seconda possibilità prevede la presenza, all'interno di ciascuna Stazione, di una risorsa ad accesso mututamente esclusivo per ciascun Segmento entrante, la quale si occuperà di garantire l'ordine di accesso (tale ordine sarà dato da una coda interna aggiornata in modo analogo alla soluzione precedentemente illustrata). Una volta che il Treno ha guadagnato il permesso di accedere in mutua esclusione alla risorsa protetta di controllo, esso avrà il permesso di accedere alla Piattaforma corretta, in modo concorrente con i Treni provenienti da altri Segmenti entranti. La coda con politica di ordinamento FIFO che indicherà l'ordine di accesso, sarà aggiornata dal Segmento mediante un'invocazione ad una procedura di interfaccia della Stazione (ad esempio \ttt{Add\_Train}).
 			In questo modo la Stazione diventerà solo un'interfaccia utilizzabile per l'accesso alle piattaforme, e inoltre i vincoli di ordinamento e accesso concorrente alle Piattaforme da Treni provenienti da Segmenti diversi saranno garantiti.
 			
 			Lo svantaggio di utilizzare questa soluzione risiede nella creazione delle entità protette, una per ciascun Segmento entrante, che regolano l'accesso ordinato, e quindi spostano parte della conoscenza della topologia della rete ferroviaria anche sulle Stazioni, rendendone più complessa la configurazione iniziale.
 			
-			\item La terza soluzione esaminata, che è quella effettivamente utilizzata nel progetto, è simile alla soluzione precedente, ma a differenza di essa opera una popolazione dinamica della struttura dati che andrà a contenere le risorse protette (\ttt{Access\_Controller}) che gaantiscono l'ordinamento. Ciascun Treno nell'accedere alla Stazione, includerà anche un'identificativo univoco del Segmento di provenienza, e se per esso non esisterà una controllore degli accessi, allora esso sara creato. Questa variante ha il vantaggio per il quale le stazioni non devono necessariamente essere a conoscenza della topologia del sistema ferroviario; inoltre l'allocazione di controllori sarà limitata al numero massimo di Segmenti in ingresso.
-					 
-				
+			\item La terza soluzione esaminata, che è quella effettivamente utilizzata nel progetto, è simile alla soluzione precedente, ma a differenza di essa opera una popolazione dinamica della struttura dati che andrà a contenere le risorse protette (\ttt{Access\_Controller}) che garantiscono l'ordinamento. Ciascun Treno nell'accedere alla Stazione, includerà anche un'identificativo univoco del Segmento di provenienza, e se per esso non esisterà una controllore degli accessi, allora esso verrà creato. Questa variante ha il vantaggio per il quale le stazioni non devono necessariamente essere a conoscenza della topologia del sistema ferroviario; inoltre l'allocazione di controllori sarà limitata al massimo al numero di Segmenti in ingresso.
 		\end{enumerate} 
 		
+		Il controllore di accessi (\ttt{Access\_Controller}) ha quindi il compito di fornire da semaforo internamente alla Stazione, in modo tale ogni volta da lasciar passare solamente il Treno (il thread che lo esegue) che effettivamente è primo nella coda. Siano \ttt{Enter} e \ttt{Leave} rispettivamente le due procedure protette del semaforo, allora l'accesso alla Piattaforma verrà regolato nel seguente modo:
+			\begin{itemize}
+				\item Il Treno $T$ usa \ttt{Enter} per poter accedere alla prossima Piattaforma.
+				\item Se $T$ è effettivamente il primo della Coda allora 
+					\begin{itemize}
+						\item prosegue all'\ii{accesso alla Piattaforma};
+						\item libera l'\ttt{Access\_Controller} con \ttt{Free}. 
+					\end {itemize}
+				\item Altrimenti viene messo in attesa del proprio turno su una apposita coda (anch'essa FIFO). I Treni in attesa su questa coda verranno risvegliati ogni volta che un Treno effettuerà un accesso e una successiva chiamata a \ttt{Free}.
+			\end{itemize}
 		
 	% ############################################## INGRESSO_PIATTAFORMA #########################################
 		\item{\ii{Ingresso in una Piattaforma}}\\
 		
-		Dopo aver superato la risorsa di controllo \ttt{Access\_Controller}, ciascun Treno viene accodato presso la Piattaforma, interna a ciascuna Stazione, prevista dal percorso. La semantica di accodamento su di una generica Piattaforma $P$ (supponiamo disponibile mediante procedura eseguita in mutua esclusione) è la seguente:
+		Dopo aver superato la risorsa di controllo \ttt{Access\_Controller}, ciascun Treno è libero di richiedere l'accesso alla Piattaforma successiva prevista dal percorso, interna a ciascuna Stazione, poiché sicuramente sarà l'unico ad eseguire a questo punto. La semantica di accodamento su di una generica Piattaforma $P$ (supponiamo disponibile mediante procedura eseguita in mutua esclusione) è la seguente:
 		\begin{itemize}
 			\item Se $P$ è libera, ovvero il flag booleano \ttt{Free} sarà \ttt{True}, allora 
 				\begin{itemize}
@@ -142,7 +150,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 			\item Se invece la Piattaforma risulta occupata (\ttt{Free = False}), il Treno viene accodato presso una coda di Treni interna alla Piattaforma. Rappresentando la Piattaforma come una risorsa protetta da monitor, l'accodamento si traduce in una attesa su condizione, \ttt{wait(Free = True)}.
 		\end{itemize}
 			
-		L'Operazione di \bb{Discesa dei Viaggiatori}, si basa sulla possibilità che presso la Piattaforma corrente $P$ vi siano Viaggiatori all'interno della coda \ttt{Arrivals\_Queue} in attesa di un evento generato da uno specifico Treno che coincide con il suo arrivo presso $P$. L'operazione di Discesa dei passeggeri ha come precondizione l'accesso alla Piattaforma da parte di un Treno $T$ descritto in precedenza, ed è realizzata dalle seguenti azioni (eseguite dal thread associato a $T$ in mutua esclusione all'interno della risorsa protetta $P$):
+		L'Operazione di \bb{Discesa dei Viaggiatori}, si basa sulla possibilità che presso la Piattaforma corrente $P$ vi siano Viaggiatori all'interno della coda \ttt{Arrivals\_Queue} in attesa di un evento generato da uno specifico Treno, ovvero il suo arrivo presso $P$. L'operazione di Discesa dei passeggeri ha come precondizione l'accesso alla Piattaforma da parte di un Treno $T$ descritto in precedenza, ed è realizzata dalle seguenti azioni (eseguite dal thread associato a $T$ in mutua esclusione all'interno della risorsa protetta $P$):
 		\begin{itemize}
 			\item Viene estratto ciascun Viaggiatore $V$ dalla coda \ttt{Arrival\_Queue}, e per ciascuno di essi:
 			\begin{itemize}
@@ -158,6 +166,8 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 				\item Se $T$ invece non è il Treno atteso da $V$, quest'ultimo viene reinserito nella coda \ttt{Arrivals\_Queue}.
 			\end {itemize}
 		\end{itemize}
+		
+	Le operazioni necessarie ad attuare la Discesa dei Viaggiatori, possono essere eseguite sia internamente che esternamente alla risorsa a protezione della Piattaforma. Le due soluzioni sono logicamente equivalenti, tuttavia ho preferito mantenere l'esecuzione del codice per le discesa esterno, per limitare il compito svolto dalla Risorsa protetta a Semplice semaforo per garantire l'accesso mutuamente esclusivo.
 	
 	% ################################################# USCITA_PIATTAFORMA #########################################
 	\item{\ii{Uscita da una Piattaforma}}\\
@@ -165,19 +175,18 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		L'uscita da una Piattaforma $P$ necessita di due prerequisiti principali:
 		
 			\begin{itemize}
-				\item Il thread che gestisce il Treno ha prima effettuato l'ingresso, e quindi \ttt{Free = False} ed è già stata effettuata la Discesa dei Passeggeri.
+				\item Il thread che gestisce il Treno ha prima effettuato l'ingresso, e quindi \ttt{Free = False} presso la risorsa a protezione della Piattaforma, ed è già stata effettuata la Discesa dei Passeggeri (se prevista dal Percorso del Treno).
 				\item \'E stato generato l'evento che notifica l'arrivo dell'orario previsto per la partenza.
 			\end{itemize}
 		
-		A questo punto, le operazioni effettuate all'interno della sezione critica (eseguita in mutua esclusione dal thread corrente) sono:
+		A questo punto, le operazioni effettuate (eseguite in mutua esclusione dal thread corrente) sono:
 		
 			\begin{itemize}
-				\item Il flag booleano \ttt{Free} viene ripristinato a \ttt{True}.
 				\item Viene effettuata la Salita dei Viaggiatori in attesa presso $P$.
-				\item La risorsa viene rilasciata dal Treno in esecuzione. 
+				\item La risorsa viene rilasciata dal Treno in esecuzione, cambiando il valore del flag \ttt{Free} a \ttt{True}.
 			\end{itemize}
 		
-		La \bb{Salita dei Viaggiatori} è simile alla discesa dei Passeggeri presentata al punto precedente. Essa viene eseguita all'interno della risorsa protetta $P$ (quindi in mutua esclusione), ed è composta dalle seguenti azioni:
+		La \bb{Salita dei Viaggiatori} è simile alla discesa dei Passeggeri presentata al punto precedente. Essa viene eseguita in mutua esclusione, ed è composta dalle seguenti azioni:
 		\begin{itemize}
 			\item Viene estratto ciascun Viaggiatore $V$ dalla coda \ttt{Leaving\_Queue} di $P$, e per ciascuno di essi:
 			\begin{itemize}
@@ -190,6 +199,8 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 			\end {itemize}
 		\end{itemize}
 	\end {description}
+
+	Anche in questo caso, le operazioni che attuano la discesa dei passeggeri possono essere eseguite internamente alla sezione critica definita dalla risorsa a protezione della Piattaforma, o esternamente, per poi permettere l'acquisizione da parte di un altro Treno liberandola (\ttt{Free = True}). Anche in questo caso ho preferito la seconda soluzione.
 
 % ############################################################################################################
 % ########################################### ACCESSO_STAZIONE_GATEWAY #######################################

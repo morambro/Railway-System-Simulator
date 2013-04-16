@@ -26,6 +26,7 @@
 
 with Ada.Containers;use Ada.Containers;
 with Ada.Text_IO;use Ada.Text_IO;
+with Ada.Exceptions;
 
 package body Queue is
 
@@ -54,10 +55,10 @@ package body Queue is
     end Terminable_Queue;
 
 
-   -- ################## SIMPLE_QUEUE ##########################
+   -- ################## LIMITED_SIMPLE_QUEUE ##########################
 	procedure Enqueue(
-		This 		: access Limited_Simple_Queue;
-		The_Element : in	Element) is
+		This 		: in 	out Limited_Simple_Queue;
+		The_Element : in	 	Element) is
 	begin
 		if This.Elements_Number = This.Size then
 			raise Simple_Queue_Element with "Queue is Full!";
@@ -67,8 +68,8 @@ package body Queue is
     end Enqueue;
 
 	procedure Dequeue(
-		This 		: access Limited_Simple_Queue;
-		The_Element	:		out	Element) is
+		This 		: in 	out Limited_Simple_Queue;
+		The_Element : 		out	Element) is
 	begin
 		The_Element := This.Queue(1);
 		for I in 2 .. This.Elements_Number loop
@@ -78,10 +79,43 @@ package body Queue is
     end Dequeue;
 
     function Get(
-    	This 		: access Limited_Simple_Queue;
-    	I 			: in 	Positive) return Element is
+    	This 		: in		Limited_Simple_Queue;
+		I 			: in 		Positive) return Element is
     begin
     	return This.Queue(I);
+    end Get;
+
+	-- ################ UNLIMITED_SIMPLE_QUEUE ##########################
+
+	procedure Enqueue(
+		This 		: in out Unlimited_Simple_Queue;
+		The_Element : in	 Element) is
+	begin
+		This.Queue.Append (
+			New_Item => The_Element);
+    end Enqueue;
+
+	procedure Dequeue(
+		This 		: in out Unlimited_Simple_Queue;
+		The_Element : 	 out Element) is
+	begin
+		if not This.Queue.Is_Empty then
+			-- # Get the value of the first element
+			The_Element := This.Queue.Element(
+				Index => 1);
+			-- # Delete the first element
+			This.Queue.Delete (
+				Index => 1,
+	        	Count => 1);
+	    end if;
+    end Dequeue;
+
+
+   	function Get(
+			This 	: in out Unlimited_Simple_Queue;
+			Index 	: in	 Natural) return Element is
+	begin
+		return This.Queue.Element(Index => Index);
     end Get;
 
 end Queue;

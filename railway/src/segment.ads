@@ -98,7 +98,10 @@ package Segment is
 		Can_Retry_Enter 	: Boolean := False;
 
 		-- # Number of exit attempt
-		Retry_Num 			: Integer := 0;
+		Enter_Retry_Num 	: Natural := 0;
+
+		-- # Number of exit attempt
+		Retry_Num 			: Natural := 0;
 
 		-- # Number of trains currently running
 		Trains_Number 		: Natural := 0;

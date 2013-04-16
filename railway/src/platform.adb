@@ -40,71 +40,100 @@ package body Platform is
 
 	protected body Platform_Type is
 
-		-- #
-		-- # Entry At which trains are re-queued to enter the station. Once a train enters the Platform,
-		-- # it performs alighting and boarding of the Travelers at the platform.
-		-- #
-		entry Enter(
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action)
-		when True is
-		begin
-
-			null;
-
-		end Enter;
-
-
-		-- #
-		-- #
-		-- #
 		procedure Leave(
+			Train_Descriptor_Index 	: in 	Positive) is
+		begin
+			-- # It simply Frees the Platform to let other Trains access it
+			Free := True;
+		end Leave;
+
+		entry Enter_Regional (
+			Train_Descriptor_Index 	: in 	Positive) when Free and Enter_FB'Count = 0 is
+		begin
+			-- # Occupy the platform. Here the requirement is that no FB Trains are still trying to access the Platform
+			Free := False;
+		end Enter_Regional;
+
+		entry Enter_FB (
+			Train_Descriptor_Index 	: in 	Positive) when Free is
+		begin
+			-- # Occupy the platform. The requirement is Platform Free.
+			Free := False;
+		end Enter_FB;
+
+	end Platform_Type;
+
+
+	-- ################################## PLATFORM_HANDLER #########################################
+
+
+	procedure Perform_Entrance(
+			This 					: access Platform_Handler;
 			Train_Descriptor_Index 	: in 	Positive;
 			Action 					: in	Route.Action)
-		is
-			Leaving_Number 	: Count_Type := Leaving_Queue.Current_Use;
-			Traveler_Manager_Index		: Positive;
-			Next_Stage 		: Positive;
-		begin
-			Free := True;
+	is
+		Arrival_Number 			: Count_Type := This.Arrival_Queue.Current_Use;
+		Traveler_Manager_Index	: Positive;
+		Next_Stage 				: Positive;
+	begin
+		-- #
+		-- # Alighting of Travelers
+		-- #
+		if Action = Route.ENTER then
+			Logger.Log(
+					Sender  => NAME,
+					Message => "Train " & Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) & " Performs Alighting of travelers" &
+								" platform " & Integer'Image(This.ID),
+					L       => Logger.DEBUG);
 
-			if Action = Route.ENTER then
-				-- #
-				-- # Boarding of Travelers
-				-- #
-				Logger.Log(
-						Sender  => NAME,
-						Message => "Train " & Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) & " Performs Boarding of travelers",
-						L       => Logger.DEBUG);
-				for I in 1..Leaving_Number loop
+			for I in 1..Arrival_Number loop
+				-- # in Traveler_Manager_Index there will be the index of the next Traveler
+				This.Arrival_Queue.Dequeue(Traveler_Manager_Index);
 
-					-- # Retrieve the next Traveler Manager Index
-					Leaving_Queue.Dequeue(Traveler_Manager_Index);
+				-- # Retrieve the next stage from the ticket of the current Traveler
+				Next_Stage := Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage;
+				if Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
+					-- # If the current Traveler was not waiting for this train, re-queue it
+					This.Arrival_Queue.Enqueue(Traveler_Manager_Index);
+				else
 
-
-					-- # Retrieve the Next_Stage Index
-					Next_Stage := Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage;
-
-					if Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
-						-- # If the current Traveler was not waiting for this train, re-queue it
-						Leaving_Queue.Enqueue(Traveler_Manager_Index);
+					-- # Decrease the number of occupied sits
+					if Trains.Trains(Train_Descriptor_Index).Occupied_Sits > 0 then
+						Trains.Trains(Train_Descriptor_Index).Occupied_Sits := Trains.Trains(Train_Descriptor_Index).Occupied_Sits - 1;
 					else
-						-- # Increase the number of occupied sits
-						Trains.Trains(Train_Descriptor_Index).Occupied_Sits := Trains.Trains(Train_Descriptor_Index).Occupied_Sits + 1;
-
-						-- # If the current traveler have to board to the train...
 						Logger.Log(
+							Sender 	=> NAME,
+							Message => "ERROR : Traveler " & Integer'Image(Traveler_Manager_Index) & " arrived without traveling!",
+							L		=> Logger.ERROR
+						);
+					end if;
+
+					Logger.Log(
 							Sender  => NAME,
 							Message => "Traveler " &
-									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
-									   " boarding at station " &
+										Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
+									   " Leaves the train at station " &
 									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
 							L       => Logger.DEBUG);
 
+					-- # Check if there are more stages, otherwise STOP
+					if 	Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage =
+						Environment.Travelers(Traveler_Manager_Index).Ticket.Stages'Length then
+						Logger.Log(
+							Sender  => NAME,
+							Message => "Traveler " &
+										Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
+									   " FINISHED HIS TRAVEL" &
+									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
+							L       => Logger.DEBUG);
+					else
+
+						-- # Go to the next stage (there will be at least another one for sure!)
+						Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage :=
+							Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage + 1;
 
 						declare
-							-- # The next Traveler operation
-							Next_Operation : Traveler.Traveler_Operations_Types := Traveler.ENTER;
+							Next_Operation : Traveler.Traveler_Operations_Types := Traveler.LEAVE;
 						begin
 							-- # Execute the operation number 2 (Traveler waits to leave the train).
 							Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
@@ -118,221 +147,144 @@ package body Platform is
 								    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
 								    			Ada.Exceptions.Exception_Message(Error),
 								    L       => Logger.ERROR);
-
 						end;
-
 					end if;
-				end loop;
 
-				Logger.Log(
-					Sender  => NAME,
-					Message => "Train " &
-							   Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) &
-							   " has" & Integer'Image(Trains.Trains(Train_Descriptor_Index).Occupied_Sits) & "/" &
-							   Integer'Image(Trains.Trains(Train_Descriptor_Index).Sits_Number) & " travelers",
-					L       => Logger.DEBUG);
-			end if;
-		end Leave;
+				end if;
+			end loop;
+		end if;
+    end Perform_Entrance;
 
+	procedure Perform_Exit(
+			This 					: access Platform_Handler;
+			Train_Descriptor_Index 	: in 	Positive;
+			Action 					: in	Route.Action)
+	is
+		Leaving_Number 			: Count_Type := This.Leaving_Queue.Current_Use;
+		Traveler_Manager_Index	: Positive;
+		Next_Stage 				: Positive;
+	begin
 
-		procedure Add_Incoming_Traveler(Traveler : Positive) is
-		begin
-			Arrival_Queue.Enqueue(Traveler);
-		end Add_Incoming_Traveler;
-
-
-		procedure Add_Outgoing_Traveler(Traveler : Positive) is
-		begin
-			Leaving_Queue.Enqueue(Traveler);
+		if Action = Route.ENTER then
+			-- #
+			-- # Boarding of Travelers
+			-- #
 			Logger.Log(
-				NAME,
-				"Travelers in queue = " & Count_Type'Image(Arrival_Queue.Current_Use),
-				Logger.DEBUG);
+					Sender  => NAME,
+					Message => "Train " & Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) & " Performs Boarding of travelers",
+					L       => Logger.DEBUG);
+			for I in 1..Leaving_Number loop
 
-		end Add_Outgoing_Traveler;
+				-- # Retrieve the next Traveler Manager Index
+				This.Leaving_Queue.Dequeue(Traveler_Manager_Index);
 
 
-		entry Enter_Regional (
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action)
-		when Free and Enter_FB'Count = 0
-		is
-			Arrival_Number 			: Count_Type := Arrival_Queue.Current_Use;
-			Leaving_Number 			: Count_Type := Leaving_Queue.Current_Use;
-			Traveler_Manager_Index	: Positive;
-			Next_Stage 				: Positive;
-		begin
-			-- # ...
-			Free := False;
-			-- #
-			-- # Alighting of Travelers
-			-- #
-			if Action = Route.ENTER then
-				Logger.Log(
+				-- # Retrieve the Next_Stage Index
+				Next_Stage := Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage;
+
+				if Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
+					-- # If the current Traveler was not waiting for this train, re-queue it
+					This.Leaving_Queue.Enqueue(Traveler_Manager_Index);
+				else
+					-- # Increase the number of occupied sits
+					Trains.Trains(Train_Descriptor_Index).Occupied_Sits := Trains.Trains(Train_Descriptor_Index).Occupied_Sits + 1;
+
+					-- # If the current traveler have to board to the train...
+					Logger.Log(
 						Sender  => NAME,
-						Message => "Train " & Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) & " Performs Alighting of travelers" &
-									" platform " & Integer'Image(ID),
+						Message => "Traveler " &
+								   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
+								   " boarding at station " &
+								   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
 						L       => Logger.DEBUG);
 
-				for I in 1..Arrival_Number loop
-					-- # in Traveler_Manager_Index there will be the index of the next Traveler
-					Arrival_Queue.Dequeue(Traveler_Manager_Index);
 
-					-- # Retrieve the next stage from the ticket of the current Traveler
-					Next_Stage := Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage;
-					if Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
-						-- # If the current Traveler was not waiting for this train, re-queue it
-						Arrival_Queue.Enqueue(Traveler_Manager_Index);
-					else
+					declare
+						-- # The next Traveler operation
+						Next_Operation : Traveler.Traveler_Operations_Types := Traveler.ENTER;
+					begin
+						-- # Execute the operation number 2 (Traveler waits to leave the train).
+						Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
+						-- # Set the new Operation Index
+						Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
 
-						-- # Decrease the number of occupied sits
-						if Trains.Trains(Train_Descriptor_Index).Occupied_Sits > 0 then
-							Trains.Trains(Train_Descriptor_Index).Occupied_Sits := Trains.Trains(Train_Descriptor_Index).Occupied_Sits - 1;
-						else
-							Logger.Log(
-								Sender 	=> NAME,
-								Message => "ERROR : Traveler " & Integer'Image(Traveler_Manager_Index) & " arrived without traveling!",
-								L		=> Logger.ERROR
-							);
-						end if;
-
-						Logger.Log(
-								Sender  => NAME,
-								Message => "Traveler " &
-											Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
-										   " Leaves the train at station " &
-										   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
-								L       => Logger.DEBUG);
-
-						-- # Check if there are more stages, otherwise STOP
-						if 	Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage =
-							Environment.Travelers(Traveler_Manager_Index).Ticket.Stages'Length then
+					exception
+						when Error : others =>
 							Logger.Log(
 								Sender  => NAME,
-								Message => "Traveler " &
-											Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
-										   " FINISHED HIS TRAVEL" &
-										   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
-								L       => Logger.DEBUG);
-						else
+							    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
+							    			Ada.Exceptions.Exception_Message(Error),
+							    L       => Logger.ERROR);
 
-							-- # Go to the next stage (there will be at least another one for sure!)
-							Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage :=
-								Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage + 1;
+					end;
 
-							declare
-								Next_Operation : Traveler.Traveler_Operations_Types := Traveler.LEAVE;
-							begin
-								-- # Execute the operation number 2 (Traveler waits to leave the train).
-								Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
-								-- # Set the new Operation Index
-								Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
+				end if;
+			end loop;
 
-							exception
-								when Error : others =>
-									Logger.Log(
-										Sender  => NAME,
-									    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
-									    			Ada.Exceptions.Exception_Message(Error),
-									    L       => Logger.ERROR);
-							end;
-						end if;
+			Logger.Log(
+				Sender  => NAME,
+				Message => "Train " &
+						   Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) &
+						   " has" & Integer'Image(Trains.Trains(Train_Descriptor_Index).Occupied_Sits) & "/" &
+						   Integer'Image(Trains.Trains(Train_Descriptor_Index).Sits_Number) & " travelers",
+				L       => Logger.DEBUG);
+		end if;
+    end Perform_Exit;
 
-					end if;
-				end loop;
-			end if;
-		end Enter_Regional;
 
-		entry Enter_FB (
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action)
-		when Free is
-			Arrival_Number 			: Count_Type := Arrival_Queue.Current_Use;
-			Leaving_Number 			: Count_Type := Leaving_Queue.Current_Use;
-			Traveler_Manager_Index	: Positive;
-			Next_Stage 				: Positive;
-		begin
-			-- # ...
-			Free := False;
-			-- #
-			-- # Alighting of Travelers
-			-- #
-			if Action = Route.ENTER then
-				Logger.Log(
-						Sender  => NAME,
-						Message => "Train " & Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) & " Performs Alighting of travelers" &
-									" platform " & Integer'Image(ID),
-						L       => Logger.DEBUG);
+	procedure Enter(
+		This 					: access Platform_Handler;
+		Train_Descriptor_Index 	: in 	Positive;
+		Action 					: in	Route.Action) is
+	begin
+		if Trains.Trains(Train_Descriptor_Index).T_Type = Train.FB then
+			This.The_Platform.Enter_FB(
+				Train_Descriptor_Index 	=> Train_Descriptor_Index);
+		else
+			This.The_Platform.Enter_Regional(
+				Train_Descriptor_Index 	=> Train_Descriptor_Index);
+		end if;
 
-				for I in 1..Arrival_Number loop
-					-- # in Traveler_Manager_Index there will be the index of the next Traveler
-					Arrival_Queue.Dequeue(Traveler_Manager_Index);
+		-- # At this point the Task Train has access to the platform!
 
-					-- # Retrieve the next stage from the ticket of the current Traveler
-					Next_Stage := Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage;
-					if Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
-						-- # If the current Traveler was not waiting for this train, re-queue it
-						Arrival_Queue.Enqueue(Traveler_Manager_Index);
-					else
+		-- # CODE FOR ENTRANCE
+		This.Perform_Entrance(
+			Train_Descriptor_Index	=> Train_Descriptor_Index,
+			Action 					=> Action);
 
-						-- # Decrease the number of occupied sits
-						if Trains.Trains(Train_Descriptor_Index).Occupied_Sits > 0 then
-							Trains.Trains(Train_Descriptor_Index).Occupied_Sits := Trains.Trains(Train_Descriptor_Index).Occupied_Sits - 1;
-						else
-							Logger.Log(
-								Sender 	=> NAME,
-								Message => "ERROR : Traveler " & Integer'Image(Traveler_Manager_Index) & " arrived without traveling!",
-								L		=> Logger.ERROR
-							);
-						end if;
+    end Enter;
 
-						Logger.Log(
-								Sender  => NAME,
-								Message => "Traveler " &
-											Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
-										   " Leaves the train at station " &
-										   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
-								L       => Logger.DEBUG);
+	procedure Leave(
+		This 					: access Platform_Handler;
+		Train_Descriptor_Index 	: in 	Positive;
+		Action 					: in	Route.Action) is
+	begin
 
-						-- # Check if there are more stages, otherwise STOP
-						if 	Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage =
-							Environment.Travelers(Traveler_Manager_Index).Ticket.Stages'Length then
-							Logger.Log(
-								Sender  => NAME,
-								Message => "Traveler " &
-											Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
-										   " FINISHED HIS TRAVEL" &
-										   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
-								L       => Logger.DEBUG);
-						else
+		-- # CODE FOR EXIT...
+		This.Perform_Exit(
+			Train_Descriptor_Index	=> Train_Descriptor_Index,
+			Action					=> Action);
 
-							-- # Go to the next stage (there will be at least another one for sure!)
-							Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage :=
-								Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage + 1;
 
-							declare
-								Next_Operation : Traveler.Traveler_Operations_Types := Traveler.LEAVE;
-							begin
-								-- # Execute the operation number 2 (Traveler waits to leave the train).
-								Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
-								-- # Set the new Operation Index
-								Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
+		This.The_Platform.Leave(
+			Train_Descriptor_Index 	=> Train_Descriptor_Index);
 
-							exception
-								when Error : others =>
-									Logger.Log(
-										Sender  => NAME,
-									    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
-									    			Ada.Exceptions.Exception_Message(Error),
-									    L       => Logger.ERROR);
-							end;
-						end if;
+    end Leave;
 
-					end if;
-				end loop;
-			end if;
-		end Enter_FB;
+	procedure Add_Incoming_Traveler(
+		This 					: access Platform_Handler;
+		Traveler 				: in 	Positive) is
+	begin
+		This.Arrival_Queue.Enqueue(Traveler);
+    end Add_Incoming_Traveler;
 
-	end Platform_Type;
+	procedure Add_Outgoing_Traveler(
+		This 					: access Platform_Handler;
+		Traveler 				: in 	Positive) is
+	begin
+		This.Leaving_Queue.Enqueue(Traveler);
+    end Add_Outgoing_Traveler;
+
+
 
 end Platform;

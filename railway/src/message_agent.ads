@@ -126,4 +126,5 @@ private
 	end record;
 
 	Main_Handler 	 : aliased Main_Message_Handler;
+
 end Message_Agent;

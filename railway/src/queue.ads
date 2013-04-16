@@ -26,6 +26,8 @@
 
 with Ada.Containers.Unbounded_Synchronized_Queues;
 with Ada.Containers.Synchronized_Queue_Interfaces;
+with Ada.Finalization;
+with Ada.Containers.Vectors;
 --
 -- Declaration of a generic queue implementation of elements of type Element
 --
@@ -37,6 +39,8 @@ package Queue is
 
 	package Unbounded_Queue is new Ada.Containers.Unbounded_Synchronized_Queues
 		(Queue_Interfaces => Unbounded_Queue_Interface);
+
+	-- ################ TERMINABLE_UNBOUNDED_QUEUE:
 
 	protected type Terminable_Queue is
 		procedure Enqueue(
@@ -55,29 +59,48 @@ package Queue is
 
 	Simple_Queue_Element : Exception;
 
---  	type Limited_Simple_Queue(Size : Positive) is tagged private;
+	-- ################ LIMITED_SIMPLE_QUEUE:
 
 	type Limited_Simple_Queue_Array is array (Positive range <>) of Element;
 
-	type Limited_Simple_Queue(Size : Positive) is tagged record
+	type Limited_Simple_Queue(Size : Positive) is tagged limited record
 		Queue 			: Limited_Simple_Queue_Array(1..Size);
 		Elements_Number : Natural := 0;
 	end record;
 
 		procedure Enqueue(
-			This 		: access Limited_Simple_Queue;
-			The_Element : in	Element);
+			This 		: in 	out Limited_Simple_Queue;
+			The_Element : in		Element);
 
 		procedure Dequeue(
-			This 		: access Limited_Simple_Queue;
+			This 		: in 	out Limited_Simple_Queue;
 			The_Element : 		out	Element);
 
 		function Get(
-			This 		: access Limited_Simple_Queue;
-			I 			: in Positive) return Element;
+			This 		: in		Limited_Simple_Queue;
+			I 			: in 		Positive) return Element;
 
-private
+	-- ################ UNLIMITED_SIMPLE_QUEUE:
 
+	package Element_Vectors is new Ada.Containers.Vectors (Positive, Element);
+
+
+	type Unlimited_Simple_Queue is tagged limited record
+		Queue 			: Element_Vectors.Vector;
+		Elements_Number : Natural := 0;
+	end record;
+
+		procedure Enqueue(
+			This 		: in out Unlimited_Simple_Queue;
+			The_Element : in	 Element);
+
+		procedure Dequeue(
+			This 		: in out Unlimited_Simple_Queue;
+			The_Element : 	 out	Element);
+
+		function Get(
+			This 		: in out Unlimited_Simple_Queue;
+			Index 		: in	 Natural) return Element;
 
 
 end Queue;

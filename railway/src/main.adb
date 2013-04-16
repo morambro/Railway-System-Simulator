@@ -161,10 +161,10 @@ begin
 				Segments.Init;
 				--Ticket_Office.Init;
 
---  				if Node_Name = "Node_1" then
---  					Train_Pool.Associate(2);
---  --  					Train_Pool.Associate(1);
---  				end if;
+				if Node_Name = "Node_1" then
+					Train_Pool.Associate(2);
+					Train_Pool.Associate(1);
+				end if;
 
 --  				if Environment.Get_Node_Name = "Node_1" then
 --  					Train_Pool.Associate(1);

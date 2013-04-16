@@ -102,7 +102,6 @@ package body Segment is
 			-- parameters settings.
 			-- Add the train to the train queue
 			Trains_Number 		:= Trains_Number + 1;
-			Max_Train_Occupied 	:= Max_Train_Occupied + 1;
 
 			Running_Trains.Enqueue(Trains.Trains(To_Add).ID);
 
@@ -138,11 +137,18 @@ package body Segment is
 			Leg_Length 	: 		out Positive) when Can_Retry_Enter is
 		begin
 
+			if Enter_Retry_Num <= 1 then
+				Can_Retry_Enter := False;
+			end if;
+
+			Enter_Retry_Num := Enter_Retry_Num - 1;
+
 			-- # If coming from the same direction as before, but overtook the max per side, re-queue to Wait
 			if Current_Direction = Trains.Trains(To_Add).Current_Station and Max_Train_Occupied = Max_Trains then
 				requeue Wait;
 			end if;
 
+			-- # If the Segment was free, set Free to False, and set also the new access direction
 			if Free then
 				Logger.Log(
 					NAME,
@@ -152,6 +158,7 @@ package body Segment is
 				Current_Direction := Trains.Trains(To_Add).Current_Station;
 			end if;
 
+			-- # Check if the Train is entered by the same direction
 			if Current_Direction = Trains.Trains(To_Add).Current_Station then
 				Max_Train_Occupied := Max_Train_Occupied + 1;
 			else
@@ -195,7 +202,8 @@ package body Segment is
 					Running_Trains.Dequeue(T);
 				end;
 
-				-- If there is at least one train in queue, open the guard.
+				-- # If there is at least one train in exit queue, open the guard
+				-- # to let it leave the segment
 				if(Retry'Count > 0) then
 					Retry_Num := Retry'Count;
 					Can_Retry_Leave := True;
@@ -210,11 +218,12 @@ package body Segment is
 				-- Decrease the number of running trains by one
 				Trains_Number := Trains_Number - 1;
 
-				-- If there is no other train running
+				-- # If there is no other train running
 				if( Trains_Number = 0 ) then
-					-- If there is at least one train waiting to enter the Segment,
-					-- Open the guard!
+					-- # If there is at least one train waiting to enter the Segment,
+					-- # Open the guard!
 					if( Wait'Count > 0) then
+						Enter_Retry_Num := Wait'Count;
 						Can_Retry_Enter := True;
 					else
 						Free := True;
@@ -280,6 +289,7 @@ package body Segment is
 				-- Set to Free the Segment if no other train is in or waiting
 				if( Trains_Number = 0 ) then
 					if( Wait'Count > 0) then
+						Enter_Retry_Num := Wait'Count;
 						Can_Retry_Enter := True;
 					else
 						Free := True;

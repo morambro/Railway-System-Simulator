@@ -44,27 +44,18 @@ with Generic_Platform;
 
 package Regional_Station is
 
-	-- #
-	-- # Array Containing Platforms references
-	-- #
-	type Platforms_List is array (Positive range <>) of access Platform.Platform_Type;
-
-	type Platforms_List_Ref is access all Platforms_List;
-
-	type Platform_Booking is array (Positive range <>) of Boolean;
 
 	-- ############################### ACCESS_CONTROLLER ########################################
 
 	package Trains_Queue_Package is new Queue (Element => Positive);
 
-	protected type Access_Controller(Platforms : Platforms_List_Ref) is
+	protected type Access_Controller is
 
 		-- #
 		-- # Entry called by the train task to regulate the entrance order for a Segment
 		-- #
 		entry Enter(
-			Train_ID 	: in 	 Positive;
-			Action		: in 	 Route.Action);
+			Train_Index	: in 	 Positive);
 
 		-- #
 		-- # Simply Adds the Given Train ID to the internal Queue
@@ -72,18 +63,27 @@ package Regional_Station is
 		procedure Add_Train(
 			Train_ID : in 	 Positive);
 
+		-- #
+		-- # Dequeues the first element
+		-- #
+		procedure Free;
+
 	private
 
+		-- #
+		-- # Private Entry used to make unordered accesses avoided.
+		-- #
 		entry Wait(
-			Train_ID 	: in 	Positive;
-			Action 		: in	Route.Action);
+			Train_Index	: in 	Positive);
 
-		-- # Unbounded queue which will contain the Trains order
---  		Trains_Order : Trains_Queue_Package.Terminable_Queue;
+		-- # A simple unlimited queue used to keep track of Trains order.
+		Trains_Order 	: Trains_Queue_Package.Unlimited_Simple_Queue;
 
-		Trains_Order 	: access Trains_Queue_Package.Limited_Simple_Queue := new Trains_Queue_Package.Limited_Simple_Queue(10);
-
+		-- # Boolean Guard, used to block Tasks in Wait entry
 		Can_Retry 		: Boolean := False;
+
+		-- # A field used to store the number of tasks waiting on Wait entry
+		Trains_Waiting	: Natural := 0;
 
  	end Access_Controller;
 
@@ -188,10 +188,8 @@ private
 		Station_Interface
 	with record
 		Name 				: aliased Unbounded_Strings.Unbounded_String;
-		Platforms 			: Platforms_List_Ref := new Platforms_List(1..Platforms_Number);
+		Platforms 			: Platform.Platforms(1..Platforms_Number);
 		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
-		-- Indicates for each platform if it is free or not
-		Platform_Free 		: Platform_Booking(1 .. Platforms_Number) := (others => true);
 		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;
 	end record;
 

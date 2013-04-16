@@ -23,32 +23,27 @@
 	
 	Il protocollo di operazioni che vengono eseguite da un Viaggiatore, è stato mantenuto il più semplice possibile, e l'intero percorso viene regolato dagli eventi generati dalle entità Treno alla partenza e all'arrivo dalle/nelle Stazioni. 
 	
-	\subsubsection{Acquisto di un Biglietto}
+	\subsubsection{Acquisto di un Biglietto}\label{subsubsec:buy_ticket}
 	
-	TODO
-	...
-	\\
-	\\
-	
-	L'ultima azione eseguita dall'Operazione di acquisto di un biglietto consiste nel caricare nella coda della struttura dati \ttt{Traveler\_Pool} descritta nella sezione \ref{subsec:traveler_def}, l'operazione \ttt{LEAVE} del Viaggiatore corrente.
+	L'acquisto di un Biglietto da parte di un Viaggiatore è effettuato tramite l'operazione \ttt{BUY\_TICKET}. Essa si limita a richiedere alla Biglietteria della Stazione di partenza (che viene definita da configurazione iniziale) un Biglietto per una specifica destinzaione. Al termine della richiesta, l'esecuzione dell'operazione termina, e il thread corrente ritorna nella coda di thread \ttt{Traveler\_Pool} (descritta in sezione \ref{subsec:traveler_def}) per poter eseguire una nuova operazione. Questo comporta la definizione di una nuova operazione, \ttt{TICKET\_READY}, la quale verrà inserita nella coda di operazioni di \ttt{Traveler\_Pool}, all'avvenuta ricezione del Biglietto richiesto, sia per assegnare il \ttt{Ticket} creato e caricare nella coda della struttura dati \ttt{Traveler\_Pool} l'operazione \ttt{LEAVE} del Viaggiatore corrente, sia per eseguire operazioni in caso la richiesta non fosse andata a buon fine.
 	
 	\subsubsection{Partenza da una Stazione}
 	
 	Denominiamo $t$ la tappa di indice \ttt{Next\_Stage}, ovvero la tappa corrente. Perché l'operazione di Partenza dalla stazione corrente venga effettuata, è necessaria la precondizione per la quale:
 	\begin{itemize}
 		\item l'operazione \ttt{LEAVE} è stata inserita nella apposita coda di \ttt{Traveler\_Pool};
-		\item in qualche momento essa venga prelevata (rimossa) da tale luogo ed eseguita da uno dei thread nel Pool della struttura. 
+		\item in qualche momento essa venga prelevata (rimossa) da tale luogo ed eseguita da uno dei thread del pool di \ttt{Traveler\_Pool}. 
 	\end{itemize}
 Le azioni compiute dall'operazione \ttt{LEAVE} sono:
 	
 	\begin{itemize}
-		\item Estrazione \ttt{start\_station} da $t$;
+		\item Estrazione di \ttt{start\_station} da $t$;
 		\item Tramite l'interfaccia esposta dalla Stazione \ttt{start\_station} (una procedura che identifichiamo con \ttt{Wait\_For\_Train\_To\_Go}), viene richiesto di attendere presso la Piattaforma \ttt{start\_platform}.
 	\end{itemize} 
 	
-	Internamente alla Stazione, tale richiesta viene tradotta nell'inserimento del Viaggiatore, o meglio del suo Descrittore \ttt{Traveler\_Descriptor}, nella coda \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}.
+	Internamente alla Stazione, tale richiesta viene tradotta nell'inserimento del Viaggiatore, o meglio del suo Descrittore \ttt{Traveler\_Descriptor}, nella coda \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}. Tale operazione non utilizza una sezione critica presso la risorsa protetta a protezione della Piattaforma, ma possiamo pensare che la coda (FIFO) adottata sia ad accesso sincronizzato.
 	
-	Nel caso in cui la stazione dalla quale il Viaggiatore vuole partire sia una Stazione di Gateway, allora la procedura di accodamento presso la Piattafroma designata diviene:
+	Nel caso in cui la Stazione di partenza del Viaggiatore sia una Stazione di Gateway, allora la procedura di accodamento presso la Piattafroma designata diviene:
 	\begin{itemize}
 		\item Se la Regione di Destinazione \ttt{next\_region} è diversa dalla Regione corrente, allora
 			\begin{itemize}

@@ -35,46 +35,86 @@ with Route;use Route;
 -- #
 package Platform is
 
+	use Ada.Strings.Unbounded;
+
+	type Platform_Handler(
+		ID	: Integer;
+		S 	: access Unbounded_String) is limited new Generic_Platform.Platform_Interface with private;
+
+		overriding procedure Enter(
+			This 					: access Platform_Handler;
+			Train_Descriptor_Index 	: in 	Positive;
+			Action 					: in	Route.Action);
+
+		overriding procedure Leave(
+			This 					: access Platform_Handler;
+			Train_Descriptor_Index 	: in 	Positive;
+			Action 					: in	Route.Action);
+
+		overriding procedure Add_Incoming_Traveler(
+			This 					: access Platform_Handler;
+			Traveler 				: in 	Positive);
+
+		overriding procedure Add_Outgoing_Traveler(
+			This 					: access Platform_Handler;
+			Traveler 				: in 	Positive);
+
+
+	type Platforms is array (Positive range <>) of access Platform_Handler;
+
 	-- # Create a queue for Traveler type
 	package Traveler_Queue_Package is new Queue(Element => Positive);
 
+private
+
+	-- #
+	-- # Protected Resource used to Regulate the access to a platform.
+	-- #
 	protected type Platform_Type(
 		ID	: Integer;
-		S 	: access Ada.Strings.Unbounded.Unbounded_String) is new Generic_Platform.Platform_Interface with
+		S 	: access Ada.Strings.Unbounded.Unbounded_String) is
 
-		entry Enter(
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action);
-
+		-- #
+		-- #
+		-- #
 		procedure Leave(
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action);
-
-		procedure Add_Incoming_Traveler(
-			Traveler 				: in 	Positive);
-
-		procedure Add_Outgoing_Traveler(
-			Traveler 				: in 	Positive);
+			Train_Descriptor_Index 	: in 	Positive);
 
 		entry Enter_Regional (
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action);
+			Train_Descriptor_Index 	: in 	Positive);
 
 		entry Enter_FB (
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action);
+			Train_Descriptor_Index 	: in 	Positive);
 
 	private
 
 		Free : Boolean := True;
-		-- # Queue for Arriving Traveler
-		Arrival_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
-
-		-- # Queue for Travelers waiting for the train to leave
-		Leaving_Queue : Traveler_Queue_Package.Unbounded_Queue.Queue;
-
-		N : Integer := 3;
 
 	end Platform_Type;
+
+
+	type Platform_Handler(
+		ID	: Integer;
+		S 	: access Unbounded_String) is limited new Generic_Platform.Platform_Interface with record
+
+		The_Platform	: Platform_Type(ID,S);
+
+		-- # Queue for Arriving Traveler
+		Arrival_Queue 	: access Traveler_Queue_Package.Unbounded_Queue.Queue := new Traveler_Queue_Package.Unbounded_Queue.Queue;
+
+		-- # Queue for Travelers waiting for the train to leave
+		Leaving_Queue 	: access Traveler_Queue_Package.Unbounded_Queue.Queue := new Traveler_Queue_Package.Unbounded_Queue.Queue;
+
+	end record;
+
+	procedure Perform_Entrance(
+			This 					: access Platform_Handler;
+			Train_Descriptor_Index 	: in 	Positive;
+			Action 					: in	Route.Action);
+
+	procedure Perform_Exit(
+			This 					: access Platform_Handler;
+			Train_Descriptor_Index 	: in 	Positive;
+			Action 					: in	Route.Action);
 
 end Platform;

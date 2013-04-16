@@ -38,11 +38,12 @@ package body Regional_Station is
 	-- ------------------------ Definition of the inherited abstract methods ------------------------
 
 	function Get_Name(
-			This				: in 		Regional_Station_Type) return String
-	is
+			This : in	Regional_Station_Type) return String is
 	begin
 		return To_String(This.Name);
     end Get_Name;
+
+
 
 	procedure Enter(
 			This 				: in		Regional_Station_Type;
@@ -51,9 +52,21 @@ package body Regional_Station is
 			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action) is
 	begin
+		-- # First, pass the Access Controller, to maintain the same order
+		-- # as the exit order from the Segment <Segment_ID>
 		This.Segments_Map_Order.Element(Segment_ID).Enter(
-			Train_ID 	=> Descriptor_Index,
-			Action		=> Action);
+			Train_Index	=> Descriptor_Index);
+
+		-- # Once the task passed the Access controller, it occupies the Platform and,
+		-- # if needed, performs Alighting of Passengers.
+		This.Platforms(Platform_Index).Enter(
+			Train_Descriptor_Index 	=> Descriptor_Index,
+			Action					=> Action);
+
+
+		-- # Frees the Access controller, to let other Tasks to be awaked.
+		This.Segments_Map_Order.Element(Segment_ID).Free;
+
 		This.Panel.Set_Status(
 			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " gained access to Platform " &
 			Integer'Image(Platform_Index)
@@ -68,9 +81,12 @@ package body Regional_Station is
 			Platform_Index		: in		Positive;
 			Action				: in 		Route.Action) is
 	begin
+
+		-- # Free the Current Platform and perform boarding of the Travelers.
 		This.Platforms(Platform_Index).Leave(
 			Train_Descriptor_Index 	=> Descriptor_Index,
-			Action						=> Action);
+			Action					=> Action);
+
 		This.Panel.Set_Status(
 			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " leaved Platform " &
 			Integer'Image(Platform_Index)
@@ -121,7 +137,7 @@ package body Regional_Station is
 			);
 			declare
 				-- # Create a new Access Controller for the Segment.
-				R : Access_Controller_Ref := new Access_Controller(This.Platforms);
+				R : Access_Controller_Ref := new Access_Controller;
 			begin
 				This.Segments_Map_Order.Insert(
 					Key 		=> Segment_ID,
@@ -146,39 +162,18 @@ package body Regional_Station is
 
 
 
-
     protected body Access_Controller is
 
 		entry Enter(
-			Train_ID 	: in 	 Positive;
-			Action		: in 	 Route.Action) when True
-		is
-			T	: Positive;
+			Train_Index : in 	 Positive) when True is
 		begin
-			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
-				-- # Dequeue
-				Trains_Order.Dequeue(T);
 
-				-- # If some task is waiting on Wait entry, open the guard
-				if Wait'Count > 0 then
-					Can_Retry := True;
-				end if;
-
-				if Trains.Trains(Train_ID).T_Type = Train.FB then
-
-					requeue  Platforms(
-						Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
-					).Enter_FB;
-				else
-					requeue  Platforms(
-						Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
-					).Enter_Regional;
-				end if;
-			else
-				Can_Retry := False;
+			-- # If the currently running Train is the next that can Access the Platform,
+			-- # let it pass, otherwise re-queue to Wait entry, until the guard is opened.
+			if Trains.Trains(Train_Index).ID /= Trains_Order.Get(1) then
 				Logger.Log(
 					Sender 	=> "Access_Controller",
-					Message	=> "Train " & Integer'Image(Trains.Trains(Train_ID).ID) & " cannot enter, it is not" &
+					Message	=> "Train " & Integer'Image(Train_Index) & " cannot enter, it is not" &
 					  				Integer'Image(Trains_Order.Get(1)),
 					L 		=> Logger.DEBUG
 				);
@@ -189,38 +184,48 @@ package body Regional_Station is
 
 
 		entry Wait(
-			Train_ID 	: in 	 Positive;
-			Action 		: in	Route.Action) when Can_Retry
+			Train_Index	: in 	 Positive) when Can_Retry
 		is
-			T	: Positive;
 		begin
-			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
-				-- # Dequeue
-				Trains_Order.Dequeue(T);
+			-- # Decrease the number of re-attempting Trains
+			Trains_Waiting := Trains_Waiting - 1;
 
-				-- # If some task is waiting on Wait entry, open the guard
-				if Wait'Count > 0 then
-					Can_Retry := True;
-				end if;
-
-				if Trains.Trains(Train_ID).T_Type = Train.FB then
-					requeue  Platforms(
-						Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
-					).Enter_FB;
-				else
-					requeue  Platforms(
-						Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
-					).Enter_Regional;
-				end if;
-			else
+			-- # If the number is 0, then close the guard.
+			if Trains_Waiting = 0 then
 				Can_Retry := False;
+			end if;
+
+			-- # If the currently running Train is the next that can Access the Platform,
+			-- # let it pass, otherwise re-queue to Wait entry, until the guard is opened.
+			if Trains.Trains(Train_Index).ID /= Trains_Order.Get(1) then
 				requeue Wait;
 			end if;
 		end Wait;
 
+
+		procedure Free is
+			Train_ID	: Positive;
+		begin
+			-- # Dequeue the First Train (the one which already called Enter).
+			Trains_Order.Dequeue(Train_ID);
+
+			-- # Check if the number of waiting Trains in Wait entry is > 0.
+			if Wait'Count >0 then
+				-- # Open the guard to let them retry
+				Trains_Waiting := Wait'Count;
+				Can_Retry := True;
+				Logger.Log(
+					Sender 	=> "Access_Controller",
+					Message	=> "Train " & Integer'Image(Train_ID) & " opened the guard Wait",
+					L 		=> Logger.DEBUG
+				);
+			end if;
+		end Free;
+
 		procedure Add_Train(
 			Train_ID : in 	 Positive) is
 		begin
+			-- # Add a new element in the Queue.
 			Trains_Order.Enqueue(Train_ID);
 		end Add_Train;
 
@@ -237,7 +242,7 @@ package body Regional_Station is
 	begin
 		Station.Name := Unbounded_Strings.To_Unbounded_String(Name);
 		for I in Positive range 1..Platforms_Number loop
-			Station.Platforms(I) := new Platform.Platform_Type(I,Station.Name'Access);
+			Station.Platforms(I) := new Platform.Platform_Handler(I,Station.Name'Access);
 		end loop;
 		Station.Panel := new Notice_Panel.Notice_Panel_Entity(new String'(To_String(Station.Name)));
 		return Station;

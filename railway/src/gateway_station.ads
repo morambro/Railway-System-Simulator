@@ -48,29 +48,21 @@ with Generic_Platform;
 
 package Gateway_Station is
 
-
-	-- #
-	-- # Array Containing Platforms references
-	-- #
-	type Platforms_List is array (Positive range <>) of access Gateway_Platform.Gateway_Platform_Type;
-
-	type Platforms_List_Ref is access all Platforms_List;
-
-	type Platform_Booking is array (Positive range <>) of Boolean;
-
+	package Trains_Queue_Package is new Queue (Element => Positive);
 
 	-- ############################### ACCESS_CONTROLLER ########################################
 
-	package Trains_Queue_Package is new Queue (Element => Positive);
-
-	protected type Access_Controller(Platforms : Platforms_List_Ref) is
+	-- #
+	-- # Protected resource type; it defines object used to maintain an access order to
+	-- # the platforms, for all the tasks coming from the same Segment.
+	-- #
+	protected type Access_Controller is
 
 		-- #
 		-- # Entry called by the train task to regulate the entrance order for a Segment
 		-- #
 		entry Enter(
-			Train_ID 	: in 	Positive;
-			Action 		: in	Route.Action);
+			Train_Index	: in 	Positive);
 
 		-- #
 		-- # Simply Adds the Given Train ID to the internal Queue
@@ -78,24 +70,36 @@ package Gateway_Station is
 		procedure Add_Train(
 			Train_ID 	: in 	Positive);
 
+		-- #
+		-- # This procedure Frees the Access Controller
+		-- #
+		procedure Free;
+
 	private
 
+		-- #
+		-- # Private Entry used to enqueue trains which can not enter the
+		-- # platform because of the specified order.
+		-- #
 		entry Wait(
-			Train_ID 	: in 	Positive;
-			Action 		: in	Route.Action);
+			Train_Index	: in 	Positive);
 
-		-- # Unbounded queue which will contain the Trains order
---  		Trains_Order : Trains_Queue_Package.Terminable_Queue;
+		-- # The unlimited queue used to store train indexes
+		Trains_Order 	: Trains_Queue_Package.Unlimited_Simple_Queue;
 
-		Trains_Order 	: access Trains_Queue_Package.Limited_Simple_Queue := new Trains_Queue_Package.Limited_Simple_Queue(10);
-
+		-- # Boolean variable used as a guard for Wait entry
 		Can_Retry 		: Boolean := False;
+
+		-- # Natural field used to store the amount of Trains waiting by Wait entry
+		-- # before opening it.
+		Trains_Waiting 	: Natural := 0;
 
  	end Access_Controller;
 
+	-- #
+	-- # Reference type for Access Controller.
+	-- #
  	type Access_Controller_Ref is access all Access_Controller;
-
-	-- ##########################################################################################
 
 
    	package Segments_Map is new Ada.Containers.Ordered_Maps(
@@ -244,11 +248,11 @@ private
 		Station_Interface
 	with record
 		Name 				: aliased  Unbounded_Strings.Unbounded_String;
-		Platforms 			: Platforms_List_Ref := new Platforms_List(1..Platforms_Number);
+		Platforms 			: Gateway_Platform.Platforms(1..Platforms_Number);
 		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
-		-- Indicates for each platform if it is free or not
-		Platform_Free 		: Platform_Booking(1 .. Platforms_Number) := (others => true);
+
 		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;
+
 		Destinations 		: access String_Positive_Maps.Map := null;
 	end record;
 

@@ -35,7 +35,7 @@ with Route;
 package Generic_Platform is
 
 
-	type Platform_Interface is synchronized interface;
+	type Platform_Interface is limited interface;
 
 	type Platform_Access is access all Platform_Interface'Class;
 

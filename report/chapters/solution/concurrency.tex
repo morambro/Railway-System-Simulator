@@ -28,11 +28,11 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 		
 	La soluzione che ho adottato, consiste nel disaccoppiare le operazioni svolte da ciascun Viaggiatore dal processo che le esegue, prevedendo una struttura dati (\ttt{Traveler\_Pool}) costituita da:
 		\begin{itemize}
-			\item un \ii{pool di M processi} dimensionato in maniera opportuna;
-			\item una \ii{coda di operazioni} che man mano vengono estratte ed eseguite dai processi nel pool.
+			\item un \ii{pool di M thread} dimensionato in maniera opportuna;
+			\item una \ii{coda di operazioni} che man mano vengono estratte ed eseguite dai thread nel pool.
 		\end{itemize}
 	In questo modo è sufficiente replicare per ciascun Viaggiatore, su tutti i nodi che compongono il sistema, una struttura dati che contiene i suoi dati e le operazioni che esso eseguirà, e cioè un Descrittore (\ttt{Traveler\_Descriptor}). 
-	Il cambio di Regione di un Viaggiatore potrà quindi essere ottenuto semplicemente inserendo la prossima operazione da eseguire per il Viaggiatore nella coda del pool di processi del nodo destinazione.
+	Il cambio di Regione di un Viaggiatore potrà quindi essere ottenuto semplicemente inserendo la prossima operazione da eseguire per il Viaggiatore nella coda del pool di thread del nodo destinazione.
 	
 	%  ################################################# TRENO ######################################################
 	\subsection{Treno} \label{subsec:train_def}

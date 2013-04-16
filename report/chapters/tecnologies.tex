@@ -9,7 +9,7 @@ Sono stati utilizzati principalmente due linguaggi di programmazione.
 			\begin{itemize}
 				\item \bb{Controller Centrale}
 				\item \bb{Biglietteria Centrale}
-				\item \bb{Application Server}, al quale i client HTTP possono collegarsi mediante protocollo Web Socket per poter fornire una rappresentazione grafica della simulazione, in linguaggio HTML e Javascript. Per la sua realizzazione è stato utilizzato il framework MVC \ttt{Play 2.0} (disponibile all'indirizzo \url{http://www.playframework.com/}).
+				\item \bb{Application Server}, al quale i client HTTP possono collegarsi mediante protocollo \ii{Web Socket} per poter fornire una rappresentazione grafica della simulazione, in linguaggio HTML e Javascript. Per la sua realizzazione è stato utilizzato il framework MVC \ttt{Play 2.0} (disponibile all'indirizzo \url{http://www.playframework.com/}).
 				\item \bb{Name Server} per la gestione delle Regioni di simulazione.
 			\end{itemize}
 		Le interazione tra thread interne alle componenti distribuite, sono state gestite adottando il modello di concorrenza ad Attori fornito nativamente dal linguaggio Scala. 
@@ -24,12 +24,21 @@ Sono stati utilizzati principalmente due linguaggi di programmazione.
 		  
 	\end{description}
 	
-L'interazione tra componenti remote del sistema, realizzate con tecnologie omogenee, è stata possibile mediante il middleware per lo scambio di messaggi Yami4 (\url{http://www.inspirel.com/yami4/}), compatibile, tra gli altri linguaggi, con Ada e Java (e quindi di conseguenza anche con Scala). Questo strumendo è stato preferito agli altri possibili middleware (Distributed Systems Annex per RPC in Ada e CORBA) in quanto si è rivelato molto semplice da utilizzare e ha permesso di adottare un certo grado di disaccoppiamento tecnologico tra le componenti. Per ciascun Nodo di simulazione del Sistema è stato utilizzato un singolo Attore (definito da yami4), sia per quanto riguarda l'invio che la ricezione di messaggi remoti, in ascolto ad un singolo indirizzo (adottando il protocollo TCP). Per ciascun Attore, è possibile definire:
+L'interazione tra componenti remote del sistema, realizzate con tecnologie omogenee, è stata possibile mediante il middleware per lo scambio di messaggi Yami4 (\url{http://www.inspirel.com/yami4/}), compatibile, tra gli altri linguaggi, con Ada e Java (e quindi di conseguenza anche con Scala). Questo strumendo è stato preferito agli altri possibili middleware (Distributed Systems Annex per RPC in Ada e CORBA) in quanto si è rivelato molto semplice da utilizzare e ha permesso di adottare un certo grado di disaccoppiamento tecnologico tra le componenti. Per ciascun Nodo di simulazione del Sistema è stato utilizzato un singolo Attore (definito da Yami4), sia per quanto riguarda l'invio che la ricezione di messaggi remoti, in ascolto ad un singolo indirizzo (adottando il protocollo TCP). Per ciascun Attore, è possibile infatti definire:
 	\begin{itemize}
 		\item \ttt{Object}: un oggetto remoto raggiungibile ad un dato indirizzo, identificato univocamente da una stringa.
-		\item \ttt{Service}: Insieme di servizi offerti da un oggetto remoto, identificati univocamente da una stringa.
+		\item \ttt{Service}s: insieme di servizi offerti da un oggetto remoto, identificati univocamente da una stringa.
 	\end{itemize}
 Per quanto riguarda i nodi di simulazione, ho utilizzato quindi un unico \ttt{Object}, il quale mette a disposizione vari \ttt{Service} a seconda del tipo di azione da prendere. Questa soluzione mi è sembrata la più semplice e estendibile possibile.
+Il protocollo usato tra le varie componenti del sistema per lo scambio di messaggi, comprende il protocollo definito dal stesso middleware Yami4, e quindi lo scambio di dati in formato stringa chiave-valore, sia l'utilizzo dello standard \ttt{JSON} per il marshalling dei dati delle entità coinvolte. Per la codifica e decodifica di stringhe \ttt{JSON} ho utilizzato:
+	\begin{itemize}
+		\item La libreria \ttt{Gnatcoll} fornita con la ditribuzione \ttt{Gnat}, per il linguaggio Ada.
+		\item La libreria \ttt{json-smart} (disponibile all'indirizzo \url{https://code.google.com/p/json-smart/}), scritta in Java e integrata nelle componenti realizzate in linguaggio Scala. L'ho preferita alla libreria standard Scala \ttt{scala.util.parsing.json} poiché più semplice da utilizzare.
+		
+	\end{itemize}
+	Ho utilizzato il formato \ttt{JSON} anche per la definizione dei file di configurazione, utilizzati all'avvio del sistema.
+
+
 % Tale azione è definita mediante un puntatore a procedura (access procedure), che viene utilizzata quindi da Callback procedure. In questo modo, l'aggiunta di un nuovo \ttt{Service} è resa immediata, 
 
 

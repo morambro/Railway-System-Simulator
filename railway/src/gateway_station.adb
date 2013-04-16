@@ -44,61 +44,20 @@ package body Gateway_Station is
 		return To_String(This.Name);
     end Get_Name;
 
-	-- ########################################## ACCESS_CONTROL #############################################
-	overriding procedure Add_Train(
-		This				: in 		Gateway_Station_Type;
-		Train_ID			: in 		Positive;
-		Segment_ID			: in 		Positive) is
-	begin
-		if not This.Segments_Map_Order.Contains(Segment_ID) then
-			Logger.Log(
-				Sender 	=> "Regional_Station",
-				Message => "Created List for Segment " & Integer'Image(Segment_ID),
-				L 		=> Logger.DEBUG
-			);
-			declare
-				-- # Create a new Access Controller for the Segment.
-				R : Access_Controller_Ref := new Access_Controller(This.Platforms);
-			begin
-				This.Segments_Map_Order.Insert(
-					Key 		=> Segment_ID,
-					New_Item 	=> R);
-			end;
-		end if;
-		Logger.Log(
-			Sender 	=> "Regional_Station",
-			Message => "Adding Train " & Integer'Image(Train_ID),
-			L 		=> Logger.DEBUG
-		);
-		This.Segments_Map_Order.Element(Segment_ID).Add_Train(Trains.Trains(Train_ID).ID);
-    end Add_Train;
 
-	protected body Access_Controller is
+	-- ########################################## ACCESS_CONTROL #############################################
+
+	 protected body Access_Controller is
 
 		entry Enter(
-			Train_ID 	: in 	Positive;
-			Action 		: in	Route.Action) when True
-		is
-			T	: Positive;
+			Train_Index	: in 	 Positive) when True is
 		begin
-			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
-				-- # Dequeue
-				Trains_Order.Dequeue(T);
-
-				-- # If some task is waiting on Wait entry, open the guard
-				if Wait'Count > 0 then
-					Can_Retry := True;
-				end if;
-
-				requeue Platforms(
-					Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage)
-						.Platform_Index
-					).Enter;
-			else
-				Can_Retry := False;
+			-- # If the currently running Train is the next that can Access the Platform,
+			-- # let it pass, otherwise re-queue to Wait entry, until the guard is opened.
+			if Trains.Trains(Train_Index).ID /= Trains_Order.Get(1) then
 				Logger.Log(
 					Sender 	=> "Access_Controller",
-					Message	=> "Train " & Integer'Image(Trains.Trains(Train_ID).ID) & " cannot enter, it is not" &
+					Message	=> "Train " & Integer'Image(Trains.Trains(Train_Index).ID) & " cannot enter, it is not" &
 					  				Integer'Image(Trains_Order.Get(1)),
 					L 		=> Logger.DEBUG
 				);
@@ -109,32 +68,49 @@ package body Gateway_Station is
 
 
 		entry Wait(
-			Train_ID 	: in 	Positive;
-			Action 		: in	Route.Action) when Can_Retry
+			Train_Index	: in 	 Positive) when Can_Retry
 		is
-			T	: Positive;
 		begin
-			if Trains.Trains(Train_ID).ID = Trains_Order.Get(1) then
-				-- # Dequeue
-				Trains_Order.Dequeue(T);
+			-- # Decrease the number of re-attempting Trains
+			Trains_Waiting := Trains_Waiting - 1;
 
-				-- # If some task is waiting on Wait entry, open the guard
-				if Wait'Count > 0 then
-					Can_Retry := True;
-				end if;
-
-				requeue  Platforms(
-					Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
-				).Enter;
-			else
+			-- # If the number is 0, then close the guard.
+			if Trains_Waiting = 0 then
 				Can_Retry := False;
+			end if;
+
+			-- # If the currently running Train is the next that can Access the Platform,
+			-- # let it pass, otherwise re-queue to Wait entry, until the guard is opened.
+			if Trains.Trains(Train_Index).ID /= Trains_Order.Get(1) then
 				requeue Wait;
 			end if;
 		end Wait;
 
+
+		procedure Free is
+			Train_ID	: Positive;
+		begin
+			-- # Dequeue the First Train (the one which already called Enter).
+			Trains_Order.Dequeue(Train_ID);
+
+			-- # Check if the number of waiting Trains in Wait entry is > 0.
+			if Wait'Count >0 then
+				-- # Open the guard to let them retry
+				Trains_Waiting := Wait'Count;
+				Can_Retry := True;
+				Logger.Log(
+					Sender 	=> "Access_Controller",
+					Message	=> "Train " & Integer'Image(Train_ID) & " opened the guard Wait",
+					L 		=> Logger.DEBUG
+				);
+			end if;
+		end Free;
+
 		procedure Add_Train(
 			Train_ID : in 	 Positive) is
 		begin
+			Put_LIne ("ADDING = " & integer'image(Train_ID));
+			-- # Add a new element in the Queue.
 			Trains_Order.Enqueue(Train_ID);
 		end Add_Train;
 
@@ -154,13 +130,23 @@ package body Gateway_Station is
 	is
 	begin
 
+		-- # Pass the controller that checks the right order
 		This.Segments_Map_Order.Element(Segment_ID).Enter(
-			Train_ID 	=> Descriptor_Index,
-			Action		=> Action);
+			Train_Index 	=> Descriptor_Index);
+
+		-- # Once the task passed the Access controller, it occupies the Platform and,
+		-- # if needed, performs Alighting of Passengers.
+		This.Platforms(Platform_Index).Enter(
+			Train_Descriptor_Index 	=> Descriptor_Index,
+			Action					=> Action);
+
 		This.Panel.Set_Status(
 			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " gained access to Platform " &
 			Integer'Image(Platform_Index)
 		);
+
+		-- # Frees the Access controller, to let other Tasks to be awaked.
+		This.Segments_Map_Order.Element(Segment_ID).Free;
 
 		-- # If we have to cross to other region, we are positioned a stage before the first stage on the next region.
 		-- # So, let's check for Trains.Trains(Descriptor_Index).Next_Stage + 1!
@@ -194,10 +180,10 @@ package body Gateway_Station is
 
 
 	procedure Leave(
-			This 				: in 		Gateway_Station_Type;
-			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive;
-			Action				: in 		Route.Action)
+		This 				: in 		Gateway_Station_Type;
+		Descriptor_Index	: in		Positive;
+		Platform_Index		: in		Positive;
+		Action				: in 		Route.Action)
 	is
 
 	begin
@@ -234,6 +220,34 @@ package body Gateway_Station is
 
 	end Leave;
 
+
+	overriding procedure Add_Train(
+		This				: in 		Gateway_Station_Type;
+		Train_ID			: in 		Positive;
+		Segment_ID			: in 		Positive) is
+	begin
+		if not This.Segments_Map_Order.Contains(Segment_ID) then
+			Logger.Log(
+				Sender 	=> "Regional_Station",
+				Message => "Created List for Segment " & Integer'Image(Segment_ID),
+				L 		=> Logger.DEBUG
+			);
+			declare
+				-- # Create a new Access Controller for the Segment.
+				R : Access_Controller_Ref := new Access_Controller;
+			begin
+				This.Segments_Map_Order.Insert(
+					Key 		=> Segment_ID,
+					New_Item 	=> R);
+			end;
+		end if;
+		Logger.Log(
+			Sender 	=> "Regional_Station",
+			Message => "Adding Train " & Integer'Image(Train_ID),
+			L 		=> Logger.DEBUG
+		);
+		This.Segments_Map_Order.Element(Segment_ID).Add_Train(Trains.Trains(Train_ID).ID);
+    end Add_Train;
 
 
 	-- #
@@ -580,7 +594,7 @@ package body Gateway_Station is
 	begin
 		Station.Name := Unbounded_Strings.To_Unbounded_String(Name);
 		for I in Positive range 1..Platforms_Number loop
-			Station.Platforms(I) := new Gateway_Platform.Gateway_Platform_Type(I,Station.Name'Access);
+			Station.Platforms(I) := new Gateway_Platform.Gateway_Platform_Handler(I,Station.Name'Access);
 		end loop;
 		Station.Panel := new Notice_Panel.Notice_Panel_Entity(new String'(To_String(Station.Name)));
 		Station.Destinations := Destinations;

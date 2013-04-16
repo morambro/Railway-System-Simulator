@@ -61,12 +61,15 @@ package Handlers is
 		Msg : in 	Incoming_Message'Class);
 
 	-- #
-	-- # Handles ticket creation requests from the Central Ticket Office
+	-- # Handles ticket creation requests from the Central Ticket Office, handling messages of type [ticket_creation].
 	-- #
 	procedure Get_Ticket_Handler(
 		Msg : in 	Incoming_Message'Class);
 
-
+	-- #
+	-- # Handler Called in response of a message of type [is_present], to tell the Central Ticket Office if the
+	-- # Given Station is present or not on this Region.
+	-- #
     procedure Is_Station_Present_Handler(
 		Msg : in 	Incoming_Message'Class);
 
