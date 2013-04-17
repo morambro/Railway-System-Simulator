@@ -59,6 +59,7 @@ package Traveler is
 		Destination 	: Unbounded_String;
 		Ticket 			: access Ticket.Ticket_Type := null;
 		Start_Station 	: Positive;
+		Start_Node 		: Unbounded_String;
 	end record;
 
 	type Traveler_Manager_Array is Array(Positive range <>) of aliased Traveler_Manager;

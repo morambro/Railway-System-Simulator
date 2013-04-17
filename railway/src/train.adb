@@ -61,6 +61,9 @@ package body Train is
 	end Get_Trains_Array;
 
 	function Get_Train_Descriptor(Json_Train : Json_Value) return Train_Descriptor is
+
+		Strat_Node : String := Json_Train.Get("start_node");
+
 		To_Return : Train_Descriptor := (
 			Id 				=> Json_Train.Get("id"),
 			Speed 			=> Json_Train.Get("speed"),
@@ -70,7 +73,8 @@ package body Train is
 		    Route_Index		=> Json_Train.Get("route_index"),
 		    Sits_Number 	=> Json_Train.Get("sits_number"),
 		    Occupied_Sits	=> Json_Train.Get("occupied_sits"),
-		    T_Type			=> String_To_Train_Type(Json_Train.Get("type"))
+		    T_Type			=> String_To_Train_Type(Json_Train.Get("type")),
+		    Start_Node 		=> To_Unbounded_String(Strat_Node)
 		);
 	begin
 		return To_Return;

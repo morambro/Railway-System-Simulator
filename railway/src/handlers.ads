@@ -73,4 +73,11 @@ package Handlers is
     procedure Is_Station_Present_Handler(
 		Msg : in 	Incoming_Message'Class);
 
+
+	-- #
+	-- # Handles ticket ready messages, of type [ticket_ready].
+	-- #
+	procedure Ticket_Ready_Handler(
+		Msg : in 	Incoming_Message'Class);
+
 end Handlers;

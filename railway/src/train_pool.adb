@@ -197,13 +197,15 @@ package body Train_Pool is
 				Num := Rand_Int.Random(seed);
 
 				-- # Re-enqueue the descriptor only if it has more stages to travel
-				if(Trains.Trains(Current_Descriptor_Index).Next_Stage <= Routes.All_Routes(Route_Index)'Length) then
-					Associate(Current_Descriptor_Index);
-				else
+				if(Trains.Trains(Current_Descriptor_Index).Next_Stage > Routes.All_Routes(Route_Index)'Length) then
+
+					Trains.Trains(Current_Descriptor_Index).Next_Stage := 1;
 					Logger.Log(NAME,
 				      	"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
-					  	" finished its run!",Logger.DEBUG);
+					  	" restart his travel!",Logger.DEBUG);
 				end if;
+
+				Associate(Current_Descriptor_Index);
 
 			-- # ############################ ERROR HANDLING ###############################
 			end;

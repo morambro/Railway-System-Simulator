@@ -89,9 +89,6 @@ private
 		Equivalent_Keys => "="
 	);
 
-	All_Tickets : access Ticket.Tickets_Array := Ticket.Get_All_Tickets("res/all_tickets.json");
-
-
 	Paths : Shortest_Path_Maps.Map;
 
 

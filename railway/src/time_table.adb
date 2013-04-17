@@ -107,6 +107,13 @@ package body Time_Table is
 		if This.Current_Array_Position + 1 > This.Table(This.Current_Array_Index)'Length then
 			This.Current_Array_Position := 1;
 			if This.Current_Array_Index + 1 > This.Table'Length then
+
+				for I in 1 .. This.Table'Length loop
+					for J in 1 .. This.Table(I)'Length loop
+						This.Table(I)(J) := This.Table(I)(J) + Duration(100);
+					end loop;
+				end loop;
+
 				This.Current_Array_Index := 1;
 			else
 				This.Current_Array_Index := This.Current_Array_Index + 1;

@@ -96,7 +96,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		\subsubsection{Accesso ad una Stazione Regionale}\label{subsubsec:regional_station_access}
 		
 		\begin{figure}[htbp]
-			\includegraphics[trim = 40mm 10mm 10mm 10mm,scale=0.45]{imgs/platform_access.pdf}
+			\includegraphics[trim = 40mm 0mm 0mm 0mm,scale=0.5]{imgs/platform_access_Sequence_Diagram.pdf}
 			\caption{\footnotesize{Diagramma di Sequenza, operazioni necessarie per l'ingresso ad una Piattaforma.}}
 			\label{fig:platform_access}
 		\end{figure}
@@ -109,7 +109,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 				\item Il Treno $T$ uscito dal Segmento $S$, quindi è stato rimosso dalla coda \ttt{Train\_Queue} di $S$.
 			\end{itemize}
 			
-		Il diagramma di sequenza in figura \ref{fig:platform_access} mostra le fasi che portano all'accesso alla Piattaforma.
+		Il diagramma di sequenza in figura \ref{fig:platform_access} mostra le operazioni che portano alla richiesta ordinata di accesso, e all'ingresso presso una Piattaforma.
 		\begin{description}
 	% ################################################# INGRESSO_ORDINATO #########################################
 			\item{\ii{Ingresso Ordinato}}\\
@@ -177,6 +177,12 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 	
 	% ################################################# USCITA_PIATTAFORMA #########################################
 	\item{\ii{Uscita da una Piattaforma}}\\
+
+		\begin{figure}[htbp]
+			\includegraphics[trim = 30mm 0mm 0mm 0mm,scale=0.5]{imgs/platform_exit_Sequence_Diagram.pdf}
+			\caption{\footnotesize{Diagramma di Sequenza, operazioni necessarie per l'uscita da una Piattaforma.}}
+			\label{fig:platform_access}
+		\end{figure}
 		
 		L'uscita da una Piattaforma $P$ necessita di due prerequisiti principali:
 		

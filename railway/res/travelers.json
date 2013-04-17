@@ -3,12 +3,13 @@
     	 {
             "traveler"	: {
                 "id"		: 1,
-                "name"		: "Gero",
-                "surname"	: "Caccamo"
+                "name"		: "Rossi",
+                "surname"	: "Mario"
             },
             "next_operation"	: 1,
-            "destination"		: "2",
-            "start_station" 	: 1 
+            "destination"		: "3",
+            "start_station" 	: 2,
+            "start_node"		: "Node_1" 
         },
         {
             "traveler": {
@@ -17,8 +18,9 @@
                 "surname"	: "Ambrosin"
             },
             "next_operation"	: 1,
-            "destination"		: "3",
-            "start_station" 	: 1 
+            "destination"		: "H",
+            "start_station" 	: 1,
+            "start_node"		: "Node_1" 
         },
         {
             "traveler"	: {
@@ -28,27 +30,8 @@
             },
             "next_operation"	: 1,
             "destination"		: "4",
-            "start_station" 	: 1 
-        },
-        {
-            "traveler"	: {
-                "id"		: 4,
-                "name"		: "John",
-                "surname"	: "Doe"
-            },
-            "next_operation"	: 1,
-            "destination"		: "G1",
-            "start_station" 	: 1 
-        },
-        {
-            "traveler"	: {
-                "id"		: 5,
-                "name"		: "Giuseppe",
-                "surname"	: "Verdi"
-            },
-            "next_operation"	: 1,
-            "destination"		: "H",
-            "start_station" 	: 1 
+            "start_station" 	: 1,
+            "start_node"		: "Node_2"
         }
     ]
 }

@@ -91,8 +91,6 @@ package body Environment Is
 		-- # Creates travelers array loading data from file
     	Travelers 	:= Traveler.Get_Traveler_Manager_array("res/travelers.json");
 
-		Travelers(1).Ticket := Ticket.Get_Ticket(JSON_Helper.Load_File("res/tickets.json"));
-
 		-- # Create an operations set for each Traveler
     	Operations	:= new Traveler.Travelers_All_Operations(1 .. Travelers'Length);
 

@@ -72,9 +72,11 @@ package body Traveler is
 			end case;
 		end;
 		declare
-			Dest : String := Json_Traveler.Get("destination");
+			Dest 		: String := Json_Traveler.Get("destination");
+			Start_Node 	: String := Json_Traveler.Get("start_node");
 		begin
-			T.Destination := To_Unbounded_String(Dest);
+			T.Destination 	:= To_Unbounded_String(Dest);
+			T.Start_Node	:= To_Unbounded_String(Start_Node);
 		end;
 
 		T.Start_Station	:= Json_Traveler.Get("start_station");
@@ -111,6 +113,8 @@ package body Traveler is
 
 		Json_Traveler_M.Set_Field("traveler",Json_Traveler);
 		Json_Traveler_M.Set_Field("destination",Traveler.Destination);
+		Json_Traveler_M.Set_Field("start_station",Integer'Image(Traveler.Start_Station));
+		Json_Traveler_M.Set_Field("start_node",To_String(Traveler.Start_Node));
 
 		case Traveler.Next_Operation is
 			when BUY_TICKET 	=> Json_Traveler_M.Set_Field("next_operation","buy_ticket");

@@ -53,7 +53,7 @@ class DebugSender(val addr : String) extends Actor{
 					}
 				""")
 				println("Sending message to " + addr + " : " + message)
-				agent.sendOneWay(addr,"message_handler", "traveler_leave_transfer", params);
+				agent.sendOneWay(addr,"central_ticket_server", "terminate", params);
 				
 				debugLoop
 			}

@@ -27,36 +27,25 @@
 with Ada.Command_Line;
 with Ada.Exceptions;
 with Ada.Text_IO;
-with Generic_Operation_Interface;
+with Ada.Strings.Unbounded;
 
 with Environment;
-with Segments;
 with Trains;
-with Routes;
+with Segments;
 with Train_Pool;
 With Task_Pool;
 
 with Logger;
+with Message_Agent;
+with YAMI.Parameters;
 
 with Traveler;
 
-with Route;
-
-with Message_Agent;
-
-with YAMI.Outgoing_Messages; use YAMI.Outgoing_Messages;
-with YAMI.Agents;
-with YAMI.Parameters;
-
 with Ticket_Office;
-
-with Train;
 
 with Ada.Exceptions;  use Ada.Exceptions;
 
 with Handlers;
-
-with Ticket;
 
 procedure Main is
 
@@ -139,6 +128,7 @@ begin
 			Message_Agent.Instance.Add_Handler("train_transfer_ack",Handlers.Station_Train_Transfer_Ack_Handler'Access);
 			Message_Agent.Instance.Add_Handler("ticket_creation",Handlers.Get_Ticket_Handler'Access);
 			Message_Agent.Instance.Add_Handler("is_present",Handlers.Is_Station_Present_Handler'Access);
+			Message_Agent.Instance.Add_Handler("ticket_ready",Handlers.Ticket_Ready_Handler'Access);
 
 			Params.Set_String("node_name",Node_Name);
 			Params.Set_String("address",Node_Addr);
@@ -155,20 +145,41 @@ begin
 				-- Start the real simulation
 				Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
 				Pool			: Train_Pool.Train_Task_Pool(3,5);
+
+
+				procedure Start is
+				begin
+
+					for I in 1 ..  Trains.Trains'Length loop
+						if Ada.Strings.Unbounded.To_String(Trains.Trains(I).Start_Node) = Node_Name then
+							Train_Pool.Associate(I);
+						end if;
+					end loop;
+
+					for I in 1 ..  Environment.Travelers'Length loop
+						if Ada.Strings.Unbounded.To_String(Environment.Travelers(I).Start_Node) = Node_Name then
+							Task_Pool.Execute(Environment.Operations(I)(Traveler.BUY_TICKET));
+						end if;
+					end loop;
+
+				end Start;
+
 			begin
 
 				Environment.Init(Node_Name,Name_Server,Central_T);
 				Segments.Init;
+				Ticket_Office.Init_Path_Map("res/" & Node_Name & "-paths.json");
+
+
+				Start;
+
 				--Ticket_Office.Init;
 
-				if Node_Name = "Node_1" then
-					Train_Pool.Associate(2);
-					Train_Pool.Associate(1);
-				end if;
-
---  				if Environment.Get_Node_Name = "Node_1" then
+--  				if Node_Name = "Node_1" then
+--  					Train_Pool.Associate(2);
 --  					Train_Pool.Associate(1);
 --  				end if;
+
 --  				delay 2.0;
 --  				Train_Pool.Associate(3);
 --  				Train_Pool.Associate(4);
@@ -177,9 +188,7 @@ begin
 --  					Ada.Text_IO.Put_Line(" *** Found : ");
 --  					Route.Print(Routes.All_Routes(Routes.Get_Routes_Containing(1,2)(I)).all);
 --  				end loop;
-				Ticket_Office.Init_Path_Map("res/" & Node_Name & "-paths.json");
 
-				Ticket.Print(Ticket_Office.Create_Ticket("1","G1"));
 
 				--Ticket_Office.Get_Ticket(1,"G1","4");
 

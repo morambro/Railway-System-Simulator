@@ -3,7 +3,7 @@ import com.inspirel.yami._
 import net.minidev.json._
 
 case class Stop()
-case class Resolve(startNode:String,from:String,to:String)
+case class Resolve(startNode:String,from:String,to:String,traveler_index:String)
 case class Path(path : String)
 case class Error(message:String)
 
@@ -148,6 +148,9 @@ object PathResolver {
 	
 	var NAME_SERVER_ADDRESS = "";
 	
+	// Map containg for each region the list of regions to go through to reach it 
+	var regionsMap 		: Map[(String,String),List[(String,String)]] = PathResolver.load("../../railway/res/links.json")
+	
 	/**
 	 * Loads the json file containg the location of regional ticket offices
 	 *
@@ -224,9 +227,6 @@ class PathResolver(fileName : String) extends Actor {
 	
 	// The list of couples <regional office,address> 
 	var nodesAddresses	: Map[String,String] = null
-	// Map containg for each region the list of regions to go through to reach it 
-	var regionsMap 		: Map[(String,String),List[(String,String)]] = 
-		PathResolver.load("../../railway/res/links.json")
 	
 	val agent = new Agent
 	
@@ -353,8 +353,8 @@ class PathResolver(fileName : String) extends Actor {
 
 	def resolverLoop() {
 		react {
-			case Resolve(startNode,from,to) => {
-				println("I have to resolve form " + from + " to " + to)
+			case Resolve(startNode,from,to,traveler_index) => {
+				println("I have to resolve from " + from + " to " + to)
 				
 				if (nodesAddresses == null)
 					nodesAddresses = getNodesAddressList
@@ -365,9 +365,7 @@ class PathResolver(fileName : String) extends Actor {
 					val region = ask(to)
 				
 					if (region == null) {
-						reply  {
-							Error("ERROR : No region found for station " + to)
-						}
+						println("ERROR : No region found for station " + to)
 						// ...
 					} else {
 						println("Station " + to + " is in Region " + region)
@@ -377,7 +375,7 @@ class PathResolver(fileName : String) extends Actor {
 						
 						var tickets : List[Ticket] = List()
 						
-						regionsMap get (startNode,region) match {
+						PathResolver.regionsMap get (startNode,region) match {
 							case Some(item) => {
 								var node = startNode
 								var f = from
@@ -394,8 +392,8 @@ class PathResolver(fileName : String) extends Actor {
 									}
 								}
 							}
-							case None => reply {
-								Error("No path to reach " + region + " from " + startNode)
+							case None => {
+								println("No path to reach " + region + " from " + startNode)
 							}
 						}
 						
@@ -413,12 +411,38 @@ class PathResolver(fileName : String) extends Actor {
 						
 						print(Ticket.ticket2Json(result_ticket))
 						
+						val p = new Parameters
+
+						p.setString("traveler_index",traveler_index)
+						p.setString("ticket",Ticket.ticket2Json(result_ticket))
+		
+						val message : OutgoingMessage = agent.send(
+							nodesAddresses(startNode),
+							"message_handler", 
+							"ticket_ready", 
+							p)
+		
+						message.waitForCompletion
+		
+						message.getState match {
+							case OutgoingMessage.MessageState.REPLIED => {
+								println("Message Received")
+							} 
+							case OutgoingMessage.MessageState.REJECTED => {
+								println("The message has been rejected: " + message.getExceptionMsg)
+							}
+							case _ => {
+								println("The message has been abandoned.")
+							}
+						}
+						
 					}
 				}
 				resolverLoop
 			}
 			case Stop() => {
 				println("Tearing down Path resolver")
+				agent.close
 			}
 		}
 	}
@@ -428,19 +452,30 @@ class PathResolver(fileName : String) extends Actor {
 
 }
 
-class RequestReceiver(address : String, resolver : Actor) extends Actor with IncomingMessageCallback{
+class RequestReceiver(address : String,fileName:String) extends Actor with IncomingMessageCallback{
+	
+	val resolvers : Array[Actor] = Array.fill(10) {new PathResolver(fileName)}
+	
+	resolvers.foreach(a => a.start)
+	
+	var index = 0
 	
 	val serverAgent : Agent = new Agent;
 	
 	val resolvedAddress = serverAgent.addListener(address);
 	
-	serverAgent.registerObject("cantral_ticket_server", this);
+	println("Central Ticket Office listening to : " + address)
+	
+	serverAgent.registerObject("central_ticket_server", this);
 	
 	
 	def receiverLoop() {
 		react {
-			case Stop()	=> println("Bye")
-			case Path(path) => println("The path is " + path)
+			case Stop()	=> {
+				serverAgent.close
+				resolvers.foreach(a => a ! Stop())
+				println("Bye")
+			}
 		}
 	}
 		
@@ -452,39 +487,40 @@ class RequestReceiver(address : String, resolver : Actor) extends Actor with Inc
 		
 			case "resolve"	=>	{
 				
-				val from 		= im.getParameters.getString("from")
-				val startNode 	= im.getParameters.getString("start_node")
-				val to = im.getParameters.getString("to")			
+				val traveler_index	= im.getParameters.getString("traveler_index")
+				val from 			= im.getParameters.getString("from")
+				val startNode 		= im.getParameters.getString("start_node")
+				val to				= im.getParameters.getString("to")			
 				
-				val ticket 		= resolver !? Resolve(startNode,from,to) 
+				resolvers(index) ! Resolve(startNode,from,to,traveler_index) 
+		
+				index += (index + 1) % 10
+		
+				var replyPar : Parameters = new Parameters
 				
+				replyPar.setString("result","OK");
 				
-				// SEND RESPONSE TO CLIENT!!
+				im.reply(replyPar)
 			}
 			
+			case "terminate" => {
+				println("terminate")
+				this ! Stop()
+			}
 		}
 	}
 }
 
 object Main extends App {
 	override def main(argv : Array[String]) {
-		if (argv.length < 2) {
-			println("Please insert the json environment description and the name server address")
+		if (argv.length < 3) {
+			println("Please insert the json environment description, the name server address and the ticket server address")
 			return;
 		}
-		val resolver = new PathResolver(argv(0))
-		resolver.start
 
 		PathResolver.NAME_SERVER_ADDRESS = argv(1)
-			
-				
-		resolver !? Resolve("Node_1","1","H") match {
-			case Error(msg) => println(msg)
-			case _ => println("ok")
-		}
-		
 
-		val receiver = new RequestReceiver("tcp://localhost:9999",resolver)
+		val receiver = new RequestReceiver(argv(2),argv(0))
 		receiver.start
 	}
 }

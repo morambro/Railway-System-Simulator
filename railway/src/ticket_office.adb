@@ -199,9 +199,8 @@ package body Ticket_Office is
 			Environment.Travelers(Traveler_Index).Ticket := Create_Ticket(
 				From 	=> From,
 				To		=> To);
-			Task_Pool.Execute(
 
-			Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
+			Task_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
 
 		else
 		-- # The resolution of the Ticket is not local, so perform a remote request.
@@ -212,10 +211,11 @@ package body Ticket_Office is
 				Parameters.Set_String("from",From);
 				Parameters.Set_String("to",To);
 				Parameters.Set_String("start_node",Environment.Get_Node_Name);
+				Parameters.Set_String("traveler_index",Integer'Image(Traveler_Index));
 
 				Message_Agent.Instance.Send(
 					Destination_Address => Environment.Get_Central_Ticket_Office,
-					Object 				=> "cantral_ticket_server",
+					Object 				=> "central_ticket_server",
 					Service 			=> "resolve",
 					Params 				=> Parameters,
 					Callback			=> null

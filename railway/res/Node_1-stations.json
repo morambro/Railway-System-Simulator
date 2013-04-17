@@ -1,17 +1,17 @@
 {
 	"stations" : [
 		{
-			"platform_number" 	: 3,
+			"platform_number" 	: 4,
 			"name" 				: "1",
 			"type"				: "R"
 		},
 		{
-			"platform_number" 	: 2,
+			"platform_number" 	: 4,
 			"name" 				: "2",
 			"type"				: "R"
 		},
 		{
-			"platform_number" 	: 2,
+			"platform_number" 	: 4,
 			"name" 				: "3",
 			"type"				: "R"
 		},

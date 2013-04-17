@@ -31,6 +31,7 @@ with Ticket;
 with Gateway_Station;
 with Route;
 with Ticket_Office;
+with Task_Pool;
 
 package body Handlers Is
 
@@ -396,5 +397,40 @@ package body Handlers Is
 		Msg.Process_Content(Callback'Access);
 
     end Is_Station_Present_Handler;
+
+
+        procedure Ticket_Ready_Handler(
+    	Msg : in 	Incoming_Message'Class)
+    is
+		procedure Callback(Content : in out YAMI.Parameters.Parameters_Collection) is
+
+			Traveler_Index	: Integer 	:= Integer'Value(Content.Get_String("ticket_index"));
+			Ticket_Data		: String 	:= Content.Get_String("ticket");
+
+			Reply_Parameters 	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+		begin
+
+				Environment.Travelers(Traveler_Index).Ticket := Ticket.Get_Ticket(Ticket_Data);
+
+				Task_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
+
+				Reply_Parameters.Set_String("result","OK");
+				Msg.Reply(Reply_Parameters);
+
+		exception
+			-- # If an error occurs, send an ERROR message
+			when E : others =>
+				Logger.Log(
+					Sender => "",
+					Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+					L => Logger.ERROR);
+
+		end Callback;
+
+	begin
+
+		Msg.Process_Content(Callback'Access);
+
+    end Ticket_Ready_Handler;
 
 end Handlers;

@@ -26,8 +26,11 @@
 
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with JSON_Helper;use JSON_Helper;
+with Ada.Strings.Unbounded;
 
 package Train is
+
+	use Ada.Strings.Unbounded;
 
 	type Train_Type is (FB,REGIONAL);
 
@@ -48,6 +51,8 @@ package Train is
 	    Occupied_Sits 	: Natural := 0;
 		-- # The train type
 		T_Type			: Train_Type;
+		-- # The start node
+		Start_Node 		: Unbounded_String;
 
 	End Record;
 
