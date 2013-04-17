@@ -95,6 +95,12 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 
 		\subsubsection{Accesso ad una Stazione Regionale}\label{subsubsec:regional_station_access}
 		
+		\begin{figure}[htbp]
+			\includegraphics[trim = 40mm 10mm 10mm 10mm,scale=0.45]{imgs/platform_access.pdf}
+			\caption{\footnotesize{Diagramma di Sequenza, operazioni necessarie per l'ingresso ad una Piattaforma.}}
+			\label{fig:platform_access}
+		\end{figure}
+		
 		I prerequisiti alla richiesta da parte di un Treno $T$ di accesso ad una Stazione sono:
 		
 			\begin{itemize}
@@ -103,8 +109,8 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 				\item Il Treno $T$ uscito dal Segmento $S$, quindi è stato rimosso dalla coda \ttt{Train\_Queue} di $S$.
 			\end{itemize}
 			
+		Il diagramma di sequenza in figura \ref{fig:platform_access} mostra le fasi che portano all'accesso alla Piattaforma.
 		\begin{description}
-			
 	% ################################################# INGRESSO_ORDINATO #########################################
 			\item{\ii{Ingresso Ordinato}}\\
 		

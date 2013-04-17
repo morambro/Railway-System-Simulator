@@ -200,7 +200,8 @@ package body Ticket_Office is
 				From 	=> From,
 				To		=> To);
 			Task_Pool.Execute(
-				Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
+
+			Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
 
 		else
 		-- # The resolution of the Ticket is not local, so perform a remote request.
