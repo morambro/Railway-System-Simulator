@@ -1,7 +1,7 @@
 {
 	"trains" : [
 		{
-			"id" 				: 2222,
+			"id" 				: 1111,
 			"speed" 			: 50,
 			"max_speed" 		: 100,
 			
@@ -10,6 +10,22 @@
 			"next_stage" 		: 1,
 			
 			"route_index" 		: 1,
+			
+			"sits_number"		: 5,
+			"occupied_sits"		: 0,
+			"type"				: "fb",
+			"start_node"		: "Node_1"
+		},
+		{
+			"id" 				: 2222,
+			"speed" 			: 50,
+			"max_speed" 		: 100,
+			
+			"current_station" 	: 1,
+			
+			"next_stage" 		: 1,
+			
+			"route_index" 		: 2,
 			
 			"sits_number"		: 5,
 			"occupied_sits"		: 0,

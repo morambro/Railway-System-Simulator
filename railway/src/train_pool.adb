@@ -117,12 +117,12 @@ package body Train_Pool is
 
 				declare
 					Current_Array_Index 	: Positive :=
-						Environment.T(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Array_Index;
+						Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Array_Index;
 
 					Current_Array_Position	: Positive :=
-						Environment.T(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Array_Position;
+						Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Array_Position;
 
-					Time_To_Wait : Ada.Calendar.Time := Environment.T(Trains.Trains(Current_Descriptor_Index).Route_Index).Table
+					Time_To_Wait : Ada.Calendar.Time := Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Table
 						(Current_Array_Index)(Current_Array_Position);
 				begin
 					Logger.Log(
@@ -133,7 +133,7 @@ package body Train_Pool is
 					);
 					delay until Time_To_Wait;
 
-					Time_Table.Update_Time_Table(Environment.T(Trains.Trains(Current_Descriptor_Index).Route_Index));
+					Time_Table.Update_Time_Table(Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index));
 
 				end;
 

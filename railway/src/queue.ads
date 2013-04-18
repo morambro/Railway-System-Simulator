@@ -102,5 +102,7 @@ package Queue is
 			This 		: in out Unlimited_Simple_Queue;
 			Index 		: in	 Natural) return Element;
 
+		function Is_Empty(
+			This 		: in out Unlimited_Simple_Queue) return Boolean;
 
 end Queue;

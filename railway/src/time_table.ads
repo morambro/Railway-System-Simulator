@@ -34,6 +34,7 @@ package Time_Table is
 
 	type Time_Table_Type(Entry_Size : Positive) is record
 		Route_Index 			: Positive;
+		Restart_Span			: Positive;
 		Current_Array_Index 	: Positive := 1;
 		Current_Array_Position 	: Positive := 1;
 		Table 					: Time_Matrix(1..Entry_Size);

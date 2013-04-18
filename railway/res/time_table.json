@@ -1,17 +1,35 @@
 {
 	"time_table" : [
 		{
-			"route" 	: 	1,
-			"time"		:	
+			"route" 		: 	1,
+			"restart_span"  :   100,
+			"time"			:	
 			[
 				[ 12 , 27 , 45 , 57 , 67 , 76 , 84 , 98 ]
 			]
 		},
 		{
-			"route" 	: 	2,
-			"time"		:	
+			"route" 		: 	2,
+			"restart_span"  :   35,
+			"time"			:	
 			[
 				[ 10 , 20 , 30 ]
+			]
+		},
+		{
+			"route" 		: 	3,
+			"restart_span"  :   20,
+			"time"			:	
+			[
+				[ 5 , 15 ]
+			]
+		},
+		{
+			"route" 		: 	4,
+			"restart_span"  :   20,
+			"time"			:	
+			[
+				[ 5 , 15 ]
 			]
 		}
 	]

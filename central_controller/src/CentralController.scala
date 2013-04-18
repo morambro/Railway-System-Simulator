@@ -3,9 +3,6 @@ import com.inspirel.yami._
 
 case class Event (description : String) 
 
-object Event {
-	def createFromJson (Json_String : String) : Event = Event(Json_String)
-}
 
 class Publisher(val address : String) extends Actor {
 	
@@ -37,42 +34,6 @@ class Publisher(val address : String) extends Actor {
 	
 }
 
-/*class Subscriber(ID : Int) extends Actor with IncomingMessageCallback{
-	
-	val subscriberAgent = new Agent
-
-	def subscriber_loop {
-		react {
-			case "init" => {
-				println ("init!")
-				subscriberAgent.registerObject("update_handler", this);
-				val params : Parameters = new Parameters
-				params.setString("destination_object", "update_handler");
-				subscriberAgent.sendOneWay("tcp://localhost:2222","events", "subscribe", params);
-				subscriber_loop
-			}
-		}		
-	}
-
-	def act() {
-		subscriber_loop
-	}
-	
-	def call (incomingMessage : IncomingMessage) {
-		try {
-			val content = incomingMessage.getParameters()
-
-		    val event = content.getString("event")
-		    
-		    println("Subscriber " + ID + " Received event : " + event)
-		}catch{
-			case e => e.printStackTrace 
-		}
-	}
-	
-}*/
-
-
 class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 	
 	var serverAgent = new Agent
@@ -86,7 +47,8 @@ class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 	def call(im : IncomingMessage) {
 		im.getMessageName match {
 			case "event" => {
-				controller ! Event.createFromJson(im.getParameters.getString("content"))
+				controller ! Event(im.getParameters.getString("event"))
+				println("Received event " + im.getParameters.getString("event"))
 			}
 			case _ => {
 				print("Invalid event")
@@ -129,16 +91,6 @@ object ControllerMain extends App {
 		controller.start		
 		receiver = new Receiver(controller)
 		receiver.addHandler(args(0));
-		
-		/*
-		val s = new Subscriber(1)
-		s.start
-		s ! "init"
-		
-		val s2 = new Subscriber(2)
-		s2.start
-		s2 ! "init"
-		*/
 		
 		waitExit
 		

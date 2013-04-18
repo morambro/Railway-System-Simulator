@@ -71,6 +71,13 @@ package Message_Agent is
 			-- # Procedure that will be called on destination's replace (if needed)
 			Callback			: access procedure(Content : in out YAMI.Parameters.Parameters_Collection));
 
+		procedure Send_One_Way(
+			This 				: access Message_Agent_Type;
+			Destination_Address : in String;
+			Object 				: in String;
+			Service 			: in String;
+			Params 				: in YAMI.Parameters.Parameters_Collection);
+
 		-- #
 		-- # Makes the Agent listen on a specific address.
 		-- #

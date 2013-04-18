@@ -23,7 +23,6 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-
 with Ada.Text_IO;use Ada.Text_IO;
 with Logger;
 with Environment;
@@ -156,8 +155,18 @@ package body Regional_Station is
 			" arriving at platform " &
 			Integer'Image(
 				Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
-			)
-		);
+			));
+
+		declare
+			Ev : Notice_Panel.Train_Event := (
+				Train_ID 	=> Train_ID,
+				Station		=> This.Name,
+				Platform	=> Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index,
+				Action		=> Notice_Panel.ARRIVE);
+		begin
+			This.Panel.Set_Status(Ev);
+		end;
+
     end Add_Train;
 
 
@@ -167,6 +176,7 @@ package body Regional_Station is
 		To				: in 	 String)
 	is
 	begin
+		Put_Line("CREATE : " & This.Get_Name & " to " & To);
 		Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
 	end Buy_Ticket;
 
@@ -183,19 +193,20 @@ package body Regional_Station is
 			if Trains.Trains(Train_Index).ID /= Trains_Order.Get(1) then
 				Logger.Log(
 					Sender 	=> "Access_Controller",
-					Message	=> "Train " & Integer'Image(Train_Index) & " cannot enter, it is not" &
+					Message	=> "Train " & Integer'Image(Trains.Trains(Train_Index).ID) & " cannot enter, it is not" &
 					  				Integer'Image(Trains_Order.Get(1)),
 					L 		=> Logger.DEBUG
 				);
 				requeue Wait;
 			end if;
 
+			Put_Line("ENTERED TRAIN " & Integer'Image(Trains.Trains(Train_Index).ID));
+
 		end Enter;
 
 
 		entry Wait(
-			Train_Index	: in 	 Positive) when Can_Retry
-		is
+			Train_Index	: in 	 Positive) when Can_Retry is
 		begin
 			-- # Decrease the number of re-attempting Trains
 			Trains_Waiting := Trains_Waiting - 1;
@@ -220,7 +231,7 @@ package body Regional_Station is
 			Trains_Order.Dequeue(Train_ID);
 
 			-- # Check if the number of waiting Trains in Wait entry is > 0.
-			if Wait'Count >0 then
+			if Wait'Count > 0 then
 				-- # Open the guard to let them retry
 				Trains_Waiting := Wait'Count;
 				Can_Retry := True;
@@ -229,6 +240,12 @@ package body Regional_Station is
 					Message	=> "Train " & Integer'Image(Train_ID) & " opened the guard Wait",
 					L 		=> Logger.DEBUG
 				);
+
+				if not Trains_Order.Is_Empty then
+					Put_Line("NEXT TRAIN TO ENTER IS = " & Integer'Image(Trains_Order.Get(1)));
+				else
+					Put_Line("NO OTHER TRAIN IN QUEUE ");
+				end if;
 			end if;
 		end Free;
 
@@ -296,9 +313,9 @@ package body Regional_Station is
     overriding procedure Finalize (This: in out Regional_Station_Type) is
     begin
     	Logger.Log(
-    		Sender => "Regional_Station",
+    		Sender	=> "Regional_Station",
     		Message => "Finalize Station " & Unbounded_Strings.To_String(This.Name),
-    		L => Logger.DEBUG);
+    		L 		=> Logger.DEBUG);
     end Finalize;
 
 end Regional_Station;

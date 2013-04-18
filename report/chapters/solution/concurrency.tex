@@ -48,9 +48,9 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	Ho optato invece nel progettare una struttura dati \ttt{Train\_Pool} che mantiene:
 		\begin{itemize}
 			\item una \ii{coda di Descrittori di Treno}, che contengono tutte le informazioni che distinguono una entità Treno;
-			\item un \ii{pool di thread} dimensionato in maniera opportuna; ciascun processo sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni.
+			\item un \ii{Pool di thread} dimensionato in maniera opportuna; ciascun thread sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni. Data la complessità delle interazioni tra le entità del sistema, e quindi la possibilità che i thread vengano posti in attesa su guardie booleane in attesa di eventi, è necessario che il Pool di Thread abbia una dimensione pari al massimo numero di Treni circolanti nella Regione alla quale esso appartiene, in modo tale da evitare deadlock dei Treni in attesa. 
 		\end{itemize}
-	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta.
+	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta. 
 				
 	%  ################################################# STAZIONE ###################################################
 	\subsection{Stazione} \label{subsec:station}

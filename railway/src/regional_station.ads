@@ -23,7 +23,6 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-
 with Generic_Station;use Generic_Station;
 with Train;
 with Platform;

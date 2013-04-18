@@ -9,7 +9,7 @@
 --  University of Padua, Italy                        							--
 --                                                    							--
 --  This file is part of Railway_Simulation project.							--
---																				--		
+--																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
 --  it under the terms of the GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
@@ -23,17 +23,11 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-package Protected_Entity is
+with Message_Agent;
+with YAMI.Parameters;
 
-	protected Synch is
-	
-		entry Wait;
-		
-		procedure Open;
-		
-	end Synch;
-	
-	Continue : Boolean := False;
+package Central_Controller_Interface is
 
-end Protected_Entity;
-		
+	procedure Send_Event(Json_Event : String);
+
+end Central_Controller_Interface;

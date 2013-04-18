@@ -63,8 +63,6 @@ package Segment is
 
 	private
 
-
-
 		-- #
 		-- # Private Entry used to enqueue trains whose direction are not the same
 		-- # as the direction of already running trains.
@@ -91,6 +89,13 @@ package Segment is
 		-- # Queue of all the running trains
 		Running_Trains 		: access Limited_Simple_Queue := new Limited_Simple_Queue(Queue_Dim);
 
+
+		-- # Queue for first End
+		First_End_In_Queue 	: Natural := 0;
+
+		-- # Queue for second End
+		Second_End_In_Queue : Natural := 0;
+
 		-- # Boolean guard telling if a train can retry to Leave the Segment
 		Can_Retry_Leave 	: Boolean := False;
 
@@ -106,7 +111,7 @@ package Segment is
 		-- # Number of trains currently running
 		Trains_Number 		: Natural := 0;
 
-		Max_Train_Occupied	: Natural := 0;
+		Train_Entered_Per_Direction	: Natural := 0;
 
 	end Segment_Type;
 

@@ -310,6 +310,7 @@ package body Gateway_Station is
 		To				: in 	 String)
 	is
 	begin
+		Put_Line("CREATE : " & This.Get_Name & " to " & To);
 		Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
     end Buy_Ticket;
 
@@ -357,9 +358,9 @@ package body Gateway_Station is
 				Parameters.Set_String("train_index",Integer'Image(Train_Descriptor_Index));
 				-- # Pass also current time table index and position
 				Parameters.Set_String("current_time_table_index",
-					Integer'Image(Environment.T(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Array_Index));
+					Integer'Image(Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Array_Index));
 				Parameters.Set_String("current_time_table_position",
-					Integer'Image(Environment.T(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Array_Position));
+					Integer'Image(Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Array_Position));
 				Parameters.Set_String("train",Train.Get_Json(Trains.Trains(Train_Descriptor_Index)));
 
 				Message_Agent.Instance.Send(

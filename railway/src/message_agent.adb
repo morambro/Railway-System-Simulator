@@ -79,6 +79,26 @@ package body Message_Agent is
     end Send;
 
 
+	procedure Send_One_Way(
+		This 				: access Message_Agent_Type;
+		Destination_Address : in String;
+		Object 				: in String;
+		Service 			: in String;
+		Params 				: in YAMI.Parameters.Parameters_Collection)
+	is
+	begin
+		--  the "content" field name is arbitrary,
+	    --  but needs to be recognized at the server side
+        This.Client_Agent.Send_One_Way(
+        	Destination_Address,
+        	Object,
+        	Service,
+        	Params);
+
+    end Send_One_Way;
+
+
+
     procedure Close(This: access Message_Agent_Type) is
     begin
     	Logger.Log(

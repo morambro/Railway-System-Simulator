@@ -15,7 +15,7 @@
 					
 					"node_name"			: "Node_1",
 					"leave_action"		: "ENTER",
-					"enter_action"		: "PASS"
+					"enter_action"		: "ENTER"
 				},
 				{
 					"start_station" 	: 1,
@@ -27,7 +27,7 @@
 					"next_segment" 		: 1,
 					
 					"node_name"			: "Node_2",
-					"leave_action"		: "PASS",
+					"leave_action"		: "ENTER",
 					"enter_action"		: "ENTER"
 				},
 				{
@@ -93,7 +93,7 @@
 					
 					"node_name"			: "Node_2",
 					"leave_action"		: "ENTER",
-					"enter_action"		: "PASS"
+					"enter_action"		: "ENTER"
 				},
 				{
 					"start_station"		: 5,
@@ -105,7 +105,7 @@
 					"next_segment" 		: 4,
 					
 					"node_name"			: "Node_1",
-					"leave_action"		: "PASS",
+					"leave_action"		: "ENTER",
 					"enter_action"		: "ENTER"
 				}
 			]

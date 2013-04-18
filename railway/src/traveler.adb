@@ -113,7 +113,7 @@ package body Traveler is
 
 		Json_Traveler_M.Set_Field("traveler",Json_Traveler);
 		Json_Traveler_M.Set_Field("destination",Traveler.Destination);
-		Json_Traveler_M.Set_Field("start_station",Integer'Image(Traveler.Start_Station));
+		Json_Traveler_M.Set_Field("start_station",Traveler.Start_Station);
 		Json_Traveler_M.Set_Field("start_node",To_String(Traveler.Start_Node));
 
 		case Traveler.Next_Operation is

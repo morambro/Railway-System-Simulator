@@ -58,45 +58,111 @@ package body Segment is
 					" Instead of " & Integer'Image(First_End) & " or " & Integer'Image(Second_End);
 			end if;
 
-			Logger.Log(
-				NAME,
-				"Train " & Integer'Image(Trains.Trains(To_Add).ID) &
-				" current origin : Station " & Integer'Image(Trains.Trains(To_Add).Current_Station),
-				Logger.DEBUG);
-
-			-- # If coming from the same direction as before, but overtook the max per side, re-queue to Wait
-			if Current_Direction = Trains.Trains(To_Add).Current_Station and Max_Train_Occupied = Max_Trains then
-				requeue Wait;
-			end if;
-
-			-- If the Segment is Free, set Free to False, and set also the current "direction"
+			-- # The case in which the Segment is Free, so no other Train is Running
 			if Free then
-				Logger.Log(
-					NAME,
-					"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " Enters, Segment was free",
-					Logger.DEBUG);
-
-				Current_Direction := Trains.Trains(To_Add).Current_Station;
+				-- # If the Maximum Number of Trains per side was reached for the current direction...
+				if Train_Entered_Per_Direction = Max_Trains then
+					-- # If opposite queue is not empty, wait
+					if Trains.Trains(To_Add).Current_Station = First_End then
+						if Second_End_In_Queue > 0 then
+							-- REQUEUE TO WAIT
+							First_End_In_Queue := First_End_In_Queue + 1;
+							requeue Wait;
+						end if;
+					else
+						if First_End_In_Queue > 0 then
+							-- REQUEUE TO WAIT
+							Second_End_In_Queue := Second_End_In_Queue + 1;
+							requeue Wait;
+						end if;
+					end if;
+				end if;
+				-- In any other cases, the Train can ENTER
 				Free := False;
+				Current_Direction := Trains.Trains(To_Add).Current_Station;
+
+				if Current_Direction = Trains.Trains(To_Add).Current_Station then
+					Train_Entered_Per_Direction := Train_Entered_Per_Direction + 1;
+				else
+					-- # New Direction, the limit is set to 1
+					Train_Entered_Per_Direction := 1;
+				end if;
+
 			else
-				-- If the Segment is not Free ad the current train direction is not the same as the direction
-				-- of the already running train(s), re-queue to Wait entry.
-				if ( Trains.Trains(To_Add).Current_Station /= Current_Direction) then
-					-- In case The Segment is not null, move the task to a waiting queue
-					Logger.Log(
-						NAME,
-						"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " will be re-queued, wrong direction",
-						Logger.DEBUG);
-					requeue Wait;
+				if Current_Direction = Trains.Trains(To_Add).Current_Station then
+					if Train_Entered_Per_Direction = Max_Trains then
+						if Trains.Trains(To_Add).Current_Station = First_End then
+							if Second_End_In_Queue > 0 then
+								-- REQUEUE TO WAIT
+								First_End_In_Queue := First_End_In_Queue + 1;
+								requeue Wait;
+							end if;
+						else
+							if First_End_In_Queue > 0 then
+								-- REQUEUE TO WAIT
+								Second_End_In_Queue := Second_End_In_Queue + 1;
+								requeue Wait;
+							end if;
+						end if;
+					end if;
+				else
+					-- REQUEUE TO WAIT
+					if Trains.Trains(To_Add).Current_Station = First_End then
+						First_End_In_Queue := First_End_In_Queue + 1;
+						requeue Wait;
+					else
+						Second_End_In_Queue := Second_End_In_Queue + 1;
+						requeue Wait;
+					end if;
+				end if;
+				-- In any other cases, the Train can ENTER
+
+				-- # Only if the Number of Trains per side is not the maximum, increment it.
+				if Train_Entered_Per_Direction < Max_Trains then
+					Train_Entered_Per_Direction := Train_Entered_Per_Direction + 1;
 				end if;
 			end if;
 
-			if Current_Direction = Trains.Trains(To_Add).Current_Station then
-				Max_Train_Occupied := Max_Train_Occupied + 1;
-			else
-				-- # New Direction, the limit is set to 0
-				Max_Train_Occupied := 0;
-			end if;
+--  			Logger.Log(
+--  				NAME,
+--  				"Train " & Integer'Image(Trains.Trains(To_Add).ID) &
+--  				" current origin : Station " & Integer'Image(Trains.Trains(To_Add).Current_Station),
+--  				Logger.DEBUG);
+--
+--  			-- # If coming from the same direction as before, but overtook the max per side, re-queue to Wait
+--  			if Current_Direction = Trains.Trains(To_Add).Current_Station and Train_Entered_Per_Direction = Max_Trains then
+--  				requeue Wait;
+--  			end if;
+--
+--  			-- If the Segment is Free, set Free to False, and set also the current "direction"
+--  			if Free then
+--  				Logger.Log(
+--  					NAME,
+--  					"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " Enters, Segment was free",
+--  					Logger.DEBUG);
+--
+--  				Current_Direction := Trains.Trains(To_Add).Current_Station;
+--  				Free := False;
+--  			else
+--  				-- If the Segment is not Free ad the current train direction is not the same as the direction
+--  				-- of the already running train(s), re-queue to Wait entry.
+--  				if ( Trains.Trains(To_Add).Current_Station /= Current_Direction) then
+--  					-- In case The Segment is not null, move the task to a waiting queue
+--  					Logger.Log(
+--  						NAME,
+--  						"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " will be re-queued, wrong direction",
+--  						Logger.DEBUG);
+--  					requeue Wait;
+--  				end if;
+--  			end if;
+--
+--  			if Current_Direction = Trains.Trains(To_Add).Current_Station then
+--  				Train_Entered_Per_Direction := Train_Entered_Per_Direction + 1;
+--  			else
+--  				-- # New Direction, the limit is set to 0
+--  				Train_Entered_Per_Direction := 0;
+--  			end if;
+
 
 			-- Here, the current train gained access to the Segment, so performs
 			-- parameters settings.
@@ -143,28 +209,68 @@ package body Segment is
 
 			Enter_Retry_Num := Enter_Retry_Num - 1;
 
-			-- # If coming from the same direction as before, but overtook the max per side, re-queue to Wait
-			if Current_Direction = Trains.Trains(To_Add).Current_Station and Max_Train_Occupied = Max_Trains then
-				requeue Wait;
+			-- # We are for sure n the case in which the Segment is Free!
+			-- # If the Maximum Number of Trains per side was reached for the current direction...
+			if Train_Entered_Per_Direction = Max_Trains then
+				-- # If opposite queue is not empty, wait
+				if Trains.Trains(To_Add).Current_Station = First_End then
+					if Second_End_In_Queue > 0 then
+						-- REQUEUE TO WAIT
+						First_End_In_Queue := First_End_In_Queue + 1;
+						requeue Wait;
+					end if;
+				else
+					if First_End_In_Queue > 0 then
+						-- REQUEUE TO WAIT
+						Second_End_In_Queue := Second_End_In_Queue + 1;
+						requeue Wait;
+					end if;
+				end if;
 			end if;
 
-			-- # If the Segment was free, set Free to False, and set also the new access direction
-			if Free then
-				Logger.Log(
-					NAME,
-					"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " Enters, Segment was free",
-					Logger.DEBUG);
-				Free := False;
-				Current_Direction := Trains.Trains(To_Add).Current_Station;
-			end if;
+			-- # In any other cases, the Train can ENTER
 
-			-- # Check if the Train is entered by the same direction
-			if Current_Direction = Trains.Trains(To_Add).Current_Station then
-				Max_Train_Occupied := Max_Train_Occupied + 1;
+			-- # Decrease the number of Trains waiting per side
+			if Trains.Trains(To_Add).Current_Station = First_End then
+				First_End_In_Queue := First_End_In_Queue - 1;
 			else
-				-- # New Direction, the limit is set to 0
-				Max_Train_Occupied := 0;
+				Second_End_In_Queue := Second_End_In_Queue - 1;
 			end if;
+
+
+			Free := False;
+			Current_Direction := Trains.Trains(To_Add).Current_Station;
+
+			-- # If the Train can enter but the direction is not the same as
+			-- # before, set the number of Trains per direction to 0.
+			if Current_Direction /= Trains.Trains(To_Add).Current_Station then
+				Train_Entered_Per_Direction := 0;
+			end if;
+
+			Train_Entered_Per_Direction := Train_Entered_Per_Direction + 1;
+
+--  			-- # If coming from the same direction as before, but overtook the max per side, re-queue to Wait
+--  			if Current_Direction = Trains.Trains(To_Add).Current_Station and Train_Entered_Per_Direction = Max_Trains then
+--  				requeue Wait;
+--  			end if;
+--
+--  			-- # If the Segment was free, set Free to False, and set also the new access direction
+--  			if Free then
+--  				Logger.Log(
+--  					NAME,
+--  					"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " Enters, Segment was free",
+--  					Logger.DEBUG);
+--  				Free := False;
+--  				Current_Direction := Trains.Trains(To_Add).Current_Station;
+--  			end if;
+--
+--  			-- # Check if the Train is entered by the same direction
+--  			if Current_Direction = Trains.Trains(To_Add).Current_Station then
+--  				Train_Entered_Per_Direction := Train_Entered_Per_Direction + 1;
+--  			else
+--  				-- # New Direction, the limit is set to 0
+--  				Train_Entered_Per_Direction := 0;
+--  			end if;
 
 			-- # Add the train to the train queue
 			Trains_Number := Trains_Number + 1;

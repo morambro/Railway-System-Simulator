@@ -15,39 +15,36 @@
 --  the Free Software Foundation, either version 3 of the License, or			--
 --  (at your option) any later version.											--
 --																				--
---  Railway_Simulation is distributed in the hope that it will be useful,			--
+--  Railway_Simulation is distributed in the hope that it will be useful,		--
 --  but WITHOUT ANY WARRANTY; without even the implied warranty of				--
 --  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the				--
 --  GNU General Public License for more details.								--
 --																				--
 --  You should have received a copy of the GNU General Public License			--
---  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>.		--
+--  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
+with Environment;
 
-package body List is
+package body Central_Controller_Interface is
 
-	procedure Add(
-		This	: in	out List;
-		Elem 	: in 		Element)
-	is
-		NewNode : access Node := new Node'(Content => Elem,Next => null);
+	procedure Send_Event(Json_Event : String) is
+
+		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
 	begin
-		if This.Head = null then
-			This.Head := NewNode;
-			This.Tail := NewNode;
-		else
-			This.Tail.Next := NewNode;
-		end if;
 
-	end Add;
+		Parameters.Set_String("event",Json_Event);
 
-	function Get(
-		This	: in	out List
-		Remove	: in 		Boolean) return Element is
-	begin
-		if This.Head /= null then
-			return This.Head.
-    	end if;
-    end Get;
+		Message_Agent.Instance.Send_One_Way(
+			Destination_Address => Environment.Get_Central_Controller,
+			Object 				=> "central_controller",
+			Service 			=> "event",
+			Params 				=> Parameters);
 
-end List;
+	exception
+		-- # Ignore errors
+		when E : others => null;
+
+    end Send_Event;
+
+end Central_Controller_Interface;

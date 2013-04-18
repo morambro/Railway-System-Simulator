@@ -92,8 +92,8 @@ object Ticket {
 		T.stages.foreach ( stage => {
 			json += "{"
 			
-			json += """ "start_node" : """ + stage.startStation + ","
-			json += """ "next_node" : """ + stage.nextStation + ","
+			json += """ "start_station" : """ + stage.startStation + ","
+			json += """ "next_station" : """ + stage.nextStation + ","
 			json += """ "train_id" : """ + stage.trainId + ","
 			json += """ "start_platform_index" : """ + stage.startPlatform + ","
 			json += """ "destination_platform_index" : """ + stage.destinationPlatform + ","
@@ -338,6 +338,7 @@ class PathResolver(fileName : String) extends Actor {
 						println(reply.getString("ticket"))
 						return reply.getString("ticket")
 					}
+					case _ => println("diocannn")
 				}
 				
 		    } 
@@ -349,6 +350,36 @@ class PathResolver(fileName : String) extends Actor {
 			}
 		}
 		null
+	}
+
+
+	def sendError(dest : String, traveler_index:String) {
+		val p = new Parameters
+
+		p.setString("ERROR","not found")
+		p.setString("traveler_index",traveler_index)
+		
+		
+		
+		val message : OutgoingMessage = agent.send(
+			dest,
+			"message_handler", 
+			"ticket_ready", 
+			p)
+		
+		message.waitForCompletion
+		
+		message.getState match {
+			case OutgoingMessage.MessageState.REPLIED => {
+		    	println("Error message has been received");
+		    } 
+		    case OutgoingMessage.MessageState.REJECTED => {
+				println("The message has been rejected: " + message.getExceptionMsg)
+			}
+			case _ => {
+				println("The message has been abandoned.")
+			}
+		}
 	}
 
 	def resolverLoop() {
@@ -366,7 +397,9 @@ class PathResolver(fileName : String) extends Actor {
 				
 					if (region == null) {
 						println("ERROR : No region found for station " + to)
-						// ...
+						
+						sendError(nodesAddresses(startNode),traveler_index)
+					
 					} else {
 						println("Station " + to + " is in Region " + region)
 				
@@ -394,6 +427,9 @@ class PathResolver(fileName : String) extends Actor {
 							}
 							case None => {
 								println("No path to reach " + region + " from " + startNode)
+								
+								sendError(nodesAddresses(startNode),traveler_index)
+							
 							}
 						}
 						
@@ -494,7 +530,9 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 				
 				resolvers(index) ! Resolve(startNode,from,to,traveler_index) 
 		
-				index += (index + 1) % 10
+				index = (index + 1)% 10
+				
+				println("INDEX = " + index)
 		
 				var replyPar : Parameters = new Parameters
 				

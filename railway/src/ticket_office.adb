@@ -148,6 +148,8 @@ package body Ticket_Office is
 									Len := 0;
 								end if;
 
+								Put_Line("LEN = " & Integer'Image(Len));
+
 								if Len > Max_Length then
 									Max_Length := Len;
 									Max_Match := J;
@@ -194,6 +196,8 @@ package body Ticket_Office is
 	is
 	begin
 		-- # If the Stations are contained in the current Region, create the ticket and return it directly.
+		Put_Line("CREATE : " & integer'image(Environment.Get_Index_For_Name(From)) & " to " & integer'image(Environment.Get_Index_For_Name(To)));
+
 		if Environment.Get_Index_For_Name(From) /= 0 and Environment.Get_Index_For_Name(To) /= 0 then
 
 			Environment.Travelers(Traveler_Index).Ticket := Create_Ticket(

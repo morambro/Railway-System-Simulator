@@ -59,11 +59,12 @@ procedure Main is
   		"  3) Node name identifier [ -nn ] (e.g. -nn Node1) " & ASCII.LF &
   		"  4) Node address [ -na ] (e.g. -na tcp://...)" & ASCII.LF &
   		"  5) Central ticket office address [ -ct ] (e.g. -ct tcp://...)" & ASCII.LF &
+  		"  6) Central controller address [ -cc ] (e.g. -ct tcp://...)" & ASCII.LF &
   	"------------------------------------------------------------------------";
 
 begin
 
-	if Ada.Command_Line.Argument_Count < 7 then
+	if Ada.Command_Line.Argument_Count < 11 then
 		-- ./run -name Node_Name -address tcp_//... -ns_address tcp://name_server_address [ -i | -n | -d ]
 		Ada.Text_IO.Put_Line("ERROR : Not enougth arguments!");
 		Ada.Text_IO.Put_Line(INSTRUCTIONS);
@@ -82,6 +83,8 @@ begin
 		Node_Addr  	: constant String := Ada.Command_Line.Argument (7);
 		Par_4 	  	: constant String := Ada.Command_Line.Argument (8);
 		Central_T  	: constant String := Ada.Command_Line.Argument (9);
+		Par_5	  	: constant String := Ada.Command_Line.Argument (10);
+		Central_C  	: constant String := Ada.Command_Line.Argument (11);
 
 	begin
 
@@ -115,6 +118,12 @@ begin
 			return;
 		end if;
 
+		if Par_5 /= "-cc" then
+			Ada.Text_IO.Put_Line("ERROR : You must specify central controller address, invalid option " & Par_5);
+			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
+			return;
+		end if;
+
 		declare
 			-- Creation of Actors for Travelers
 			Params : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
@@ -144,7 +153,7 @@ begin
 			declare
 				-- Start the real simulation
 				Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
-				Pool			: Train_Pool.Train_Task_Pool(3,5);
+				Pool			: Train_Pool.Train_Task_Pool(6,5);
 
 
 				procedure Start is
@@ -166,12 +175,18 @@ begin
 
 			begin
 
-				Environment.Init(Node_Name,Name_Server,Central_T);
+				Environment.Init(Node_Name,Name_Server,Central_T,Central_C);
 				Segments.Init;
 				Ticket_Office.Init_Path_Map("res/" & Node_Name & "-paths.json");
 
 
+				delay 3.0;
+
 				Start;
+
+				if Ticket_Office.Create_Ticket("G1","4") = null then
+					null;
+				end if;
 
 				--Ticket_Office.Init;
 

@@ -32,6 +32,7 @@ with Gateway_Station;
 with Route;
 with Ticket_Office;
 with Task_Pool;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package body Handlers Is
 
@@ -72,9 +73,9 @@ package body Handlers Is
 				Put_Line("Time_Table_Index = " & Integer'Image(Time_Table_Index));
 
 
-				Environment.T(Trains.Trains(Train_Index).Route_Index).Current_Array_Position := Time_Table_Position;
+				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index).Current_Array_Position := Time_Table_Position;
 
-				Environment.T(Trains.Trains(Train_Index).Route_Index).Current_Array_Index := Time_Table_Index;
+				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index).Current_Array_Index := Time_Table_Index;
 
 				-- # At this point the Stage Index will have been incremented by Leave, so we are
 				-- # sure that the fake stage is passed, and that at the index Next_Stage there will be
@@ -270,6 +271,10 @@ package body Handlers Is
 		begin
 			if Station_Index <= Environment.Stations'Length then
 
+
+				Put_Line("TRAVELER_DATA = " & Traveler_Data);
+
+
 				Environment.Update_Traveler(
 					Traveler_Index 	=> Traveler_Index,
 					Trav_To_Copy	=> Traveler.Get_Traveler_Manager(Traveler_Data),
@@ -399,12 +404,12 @@ package body Handlers Is
     end Is_Station_Present_Handler;
 
 
-        procedure Ticket_Ready_Handler(
+    procedure Ticket_Ready_Handler(
     	Msg : in 	Incoming_Message'Class)
     is
 		procedure Callback(Content : in out YAMI.Parameters.Parameters_Collection) is
 
-			Traveler_Index	: Integer 	:= Integer'Value(Content.Get_String("ticket_index"));
+			Traveler_Index	: Integer 	:= Integer'Value(Content.Get_String("traveler_index"));
 			Ticket_Data		: String 	:= Content.Get_String("ticket");
 
 			Reply_Parameters 	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
@@ -420,10 +425,18 @@ package body Handlers Is
 		exception
 			-- # If an error occurs, send an ERROR message
 			when E : others =>
-				Logger.Log(
-					Sender => "",
-					Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
-					L => Logger.ERROR);
+				declare
+					S : Unbounded_String := Environment.Get_Random_Destination;
+				begin
+					Logger.Log(
+						Sender => "",
+						Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+						L => Logger.ERROR);
+
+					while (S = Environment.Travelers(Traveler_Index).Destination) loop
+						Environment.Travelers(Traveler_Index).Destination := S;
+					end loop;
+				end;
 
 		end Callback;
 

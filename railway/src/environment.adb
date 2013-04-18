@@ -27,6 +27,7 @@ with Ada.Text_IO;use Ada.Text_IO;
 with JSON_Helper;use JSON_Helper;
 with Logger;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
+with Ada.Numerics.Discrete_Random;
 
 package body Environment Is
 
@@ -44,6 +45,12 @@ package body Environment Is
     begin
     	return To_String(Central_Ticket_Office);
     end Get_Central_Ticket_Office;
+
+	function Get_Central_Controller return String is
+    begin
+    	return To_String(Central_Controller);
+    end Get_Central_Controller;
+
 
 
 	function Get_Station_Array(Json_Station : String) return Generic_Station.Stations_Array_Ref is
@@ -74,7 +81,8 @@ package body Environment Is
     procedure Init(
  		N_N 		: in 	String;
     	N_S 		: in 	String;
-    	C_T			: in 	String)
+    	C_T			: in 	String;
+    	C_C			: in 	String)
     is
     begin
     	Name_Server := To_Unbounded_String(N_S);
@@ -82,6 +90,8 @@ package body Environment Is
 		Node_Name := To_Unbounded_String(N_N);
 
 		Central_Ticket_Office := To_Unbounded_String(C_T);
+
+		Central_Controller := To_Unbounded_String(C_C);
 
     	-- # Creates regional stations array loading data from file
     	Stations 	:= Get_Station_Array("res/" & To_String(Node_Name) & "-stations.json");
@@ -102,6 +112,7 @@ package body Environment Is
 			Operations(I)(Traveler.TICKET_READY) := new Move_Operation.Ticket_Ready_Operation_Type'(Traveler_Manager_Index => I);
 		end loop;
 
+		Destinations := Load_Destinations;
 
     end Init;
 
@@ -128,5 +139,33 @@ package body Environment Is
 		return 0;
     end Get_Index_For_Name;
 
+
+	function Get_Random_Destination return Unbounded_String
+	is
+	begin
+		D := (D mod Destinations'Length) + 1;
+		return Destinations(D-1);
+
+    end Get_Random_Destination;
+
+
+
+	function Load_Destinations return access Destinations_Type
+	is
+		J_Value 	 : JSON_Value := Get_Json_Value(Json_File_Name => "res/destinations.json");
+		A_JSON_Array : constant JSON_Array := Get (Val => J_Value,Field => "destinations");
+		Array_Length : constant Natural := Length (A_JSON_Array);
+
+		Destinations : access Destinations_Type := new Destinations_Type(1..Array_Length);
+	begin
+		for I in 1..Array_Length loop
+			declare
+				Dest : String := Get (Arr => A_JSON_Array,Index => I).Get;
+			begin
+	    		Destinations(I) := To_Unbounded_String(Dest);
+	    	end;
+		end loop;
+		return Destinations;
+    end Load_Destinations;
 
 end Environment;

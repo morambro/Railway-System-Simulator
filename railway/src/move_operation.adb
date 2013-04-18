@@ -149,7 +149,7 @@ package body Move_Operation is
 				when E : others =>
 					Logger.Log(
 		   				Sender => "Move_Operation",
-		   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+		   				Message => "ERROR : : " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
 		   				L => Logger.ERROR);
 			end;
 		end if;

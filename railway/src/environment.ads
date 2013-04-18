@@ -52,8 +52,28 @@ package Environment Is
 	-- # Operations for each Traveler
 	Operations 		: Traveler.Travelers_All_Operations_Ref := null;
 
-	-- # Time Table
-	T			 	: Time_Table.Time_Table_Array := Time_Table.Get_Time_Table_Array("res/time_table.json");
+	-- #
+	-- # Time Table for each Route
+	-- #
+	Route_Time_Table: Time_Table.Time_Table_Array := Time_Table.Get_Time_Table_Array("res/time_table.json");
+
+
+	type Destinations_Type is array (Positive range <>) of Unbounded_String;
+
+	-- #
+	-- # Array of possible destinations, useful for Travelers if the ticket for the default
+	-- # destination can not be created
+	-- #
+	Destinations 	: access Destinations_Type := null;
+
+	-- #
+	-- # Simple function which loads all possible destinations.
+	-- #
+	D : Positive := 1;
+
+	function Load_Destinations return access Destinations_Type;
+
+	function Get_Random_Destination return Unbounded_String;
 
 	function Get_Node_Name return String;
 
@@ -61,13 +81,16 @@ package Environment Is
 
 	function Get_Central_Ticket_Office return String;
 
+	function Get_Central_Controller return String;
+
 	-- #
 	-- # Environment package initialization.
 	-- #
     procedure Init(
     	N_N 		: in 	String;
     	N_S 		: in 	String;
-    	C_T			: in 	String);
+    	C_T			: in 	String;
+    	C_C			: in 	String);
 
 	-- #
 	-- # Procedure used to update traveler information.
@@ -85,10 +108,12 @@ package Environment Is
 
 private
 
-    Node_Name : Unbounded_String;
+    Node_Name 				: Unbounded_String;
 
-    Name_Server : Unbounded_String;
+    Name_Server 			: Unbounded_String;
 
-    Central_Ticket_Office : Unbounded_String;
+    Central_Ticket_Office 	: Unbounded_String;
+
+    Central_Controller 		: Unbounded_String;
 
 end Environment;

@@ -118,4 +118,10 @@ package body Queue is
 		return This.Queue.Element(Index => Index);
     end Get;
 
+	function Is_Empty(
+		This 		: in out Unlimited_Simple_Queue) return Boolean is
+	begin
+		return This.Queue.Is_Empty;
+    end Is_Empty;
+
 end Queue;

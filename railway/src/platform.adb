@@ -203,8 +203,9 @@ package body Platform is
 						-- # The next Traveler operation
 						Next_Operation : Traveler.Traveler_Operations_Types := Traveler.ENTER;
 					begin
-						-- # Execute the operation number 2 (Traveler waits to leave the train).
-						Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
+						-- # Execute the operation ENTER (Traveler waits to leave the train).
+						Environment.Operations(Traveler_Manager_Index)(Next_Operation).Do_Operation;
+						--Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
 						-- # Set the new Operation Index
 						Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
 

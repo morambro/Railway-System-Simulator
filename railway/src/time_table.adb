@@ -53,6 +53,7 @@ package body Time_Table is
 	function Get_Time_Table(Json_v : JSON_Value) return access Time_Table_Type
 	is
 		Route_Index		: Positive := Json_v.Get(Field => "route");
+		Restart_Span    : Positive := Json_v.Get(Field => "restart_span");
 		-- # Array of time array
 		J_Array 		: JSON_Array := Json_v.Get(Field => "time");
 		Array_Length 	: constant Natural := Length (J_Array);
@@ -60,6 +61,7 @@ package body Time_Table is
 		Ref_Clock 		: Time := Clock;
 	begin
 		T_Table.Route_Index := Route_Index;
+		T_Table.Restart_Span := Restart_Span;
 		for I in 1 .. Array_Length loop
 			declare
 				Row		: JSON_Value := Get(Arr => J_Array,Index => I);
@@ -110,7 +112,7 @@ package body Time_Table is
 
 				for I in 1 .. This.Table'Length loop
 					for J in 1 .. This.Table(I)'Length loop
-						This.Table(I)(J) := This.Table(I)(J) + Duration(100);
+						This.Table(I)(J) := This.Table(I)(J) + Duration(This.Restart_Span);
 					end loop;
 				end loop;
 
