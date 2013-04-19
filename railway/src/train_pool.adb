@@ -32,11 +32,11 @@ with Route;
 with Routes;
 with Helper;
 with Ada.Exceptions;  use Ada.Exceptions;
-with Ada.Text_IO;use Ada.Text_IO;
 with Train;
 with Gateway_Platform;
-with Ada	.Calendar;
+with Ada.Calendar;
 with Time_Table;
+with Central_Controller_Interface;
 
 package body Train_Pool is
 
@@ -164,6 +164,17 @@ package body Train_Pool is
 				-- # expressed in [unit], the second in [unit]/[sec]
 				Time_In_Segment := Float(Leg_Length)/Float(Trains.Trains(Current_Descriptor_Index).Speed);
 
+
+				Central_Controller_Interface.Set_Train_Status(
+					Train		=> Trains.Trains(Current_Descriptor_Index).ID,
+					Station		=> Environment.Stations(Next_Station).Get_Name,
+					Platform	=> Next_Platform,
+					Time		=> Integer(Time_In_Segment),
+					Segment		=> Next_Segment,
+					Action		=> Central_Controller_Interface.ENTER);
+
+
+
 				Logger.Log(NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) & " running at speed "
 					& Integer'Image(Trains.Trains(Current_Descriptor_Index).Speed) & " u/s;"
@@ -226,7 +237,10 @@ package body Train_Pool is
 					" Interruption : " & Exception_Message(Ex),
 					Logger.ERROR);
 			when Exc : others =>
-				Put_Line("ERROR : Exception: " & Ada.Exceptions.Exception_Name(Exc) & "  " & Ada.Exceptions.Exception_Message(Exc));
+				Logger.Log(
+					NAME,
+					"ERROR : Exception: " & Ada.Exceptions.Exception_Name(Exc) & "  " & Ada.Exceptions.Exception_Message(Exc),
+					Logger.ERROR);
 		end;
 		end loop MAIN_LOOP;
 

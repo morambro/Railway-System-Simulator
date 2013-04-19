@@ -17,8 +17,6 @@
     	
     	websocket.onmessage = function(evt) { 
     		write('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
-    		animate(0,0,2000);
-    		animate(1,0,1000);
     	}
     	
     	
@@ -36,7 +34,7 @@
     	
     </script>
     
-    <textarea id="talk"></textarea>
+    	<textarea id="talk"></textarea>
     
     <script>
 		var handleReturnKey = function(e) {
@@ -53,30 +51,243 @@
 	<div id="canvas"></div>
 	<script>
 		
+		
+		function handleMessage(jsonData) {
+						
+		}
+		
+		function direction(from,to) {
+			this.from 	= from;
+			this.to 	= to;
+		}
+		
+		function segment(from_x,from_y,to_x,to_y,from_station,to_station){
+			
+			this.path = Animations.createStraightPath(r,from_x,from_y,to_x,to_y)
+			
+			this.to_x = to_x
+			
+			this.to_y = to_y
+			
+			this.from_x = from_x
+			
+			this.from_y = from_y
+			
+			this.from_station = from_station;
+			this.to_station = to_station;
+			
+			this.getTotalLength = function() {
+				return this.path.getTotalLength();
+			}
+			
+			this.getPointAtLength = function(length) {
+				return this.path.getPointAtLength(length);
+			}
+			
+			this.getDirection = function(to) {
+				if (to == this.from_station) return new direction(1,0)
+				else return new direction(0,1)
+			}
+		}
+		
+		function station(id,shape,platforms) {
+			this.id = id;
+			this.shape = shape;
+			
+			this.platforms = platforms;
+			
+		}
+		
 		r = Animations.createRaphael(true,{
 			container_id	: "canvas",
-			width			: 400,
-			height			: 500	
+			width			: 2000,
+			height			: 2000	
 		});
+		
+		var paddingLeft 		= 50;
+		var paddingTop 			= 50;
+		var stationDim 			= 200;
+		var segmentLength 		= 300;
+		var platformPaddingLeft = 30;
+		var platformPaddingTop 	= 20;
+		var platformHeigth		= 15;
 		
 		segments = new Array();
 		
-		segments[0] = Animations.createStraightPath(r,50,90,200,90);
-        segments[1] = Animations.createStraightPath(r,230,90,300,200);
+		segments[1] = new segment(
+			paddingLeft+stationDim,
+			paddingTop+stationDim/2,
+			paddingLeft+stationDim+segmentLength,
+			paddingTop+stationDim/2,
+			"1","2");
         
+        segments[2] = new segment(
+        	paddingLeft+(2*stationDim+segmentLength),
+        	paddingTop+stationDim/2,
+        	paddingLeft+(2*stationDim+segmentLength)+segmentLength,
+        	paddingTop+stationDim/2,
+        	"2","3");
+        	
+        segments[3] = new segment(
+        	paddingLeft+(3*stationDim+2*segmentLength),
+        	paddingTop+stationDim/2,
+        	paddingLeft+(3*stationDim+2*segmentLength)+segmentLength,
+        	paddingTop+stationDim/2,
+        	"3","4");
+        	
+        segments[4] = new segment(
+        	paddingLeft+(stationDim+segmentLength)+stationDim,
+        	paddingTop+stationDim-(stationDim/3),
+        	paddingLeft+(stationDim+segmentLength)+stationDim+300,
+        	paddingTop+stationDim+segmentLength,
+        	"2","G1");
         
+        /***************************************************************************************************************/
+        /**************************************** STATIONS_DEFINITIONS *************************************************/
+        /***************************************************************************************************************/
         stations = new Array();
-   		stations[0] = r.circle(35,90,15);
-   		stations[1] = r.circle(35+segments[0].getTotalLength()+30,90,15);
-   
+   		
+   		platforms_1 = new Array();
+   		platforms_1[1] = r.rect(
+   			paddingLeft+platformPaddingLeft,
+   			paddingTop+platformPaddingTop,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_1[2] = r.rect(
+   			paddingLeft+platformPaddingLeft,
+   			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_1[3] = r.rect(
+   			paddingLeft+platformPaddingLeft,
+   			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_1[4] = r.rect(
+   			paddingLeft+platformPaddingLeft,
+   			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["1"] = new station("1", r.rect(paddingLeft,paddingTop,stationDim,stationDim),platforms_1);
+   		
+   		platforms_2 = new Array();
+   		platforms_2[1] = r.rect(
+   			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
+   			paddingTop+platformPaddingTop,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_2[2] = r.rect(
+   			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
+   			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_2[3] = r.rect(
+   			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
+   			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_2[4] = r.rect(
+   			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
+   			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["2"] = new station("2", r.rect(segments[1].to_x,segments[1].to_y-(stationDim/2),stationDim,stationDim),platforms_2);
+   		
+   		platforms_3 = new Array();
+   		platforms_3[1] = r.rect(
+   			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
+   			paddingTop+platformPaddingTop,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_3[2] = r.rect(
+   			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
+   			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_3[3] = r.rect(
+   			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
+   			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_3[4] = r.rect(
+   			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
+   			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["3"] = new station("3", r.rect(segments[2].to_x,segments[2].to_y-(stationDim/2),stationDim,stationDim),platforms_3);
+   		
+   		platforms_4 = new Array();
+   		platforms_4[1] = r.rect(
+   			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
+   			paddingTop+platformPaddingTop,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_4[2] = r.rect(
+   			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
+   			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_4[3] = r.rect(
+   			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
+   			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_4[4] = r.rect(
+   			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
+   			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["4"] = new station("4", r.rect(segments[3].to_x,segments[3].to_y-(stationDim/2),stationDim,stationDim),platforms_4);
+   		
+   		stations["G1"] = new station("G1", r.rect(segments[4].to_x,segments[4].to_y-(stationDim/2),stationDim,stationDim));
+   		stations["G1"].shape.attr('fill',"#FFE4C4");
+   		
+   		platforms_G1 = new Array();
+   		platforms_G1[1] = r.rect(
+   			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
+   			segments[4].to_y-(stationDim/2)+platformPaddingTop,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_G1[2] = r.rect(
+   			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
+   			segments[4].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_G1[3] = r.rect(
+   			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
+   			segments[4].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		platforms_G1[4] = r.rect(
+   			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
+   			segments[4].to_y-(stationDim/2)+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		
+   		stations["G1"].platforms = platforms_G1;
+   		
+   		
+        /***************************************************************************************************************/
+        /****************************************** TRAINS_DEFINITIONS *************************************************/
+        /***************************************************************************************************************/
+		
 		trains = new Array();
-		trains[0] = r.rect(0,0,25,15);trains[0].attr('fill',"red");
-		trains[1] = r.rect(0,0,25,15);trains[1].attr('fill',"blue");
 		
-		//Animations.translate(rect,50,90);
+		trains["1111"] = r.rect(0,0,30,15);
+		trains["1111"].attr('fill',"#DC143C");
+		// First Position
+		trains["1111"].transform('t'+(paddingLeft+2*stationDim+segmentLength)+','+(paddingTop+stationDim-stationDim/3));
 		
-		function animate(train, path, time) {
-			Animations.runElementOnPath(trains[train],segments[path],time,0,1);
+		trains["2222"] = r.rect(0,0,30,15);
+		trains["2222"].attr('fill',"#90EE90");
+		// Second Position
+		trains["2222"].transform('t'+(paddingLeft+stationDim)+','+(paddingTop +stationDim/2));
+		
+		setTimeout(function() {animate("1111",4,10000,"G1");},2000);
+		
+		function animate(train, path, time, to) {
+			d = segments[path].getDirection(to);
+			Animations.runElementOnPath(trains[train],segments[path],time,d.from,d.to);
 		}
 		
 	</script>

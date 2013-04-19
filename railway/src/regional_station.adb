@@ -32,6 +32,7 @@ with Routes;
 with Ada.Exceptions;
 with Train;use Train;
 with Ticket_Office;
+with Central_Controller_Interface;
 
 package body Regional_Station is
 
@@ -107,6 +108,14 @@ package body Regional_Station is
 		This.Panel.Set_Status(
 			"Traveler " & Traveler.Get_Name(Environment.Travelers(Outgoing_Traveler)) &
 			" waits by platform " & Integer'Image(Platform_Index) & " to GO");
+
+		Central_Controller_Interface.Set_Traveler_Status(
+			Traveler	=> Outgoing_Traveler,
+			Train	 	=> Train_ID,
+			Station		=> To_String(This.Name),
+			Platform	=> Platform_Index,
+			Action		=> Central_Controller_Interface.LEAVE);
+
 	end Wait_For_Train_To_Go;
 
 
@@ -121,6 +130,14 @@ package body Regional_Station is
 		This.Panel.Set_Status(
 			"Traveler " & Traveler.Get_Name(Environment.Travelers(Incoming_Traveler)) &
 			" waits by platform " & Integer'Image(Platform_Index) & " to ARRIVE");
+
+		Central_Controller_Interface.Set_Traveler_Status(
+			Traveler	=> Incoming_Traveler,
+			Train	 	=> Train_ID,
+			Station		=> To_String(This.Name),
+			Platform	=> Platform_Index,
+			Action		=> Central_Controller_Interface.ENTER);
+
     end Wait_For_Train_To_Arrive;
 
 
@@ -156,17 +173,6 @@ package body Regional_Station is
 			Integer'Image(
 				Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
 			));
-
-		declare
-			Ev : Notice_Panel.Train_Event := (
-				Train_ID 	=> Train_ID,
-				Station		=> This.Name,
-				Platform	=> Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index,
-				Action		=> Notice_Panel.ARRIVE);
-		begin
-			This.Panel.Set_Status(Ev);
-		end;
-
     end Add_Train;
 
 
@@ -267,11 +273,11 @@ package body Regional_Station is
 	is
 		Station : access Regional_Station_Type := new Regional_Station_Type(Platforms_Number);
 	begin
-		Station.Name := Unbounded_Strings.To_Unbounded_String(Name);
+		Station.Name 	:= Unbounded_Strings.To_Unbounded_String(Name);
+		Station.Panel 	:= new Notice_Panel.Notice_Panel_Entity(new String'(To_String(Station.Name)));
 		for I in Positive range 1..Platforms_Number loop
-			Station.Platforms(I) := new Platform.Platform_Handler(I,Station.Name'Access);
+			Station.Platforms(I) := new Platform.Platform_Handler(I,Station.Name'Access,Station.Panel);
 		end loop;
-		Station.Panel := new Notice_Panel.Notice_Panel_Entity(new String'(To_String(Station.Name)));
 		return Station;
 	end;
 

@@ -24,6 +24,8 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with Environment;
+with Gnatcoll.JSON;use Gnatcoll.JSON;
+with Ada.Text_IO;
 
 package body Central_Controller_Interface is
 
@@ -46,5 +48,48 @@ package body Central_Controller_Interface is
 		when E : others => null;
 
     end Send_Event;
+
+
+    procedure Set_Train_Status(
+		Train		: Positive;
+		Station		: String;
+		Platform	: Positive;
+		Time		: Positive;
+		Segment		: Positive;
+		Action		: Train_Action)
+	is
+		J_Event : JSON_Value := Create_Object;
+	begin
+		J_Event.Set_Field("type","train_event");
+		J_Event.Set_Field("time",Time);
+		J_Event.Set_Field("segment",Segment);
+		J_Event.Set_Field("train_id",Train);
+		J_Event.Set_Field("station",Station);
+		J_Event.Set_Field("platform",Platform);
+		J_Event.Set_Field("action",(if (Action = ENTER) then "enter" else "leave"));
+
+		--Ada.Text_IO.Put_Line(J_Event.Write);
+
+		Central_Controller_Interface.Send_Event(J_Event.Write);
+	end Set_Train_Status;
+
+	procedure Set_Traveler_Status(
+		Traveler	: Positive;
+		Train		: Positive;
+		Station		: String;
+		Platform	: Positive;
+		Action 		: Traveler_Action)
+	is
+		J_Event : JSON_Value := Create_Object;
+	begin
+		J_Event.Set_Field("type","traveler_event");
+		J_Event.Set_Field("traveler_id",Traveler);
+		J_Event.Set_Field("train_id",Train);
+		J_Event.Set_Field("station",Station);
+		J_Event.Set_Field("platform",Platform);
+		J_Event.Set_Field("action",(if (Action = ENTER) then "enter" else "leave"));
+		Central_Controller_Interface.Send_Event(J_Event.Write);
+	end Set_Traveler_Status;
+
 
 end Central_Controller_Interface;

@@ -28,6 +28,26 @@ with YAMI.Parameters;
 
 package Central_Controller_Interface is
 
+	type Traveler_Action is (ENTER,LEAVE);
+
+	type Train_Action is (ENTER,LEAVE);
+
 	procedure Send_Event(Json_Event : String);
+
+	procedure Set_Train_Status(
+			Train		: Positive;
+			Station		: String;
+			Platform	: Positive;
+			Time		: Positive;
+			Segment		: Positive;
+			Action		: Train_Action);
+
+		procedure Set_Traveler_Status(
+			Traveler	: Positive;
+			Train		: Positive;
+			Station		: String;
+			Platform	: Positive;
+			Action 		: Traveler_Action);
+
 
 end Central_Controller_Interface;

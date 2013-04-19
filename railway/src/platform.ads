@@ -29,6 +29,7 @@ with Traveler;use Traveler;
 with Ada.Strings.Unbounded;
 with Generic_Platform;
 with Route;use Route;
+with Notice_Panel;
 
 -- #
 -- # Represents a Platform for a generic Station, both for Trains and Travelers.
@@ -38,8 +39,9 @@ package Platform is
 	use Ada.Strings.Unbounded;
 
 	type Platform_Handler(
-		ID	: Integer;
-		S 	: access Unbounded_String) is limited new Generic_Platform.Platform_Interface with private;
+		ID		: Integer;
+		S 		: access Unbounded_String;
+		Panel	: access Notice_Panel.Notice_Panel_Entity) is limited new Generic_Platform.Platform_Interface with private;
 
 		overriding procedure Enter(
 			This 					: access Platform_Handler;
@@ -94,8 +96,9 @@ private
 
 
 	type Platform_Handler(
-		ID	: Integer;
-		S 	: access Unbounded_String) is limited new Generic_Platform.Platform_Interface with record
+		ID		: Integer;
+		S 		: access Unbounded_String;
+		Panel	: access Notice_Panel.Notice_Panel_Entity) is limited new Generic_Platform.Platform_Interface with record
 
 		The_Platform	: Platform_Type(ID,S);
 

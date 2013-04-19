@@ -23,38 +23,10 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 
 package Notice_Panel is
 
-	type Traveler_Action is (GO,ARRIVE);
-
-	type Traveler_Event is record
-		Name 		: Unbounded_String;
-		Surname 	: Unbounded_String;
-		Station		: Unbounded_String;
-		Platform 	: Positive;
-		Action		: Traveler_Action;
-    end record;
-
-	type Train_Action is (ARRIVE,LEAVE,STOP,PASS);
-
-	type Train_Event is record
-		Train_ID	: Integer;
-		Station		: Unbounded_String;
-		Platform 	: Positive;
-		Action		: Train_Action;
-    end record;
-
-
-
 	protected type Notice_Panel_Entity(Station_ID : access String) is
-
-		procedure Set_Status(
-			Event 	: in 		Traveler_Event);
-
-		procedure Set_Status(
-			Event 	: in		Train_Event);
 
 		procedure Set_Status(
 			Status 	: in		String);

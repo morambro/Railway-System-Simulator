@@ -23,32 +23,11 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>.		--
 ----------------------------------------------------------------------------------
-with Central_Controller_Interface;
 with Logger;
-with Gnatcoll.JSON;use Gnatcoll.JSON;
 
 package body Notice_Panel is
 
 	protected body Notice_Panel_Entity is
-
-		procedure Set_Status(
-			Event 	: in 		Traveler_Event) is
-		begin
-			null;
-		end Set_Status;
-
-		procedure Set_Status(
-			Event 	: in		Train_Event)
-		is
-			J_Event : JSON_Value := Create_Object;
-		begin
-			J_Event.Set_Field("type","train_event");
-			J_Event.Set_Field("train_id",Event.Train_ID);
-			J_Event.Set_Field("station",Event.Station);
-			J_Event.Set_Field("platform",Event.Platform);
-			J_Event.Set_Field("action","ARRIVE");
-			Central_Controller_Interface.Send_Event(J_Event.Write);
-		end Set_Status;
 
 		procedure Set_Status(Status : String) is
 		begin

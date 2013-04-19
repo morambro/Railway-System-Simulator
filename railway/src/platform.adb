@@ -25,7 +25,7 @@
 ----------------------------------------------------------------------------------
 with Ada.Containers;use Ada.Containers;
 with Logger;
-with Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 with Environment;
 with Ada.Text_IO;use Ada.Text_IO;
 with Task_Pool;
@@ -33,6 +33,7 @@ with Ada.Exceptions;
 with Trains;
 with Traveler;
 with Routes;
+with Central_Controller_Interface;
 
 package body Platform is
 
@@ -247,6 +248,14 @@ package body Platform is
 		end if;
 
 		-- # At this point the Task Train has access to the platform!
+		Central_Controller_Interface.Set_Train_Status(
+			Train		=> Trains.Trains(Train_Descriptor_Index).ID,
+			Station		=> To_String(This.S.all),
+			Platform	=> Routes.All_Routes(Trains.Trains(Train_Descriptor_Index).Route_Index)
+											(Trains.Trains(Train_Descriptor_Index).Next_Stage).Platform_Index,
+			Time		=> 1,
+			Segment		=> 1,
+			Action		=> Central_Controller_Interface.ENTER);
 
 		-- # CODE FOR ENTRANCE
 		This.Perform_Entrance(
@@ -266,6 +275,15 @@ package body Platform is
 			Train_Descriptor_Index	=> Train_Descriptor_Index,
 			Action					=> Action);
 
+		-- # Send a notification to the Central Controller
+		Central_Controller_Interface.Set_Train_Status(
+			Train		=> Trains.Trains(Train_Descriptor_Index).ID,
+			Station		=> To_String(This.S.all),
+			Platform	=> Routes.All_Routes(Trains.Trains(Train_Descriptor_Index).Route_Index)
+											(Trains.Trains(Train_Descriptor_Index).Next_Stage).Platform_Index,
+			Time		=> 1,
+			Segment		=> 1,
+			Action		=> Central_Controller_Interface.LEAVE);
 
 		This.The_Platform.Leave(
 			Train_Descriptor_Index 	=> Train_Descriptor_Index);
