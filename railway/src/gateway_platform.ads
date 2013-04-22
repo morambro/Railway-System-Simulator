@@ -35,8 +35,6 @@ with Route;use Route;
 -- #
 package Gateway_Platform is
 
-	Stop_Train_Execution : Exception;
-
 	-- # Create a queue for Traveler type
 	package Traveler_Queue_Package is new Queue(Element => Positive);
 

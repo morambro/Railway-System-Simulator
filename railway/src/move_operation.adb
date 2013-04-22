@@ -30,16 +30,13 @@ with Ada.Strings.Unbounded;
 with Environment;
 with Logger;
 with Ada.Exceptions;
-with YAMI.Parameters;
 with Ticket;
-with Message_Agent;
 with Task_Pool;
+with Remote_Station_Interface;
 
 package body Move_Operation is
 
 	use Ada.Strings.Unbounded;
-
-	NAME_LEAVE : constant String := "Move_Operation.Leave_Operation_Type";
 
 	procedure Do_Operation(This : in Leave_Operation_Type) is
 		Next_Stage 				: Positive 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
@@ -48,17 +45,20 @@ package body Move_Operation is
 		Start_Platform_Index 	: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Start_Platform_Index;
 	begin
 		Logger.Log(
-			Sender 	=> NAME_LEAVE,
+			Sender 	=> "Move_Operation.Leave_Operation_Type",
 			Message => "Traveler" & Integer'Image(Environment.Travelers(This.Traveler_Manager_Index).Traveler.ID) &
 					   " will wait to LEAVE at platform" & Integer'Image(Start_Platform_Index) &
 					   ", station" & Integer'Image(Start_Station) & " for train " & Integer'Image(Train_ID),
 			L 		=> Logger.NOTICE);
 
+		-- # Make the Traveler wait to a specific Train.
 		Environment.Stations(Start_Station).Wait_For_Train_To_Go(
 			Outgoing_Traveler 	=> This.Traveler_Manager_Index,
 			Train_ID 			=> Train_ID,
 			Platform_Index		=> Start_Platform_Index);
 
+		-- # Notify the Central Controller that the current Traveler is waiting by the
+		-- # platform Start_Platform_Index, station Start_Station, to catch train Train_ID
 		Central_Controller_Interface.Set_Traveler_Status(
 			Traveler	=> This.Traveler_Manager_Index,
 			Train		=> Train_ID,
@@ -70,7 +70,7 @@ package body Move_Operation is
 	exception
 		when Error : others =>
 			Logger.Log(
-				NAME_LEAVE,
+				"Move_Operation.Leave_Operation_Type",
 				"Exception: " & Ada.Exceptions.Exception_Name(Error) & " , " & Ada.Exceptions.Exception_Message(Error),
 				Logger.ERROR
 			);
@@ -88,19 +88,21 @@ package body Move_Operation is
 		Destination_Platform_Index 	: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Destination_Platform_Index;
 	begin
 		Logger.Log(
-			Sender 	=> NAME_LEAVE,
+			Sender 	=> "Move_Operation.Enter_Operation_Type",
 			Message => "Traveler" & Integer'Image(Environment.Travelers(This.Traveler_Manager_Index).Traveler.ID) &
 					   " will wait to ARRIVE at platform" & Integer'Image(Destination_Platform_Index) & ", station " & Integer'Image(Next_Station),
 			L 		=> Logger.NOTICE);
 
 		-- # Check if the next destination is in the current Region or not
-
 		if Next_Region = Environment.Get_Node_Name then
+
 			Environment.Stations(Next_Station).Wait_For_Train_To_Arrive(
 				Incoming_Traveler 	=> This.Traveler_Manager_Index,
 				Train_ID 			=> Train_ID,
 				Platform_Index		=> Destination_Platform_Index);
 
+			-- # Notify the Central Controller that the current Traveler is waiting by the
+			-- # platform Start_Platform_Index, station Start_Station, to leave the Train Train_ID.
 			Central_Controller_Interface.Set_Traveler_Status(
 				Traveler	=> This.Traveler_Manager_Index,
 				Train		=> Train_ID,
@@ -108,72 +110,19 @@ package body Move_Operation is
 				Platform	=> Destination_Platform_Index,
 				Action 		=> Central_Controller_Interface.ENTER);
 		else
-			declare
-
-					-- # Callback function, used to handle the response
-				procedure Get_Results(Content : in out YAMI.Parameters.Parameters_Collection) is
-
-					Address : String := Content.Get_String("response");
-					Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
-
-				begin
-					Logger.Log(
-						Sender 	=> "Move_Operation",
-						Message => "The destination is located at address " & Address,
-						L 		=> Logger.DEBUG
-					);
-
-					if Address /= "_" then
-
-						Parameters.Set_String("station",Integer'Image(Next_Station));
-						Parameters.Set_String("traveler_index",Integer'Image(This.Traveler_Manager_Index));
-						Parameters.Set_String("train_id",Integer'Image(Train_ID));
-						Parameters.Set_String("platform",Integer'Image(Destination_Platform_Index));
-						Parameters.Set_String("traveler",Traveler.Get_Json(Environment.Travelers(This.Traveler_Manager_Index)));
-						Parameters.Set_String("ticket",Ticket.To_Json(Environment.Travelers(This.Traveler_Manager_Index).Ticket));
-
-						Message_Agent.Instance.Send(
-							Destination_Address => Address,
-							Object 				=> "message_handler",
-							Service 			=> "traveler_enter_transfer",
-							Params 				=> Parameters,
-							Callback			=> null
-						);
-
-					end if;
-
-			    end Get_Results;
-
-
-				Parameters	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
-			begin
-
-				Parameters.Set_String("station",Integer'Image(Next_Station));
-				Parameters.Set_String("node_name",To_String(Next_Region));
-
-				Put_Line(Environment.Get_Name_Server);
-
-				Message_Agent.Instance.Send(
-					Destination_Address => Environment.Get_Name_Server,
-					Object 				=> "name_server",
-					Service 			=> "get",
-					Params 				=> Parameters,
-					Callback			=> Get_Results'Access
-				);
-
-			exception
-				when E : others =>
-					Logger.Log(
-		   				Sender => "Move_Operation",
-		   				Message => "ERROR : : " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
-		   				L => Logger.ERROR);
-			end;
+			-- # If the Next Station to access is on another station, let's make a remote call
+			Remote_Station_Interface.Wait_For_Train_To_Arrive(
+				Next_Station 				=> Next_Station,
+				Traveler_Manager_Index		=> This.Traveler_Manager_Index,
+				Train_ID					=> Train_ID,
+				Destination_Platform_Index	=> Destination_Platform_Index,
+				Next_Region					=> To_String(Next_Region));
 		end if;
 
 	exception
 		when Error : others =>
 			Logger.Log(
-				NAME_LEAVE,
+				"Move_Operation.Enter_Operation_Type",
 				"Exception: " & Ada.Exceptions.Exception_Name(Error) & " , " & Ada.Exceptions.Exception_Message(Error),
 				Logger.ERROR
 			);
@@ -183,6 +132,7 @@ package body Move_Operation is
     procedure Do_Operation(This : in Buy_Ticket_Operation_Type) is
    		Start_Station : Integer := Environment.Get_Index_For_Name(To_String(Environment.Travelers(This.Traveler_Manager_Index).Start_Station));
     begin
+    	-- # Buy a Ticket at the Station Ticket Office.
 		Environment.Stations(Start_Station).Buy_Ticket(
 			Traveler_Index	=> This.Traveler_Manager_Index,
 			To 				=> To_String(Environment.Travelers(This.Traveler_Manager_Index).Destination));

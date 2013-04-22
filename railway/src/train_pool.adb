@@ -33,7 +33,7 @@ with Routes;
 with Helper;
 with Ada.Exceptions;  use Ada.Exceptions;
 with Train;
-with Gateway_Platform;
+with Remote_Station_Interface;
 with Ada.Calendar;
 with Time_Table;
 with Central_Controller_Interface;
@@ -230,7 +230,7 @@ package body Train_Pool is
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
 					" Segment access Error : " & Exception_Message(E),
 					Logger.ERROR);
-			when Ex : Gateway_Platform.Stop_Train_Execution =>
+			when Ex : Remote_Station_Interface.Stop_Train_Execution =>
 				Logger.Log(
 					NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &

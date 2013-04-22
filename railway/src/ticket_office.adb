@@ -34,8 +34,7 @@ with Route;use Route;
 with Task_Pool;
 with Traveler;
 with Trains;
-with YAMI.Parameters;
-with Message_Agent;
+with Central_Office_Interface;
 
 package body Ticket_Office is
 
@@ -78,14 +77,17 @@ package body Ticket_Office is
 		From	: in 	String;
 		To		: in 	String) return access Ticket.Ticket_Type
 	is
+		-- # Retrieve the indexes from their names
 		S_From 	: String := Integer'Image(Environment.Get_Index_For_Name(From));
 		S_To	: String := Integer'Image(Environment.Get_Index_For_Name(To));
 	begin
-		Put_Line("" & boolean'image(Paths.Contains(Key => S_From) and Paths.Element(Key => S_From).Contains(Key => S_To)));
+		-- # If both stations are contained in the Paths Map, continue, otherwise return null.
 		if Paths.Contains(Key => S_From) and Paths.Element(Key => S_From).Contains(Key => S_To) then
 			declare
+				-- # Get the best path to reach station S_To from S_From station.
 				Best_Path 		: Destinations_Ref := Paths.Element(Key => S_From).Element(Key => S_To);
 				I 				: Positive := 1;
+				-- # The ticket that will be built
 				New_Ticket 		: access Ticket.Ticket_Type := new Ticket.Ticket_Type;
 				Stages 			: Ticket.Ticket_Stages(1..Best_Path'Length);
 				Stages_Cursor	: Positive := 1;
@@ -119,7 +121,7 @@ package body Ticket_Office is
 								-- # The current route index from where to start searching for a match
 								Start_Index 	: Natural := Routes.Contains(Matches(J),Best_Path(I),Best_Path(I+1));
 
-								-- # Index
+								-- # Index used to extend the match
 								Index : Natural := Start_Index;
 								-- # A copy of I to modify
 								K 				: Positive := I;
@@ -132,8 +134,7 @@ package body Ticket_Office is
 								-- # (Best_Path(K),Best_Path(K+1)) is equals to the current route stage
 
 								while 	(Index <= Routes.All_Routes(Matches(J))'Length) and
-										(K < Best_Path'Length) and
-										Equals loop
+										(K < Best_Path'Length) and Equals loop
 
 										Equals 	:=	(Best_Path(K+1) = Routes.All_Routes(Matches(J))(Index).Next_Station) and
 													(Best_Path(K) 	= Routes.All_Routes(Matches(J))(Index).Start_Station);
@@ -144,12 +145,14 @@ package body Ticket_Office is
 											Index := Index + 1;
 										end if;
 								end loop;
+								-- # If this train does not stop at the station, set Len to 0.
 								if Routes.All_Routes(Matches(J))(Index-1).Enter_Action /= Route.ENTER then
 									Len := 0;
 								end if;
 
 								Put_Line("LEN = " & Integer'Image(Len));
 
+								-- # Case in witch we have a new Maximum
 								if Len > Max_Length then
 									Max_Length := Len;
 									Max_Match := J;
@@ -163,10 +166,12 @@ package body Ticket_Office is
 								end if;
 							end;
 						end loop;
+						-- # No match case
 						if Max_Match = 0 then
 							raise No_Route_For_Destination with "Can not create a ticket from " & S_From & " to " & S_To;
 						end if;
 
+						-- # Finally create a New Stage of the ticket, with the collected data.
 						Stages(Stages_Cursor) := (
 							Start_Station 				=> Start_Station,
 							Next_Station  				=> Next_Station,
@@ -181,6 +186,7 @@ package body Ticket_Office is
 					end;
 
 				end loop;
+				-- # Return only the created stages
 				New_Ticket.Stages := new Ticket.Ticket_Stages'(Stages(1..Stages_Cursor-1));
 				return New_Ticket;
 			end;
@@ -200,6 +206,7 @@ package body Ticket_Office is
 
 		if Environment.Get_Index_For_Name(From) /= 0 and Environment.Get_Index_For_Name(To) /= 0 then
 
+			-- # The two stations are local, so let's create the ticket and execute the TICKET_READY Operation (synchronous case)
 			Environment.Travelers(Traveler_Index).Ticket := Create_Ticket(
 				From 	=> From,
 				To		=> To);
@@ -207,24 +214,11 @@ package body Ticket_Office is
 			Task_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
 
 		else
-		-- # The resolution of the Ticket is not local, so perform a remote request.
-			declare
-				Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
-			begin
-
-				Parameters.Set_String("from",From);
-				Parameters.Set_String("to",To);
-				Parameters.Set_String("start_node",Environment.Get_Node_Name);
-				Parameters.Set_String("traveler_index",Integer'Image(Traveler_Index));
-
-				Message_Agent.Instance.Send(
-					Destination_Address => Environment.Get_Central_Ticket_Office,
-					Object 				=> "central_ticket_server",
-					Service 			=> "resolve",
-					Params 				=> Parameters,
-					Callback			=> null
-				);
-			end;
+			-- # If no local resolution of the ticket can be done, make a request to the Central Ticket Office (asynchronous case)
+			Central_Office_Interface.Ask_For_Ticket(
+				From		 	=> From,
+				To 				=> To,
+				Traveler_Index	=> Traveler_Index);
 		end if;
     end Get_Ticket;
 
@@ -236,6 +230,7 @@ package body Ticket_Office is
 		To				: in 	String)
 	is
 	begin
+		-- # Simply invokes Get_Ticket procedure
 		Get_Ticket(Traveler_Index,From,To);
     end Buy_Ticket;
 

@@ -180,26 +180,6 @@ package Gateway_Station is
 		overriding function Get_Name(
 			This				: in 		Gateway_Station_Type) return String;
 
-		-- #
-		-- # Class method used to Transfer a Train via remote message to a given destination.
-		-- #
-		procedure Send_Train(
-			This					: in 	 Gateway_Station_Type;
-			Train_Descriptor_Index 	: in	 Positive;
-			Station	 				: in	 Positive;
-			Platform				: in 	 Positive;
-			Node_Name				: in	 String );
-
-		-- #
-		-- # Class method used to Send an Acknowledge message to notify the sender Gateway Station
-		-- # that the sent Train left the destination Gateway Station.
-		-- #
-		procedure Send_Ack(
-			This					: in 	 Gateway_Station_Type;
-			Train_Descriptor_Index 	: in	 Positive;
-			Station	 				: in	 Positive;
-			Platform				: in 	 Positive;
-			Node_Name				: in	 String );
 
 		procedure Occupy_Platform(
 			This					: in 	 Gateway_Station_Type;
@@ -230,15 +210,6 @@ package Gateway_Station is
 --  	-- # @return A reference to the created Regional_Station_Type object
 --  	-- #
 	function Get_Gateway_Station(Json_Station : Json_Value) return Station_Ref;
-
-
-	procedure Send_Traveler_To_Leave(
-		Traveler_Index	: in	 Positive;
-		Train_ID		: in 	 Positive;
-		Station	 		: in	 Positive;
-		Platform		: in 	 Positive;
-		Node_Name		: in	 String );
-
 
 
 	-- #

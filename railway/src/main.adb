@@ -37,7 +37,6 @@ With Task_Pool;
 
 with Logger;
 with Message_Agent;
-with YAMI.Parameters;
 
 with Traveler;
 
@@ -48,6 +47,8 @@ with Ada.Exceptions;  use Ada.Exceptions;
 with Handlers;
 
 with Ticket;
+
+with Name_Server_Interface;
 
 procedure Main is
 
@@ -78,11 +79,11 @@ begin
 
 		Log_Level 	: constant String := Ada.Command_Line.Argument (1);
 		Par_1 	  	: constant String := Ada.Command_Line.Argument (2);
-		Name_Server : constant String := Ada.Command_Line.Argument (3);
+		Name_Server : aliased String := Ada.Command_Line.Argument (3);
 		Par_2 	  	: constant String := Ada.Command_Line.Argument (4);
-		Node_Name  	: constant String := Ada.Command_Line.Argument (5);
+		Node_Name  	: aliased String := Ada.Command_Line.Argument (5);
 		Par_3 	  	: constant String := Ada.Command_Line.Argument (6);
-		Node_Addr  	: constant String := Ada.Command_Line.Argument (7);
+		Node_Addr  	: aliased String := Ada.Command_Line.Argument (7);
 		Par_4 	  	: constant String := Ada.Command_Line.Argument (8);
 		Central_T  	: constant String := Ada.Command_Line.Argument (9);
 		Par_5	  	: constant String := Ada.Command_Line.Argument (10);
@@ -127,9 +128,6 @@ begin
 		end if;
 
 		declare
-			-- Creation of Actors for Travelers
-			Params : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
-
 		begin
 			Message_Agent.Init;
 			Message_Agent.Instance.Listen_To(Node_Addr);
@@ -141,16 +139,11 @@ begin
 			Message_Agent.Instance.Add_Handler("is_present",Handlers.Is_Station_Present_Handler'Access);
 			Message_Agent.Instance.Add_Handler("ticket_ready",Handlers.Ticket_Ready_Handler'Access);
 
-			Params.Set_String("node_name",Node_Name);
-			Params.Set_String("address",Node_Addr);
-
-			Message_Agent.Instance.Send(
-				Destination_Address => Name_Server,
-				Object 				=> "name_server",
-				Service 			=> "add",
-				Params 				=> Params,
-				Callback			=> null
-			);
+			-- # Register to the Name Server!
+			Name_Server_Interface.Bind(
+				Name_Server  => Name_Server'Access,
+				Node_Name 	 => Node_Name'Access,
+				Address 	 => Node_Addr'Access);
 
 			declare
 				-- Start the real simulation
@@ -232,17 +225,19 @@ begin
 			Message_Agent.Instance.Close;
 
 		exception
-   			when E : YAMI.Runtime_Error =>
+   			when E : Name_Server_Interface.Name_Server_Exception =>
    				Logger.Log(
-	   				Sender => "Message_Agent.Message_Agent_Type",
+	   				Sender => "Main",
 	   				Message => "ERROR : " & Exception_Message(E) & " Impossibile connettersi al Name Server",
 	   				L => Logger.ERROR);
+	   			-- # Close the Message Agent before quitting.
 	   			Message_Agent.Instance.Close;
+
 	   		when Error : others =>
-		    -- Handle all others
-		    	Ada.Text_IO.Put("Exception: ");
-		    	Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Name(Error));
-			    Ada.Text_IO.Put_Line(Ada.Exceptions.Exception_Message(Error));
+		   		Logger.Log(
+	   				Sender => "Main",
+	   				Message => "ERROR : " & Ada.Exceptions.Exception_Name(Error) & " " & Ada.Exceptions.Exception_Message(Error),
+	   				L => Logger.ERROR);
 		end;
 	end;
 exception
