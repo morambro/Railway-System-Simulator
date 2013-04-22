@@ -170,8 +170,8 @@ package body Train_Pool is
 					Station		=> Environment.Stations(Next_Station).Get_Name,
 					Platform	=> Next_Platform,
 					Time		=> Integer(Time_In_Segment),
-					Segment		=> Next_Segment,
-					Action		=> Central_Controller_Interface.ENTER);
+					Segment		=> Segments.Segments(Next_Segment).Id,
+					Action		=> Central_Controller_Interface.LEAVE);
 
 
 

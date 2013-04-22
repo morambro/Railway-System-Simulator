@@ -28,7 +28,7 @@ with YAMI.Parameters;
 
 package Central_Controller_Interface is
 
-	type Traveler_Action is (ENTER,LEAVE);
+	type Traveler_Action is (ENTER,LEAVE,FINISHED);
 
 	type Train_Action is (ENTER,LEAVE);
 

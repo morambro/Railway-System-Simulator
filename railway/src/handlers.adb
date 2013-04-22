@@ -417,6 +417,8 @@ package body Handlers Is
 
 				Environment.Travelers(Traveler_Index).Ticket := Ticket.Get_Ticket(Ticket_Data);
 
+				Ticket.Print(Environment.Travelers(Traveler_Index).Ticket);
+
 				Task_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
 
 				Reply_Parameters.Set_String("result","OK");

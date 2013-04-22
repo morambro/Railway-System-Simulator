@@ -25,6 +25,7 @@
 ----------------------------------------------------------------------------------
 
 with Ada.Text_IO;use Ada.Text_IO;
+with Central_Controller_Interface;
 with Ada.Strings.Unbounded;
 with Environment;
 with Logger;
@@ -57,6 +58,14 @@ package body Move_Operation is
 			Outgoing_Traveler 	=> This.Traveler_Manager_Index,
 			Train_ID 			=> Train_ID,
 			Platform_Index		=> Start_Platform_Index);
+
+		Central_Controller_Interface.Set_Traveler_Status(
+			Traveler	=> This.Traveler_Manager_Index,
+			Train		=> Train_ID,
+			Station		=> Environment.Stations(Start_Station).Get_Name,
+			Platform	=> Start_Platform_Index,
+			Action 		=> Central_Controller_Interface.LEAVE);
+
 
 	exception
 		when Error : others =>
@@ -91,6 +100,13 @@ package body Move_Operation is
 				Incoming_Traveler 	=> This.Traveler_Manager_Index,
 				Train_ID 			=> Train_ID,
 				Platform_Index		=> Destination_Platform_Index);
+
+			Central_Controller_Interface.Set_Traveler_Status(
+				Traveler	=> This.Traveler_Manager_Index,
+				Train		=> Train_ID,
+				Station		=> Environment.Stations(Next_Station).Get_Name,
+				Platform	=> Destination_Platform_Index,
+				Action 		=> Central_Controller_Interface.ENTER);
 		else
 			declare
 
@@ -165,8 +181,9 @@ package body Move_Operation is
 
 
     procedure Do_Operation(This : in Buy_Ticket_Operation_Type) is
+   		Start_Station : Integer := Environment.Get_Index_For_Name(To_String(Environment.Travelers(This.Traveler_Manager_Index).Start_Station));
     begin
-		Environment.Stations(Environment.Travelers(This.Traveler_Manager_Index).Start_Station).Buy_Ticket(
+		Environment.Stations(Start_Station).Buy_Ticket(
 			Traveler_Index	=> This.Traveler_Manager_Index,
 			To 				=> To_String(Environment.Travelers(This.Traveler_Manager_Index).Destination));
     end Do_Operation;

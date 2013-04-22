@@ -87,7 +87,11 @@ package body Central_Controller_Interface is
 		J_Event.Set_Field("train_id",Train);
 		J_Event.Set_Field("station",Station);
 		J_Event.Set_Field("platform",Platform);
-		J_Event.Set_Field("action",(if (Action = ENTER) then "enter" else "leave"));
+		case Action is
+			when ENTER => J_Event.Set_Field("action","enter");
+			when LEAVE => J_Event.Set_Field("action","leave");
+			when FINISHED => J_Event.Set_Field("action","finished");
+		end case;
 		Central_Controller_Interface.Send_Event(J_Event.Write);
 	end Set_Traveler_Status;
 

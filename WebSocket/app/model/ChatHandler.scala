@@ -133,7 +133,7 @@ class ChatHandler extends Actor {
 		}
 
 		case NotifyJoin(username) => {
-			notifyAll("join", username, "has entered the room")
+			//notifyAll("join", username, "has entered the room")
 		}
 		
 		case Talk(username, text) => {
@@ -158,6 +158,7 @@ class ChatHandler extends Actor {
 		    )
 		  )
 		)*/
-		channel.push(kind + " " + user + " " + text)
+		//channel.push(kind + " " + user + " " + text)
+		channel.push(text)
   	}
 }

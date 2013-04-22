@@ -12,7 +12,8 @@ object Ticket {
 	def mergeTickets (T1:Ticket,T2:Ticket) : Ticket =  {
 		val ticket = new Ticket(T1.next)
 		if ((T1.stages.last.destinationPlatform == T2.stages(0).startPlatform) && (T1.stages.last.trainId == T2.stages(0).trainId)) {
-			ticket.stages = T1.stages.drop(1) ++ ( new Ticket_Stage(
+			println("MEEEEEERGE")
+			ticket.stages = T1.stages.dropRight(1) ++ ( new Ticket_Stage(
 				T1.stages.last.startStation,
 				T2.stages(0).nextStation,
 				T1.stages.last.trainId,

@@ -47,6 +47,8 @@ with Ada.Exceptions;  use Ada.Exceptions;
 
 with Handlers;
 
+with Ticket;
+
 procedure Main is
 
 	use Message_Agent;
@@ -184,10 +186,16 @@ begin
 
 				Start;
 
-				if Ticket_Office.Create_Ticket("G1","4") = null then
-					null;
-				end if;
-
+--  				declare
+--  					Tic : access Ticket.Ticket_Type := Ticket_Office.Create_Ticket("1","G1");
+--  				begin
+--  					if Tic /= null then
+--  						Ticket.Print(Tic);
+--  					end if;
+--
+--  					Ticket_Office.Get_Ticket(1,"1","H");
+--
+--  				end;
 				--Ticket_Office.Init;
 
 --  				if Node_Name = "Node_1" then

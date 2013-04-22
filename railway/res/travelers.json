@@ -1,16 +1,26 @@
 {
     "travelers": [
-    	
         {
             "traveler"	: {
-                "id"		: 3,
+                "id"		: 1,
                 "name"		: "Giacomo",
                 "surname"	: "Rossi"
             },
             "next_operation"	: 1,
             "destination"		: "4",
-            "start_station" 	: 2,
-            "start_node"		: "Node_2"
+            "start_station" 	: "1",
+            "start_node"		: "Node_1"
+        },
+        {
+            "traveler"	: {
+                "id"		: 2,
+                "name"		: "Verdi",
+                "surname"	: "Giuseppe"
+            },
+            "next_operation"	: 1,
+            "destination"		: "L",
+            "start_station" 	: "1",
+            "start_node"		: "Node_1"
         }
     ]
 }

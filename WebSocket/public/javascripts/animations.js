@@ -8,18 +8,11 @@
 			this.ca.along = function(percent) {
 				var g = this.attr("guide");
 				var len = g.getTotalLength();
-				var point = g.getPointAtLength(percent * (len-30));
+				var point = g.getPointAtLength(percent * (len-this.getBBox().width));
 				
-				/*if (percent == 1){
-					point = g.getPointAtLength(percent * (len-30));
-				}*/
-			
-			
 				var t = {
-					transform: "t" + point.x + " " + point.y
+					transform: "t" + point.x + " " + (point.y-this.getBBox().height)
 				};
-				
-				console.log("t" + point.x + " " + point.y);
 				
 				return t;
 			};

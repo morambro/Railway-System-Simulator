@@ -58,7 +58,7 @@ package Traveler is
 		Next_Operation 	: Traveler_Operations_Types := LEAVE;
 		Destination 	: Unbounded_String;
 		Ticket 			: access Ticket.Ticket_Type := null;
-		Start_Station 	: Positive;
+		Start_Station 	: Unbounded_String;
 		Start_Node 		: Unbounded_String;
 	end record;
 

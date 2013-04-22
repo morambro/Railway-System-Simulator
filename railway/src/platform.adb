@@ -119,6 +119,7 @@ package body Platform is
 
 					-- # Check if there are more stages, otherwise STOP
 					if 	Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage =
+
 						Environment.Travelers(Traveler_Manager_Index).Ticket.Stages'Length then
 						Logger.Log(
 							Sender  => NAME,
@@ -127,6 +128,16 @@ package body Platform is
 									   " FINISHED HIS TRAVEL" &
 									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
 							L       => Logger.DEBUG);
+
+
+						Central_Controller_Interface.Set_Traveler_Status(
+							Traveler	=> Traveler_Manager_Index,
+							Train		=> Trains.Trains(Train_Descriptor_Index).Id,
+							Station		=> Environment.Stations(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station).Get_Name,
+							Platform	=> This.ID,
+							Action 		=> Central_Controller_Interface.FINISHED);
+
+
 					else
 
 						-- # Go to the next stage (there will be at least another one for sure!)
@@ -274,16 +285,6 @@ package body Platform is
 		This.Perform_Exit(
 			Train_Descriptor_Index	=> Train_Descriptor_Index,
 			Action					=> Action);
-
-		-- # Send a notification to the Central Controller
-		Central_Controller_Interface.Set_Train_Status(
-			Train		=> Trains.Trains(Train_Descriptor_Index).ID,
-			Station		=> To_String(This.S.all),
-			Platform	=> Routes.All_Routes(Trains.Trains(Train_Descriptor_Index).Route_Index)
-											(Trains.Trains(Train_Descriptor_Index).Next_Stage).Platform_Index,
-			Time		=> 1,
-			Segment		=> 1,
-			Action		=> Central_Controller_Interface.LEAVE);
 
 		This.The_Platform.Leave(
 			Train_Descriptor_Index 	=> Train_Descriptor_Index);

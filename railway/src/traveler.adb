@@ -73,13 +73,13 @@ package body Traveler is
 		end;
 		declare
 			Dest 		: String := Json_Traveler.Get("destination");
+			Start_Stat	: String := Json_Traveler.Get("start_station");
 			Start_Node 	: String := Json_Traveler.Get("start_node");
 		begin
 			T.Destination 	:= To_Unbounded_String(Dest);
 			T.Start_Node	:= To_Unbounded_String(Start_Node);
+			T.Start_Station	:= To_Unbounded_String(Start_Stat);
 		end;
-
-		T.Start_Station	:= Json_Traveler.Get("start_station");
 
 		return T;
     end Get_Traveler_Manager;

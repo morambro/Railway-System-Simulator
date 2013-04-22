@@ -32,6 +32,7 @@ with Task_Pool;
 with Ada.Exceptions;
 with Trains;
 with Routes;
+with Central_Controller_Interface;
 
 package body Gateway_Platform is
 
@@ -82,6 +83,17 @@ package body Gateway_Platform is
 			This.The_Platform.Enter_Regional(
 				Train_Descriptor_Index 	=> Train_Descriptor_Index);
 		end if;
+
+		-- # Notify Central Controller that the Train had access to the Plaetform
+		Central_Controller_Interface.Set_Train_Status(
+			Train		=> Trains.Trains(Train_Descriptor_Index).ID,
+			Station		=> To_String(This.S.all),
+			Platform	=> Routes.All_Routes(Trains.Trains(Train_Descriptor_Index).Route_Index)
+											(Trains.Trains(Train_Descriptor_Index).Next_Stage).Platform_Index,
+			Time		=> 1,
+			Segment		=> 1,
+			Action		=> Central_Controller_Interface.ENTER);
+
 		-- # Now we are sure to have unique access to the platform.
 		-- # This code will run in mutual exclusion
 		This.Perform_Entrance(
