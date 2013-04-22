@@ -23,24 +23,18 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-
-with Ada.Text_IO;use Ada.Text_IO;
 with Logger;
 with Environment;
-with Route;use Route;
-with Routes;
 with Trains;
 with YAMI.Parameters;
 with Message_Agent;
 with Ada.Exceptions;
 with Ticket;
-with Ticket_Office;
 with Train;
 with Traveler;
 with Name_Server_Interface;
 
 package body Remote_Station_Interface is
-
 
 	procedure Send_Train(
 		Train_Descriptor_Index 	: in	 Positive;

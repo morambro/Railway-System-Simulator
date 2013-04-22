@@ -366,11 +366,14 @@ package body Segment is
 		entry Retry(Train_D : in Positive) when Can_Retry_Leave is
 		begin
 
+			-- # Decrease the number of tasks that can retry to exit
 			Retry_Num := Retry_Num - 1;
+			-- # If the number of retry-tasks is 0, close the guard
 			if(Retry_Num = 0) then
 				Can_Retry_Leave := False;
 			end if;
 
+			-- # If the current task (Train) can enter...
 			if(Running_Trains.Get(1) = Trains.Trains(Train_D).ID) then
 
 				-- # Remove the Train ID from the queue
@@ -380,6 +383,7 @@ package body Segment is
 					Running_Trains.Dequeue(T);
 				end;
 
+				-- # If there are tasks trying to exit, open the guard.
 				if(Retry'Count > 0) then
 					Retry_Num := Retry'Count;
 					Can_Retry_Leave := True;
@@ -390,6 +394,7 @@ package body Segment is
 					"Train " & Integer'Image(Trains.Trains(Train_D).ID) & " Leaves!",
 					Logger.DEBUG);
 
+				-- # Decrease the number of Trains in the Segment.
 				Trains_Number := Trains_Number - 1;
 
 				-- Set to Free the Segment if no other train is in or waiting

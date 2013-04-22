@@ -28,6 +28,11 @@ with Ada.Strings.Hash;
 with Ada.Containers;use Ada.Containers;
 with Ada.Containers.Indefinite_Hashed_Maps;
 
+-- #
+-- # Remote interface package used to communicate with the Name Server. It exposes the procedures:
+-- #	- Bind, used to bind the current Node to a specific TCP address;
+-- #	- Resolve, used to get the location of a given Node.
+-- #
 package Name_Server_Interface is
 
 	package String_String_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
@@ -40,6 +45,7 @@ package Name_Server_Interface is
 	-- # String-String Map used as a cache to maintain last addresses
 	Last_Addresses : String_String_Maps.Map;
 
+	-- # Exception raised when the request can not be executed
 	Name_Server_Exception : exception;
 
 	-- #

@@ -45,9 +45,6 @@ with Ticket_Office;
 with Ada.Exceptions;  use Ada.Exceptions;
 
 with Handlers;
-
-with Ticket;
-
 with Name_Server_Interface;
 
 procedure Main is

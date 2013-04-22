@@ -23,31 +23,12 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-with Ada.Strings.Unbounded;
-
-with Ada.Strings.Hash;
-
-with Ada.Containers;use Ada.Containers;
-with Ada.Containers.Indefinite_Hashed_Maps;
-
-with Queue;
-
 -- #
 -- # Represents the Remote Interface to communicate with other Nodes.
 -- #
 package Remote_Station_Interface is
 
 	Stop_Train_Execution : Exception;
-
-	package String_String_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
-		Key_Type 		=> String,
-		Element_Type 	=> String,
-		Hash			=> Ada.Strings.Hash,
-		Equivalent_Keys => "="
-	);
-
-	-- # String-String Map used as a cache to maintain last addresses
-	Last_Addresses : String_String_Maps.Map;
 
 	-- #
 	-- # Procedure used to Transfer a Train via remote message to a given destination.
