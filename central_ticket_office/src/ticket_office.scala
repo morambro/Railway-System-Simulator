@@ -235,7 +235,7 @@ class PathResolver(fileName : String) extends Actor {
 		val message : OutgoingMessage = agent.send(
 			PathResolver.NAME_SERVER_ADDRESS,
 		    "name_server", 
-		    "all", 
+		    "list", 
 		    new Parameters);
 		    
 		message.waitForCompletion

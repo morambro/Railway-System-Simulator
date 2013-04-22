@@ -37,7 +37,7 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 	
 		im.getMessageName match {
 		
-			case "add" => {
+			case "bind" => {
 				val node_name 	= im.getParameters.getString("node_name") 
 				val address 	= im.getParameters.getString("address")
 	
@@ -58,7 +58,7 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 				im.reply(replyParams)
 			}
 		
-			case "get" => {
+			case "resolve" => {
 				val key 	= im.getParameters.getString("node_name")
 				
 				val replyParams : Parameters = new Parameters;
@@ -76,7 +76,7 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 				im.reply(replyParams)
 			}
 		
-			case "all" => {
+			case "list" => {
 				
 				val replyParams : Parameters = new Parameters;
 			

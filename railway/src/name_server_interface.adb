@@ -43,7 +43,7 @@ package body Name_Server_Interface is
 		Message_Agent.Instance.Send(
 			Destination_Address => Name_Server.all,
 			Object 				=> "name_server",
-			Service 			=> "add",
+			Service 			=> "bind",
 			Params 				=> Params,
 			Callback			=> null
 		);
@@ -88,7 +88,7 @@ package body Name_Server_Interface is
 			Message_Agent.Instance.Send(
 				Destination_Address => Name_Server,
 				Object 				=> "name_server",
-				Service 			=> "get",
+				Service 			=> "resolve",
 				Params 				=> Parameters,
 				Callback			=> Process_Result'Access
 			);

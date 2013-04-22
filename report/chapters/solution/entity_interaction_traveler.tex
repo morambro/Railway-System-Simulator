@@ -56,8 +56,6 @@ Le azioni compiute dall'operazione \ttt{LEAVE} sono:
 	Il comportamento descritto non è proprio della operazione \ttt{LEAVE}, ma è contenuto nell'operazione della Piattaforma per l'accodamento del Viaggiatore presso la coda \ttt{Leaving\_Queue}. 
 	
 	
-	
-	
 	\subsubsection{Arrivo alla Destinazione successiva}
 		
 	Similmente a quanto descritto per la partenza, l'arrivo a destinazione prevede che l'operazione \ttt{ARRIVE} sia già stata inserita all'interno della coda di operazioni in \ttt{Traveler\_Pool}, e che un thread del pool la esegua (rimuovendola dalla coda). A differenza della partenza, questa operazione può comportare l'accodamento del Viaggiatore presso una Stazione che non appartiene alla Regione (al nodo) corrente, anche se non di Gateway. 
