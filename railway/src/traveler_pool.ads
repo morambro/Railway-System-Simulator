@@ -27,7 +27,7 @@
 with Generic_Operation_Interface;use Generic_Operation_Interface;
 with Queue;
 
-package Task_Pool is
+package Traveler_Pool is
 
 
 	-- Adds a new operation to the executing queue
@@ -36,12 +36,12 @@ package Task_Pool is
 	procedure Stop;
 
 	-- Task which Executes an operation taken from Operations_Queue
-	task type Actor;
+	task type Executor;
 
-	type Actors_Vector is array(Integer range <>) of Actor;
+	type Executor_Vector is array(Integer range <>) of Executor;
 
-	type Task_Pool_Type(Pool_Dimension : Positive) is record
-		Actors : Actors_Vector(1..Pool_Dimension);
+	type Traveler_Pool_Type(Pool_Dimension : Positive) is record
+		Executors : Executor_Vector(1..Pool_Dimension);
 	end record;
 
 private
@@ -53,4 +53,4 @@ private
 	Operations_Queue : Operations_Queue_Package.Terminable_Queue;
 
 
-end Task_Pool;
+end Traveler_Pool;

@@ -1,0 +1,2 @@
+cd WebSocket
+play run

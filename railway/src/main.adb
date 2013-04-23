@@ -33,7 +33,7 @@ with Environment;
 with Trains;
 with Segments;
 with Train_Pool;
-With Task_Pool;
+With Traveler_Pool;
 
 with Logger;
 with Message_Agent;
@@ -144,7 +144,7 @@ begin
 
 			declare
 				-- Start the real simulation
-				Traveler_Tasks 	: Task_Pool.Task_Pool_Type(5);
+				Traveler_Tasks 	: Traveler_Pool.Traveler_Pool_Type(5);
 				Pool			: Train_Pool.Train_Task_Pool(6,5);
 
 
@@ -159,7 +159,7 @@ begin
 
 					for I in 1 ..  Environment.Travelers'Length loop
 						if Ada.Strings.Unbounded.To_String(Environment.Travelers(I).Start_Node) = Node_Name then
-							Task_Pool.Execute(Environment.Operations(I)(Traveler.BUY_TICKET));
+							Traveler_Pool.Execute(Environment.Operations(I)(Traveler.BUY_TICKET));
 						end if;
 					end loop;
 
@@ -206,12 +206,12 @@ begin
 				--Ticket_Office.Get_Ticket(1,"G1","4");
 
 --  				if Node_Name = "Node_1" then
---  					Task_Pool.Execute(Environment.Operations(1)(Traveler.LEAVE));
+--  					Traveler_Pool.Execute(Environment.Operations(1)(Traveler.LEAVE));
 --  				end if;
 --  				delay 4.0;
 --
 --  				Train_Pool.Stop;
---  				Task_Pool.Stop;
+--  				Traveler_Pool.Stop;
 			exception
 				when E : others =>
 				Logger.Log(

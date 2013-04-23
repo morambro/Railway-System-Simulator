@@ -37,95 +37,22 @@ with Ticket_Office;
 
 package body Gateway_Station is
 
-	function Get_Name(
-			This : in	 Gateway_Station_Type) return String is
-	begin
-		return To_String(This.Name);
-    end Get_Name;
-
-
-	-- ########################################## ACCESS_CONTROL #############################################
-
-	 protected body Access_Controller is
-
-		entry Enter(
-			Train_Index	: in 	 Positive) when True is
-		begin
-			-- # If the currently running Train is the next that can Access the Platform,
-			-- # let it pass, otherwise re-queue to Wait entry, until the guard is opened.
-			if Trains.Trains(Train_Index).ID /= Trains_Order.Get(1) then
-				Logger.Log(
-					Sender 	=> "Access_Controller",
-					Message	=> "Train " & Integer'Image(Trains.Trains(Train_Index).ID) & " cannot enter, it is not" &
-					  				Integer'Image(Trains_Order.Get(1)),
-					L 		=> Logger.DEBUG
-				);
-				requeue Wait;
-			end if;
-
-		end Enter;
-
-
-		entry Wait(
-			Train_Index	: in 	 Positive) when Can_Retry
-		is
-		begin
-			-- # Decrease the number of re-attempting Trains
-			Trains_Waiting := Trains_Waiting - 1;
-
-			-- # If the number is 0, then close the guard.
-			if Trains_Waiting = 0 then
-				Can_Retry := False;
-			end if;
-
-			-- # If the currently running Train is the next that can Access the Platform,
-			-- # let it pass, otherwise re-queue to Wait entry, until the guard is opened.
-			if Trains.Trains(Train_Index).ID /= Trains_Order.Get(1) then
-				requeue Wait;
-			end if;
-		end Wait;
-
-
-		procedure Free is
-			Train_ID	: Positive;
-		begin
-			-- # Dequeue the First Train (the one which already called Enter).
-			Trains_Order.Dequeue(Train_ID);
-
-			-- # Check if the number of waiting Trains in Wait entry is > 0.
-			if Wait'Count >0 then
-				-- # Open the guard to let them retry
-				Trains_Waiting := Wait'Count;
-				Can_Retry := True;
-				Logger.Log(
-					Sender 	=> "Access_Controller",
-					Message	=> "Train " & Integer'Image(Train_ID) & " opened the guard Wait",
-					L 		=> Logger.DEBUG
-				);
-			end if;
-		end Free;
-
-		procedure Add_Train(
-			Train_ID : in 	 Positive) is
-		begin
-			Put_LIne ("ADDING = " & integer'image(Train_ID));
-			-- # Add a new element in the Queue.
-			Trains_Order.Enqueue(Train_ID);
-		end Add_Train;
-
- 	end Access_Controller;
-
-
 	-- ###################################################################################################
 	-- ######################### Definition of the inherited abstract methods ############################
 	-- ###################################################################################################
 
+	function Get_Name(
+		This : in	 Gateway_Station_Type) return String is
+	begin
+		return To_String(This.Name);
+    end Get_Name;
+
 	procedure Enter(
-			This 				: in		Gateway_Station_Type;
-			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive;
-			Segment_ID			: in 		Positive;
-			Action				: in 		Route.Action)
+		This 				: in		Gateway_Station_Type;
+		Descriptor_Index	: in		Positive;
+		Platform_Index		: in		Positive;
+		Segment_ID			: in 		Positive;
+		Action				: in 		Route.Action)
 	is
 	begin
 

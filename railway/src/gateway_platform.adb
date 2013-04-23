@@ -28,7 +28,7 @@ with Logger;
 with Ada.Strings.Unbounded;
 with Environment;
 with Ada.Text_IO;use Ada.Text_IO;
-with Task_Pool;
+with Traveler_Pool;
 with Ada.Exceptions;
 with Trains;
 with Routes;
@@ -210,7 +210,7 @@ package body Gateway_Platform is
 								Next_Operation : Traveler.Traveler_Operations_Types := Traveler.LEAVE;
 							begin
 								-- # Execute the operation number 2 (Traveler waits to leave the train).
-								Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
+								Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
 								-- # Set the new Operation Index
 								Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
 
@@ -295,7 +295,7 @@ package body Gateway_Platform is
 							Next_Operation : Traveler.Traveler_Operations_Types := Traveler.ENTER;
 						begin
 							-- # Execute the operation number 2 (Traveler waits to leave the train).
-							Task_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
+							Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
 							-- # Set the new Operation Index
 							Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
 

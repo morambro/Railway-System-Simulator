@@ -31,7 +31,7 @@ with Unchecked_Deallocation;
 package Generic_Operation_Interface is
 
 	-- Operation Interface type declaration
-	type Operation_Interface is interface;--abstract tagged null record;
+	type Operation_Interface is interface;
 
 	-- Operation Method declaration
 	procedure Do_Operation (X : in Operation_Interface) is abstract;
@@ -39,16 +39,6 @@ package Generic_Operation_Interface is
    	-- Operation reference type to be used inside records: Type'Class doesn't
    	-- have a fixed size so it can be not allocated inside a record.
    	type Any_Operation is access all Operation_Interface'Class;
-
-
-   		type Traveler_Operations is Array(Positive range <>) of Any_Operation;
-
-	type Traveler_Operations_Ref is access all Traveler_Operations;
-
-	type Travelers_All_Operations is array (Positive range <>) of Traveler_Operations_Ref;
-
-	type Travelers_All_Operations_Ref is access all Travelers_All_Operations;
-
 
 	-- Code to manage memory deallocation
  	procedure Free is new Unchecked_Deallocation (

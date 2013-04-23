@@ -147,7 +147,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 	% ############################################## INGRESSO_PIATTAFORMA #########################################
 		\item{\ii{Ingresso in una Piattaforma}}\\
 		
-		Dopo aver superato la risorsa di controllo \ttt{Access\_Controller}, ciascun Treno è libero di richiedere l'accesso alla Piattaforma successiva prevista dal percorso, interna a ciascuna Stazione, poiché sicuramente sarà l'unico ad eseguire a questo punto. La semantica di accodamento su di una generica Piattaforma $P$ (supponiamo disponibile mediante procedura eseguita in mutua esclusione) è la seguente:
+		Dopo aver superato la barriera di controllo d'accesso \ttt{Access\_Controller}, ciascun Treno è libero di richiedere l'accesso alla Piattaforma successiva prevista dal percorso, interna a ciascuna Stazione, poiché sicuramente sarà l'unico ad eseguire a questo punto. La semantica di accesso su di una generica Piattaforma $P$ (supponiamo disponibile mediante procedura eseguita in mutua esclusione) è la seguente:
 		\begin{itemize}
 			\item Se $P$ è libera, ovvero il flag booleano \ttt{Free} sarà \ttt{True}, allora 
 				\begin{itemize}
@@ -155,7 +155,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 					\item Se l'azione (\ttt{action}) prevista dal Percorso è \ttt{ENTER} allora:
 						\begin{itemize}
 							\item esegue l'operazione di \bb{Discesa dei Viaggiatori};
-							\item rilascia la risorsa, in modo tale che altri Treni vi si possano accodare, e rimane in attesa fino all'orario prestabilito di partenza;
+							\item rilascia la risorsa, in modo tale che altri Treni vi possano accedere, e rimane in attesa fino all'orario prestabilito di partenza;
 						\end{itemize}
 				\end{itemize} 
 			\item Se invece la Piattaforma risulta occupata (\ttt{Free = False}), il Treno viene accodato presso una coda di Treni interna alla Piattaforma. Rappresentando la Piattaforma come una risorsa protetta da monitor, l'accodamento si traduce in una attesa su condizione, \ttt{wait(Free = True)}.
@@ -210,7 +210,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 				\item Se il Treno atteso da $V$ (informazione recuperabile dalla Tappa corrente del suo Biglietto) è proprio il Treno correntemente in esecuzione $T$ e \ii{se la capienza massima di $T$ non è stata raggiunta} allora:
 					\begin{itemize}
 						\item il numero di posti occupati di $T$ viene incrementato;
-						\item l'Operazione \ttt{ENTER} del Viaggiatore viene inserita:
+						\item l'Operazione \ttt{ENTER} del Viaggiatore viene \ii{eseguita} a differenza di quanto avviene nella fase di Descesa dei Passeggeri: in questo modo infatti si avrà la garanzia che tutti i Viaggiatori saliti a bordo del Treno saranno in attesa nella coda \ttt{Arrival\_Queue} della Piattaforma di Stazione corretta, nel momento in cui il Treno vi accederà durante il proprio viaggio. 
 					\end{itemize}
 				\item Se $T$ invece non è il Treno atteso da $V$, quest'ultimo viene reinserito nella coda \ttt{Leaving\_Queue}.
 			\end {itemize}

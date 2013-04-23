@@ -44,53 +44,6 @@ with Generic_Platform;
 package Regional_Station is
 
 
-	-- ############################### ACCESS_CONTROLLER ########################################
-
-	package Trains_Queue_Package is new Queue (Element => Positive);
-
-	protected type Access_Controller is
-
-		-- #
-		-- # Entry called by the train task to regulate the entrance order for a Segment
-		-- #
-		entry Enter(
-			Train_Index	: in 	 Positive);
-
-		-- #
-		-- # Simply Adds the Given Train ID to the internal Queue
-		-- #
-		procedure Add_Train(
-			Train_ID : in 	 Positive);
-
-		-- #
-		-- # Dequeues the first element
-		-- #
-		procedure Free;
-
-	private
-
-		-- #
-		-- # Private Entry used to make unordered accesses avoided.
-		-- #
-		entry Wait(
-			Train_Index	: in 	Positive);
-
-		-- # A simple unlimited queue used to keep track of Trains order.
-		Trains_Order 	: Trains_Queue_Package.Unlimited_Simple_Queue;
-
-		-- # Boolean Guard, used to block Tasks in Wait entry
-		Can_Retry 		: Boolean := False;
-
-		-- # A field used to store the number of tasks waiting on Wait entry
-		Trains_Waiting	: Natural := 0;
-
- 	end Access_Controller;
-
- 	type Access_Controller_Ref is access all Access_Controller;
-
-	-- ##########################################################################################
-
-
    	package Segments_Map is new Ada.Containers.Ordered_Maps(
    		Key_Type 		=> Positive,
       	Element_Type 	=> Access_Controller_Ref

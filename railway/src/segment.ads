@@ -75,7 +75,8 @@ package Segment is
 		-- #
 		-- # Private Entry used to enqueue trains, to guarantee an exit order.
 		-- #
-		entry Retry(Train_D : in Positive);
+		entry Retry(
+			Train_D : in Positive);
 
 		-- # Tells weather a train is already running or not
 		Free 				: Boolean := True;

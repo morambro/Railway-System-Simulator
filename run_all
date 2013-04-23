@@ -1,0 +1,11 @@
+# Load Name Server 
+gnome-terminal --hide-menubar --title="Name Server" --command="sh name_server/run.sh tcp://localhost:1234"
+
+# Load Central Controller 
+gnome-terminal --hide-menubar --title="Central Controller" --command="sh central_controller/run.sh"
+
+# Load Central Ticket Office 
+gnome-terminal --hide-menubar --title="Central Ticket Office" --command="sh central_ticket_office/run.sh"
+
+# Load Http Server 
+gnome-terminal --hide-menubar --title="Server" --command="sh run_play.sh"

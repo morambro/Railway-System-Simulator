@@ -1,10 +1,9 @@
 \chapter{Tecnologie Adottate}
 
-La scelta delle tecnologie per l'implementazione del prototipo realizzato, è stata operata nell'ottica di individuare strumenti che permettessero una agevole attuazione della soluzione presentata.
+La scelta delle tecnologie per l'implementazione del prototipo realizzato, è stata operata nell'ottica di individuare strumenti che permettessero una agevole attuazione della soluzione presentata. 
+Di seguito verranno presentati i linguaggi di programmazione adottati e le tecnologie scelte.
 
-Sono stati utilizzati principalmente due linguaggi di programmazione.
-	\begin{description}
-		\item {\bb{Scala}} \\
+	\section{Scala}
 		Il linguaggio Scala è un linguaggio funzionale Object Oriented. Ho utilizzato questo linguaggio per la realizzazione di 
 			\begin{itemize}
 				\item \bb{Controller Centrale}
@@ -12,34 +11,30 @@ Sono stati utilizzati principalmente due linguaggi di programmazione.
 				\item \bb{Application Server}, al quale i client HTTP possono collegarsi mediante protocollo \ii{Web Socket} per poter fornire una rappresentazione grafica della simulazione, in linguaggio HTML e Javascript. Per la sua realizzazione è stato utilizzato il framework MVC \ttt{Play 2.0} (disponibile all'indirizzo \url{http://www.playframework.com/}).
 				\item \bb{Name Server} per la gestione delle Regioni di simulazione.
 			\end{itemize}
-		Le interazione tra thread interne alle componenti distribuite, sono state gestite adottando il modello di concorrenza ad Attori fornito nativamente dal linguaggio Scala. 
-		\item {\bb{Ada}} \\
-		Il linguaggio Ada è stato utilizzato per realizzare il core di simulazione presente in ciascuna Regione. Il modello di concorrenza fornito dal linguaggio è sembrato per me più adatto, rispetto ai modelli offerti da altri linguaggi, per rappresentare le interazioni tra le entità introdotte al capitolo precedente. 
-		In prima battuta, ho valutato l'utilizzo del modello di concorrenza ad Attori di Scala; esso avrebbe fornito un meccanismo di linguaggio per l'esecuzione delle entità Viaggiatore e Treno, simile a quello descritto per nelle sezioni \ref{subsec:traveler_def} e \ref{subsec:train_def}. Tuttavia, il modello ad Attori avrebbe reso necessaria l'adozione di entità attive Server a protezione delle entità reattive come Segmenti e Piattaforme, e ciò avrebbe comportato:
+		Internamente alle componenti distribuite, la concorrenza è stata gestita adottando il modello di concorrenza ad Attori fornito nativamente dal linguaggio. 
+	\section{Ada}
+		Il linguaggio Ada è stato utilizzato per realizzare il core di simulazione presente in ciascuna Regione. Ho preferito infatti il modello di concorrenza fornito dal linguaggio, il quale mi è sembrato più adatto per rappresentare le interazioni tra le entità introdotte al capitolo precedente, rispetto ai modelli offerti da altri linguaggi. 
+		In prima battuta, ho valutato l'utilizzo del modello di concorrenza ad Attori di Scala; tale modello avrebbe garantito una separazione naturale tra Attore e Thread che lo esegue, e quindi fornito un meccanismo di linguaggio scalabile per l'esecuzione delle entità Viaggiatore e Treno, da utilizzare in sostituzione a quello descritto nelle sezioni \ref{subsec:traveler_def} e \ref{subsec:train_def}. Tuttavia, il modello ad Attori avrebbe reso necessaria l'adozione di \ii{entità attive Server} a protezione delle entità reattive come Segmenti e Piattaforme, e ciò avrebbe comportato:
 			\begin{itemize}
 				\item la necessità di utilizzare thread per l'esecuzione degli attori a protezione delle entità;
 				\item una maggiore complessità di terminazione;
 			\end{itemize}
 		L'utilizzo di Ada ha permesso un buon livello di controllo di allocazione di thread, risorse protette e oggetti, e il suo sistema di tipi molto restrittivo ha consentito di ridurre i possibili errori in fase di sviluppo.
-		  
-	\end{description}
 	
-L'interazione tra componenti remote del sistema, realizzate con tecnologie omogenee, è stata possibile mediante il middleware per lo scambio di messaggi Yami4 (\url{http://www.inspirel.com/yami4/}), compatibile, tra gli altri linguaggi, con Ada e Java (e quindi di conseguenza anche con Scala). Questo strumendo è stato preferito agli altri possibili middleware (Distributed Systems Annex per RPC in Ada e CORBA) in quanto si è rivelato molto semplice da utilizzare e ha permesso di adottare un certo grado di disaccoppiamento tecnologico tra le componenti. Per ciascun Nodo di simulazione del Sistema è stato utilizzato un singolo Attore (definito da Yami4), sia per quanto riguarda l'invio che la ricezione di messaggi remoti, in ascolto ad un singolo indirizzo (adottando il protocollo TCP). Per ciascun Attore, è possibile infatti definire:
+	\section{Yami4}
+L'interazione tra componenti remote del sistema, realizzate con tecnologie eterogenee, è stata possibile utilizzando il middleware per lo scambio di messaggi \ii{Yami4} (\url{http://www.inspirel.com/yami4/}), compatibile, tra gli altri linguaggi, con Ada e Java (e quindi di conseguenza anche con Scala). Questo strumendo è stato preferito agli altri possibili middleware (\ii{Distributed Systems Annex} per RPC in Ada e \ii{CORBA}) in quanto si è rivelato molto semplice da utilizzare e versatile, e ha permesso di adottare un certo grado di disaccoppiamento tecnologico tra le componenti. Per ciascun Nodo di simulazione del Sistema è stato utilizzato un singolo Attore (definito da \ii{Yami4}), sia per quanto riguarda l'invio che la ricezione di messaggi remoti, in ascolto ad un singolo indirizzo (adottando il protocollo TCP). Per ciascun Attore, è possibile infatti definire:
 	\begin{itemize}
 		\item \ttt{Object}: un oggetto remoto raggiungibile ad un dato indirizzo, identificato univocamente da una stringa.
 		\item \ttt{Service}s: insieme di servizi offerti da un oggetto remoto, identificati univocamente da una stringa.
 	\end{itemize}
-Per quanto riguarda i nodi di simulazione, ho utilizzato quindi un unico \ttt{Object}, il quale mette a disposizione vari \ttt{Service} a seconda del tipo di azione da prendere. Questa soluzione mi è sembrata la più semplice e estendibile possibile.
-Il protocollo usato tra le varie componenti del sistema per lo scambio di messaggi, comprende il protocollo definito dal stesso middleware Yami4, e quindi lo scambio di dati in formato stringa chiave-valore, sia l'utilizzo dello standard \ttt{JSON} per il marshalling dei dati delle entità coinvolte. Per la codifica e decodifica di stringhe \ttt{JSON} ho utilizzato:
+Per quanto riguarda i nodi di simulazione, ho utilizzato quindi un unico \ttt{Object}, il quale mette a disposizione vari \ttt{Service} a seconda del tipo di servizio richiesto. Questa soluzione mi è sembrata la più semplice e estendibile possibile.
+Il protocollo usato tra le varie componenti del sistema per lo scambio di messaggi, è quello fornito da \ii{Yami4}, e quindi lo scambio di dati in formato stringa chiave-valore; inoltre per l'invio di strutture dati complesse come Descrittori di Treni o Passeggeri, e Biglietti, ho utilizzo lo standard \ttt{JSON}. Per la codifica e decodifica di stringhe \ttt{JSON} mi sono servito di due librerie:
 	\begin{itemize}
 		\item La libreria \ttt{Gnatcoll} fornita con la ditribuzione \ttt{Gnat}, per il linguaggio Ada.
 		\item La libreria \ttt{json-smart} (disponibile all'indirizzo \url{https://code.google.com/p/json-smart/}), scritta in Java e integrata nelle componenti realizzate in linguaggio Scala. L'ho preferita alla libreria standard Scala \ttt{scala.util.parsing.json} poiché più semplice da utilizzare.
 		
 	\end{itemize}
 	Ho utilizzato il formato \ttt{JSON} anche per la definizione dei file di configurazione, utilizzati all'avvio del sistema.
-
-
-% Tale azione è definita mediante un puntatore a procedura (access procedure), che viene utilizzata quindi da Callback procedure. In questo modo, l'aggiunta di un nuovo \ttt{Service} è resa immediata, 
 
 
 

@@ -14,11 +14,11 @@ Il diagramma di Sequenza in figura \ref{fig:ticket_creation_diagram} fornisce un
 
 La descrizione sarà suddivisa in fasi sucessive:
 
-	\subsubsection {Richiesta di Creazione}
+	\subsubsection {Richiesta di Creazione}\label{subsubsec:ticket_creation_request}
 	
 	La richiesta di creazione di un \ttt{Ticket} da parte di un Viaggiatore, viene operata da un thread appartenente al pool di \ttt{Traveler\_Pool} che esegue l'operazione \ttt{CREATE\_TICKET} (come descritto precedentemente in sezione \ref{subsubsec:buy_ticket}). Tale operazione, effettua una richiesta di creazione alla stazione di partenza $S$, la quale inoltrerà la richiesta alla pripria Biglietteria interna. Quest'ultima richiederà la creazione effettiva alla Biglietteria Regionale, se lo stesso \ttt{Ticket} non è presente in una cache locale.  
 	
-	\subsubsection {Creazione del Ticket}
+	\subsubsection {Creazione del Ticket} \label{subsubsec:ticket_creation}
 	
 	Siano \ttt{From} e \ttt{To} rispettivamente l'identificativo della Stazione di partenza, e l'identificativo della Stazione di destinazione. Le operazioni svolte dalla procedura invocata presso la Stazione Regionale sono le seguenti:
 	\begin{itemize}

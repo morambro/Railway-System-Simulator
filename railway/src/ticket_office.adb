@@ -31,7 +31,7 @@ with Ada.Exceptions;
 with Environment;
 with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 with Route;use Route;
-with Task_Pool;
+with Traveler_Pool;
 with Traveler;
 with Trains;
 with Central_Office_Interface;
@@ -211,7 +211,7 @@ package body Ticket_Office is
 				From 	=> From,
 				To		=> To);
 
-			Task_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
+			Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
 
 		else
 			-- # If no local resolution of the ticket can be done, make a request to the Central Ticket Office (asynchronous case)
@@ -221,17 +221,5 @@ package body Ticket_Office is
 				Traveler_Index	=> Traveler_Index);
 		end if;
     end Get_Ticket;
-
-
-	procedure Buy_Ticket(
-		This			: in 	Station_Ticket_Office;
-		Traveler_Index 	: in 	Positive;
-		From			: in 	String;
-		To				: in 	String)
-	is
-	begin
-		-- # Simply invokes Get_Ticket procedure
-		Get_Ticket(Traveler_Index,From,To);
-    end Buy_Ticket;
 
 end Ticket_Office;

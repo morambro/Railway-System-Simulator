@@ -45,29 +45,9 @@ package Ticket_Office is
 	procedure Get_Ticket (
 		Traveler_Index 	: in 	Positive;
 		From			: in 	String;
-		To				: in 	String);-- return access Ticket.Ticket_Type;
-
-	type Station_Ticket_Office is tagged private;
-
-		procedure Buy_Ticket(
-			This			: in 	Station_Ticket_Office;
-			Traveler_Index 	: in 	Positive;
-			From			: in 	String;
-			To				: in 	String);-- return access Ticket.Ticket_Type;
-
+		To				: in 	String);
 
 private
-
-	type Station_Ticket_Office is tagged record
-		Id : Integer;
-	end record;
-
-	package String_String_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
-		Key_Type 		=> String,
-		Element_Type 	=> String,
-		Hash			=> Ada.Strings.Hash,
-		Equivalent_Keys => "="
-	);
 
 	type Destinations is array (Positive range <>) of Natural;
 
@@ -89,6 +69,8 @@ private
 		Equivalent_Keys => "="
 	);
 
+	-- # Table of couples (String,String_Array_Map_Ref), containing for each Station, the shortest path
+	-- # from this Station to each other stations.
 	Paths : Shortest_Path_Maps.Map;
 
 

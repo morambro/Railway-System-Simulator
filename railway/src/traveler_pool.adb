@@ -27,12 +27,12 @@ with Logger;
 with Ada.Containers;use Ada.Containers;
 with Ada.Text_IO;use Ada.Text_IO;
 
-package body Task_Pool is
+package body Traveler_Pool is
 
 	--
 	-- Task type Executor definition
 	--
-	task body Actor is
+	task body Executor is
 
 		NAME : constant String := "Task_Pool.Actor";
 
@@ -41,10 +41,6 @@ package body Task_Pool is
 	begin
 		MAIN_LOOP:
 		loop
---  			Logger.Log(
---  				NAME,
---  				"Task waits for an operation to Execute " & Count_Type'Image(Operations_Queue.Current_Use),
---  				Logger.DEBUG);
 
 			Operations_Queue.Dequeue(To_Execute,Terminated);
 
@@ -62,7 +58,7 @@ package body Task_Pool is
 			Sender 	=> NAME,
 			Message => "Traveler Task Received Stop Signal",
 			L 		=> Logger.DEBUG);
-    end Actor;
+    end Executor;
 
 	--
 	-- Adds the given Operation Pointer to the Operations queue
@@ -81,4 +77,4 @@ package body Task_Pool is
 		Operations_Queue.Stop;
 	end Stop;
 
-end Task_Pool;
+end Traveler_Pool;

@@ -31,7 +31,7 @@ with Ticket;
 with Gateway_Station;
 with Route;
 with Ticket_Office;
-with Task_Pool;
+with Traveler_Pool;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package body Handlers Is
@@ -419,7 +419,7 @@ package body Handlers Is
 
 				Ticket.Print(Environment.Travelers(Traveler_Index).Ticket);
 
-				Task_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
+				Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
 
 				Reply_Parameters.Set_String("result","OK");
 				Msg.Reply(Reply_Parameters);

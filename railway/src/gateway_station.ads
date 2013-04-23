@@ -46,61 +46,10 @@ with Queue;
 with Route;
 with Generic_Platform;
 
+
 package Gateway_Station is
 
 	package Trains_Queue_Package is new Queue (Element => Positive);
-
-	-- ############################### ACCESS_CONTROLLER ########################################
-
-	-- #
-	-- # Protected resource type; it defines object used to maintain an access order to
-	-- # the platforms, for all the tasks coming from the same Segment.
-	-- #
-	protected type Access_Controller is
-
-		-- #
-		-- # Entry called by the train task to regulate the entrance order for a Segment
-		-- #
-		entry Enter(
-			Train_Index	: in 	Positive);
-
-		-- #
-		-- # Simply Adds the Given Train ID to the internal Queue
-		-- #
-		procedure Add_Train(
-			Train_ID 	: in 	Positive);
-
-		-- #
-		-- # This procedure Frees the Access Controller
-		-- #
-		procedure Free;
-
-	private
-
-		-- #
-		-- # Private Entry used to enqueue trains which can not enter the
-		-- # platform because of the specified order.
-		-- #
-		entry Wait(
-			Train_Index	: in 	Positive);
-
-		-- # The unlimited queue used to store train indexes
-		Trains_Order 	: Trains_Queue_Package.Unlimited_Simple_Queue;
-
-		-- # Boolean variable used as a guard for Wait entry
-		Can_Retry 		: Boolean := False;
-
-		-- # Natural field used to store the amount of Trains waiting by Wait entry
-		-- # before opening it.
-		Trains_Waiting 	: Natural := 0;
-
- 	end Access_Controller;
-
-	-- #
-	-- # Reference type for Access Controller.
-	-- #
- 	type Access_Controller_Ref is access all Access_Controller;
-
 
    	package Segments_Map is new Ada.Containers.Ordered_Maps(
    		Key_Type 		=> Positive,
@@ -113,18 +62,6 @@ package Gateway_Station is
 		Hash			=> Ada.Strings.Hash,
 		Equivalent_Keys => "="
 	);
-
-
-	package String_String_Maps is new Ada.Containers.Indefinite_Hashed_Maps(
-		Key_Type 		=> String,
-		Element_Type 	=> String,
-		Hash			=> Ada.Strings.Hash,
-		Equivalent_Keys => "="
-	);
-
-	-- # String-String Map used as a cache to maintain last addresses
-	Last_Addresses : String_String_Maps.Map;
-
 
 	package Unbounded_Strings renames Ada.Strings.Unbounded;
 

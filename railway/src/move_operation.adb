@@ -31,7 +31,7 @@ with Environment;
 with Logger;
 with Ada.Exceptions;
 with Ticket;
-with Task_Pool;
+with Traveler_Pool;
 with Remote_Station_Interface;
 
 package body Move_Operation is
@@ -141,7 +141,7 @@ package body Move_Operation is
     procedure Do_Operation(This : in Ticket_Ready_Operation_Type) is
     begin
     	-- # Once the ticket is ready, let's start the travel!
-    	Task_Pool.Execute(Environment.Operations(This.Traveler_Manager_Index)(Traveler.LEAVE));
+    	Traveler_Pool.Execute(Environment.Operations(This.Traveler_Manager_Index)(Traveler.LEAVE));
     end Do_Operation;
 
 end Move_Operation;

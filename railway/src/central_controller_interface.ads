@@ -42,12 +42,12 @@ package Central_Controller_Interface is
 			Segment		: Positive;
 			Action		: Train_Action);
 
-		procedure Set_Traveler_Status(
-			Traveler	: Positive;
-			Train		: Positive;
-			Station		: String;
-			Platform	: Positive;
-			Action 		: Traveler_Action);
+	procedure Set_Traveler_Status(
+		Traveler	: Positive;
+		Train		: Positive;
+		Station		: String;
+		Platform	: Positive;
+		Action 		: Traveler_Action);
 
 
 end Central_Controller_Interface;
