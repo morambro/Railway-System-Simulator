@@ -110,57 +110,73 @@ package body Platform is
 					end if;
 
 					Logger.Log(
-							Sender  => NAME,
-							Message => "Traveler " &
-										Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
-									   " Leaves the train at station " &
-									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
-							L       => Logger.DEBUG);
-
-					-- # Check if there are more stages, otherwise STOP
-					if 	Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage =
-
-						Environment.Travelers(Traveler_Manager_Index).Ticket.Stages'Length then
-						Logger.Log(
-							Sender  => NAME,
-							Message => "Traveler " &
-										Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
-									   " FINISHED HIS TRAVEL" &
-									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
-							L       => Logger.DEBUG);
+						Sender  => NAME,
+						Message => "Traveler " &
+									Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
+								   " Leaves the train at station " &
+								   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
+						L       => Logger.DEBUG);
 
 
-						Central_Controller_Interface.Set_Traveler_Status(
-							Traveler	=> Traveler_Manager_Index,
-							Train		=> Trains.Trains(Train_Descriptor_Index).Id,
-							Station		=> Environment.Stations(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station).Get_Name,
-							Platform	=> This.ID,
-							Action 		=> Central_Controller_Interface.FINISHED);
+					-- # Now let's check whether the travel is finished or not.
+					declare
+						-- # Next operation to execute.
+						Next_Operation : Traveler.Traveler_Operations_Types := Traveler.LEAVE;
+					begin
+
+						-- # Check if there are more stages, otherwise re-start
+						if 	Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage =
+							Environment.Travelers(Traveler_Manager_Index).Ticket.Stages'Length then
+
+							Logger.Log(
+								Sender  => NAME,
+								Message => "Traveler " &
+											Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
+										   " FINISHED HIS TRAVEL" &
+										   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station),
+								L       => Logger.DEBUG);
+
+							-- # Notify Central Controller the Traveler Arrived!
+							Central_Controller_Interface.Set_Traveler_Status(
+								Traveler	=> Traveler_Manager_Index,
+								Train		=> Trains.Trains(Train_Descriptor_Index).Id,
+								Station		=> Environment.Stations(Environment.Travelers(Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station).Get_Name,
+								Platform	=> This.ID,
+								Action 		=> Central_Controller_Interface.FINISHED);
+
+							-- # Time to come back, switch start and destination stations!
+							declare
+								To_Switch	: Unbounded_String := Environment.Travelers(Traveler_Manager_Index).Start_Station;
+							begin
+								Environment.Travelers(Traveler_Manager_Index).Start_Station := Environment.Travelers(Traveler_Manager_Index).Destination;
+								Environment.Travelers(Traveler_Manager_Index).Destination := To_Switch;
+							end;
+
+							-- # Next operation tells Traveler to buy a ticket!
+							Next_Operation := Traveler.BUY_TICKET;
+
+						else
+
+							-- # Go to the next stage (there will be at least another one for sure!)
+							Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage :=
+								Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage + 1;
 
 
-					else
+						end if;
 
-						-- # Go to the next stage (there will be at least another one for sure!)
-						Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage :=
-							Environment.Travelers(Traveler_Manager_Index).Ticket.Next_Stage + 1;
+						-- # Execute the operation Next_Operation
+						Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
+						-- # Set the new Operation Index
+						Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
 
-						declare
-							Next_Operation : Traveler.Traveler_Operations_Types := Traveler.LEAVE;
-						begin
-							-- # Execute the operation number 2 (Traveler waits to leave the train).
-							Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
-							-- # Set the new Operation Index
-							Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
-
-						exception
-							when Error : others =>
-								Logger.Log(
-									Sender  => NAME,
-								    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
-								    			Ada.Exceptions.Exception_Message(Error),
-								    L       => Logger.ERROR);
-						end;
-					end if;
+					exception
+						when Error : others =>
+							Logger.Log(
+								Sender  => NAME,
+							    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
+							    			Ada.Exceptions.Exception_Message(Error),
+							    L       => Logger.ERROR);
+					end;
 
 				end if;
 			end loop;

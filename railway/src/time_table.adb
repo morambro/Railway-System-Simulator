@@ -106,6 +106,7 @@ package body Time_Table is
     procedure Update_Time_Table(
 		This 	: access Time_Table_Type) is
 	begin
+		-- # If the current position on the array of times is
 		if This.Current_Array_Position + 1 > This.Table(This.Current_Array_Index)'Length then
 			This.Current_Array_Position := 1;
 			if This.Current_Array_Index + 1 > This.Table'Length then
@@ -123,6 +124,9 @@ package body Time_Table is
 		else
 			This.Current_Array_Position :=  This.Current_Array_Position + 1;
 		end if;
+
+
+
     end Update_Time_Table;
 
 

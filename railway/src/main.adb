@@ -26,21 +26,22 @@
 
 with Ada.Command_Line;
 with Ada.Exceptions;
-with Ada.Text_IO;
+with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Strings.Unbounded;
 
 with Environment;
 with Trains;
 with Segments;
+with Routes;
 with Train_Pool;
-With Traveler_Pool;
+with Traveler_Pool;
 
 with Logger;
 with Message_Agent;
 
 with Traveler;
 
-with Ticket_Office;
+with Regional_Ticket_Office;
 
 with Ada.Exceptions;  use Ada.Exceptions;
 
@@ -131,10 +132,11 @@ begin
 			Message_Agent.Instance.Add_Handler("train_transfer",Handlers.Station_Train_Transfer_Handler'Access);
 			Message_Agent.Instance.Add_Handler("traveler_leave_transfer",Handlers.Station_Traveler_Leave_Transfer_Handler'Access);
 			Message_Agent.Instance.Add_Handler("traveler_enter_transfer",Handlers.Station_Traveler_Enter_Transfer_Handler'Access);
-			Message_Agent.Instance.Add_Handler("train_transfer_ack",Handlers.Station_Train_Transfer_Ack_Handler'Access);
+			Message_Agent.Instance.Add_Handler("train_left_platfrom",Handlers.Station_Train_Transfer_Left_Handler'Access);
 			Message_Agent.Instance.Add_Handler("ticket_creation",Handlers.Get_Ticket_Handler'Access);
 			Message_Agent.Instance.Add_Handler("is_present",Handlers.Is_Station_Present_Handler'Access);
 			Message_Agent.Instance.Add_Handler("ticket_ready",Handlers.Ticket_Ready_Handler'Access);
+			Message_Agent.Instance.Add_Handler("terminate",Handlers.Termination_Handler'Access);
 
 			-- # Register to the Name Server!
 			Name_Server_Interface.Bind(
@@ -169,12 +171,20 @@ begin
 
 				Environment.Init(Node_Name,Name_Server,Central_T,Central_C);
 				Segments.Init;
-				Ticket_Office.Init_Path_Map("res/" & Node_Name & "-paths.json");
+				Routes.Init;
+				Regional_Ticket_Office.Init("res/" & Node_Name & "-paths.json");
 
+
+				if Node_Name = "Node_2" then
+					Regional_Ticket_Office.Get_Ticket(1,"K","2");
+				end if;
 
 				delay 3.0;
 
-				Start;
+				--Start;
+
+
+
 
 --  				declare
 --  					Tic : access Ticket.Ticket_Type := Ticket_Office.Create_Ticket("1","G1");

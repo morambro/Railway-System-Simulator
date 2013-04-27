@@ -30,7 +30,7 @@ with Traveler;
 with Ticket;
 with Gateway_Station;
 with Route;
-with Ticket_Office;
+with Regional_Ticket_Office;
 with Traveler_Pool;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
@@ -97,7 +97,7 @@ package body Handlers Is
 				      	L			=> Logger.DEBUG);
 				end if;
 
-				Reply_Parameters.Set_String("response","RECEIVED");
+				Reply_Parameters.Set_String("response",OK);
 
 			else
 				Logger.Log(
@@ -106,7 +106,8 @@ package body Handlers Is
 					L 			=> Logger.ERROR
 				);
 
-				Reply_Parameters.Set_String("response","ERROR");
+				Reply_Parameters.Set_String("response",ERROR);
+				Reply_Parameters.Set_String("message","Invalid Station index : " & Integer'Image(Station_Index));
 
 			end if;
 			Msg.Reply(Reply_Parameters);
@@ -129,7 +130,7 @@ package body Handlers Is
 
 
 
-	procedure Station_Train_Transfer_Ack_Handler(
+	procedure Station_Train_Transfer_Left_Handler(
 		Msg : in 	Incoming_Message'Class) is
 
 		procedure Callback(Content : in out YAMI.Parameters.Parameters_Collection) is
@@ -155,7 +156,7 @@ package body Handlers Is
 					Platform_Index			=> 	Platform_Index,
 					Action					=> 	Route.FREE);
 
-				Reply_Parameters.Set_String("response","RECEIVED");
+				Reply_Parameters.Set_String("response",OK);
 
 			else
 				Logger.Log(
@@ -164,7 +165,7 @@ package body Handlers Is
 					L 			=> Logger.ERROR
 				);
 
-				Reply_Parameters.Set_String("response","ERROR");
+				Reply_Parameters.Set_String("response",ERROR);
 
 			end if;
 
@@ -182,7 +183,7 @@ package body Handlers Is
 
 		Msg.Process_Content(Callback'Access);
 
-    end Station_Train_Transfer_Ack_Handler;
+    end Station_Train_Transfer_Left_Handler;
 
 -- #################################################### TRAVELER ##############################################################
 
@@ -223,7 +224,7 @@ package body Handlers Is
 
 				Msg.Reply(Reply_Parameters);
 
-				Reply_Parameters.Set_String("response","RECEIVED");
+				Reply_Parameters.Set_String("response",OK);
 
 			else
 				Logger.Log(
@@ -232,7 +233,7 @@ package body Handlers Is
 					L 			=> Logger.ERROR
 				);
 
-				Reply_Parameters.Set_String("response","ERROR");
+				Reply_Parameters.Set_String("response",ERROR);
 
 			end if;
 
@@ -300,7 +301,7 @@ package body Handlers Is
 					L 			=> Logger.ERROR
 				);
 
-				Reply_Parameters.Set_String("response","ERROR");
+				Reply_Parameters.Set_String("response",ERROR);
 
 			end if;
 
@@ -336,7 +337,7 @@ package body Handlers Is
 		begin
 			declare
 				-- # Creates
-				T : access Ticket.Ticket_Type := Ticket_Office.Create_Ticket(From,To);
+				T : access Ticket.Ticket_Type := Regional_Ticket_Office.Create_Ticket(From,To);
 			begin
 
 				-- # Send back the Created Ticket!
@@ -352,8 +353,8 @@ package body Handlers Is
 						Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
 						L => Logger.ERROR);
 
-				Reply_Parameters.Set_String("response","ERROR");
-				Reply_Parameters.Set_String("type","No ticket from " & From & " to " & To);
+				Reply_Parameters.Set_String("response",ERROR);
+				Reply_Parameters.Set_String("message","No ticket from " & From & " to " & To);
 
 			end;
 
@@ -381,9 +382,9 @@ package body Handlers Is
 
 				if Environment.Get_Index_For_Name(Station) /= 0 then
 					-- # Send back the Created Ticket!
-					Reply_Parameters.Set_String("result","TRUE");
+					Reply_Parameters.Set_String("response","TRUE");
 				else
-					Reply_Parameters.Set_String("result","FALSE");
+					Reply_Parameters.Set_String("response","FALSE");
 				end if;
 				Msg.Reply(Reply_Parameters);
 
@@ -408,21 +409,37 @@ package body Handlers Is
     	Msg : in 	Incoming_Message'Class)
     is
 		procedure Callback(Content : in out YAMI.Parameters.Parameters_Collection) is
-
-			Traveler_Index	: Integer 	:= Integer'Value(Content.Get_String("traveler_index"));
-			Ticket_Data		: String 	:= Content.Get_String("ticket");
-
+			Response 		: String 	:= Content.Get_String("response");
 			Reply_Parameters 	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
 		begin
+			-- # Check if the ticket was released by the Central Office
+			if Response = "OK" then
+				declare
+					-- # If the result is OK, there will be for sure "traveler_index" field and "ticket" field.
+					Traveler_Index	: Integer 	:= Integer'Value(Content.Get_String("traveler_index"));
+					Ticket_Data		: String 	:= Content.Get_String("ticket");
+				begin
+					-- # Retrieve the Ticket
+					Environment.Travelers(Traveler_Index).Ticket := Ticket.Get_Ticket(Ticket_Data);
 
-				Environment.Travelers(Traveler_Index).Ticket := Ticket.Get_Ticket(Ticket_Data);
+					-- Ticket.Print(Environment.Travelers(Traveler_Index).Ticket);
 
-				Ticket.Print(Environment.Travelers(Traveler_Index).Ticket);
+					-- # Put TICKET_READY operation on the Pool queue
+					Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
+				end;
+			else
+				Logger.Log(
+					Sender => "",
+					Message => "Ticket NOT created!",
+					L => Logger.ERROR);
 
-				Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
+				-- # TODO: RETRY CON UN'ALTRA DESTINAZIONE ?
 
-				Reply_Parameters.Set_String("result","OK");
-				Msg.Reply(Reply_Parameters);
+			end if;
+
+			-- # In Any case, give a response back to the Central Ticket Office.
+			Reply_Parameters.Set_String("response",OK);
+			Msg.Reply(Reply_Parameters);
 
 		exception
 			-- # If an error occurs, send an ERROR message
@@ -435,9 +452,9 @@ package body Handlers Is
 						Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
 						L => Logger.ERROR);
 
-					while (S = Environment.Travelers(Traveler_Index).Destination) loop
-						Environment.Travelers(Traveler_Index).Destination := S;
-					end loop;
+--  					while (S = Environment.Travelers(Traveler_Index).Destination) loop
+--  						Environment.Travelers(Traveler_Index).Destination := S;
+--  					end loop;
 				end;
 
 		end Callback;
@@ -447,5 +464,47 @@ package body Handlers Is
 		Msg.Process_Content(Callback'Access);
 
     end Ticket_Ready_Handler;
+
+
+    procedure Termination_Handler(
+		Msg : in 	Incoming_Message'Class)
+	is
+
+		procedure Callback(Content : in out YAMI.Parameters.Parameters_Collection) is
+			Reply_Parameters 	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+		begin
+
+			-- # Reply Central Controller, to notify the message have been received.
+			Reply_Parameters.Set_String("response",OK);
+			Msg.Reply(Reply_Parameters);
+
+			-- # Ask to terminate.
+			Train_Pool.Stop;
+			Traveler_Pool.Stop;
+
+			Logger.Log(
+				Sender 	=> "Termination_Handler",
+				Message => "Termination Request Accepted",
+				L 		=> Logger.NOTICE);
+
+		exception
+			-- # If an error occurs, send an ERROR message
+			when E : others =>
+				declare
+				begin
+					Logger.Log(
+						Sender => "Termination_Handler",
+						Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+						L => Logger.ERROR);
+				end;
+
+		end Callback;
+
+	begin
+
+		Msg.Process_Content(Callback'Access);
+
+    end Termination_Handler;
+
 
 end Handlers;

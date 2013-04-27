@@ -27,7 +27,7 @@
 			
 			"route_index" 		: 2,
 			
-			"sits_number"		: 5,
+			"sits_number"		: 10,
 			"occupied_sits"		: 0,
 			"type"				: "regionale",
 			"start_node"		: "Node_1"

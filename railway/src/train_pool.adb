@@ -235,7 +235,7 @@ package body Train_Pool is
 					NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
 					" Interruption : " & Exception_Message(Ex),
-					Logger.ERROR);
+					Logger.INFO);
 			when Exc : others =>
 				Logger.Log(
 					NAME,
@@ -245,9 +245,9 @@ package body Train_Pool is
 		end loop MAIN_LOOP;
 
 		Logger.Log(
-			NAME,
-			"Task Received Termination Signal. Bye!",
-			Logger.DEBUG);
+			Sender 	=> NAME,
+			Message	=> "Train_Pool Task Received Termination Signal.",
+			L 		=> Logger.INFO);
 
 	end Train_Executor_Task;
 
@@ -266,7 +266,9 @@ package body Train_Pool is
 
 	procedure Stop is
 	begin
+		-- # Open guards of the queues to make waiting tasks STOP!
 		Low_Priority_Trains_Queue.Stop;
+		High_Priority_Trains_Queue.Stop;
 	end Stop;
 
 end Train_Pool;

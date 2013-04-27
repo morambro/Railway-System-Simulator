@@ -12,23 +12,23 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 	var addresses	: Map[String,String] = Map();
 
 	def act() {
-		my_loop
+		myLoop
 	}
 
-	def my_loop : Unit = react {
+	def myLoop : Unit = react {
 		
-		case e : Start => {
+		case Start(param) => {
 			serverAgent  = new Agent
-			val resolvedAddress = serverAgent.addListener(e.param);
+			val resolvedAddress = serverAgent.addListener(param);
 			println("The Name Server is listening at " + resolvedAddress);
 			serverAgent.registerObject("name_server", this);
-			my_loop
+			myLoop
 
 		}
-		case e : Stop => {
-			println ("Bye")
+		case Stop() => {
+			println ("closing yami agent...")
 			serverAgent.close
-		}	
+		}
 	}
 
 	def call(im : IncomingMessage) {
@@ -38,6 +38,7 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 		im.getMessageName match {
 		
 			case "bind" => {
+				
 				val node_name 	= im.getParameters.getString("node_name") 
 				val address 	= im.getParameters.getString("address")
 	
@@ -59,17 +60,23 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 			}
 		
 			case "resolve" => {
+				
 				val key 	= im.getParameters.getString("node_name")
 				
-				val replyParams : Parameters = new Parameters;
+				val replyParams : Parameters = new Parameters
+				
+				// Try to resolve the Name.
 				addresses get key match {
 					case Some(x) => {
 						println("Found entry : " + key + "  =>  " + x)
-						replyParams.setString("response",x);
+						// Set Ok response
+						replyParams.setString("response","OK");
+						// Add the resolved address
+						replyParams.setString("address",x);
 					}
 					case None => {
 						println("Entry " + key + " not found")
-						replyParams.setString("response","_");
+						replyParams.setString("response","ERROR");
 					}
 				}
 			
@@ -80,27 +87,37 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 				
 				val replyParams : Parameters = new Parameters;
 			
-				var response = """{ "nodes" : [ """
+				var list = """{ "nodes" : [ """
 				
 				var i = 0
 				addresses.keys.foreach( k => {
-					response += "{"
-					response += """ "name"    : """ + "\""+ k +"\","
-					response += """ "address" : """ + "\""+ addresses(k) +"\""
-					response += "}"
+					list += "{"
+					list += """ "name"    : """ + "\""+ k +"\","
+					list += """ "address" : """ + "\""+ addresses(k) +"\""
+					list += "}"
 					if (i < addresses.keys.size-1)
-						response += ","
+						list += ","
 					i += 1
 				})
 				
-				response += "]}"
+				list += "]}"
 				
-				println(response)
-				
-				replyParams.setString("result",response)
+				replyParams.setString("response","OK")
+				replyParams.setString("list",list)
 				
 				im.reply(replyParams)
 				
+				
+			}
+			case "remove" => {
+				val node_name = im.getParameters.getString("node_name") 
+				
+				addresses -= (node_name)
+				
+				val replyParams : Parameters = new Parameters;
+				
+				replyParams.setString("response","OK")
+				im.reply(replyParams)
 				
 			}
 			case _ => println("Invalid operation " + im.getMessageName)
@@ -112,24 +129,30 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 
 
 object Main extends App{
+
+	var agent : ServerAgent = null;
+
+	def readInput() {
+		readLine() match {
+			case "q" | "Q" | "Quit" | "quit" | "QUIT" => {
+				println("Quit");
+				agent ! Stop()
+			}
+			case _ => readInput
+		}
+	}
+
 	override def main(args : Array[String]){
 		if (args.length != 1) {
 		    println("ERROR: expecting server destination as parameter")
 		    return
 		}
-		
+		agent = new ServerAgent;
 		val serverAddress : String = args(0)
-		
-		val agent = new ServerAgent
 		agent.start
-		agent ! new Start(serverAddress);
-		
-		for( ln <- io.Source.stdin.getLines){
-			if (ln == "quit") {
-				agent ! Stop;
-				break
-			}
-		}
+		agent ! Start(serverAddress);
+
+		readInput		
 		
 	}
 }

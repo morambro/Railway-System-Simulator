@@ -7,12 +7,168 @@ case class Resolve(startNode:String,from:String,to:String,traveler_index:String)
 case class Path(path : String)
 case class Error(message:String)
 
+class NoRouteFoundException extends Exception
+
+class RouteStage {
+	
+	var startStation 	: Int = 1
+	var nextStation 	: Int = 1
+	var startPlatform 	: Int = 1
+	var nextPlatform 	: Int = 1
+	var nextSegment 	: Int = 1
+	var nodeName 		: String = ""
+	var leaveAction 	: String = ""
+}
+
+class Train(val id:Int,val routeIndex:Int,val sitsNumber:Int)
+
+object Route {
+	
+	/**
+	 * Loads the Routes from configuration file [fileName]
+	 * in the list [routes].
+	 */ 
+	def loadRoutes(fileName : String) : Array[Route] = {
+		
+		val jsonRoutes = scala.io.Source.fromFile(fileName).mkString
+		
+		var routesList : List[Route] = List()
+		
+		JSONValue.parseStrict(jsonRoutes) match {
+			case o : JSONObject => o.get("routes") match {
+				case allRoutes : JSONArray => {
+					// for each Route found
+					for (i <- 0 until allRoutes.size) {
+						allRoutes.get(i) match {
+							case r : JSONObject => {
+								var route = new Route
+								// Set the id field
+								route.id = r.get("id") match {
+									case id : java.lang.Integer => id
+								}
+								// set the stages filed
+								r.get("route") match {
+									case stagesArray : JSONArray => {
+										for ( j <- 0 until stagesArray.size) {
+											stagesArray.get(j) match {
+												case s : JSONObject => {
+													var stage = new RouteStage
+													stage.startStation = s.get("start_station") match {
+														case ss : java.lang.Integer => ss.intValue
+													}									
+													stage.nextStation = s.get("next_station") match {
+														case ss : java.lang.Integer => ss.intValue
+													}
+													stage.startPlatform = s.get("start_platform") match {
+														case ss : java.lang.Integer => ss.intValue
+													}
+													stage.nextPlatform = s.get("platform_index") match {
+														case ss : java.lang.Integer => ss.intValue
+													}
+													stage.nextSegment = s.get("next_segment") match {
+														case ss : java.lang.Integer => ss.intValue
+													}
+													stage.nodeName = s.get("node_name") match {
+														case ss : String => ss
+													}
+													stage.nodeName = s.get("leave_action") match {
+														case ss : String => ss
+													}
+													stage.nodeName = s.get("enter_action") match {
+														case ss : String => ss
+													}
+													// Now add the created stage to the current route
+													route.stages = route.stages :+ stage
+												}
+											}
+										}
+									}
+								}
+								
+								// Add the route to routes List
+								routesList = routesList :+ route
+								
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		
+		routesList.toArray
+	}
+	
+	/** 
+	 * Loads from file a Map with FB Trains information
+	 */
+	def loadTrainsRoutesMap(fileName : String) : Map[Int,Train] = {
+		
+		// Now load for each train its route.
+		val jsonTrain = scala.io.Source.fromFile(fileName).mkString
+		
+		var trainRouteMap : Map[Int,Train] = Map()
+		
+		JSONValue.parseStrict(jsonTrain) match {
+			case o : JSONObject => o.get("trains") match {
+				case trains : JSONArray => {
+					for (i <- 0 until trains.size) {
+						trains.get(i) match {
+							case train : JSONObject => {
+								train.get("type") match {
+									case "fb" => {
+										val id = train.get("id") match {
+											case i : java.lang.Integer => i.intValue 
+										}
+										val routeIndex = train.get("route_index") match {
+											case i : java.lang.Integer => (i.intValue - 1)
+										}
+										val sitsNumber = train.get("sits_number") match {
+											case i : java.lang.Integer => i.intValue
+										}
+										trainRouteMap = trainRouteMap + Tuple2(id,new Train(id,routeIndex,sitsNumber))
+									}
+									case _ => // DO NOTHING
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		// trainRouteMap.keys.foreach( k => {println("trainID = " + k + " , route = " + trainRouteMap(k))})
+		trainRouteMap
+	}
+	
+	
+}
+
+/**
+ * This class represents a route.
+ */
+class Route {
+	var id : Int = 0
+	var stages : List[RouteStage] = List()
+	
+	def print () {
+		println("ID = " + this.id)
+		this.stages.foreach( s => 
+			println("start startStation = " + s.startStation)
+		)
+	}
+}
+
+
 object Ticket {
 	
+	/**
+	 * Given two tickets, this function returns a new ticket merging them.
+	 * 
+	 * @return the new Ticket object
+	 */
 	def mergeTickets (T1:Ticket,T2:Ticket) : Ticket =  {
 		val ticket = new Ticket(T1.next)
 		if ((T1.stages.last.destinationPlatform == T2.stages(0).startPlatform) && (T1.stages.last.trainId == T2.stages(0).trainId)) {
-			println("MEEEEEERGE")
 			ticket.stages = T1.stages.dropRight(1) ++ ( new Ticket_Stage(
 				T1.stages.last.startStation,
 				T2.stages(0).nextStation,
@@ -27,6 +183,9 @@ object Ticket {
 		ticket
 	}
 	
+	/**
+	 * Performs implicit conversion from String to Ticket.
+	 */
 	implicit def stringToTicket(json : String) : Ticket = {
 		var ticket : Ticket = null
 		JSONValue.parseStrict(json) match {
@@ -143,6 +302,106 @@ class Ticket_Stage (
 	}
 }
 
+
+case class Validate(ticket : Ticket);
+/**
+ * This object is responsible of serializing the validation requests.
+ */
+object BookingManager extends Actor {
+	
+	/**
+	 * All FB Trains 
+	 */
+	var trainRouteMap : Map[Int,Train] = Route.loadTrainsRoutesMap("../../railway/res/trains.json")
+	
+	/**
+	 * All the routes
+	 */
+	var routes : Array[Route] = Route.loadRoutes("../../railway/res/routes.json")
+	
+	/**
+	 * An Array where for each route contains the number of free sits.
+	 */
+	var bookingSits : Array[List[Int]] = Array.fill(routes.size)(List())
+
+	// bookingSits initialization
+	trainRouteMap.keys.foreach( trainID => {
+		val routeIndex = trainRouteMap(trainID).routeIndex 
+		val size = routes(routeIndex).stages.size
+		for (i <- 0 until size) 
+			bookingSits(routeIndex) = bookingSits(routeIndex) :+ trainRouteMap(trainID).sitsNumber
+	})
+	
+	/** 
+	 * Main loop for the Actor.
+	 */
+	def bookingLoop() {
+		react {
+		
+			// Handles a Validate request.
+			case Validate(ticket) => {
+				println ("Validating ticket: ")
+				
+				var valid : Boolean = true
+				
+				ticket.stages.foreach ( ticketStage => {
+					
+					var firstIndex 	= -1
+					var secondIndex = -1
+					
+					// Retrieve the route index
+					var routeIndex = trainRouteMap(ticketStage.trainId).routeIndex 
+					
+					println("\n Curren index = " + routeIndex)
+					println("startStation = " + ticketStage.startStation)
+					println("nextStation = " + ticketStage.nextStation)
+					
+					// match in first half
+					
+					for (i <- 0 until routes(routeIndex).stages.size/2) {
+						if (routes(routeIndex).stages(i).startStation == ticketStage.startStation) {
+							firstIndex = i 
+						}
+						if (routes(routeIndex).stages(i).nextStation == ticketStage.nextStation) {
+							secondIndex = i
+						}
+					}
+					if (firstIndex > secondIndex || firstIndex == -1 || secondIndex == -1) {
+						// If we haven't a match in the first half, search in the second half.
+						for (i <- routes(routeIndex).stages.size/2 until routes(routeIndex).stages.size) {
+							if (routes(routeIndex).stages(i).startStation == ticketStage.startStation) {
+								firstIndex = i 
+							}
+							if (routes(routeIndex).stages(i).nextStation == ticketStage.nextStation) {
+								secondIndex = i
+							}
+						}
+					}
+					// At this point firstIndex will be the first index of the route,
+					// secondIndex the last
+					for (i <- firstIndex to secondIndex) {
+						valid = bookingSits(routeIndex)(i) > 0
+					}
+									
+				})
+				
+				// Send the response back
+				if (valid) sender ! true
+				else sender ! false
+				
+				bookingLoop
+			}
+			case Stop => {
+				println("Validator shutted down")
+			}
+		}
+	}
+	
+	def act = bookingLoop
+}
+
+
+
 object PathResolver {
 	
 	val SERVICE_NAME = "ticket_creation";
@@ -226,11 +485,21 @@ object PathResolver {
 
 class PathResolver(fileName : String) extends Actor {
 	
-	// The list of couples <regional office,address> 
+	/** 
+	 * The list of couples <regional office,address> 
+	 */
 	var nodesAddresses	: Map[String,String] = null
 	
+	/** 
+	 * Agent used to send back to the Node the created Ticket, and to perform requests.
+	 */
 	val agent = new Agent
 	
+	/**
+	 * Requests the list of all the nodes registered to the Name Server.
+	 * 
+	 * @return : A table which contains for each node the address where it is located.
+	 */
 	def getNodesAddressList : Map[String,String] =  {
 		val message : OutgoingMessage = agent.send(
 			PathResolver.NAME_SERVER_ADDRESS,
@@ -246,7 +515,10 @@ class PathResolver(fileName : String) extends Actor {
 			
 		    	val reply = message.getReply();
 			
-				val nodes = reply.getString("result")
+				var nodes : String = null
+				if (reply.getString("response") == "OK") {
+					nodes = reply.getString("list")
+				}
 		
 				PathResolver.getMap(nodes)
 		    } 
@@ -287,7 +559,7 @@ class PathResolver(fileName : String) extends Actor {
 			
 						val reply = message.getReply();
 			
-						val found = reply.getString("result")
+						val found = reply.getString("response")
 		
 						if (found == "TRUE") return k
 					} 
@@ -308,7 +580,10 @@ class PathResolver(fileName : String) extends Actor {
 	}
 	
 	/**
-	 * Ask a node to create a ticket from [form] to [to]
+	 * Makes a synchronous call to node [node] in order to create a ticket from [form] to [to]
+	 *
+	 * @return the created ticket, or null if no ticket is created. 
+	 *
 	 **/
 	def ask (node:String,from:String,to:String) : Ticket = {
 
@@ -339,7 +614,7 @@ class PathResolver(fileName : String) extends Actor {
 						println(reply.getString("ticket"))
 						return reply.getString("ticket")
 					}
-					case _ => println("diocannn")
+					case _ => println("ERROR")
 				}
 				
 		    } 
@@ -353,11 +628,13 @@ class PathResolver(fileName : String) extends Actor {
 		null
 	}
 
-
+	/**
+	 * Method used to send an Error message to the Node.
+	 */
 	def sendError(dest : String, traveler_index:String) {
 		val p = new Parameters
 
-		p.setString("ERROR","not found")
+		p.setString("response","ERROR")
 		p.setString("traveler_index",traveler_index)
 		
 		
@@ -383,98 +660,123 @@ class PathResolver(fileName : String) extends Actor {
 		}
 	}
 
+
 	def resolverLoop() {
 		react {
 			case Resolve(startNode,from,to,traveler_index) => {
 				println("I have to resolve from " + from + " to " + to)
 				
-				if (nodesAddresses == null)
-					nodesAddresses = getNodesAddressList
-				if (nodesAddresses == null) 
-					println("ERRORE!!!")
-				else {
+				try {
+				
+					if (nodesAddresses == null)
+						nodesAddresses = getNodesAddressList
+					if (nodesAddresses == null) 
+						throw new NoRouteFoundException
 					
 					val region = ask(to)
-				
+	
 					if (region == null) {
 						println("ERROR : No region found for station " + to)
-						
-						sendError(nodesAddresses(startNode),traveler_index)
+						throw new NoRouteFoundException
+					} 
 					
-					} else {
-						println("Station " + to + " is in Region " + region)
-				
-						// Now we have startNode and region to reach. We have to find
-						// the gateways to cross to build a path					
-						
-						var tickets : List[Ticket] = List()
-						
-						PathResolver.regionsMap get (startNode,region) match {
-							case Some(item) => {
-								var node = startNode
-								var f = from
-								item match {
-									case l : List[_] => {
-										l.foreach(c => {
-											println("Search from "+f+" to "+c._2+" region " +  node)
-											tickets = tickets :+ ask(node,f,c._2)
-											node = c._1
-											f = c._2
-										})
-										println("Search from "+f+" to "+to+" region " +  node)
-										tickets = tickets :+ ask(node,f,to) 
-									}
+					println("Station " + to + " is in Region " + region)
+
+					// Now we have startNode and region to reach. We have to find
+					// the gateways to cross to build a path					
+					var tickets : List[Ticket] = List()
+					
+					// Retrieve from regionsMap the path to go from [from] to [to]
+					PathResolver.regionsMap get (startNode,region) match {
+						case Some(item) => {
+							var node 	= startNode
+							var f 		= from
+							item match {
+								case l : List[_] => {
+									l.foreach(c => {
+										println("Search from "+f+" to "+c._2+" region " +  node)
+										val askedTicket = ask(node,f,c._2)
+										if (askedTicket != null)
+											tickets = tickets :+ askedTicket
+										else
+											throw new NoRouteFoundException	
+										node = c._1
+										f = c._2
+									})
+									println("Search from "+f+" to "+to+" region " +  node)
+									val askedTicket = ask(node,f,to) 
+									if (askedTicket != null)
+										tickets = tickets :+ askedTicket
+									else
+										throw new NoRouteFoundException	
 								}
 							}
-							case None => {
-								println("No path to reach " + region + " from " + startNode)
-								
-								sendError(nodesAddresses(startNode),traveler_index)
-							
-							}
 						}
-						
-						tickets.foreach ( t => t.print)
-						
-						var result_ticket : Ticket = tickets(0)
-						
-						for (i <- 1 until tickets.length) {
-							result_ticket = Ticket.mergeTickets(result_ticket,tickets(i))
+						case None => {
+							println("No path to reach " + region + " from " + startNode)
+							throw new NoRouteFoundException			
 						}
-						
-						result_ticket.print
-						
-						// Send the Ticket Back to the Node 
-						
-						print(Ticket.ticket2Json(result_ticket))
-						
-						val p = new Parameters
-
-						p.setString("traveler_index",traveler_index)
-						p.setString("ticket",Ticket.ticket2Json(result_ticket))
-		
-						val message : OutgoingMessage = agent.send(
-							nodesAddresses(startNode),
-							"message_handler", 
-							"ticket_ready", 
-							p)
-		
-						message.waitForCompletion
-		
-						message.getState match {
-							case OutgoingMessage.MessageState.REPLIED => {
-								println("Message Received")
-							} 
-							case OutgoingMessage.MessageState.REJECTED => {
-								println("The message has been rejected: " + message.getExceptionMsg)
-							}
-							case _ => {
-								println("The message has been abandoned.")
-							}
-						}
-						
 					}
-				}
+		
+					tickets.foreach ( t => {
+						BookingManager ! Validate(t)
+						receive {
+							case false => {
+								println("ERROR: The ticket can not be assigned")
+								throw new NoRouteFoundException
+							}
+						}
+					})
+					
+					// If we are here, we have a valid ticket
+					var result_ticket : Ticket = tickets(0)
+		
+					// Merge the tickets
+					for (i <- 1 until tickets.length) {
+						result_ticket = Ticket.mergeTickets(result_ticket,tickets(i))
+					}
+		
+					println("\n** Final Ticket is:")
+					result_ticket.print
+		
+					// Send the Ticket Back to the Node 
+		
+					//print(Ticket.ticket2Json(result_ticket))
+		
+					// Finally send the ticket back to the Node 
+					val p = new Parameters
+					
+					p.setString("response","OK")
+					p.setString("traveler_index",traveler_index)
+					p.setString("ticket",Ticket.ticket2Json(result_ticket))
+
+					val message : OutgoingMessage = agent.send(
+						nodesAddresses(startNode),
+						"message_handler", 
+						"ticket_ready", 
+						p)
+
+					message.waitForCompletion
+
+					message.getState match {
+						case OutgoingMessage.MessageState.REPLIED => {
+							println("Message Received")
+						} 
+						case OutgoingMessage.MessageState.REJECTED => {
+							println("The message has been rejected: " + message.getExceptionMsg)
+						}
+						case _ => {
+							println("The message has been abandoned.")
+						}
+					}
+			
+				} catch {
+					case e : NoRouteFoundException => {
+						// If there was an error, send a notification to the requesting node.
+						sendError(nodesAddresses(startNode),traveler_index)
+					}
+				}	
+				
 				resolverLoop
 			}
 			case Stop() => {
@@ -537,7 +839,7 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 		
 				var replyPar : Parameters = new Parameters
 				
-				replyPar.setString("result","OK");
+				replyPar.setString("response","OK");
 				
 				im.reply(replyPar)
 			}
@@ -553,14 +855,25 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 object Main extends App {
 	override def main(argv : Array[String]) {
 		if (argv.length < 3) {
-			println("Please insert the json environment description, the name server address and the ticket server address")
-			return;
+			println("""Please insert:
+   1) The ticket server address;
+   2) The name server address;
+   3) The json environment description.""")
+			return
 		}
-
-		PathResolver.NAME_SERVER_ADDRESS = argv(1)
-
-		val receiver = new RequestReceiver(argv(2),argv(0))
+		
+		println(argv(0))
+		println(argv(1))
+		println(argv(2))
+		
+		
+		val receiver = new RequestReceiver(argv(0),argv(2))
 		receiver.start
+		
+		PathResolver.NAME_SERVER_ADDRESS = argv(1)
+		
+		BookingManager.start
+		
 	}
 }
 

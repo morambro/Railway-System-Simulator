@@ -28,24 +28,67 @@ with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Strings;
 with Ada.Strings.Hash;
 with Ada.Exceptions;
+with Ada.Containers;use Ada.Containers;
+with Ada.Containers.Ordered_Maps;
+with Ada.Containers.Vectors;
 
-package Ticket_Office is
+-- #
+-- # Package representing the Regional Ticket Office, to be asked for Ticket Creation.
+-- #
+package Regional_Ticket_Office is
 
 	No_Route_For_Destination : exception;
 
+--  	-- # Type array of integer used to store Remaining sits for each Stage.
+--  	type Route_Booking_Type is array (Positive range <>) of Integer;
+--
+--  	-- # Record structure containing:
+--  	-- #    * the index of the route
+--  	-- #    * the start index of the route's stages array
+--  	-- #    * the last index of the route's stages array
+--  	-- #    * the array of remaining sits for each stage.
+--  	type FB_Route is record
+--  		Start_Index 	: Positive;
+--  		Last_Index		: Positive;
+--  		Route_Booking 	: access Route_Booking_Type;
+--  	end record;
+--
+--  	package Integer_Vector is new Ada.Containers.Vectors(Positive,A);
+--
+--  	-- # All routes booking.
+--  	package Booking_Routes is new Ada.Containers.Ordered_Maps(
+--  		Key_Type 		=> Positive,
+--        	Element_Type 	=> FB_Route);
 
-	procedure Init_Path_Map(
+	-- #
+	-- # Procedure used to perform Ticket_Office initialization.
+	-- #
+	procedure Init(
 		File_Name	: in 	String);
 
+
+	-- #
+	-- # Creates and returns a Ticket_Type object, which represents a Ticket to
+	-- # go from [From] to [To].
+	-- #
 	function Create_Ticket(
 		From	: in 	String;
 		To		: in 	String) return access Ticket.Ticket_Type;
 
 
+	-- #
+	-- # Procedure used to ask for a ticket to be created.
+	-- #
 	procedure Get_Ticket (
 		Traveler_Index 	: in 	Positive;
 		From			: in 	String;
 		To				: in 	String);
+
+	-- #
+	-- # Given a Ticket, this function verifies if it can be created or not.
+	-- #
+	function Validate (
+		The_Ticket : access Ticket.Ticket_Type) return Boolean;
 
 private
 
@@ -69,9 +112,19 @@ private
 		Equivalent_Keys => "="
 	);
 
+	-- #
+	-- # Initializes [Paths] hash-map with the content of the given file.
+	-- #
+	procedure Init_Path_Map(
+		File_Name	: in 	String);
+
+
 	-- # Table of couples (String,String_Array_Map_Ref), containing for each Station, the shortest path
 	-- # from this Station to each other stations.
 	Paths : Shortest_Path_Maps.Map;
 
+--  	-- # A Map containing for each Route the list of Stages for the current Node
+--  	-- # with the number of Free Sits per Stage.
+--  	Booking_Routes_Map : Booking_Routes.Map;
 
-end Ticket_Office;
+end Regional_Ticket_Office;

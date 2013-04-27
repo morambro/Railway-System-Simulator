@@ -33,7 +33,7 @@ with Trains;
 with Ada.Exceptions;
 with Ticket;
 with Remote_Station_Interface;
-with Ticket_Office;
+with Regional_Ticket_Office;
 
 package body Gateway_Station is
 
@@ -134,7 +134,7 @@ package body Gateway_Station is
 			begin
 				if Previous_Station_Node /= Environment.Get_Node_Name then
 					-- # The train was sent by remote Region. So notify it left the Platform!
-					Remote_Station_Interface.Send_Ack(
+					Remote_Station_Interface.Train_Left_Message(
 						Train_Descriptor_Index		=>	Descriptor_Index,
 						Station 					=> 	Previous_Station_Index,
 						-- # The platform index were the same!!
@@ -235,7 +235,7 @@ package body Gateway_Station is
 	is
 	begin
 		Put_Line("CREATE : " & This.Get_Name & " to " & To);
-		Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
+		Regional_Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
     end Buy_Ticket;
 
 
@@ -277,9 +277,9 @@ package body Gateway_Station is
     overriding procedure Finalize (This: in out Gateway_Station_Type) is
     begin
     	Logger.Log(
-    		Sender => "Gateway_Station",
+    		Sender 	=> "Gateway_Station",
     		Message => "Finalize Station " & Unbounded_Strings.To_String(This.Name),
-    		L => Logger.DEBUG);
+    		L 		=> Logger.INFO);
     end Finalize;
 
 -- ########################################### JSON - Gateway Station ##########################################

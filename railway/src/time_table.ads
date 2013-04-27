@@ -26,25 +26,44 @@
 with Ada.Calendar; use Ada.Calendar;
 with Gnatcoll.JSON; use Gnatcoll.JSON;
 
+-- #
+-- # This package contains the time table definition for each route, that will be used by
+-- # the Trains.
+-- #
 package Time_Table is
 
+	-- # Array of Time values
 	type Time_Array is array (Positive range <>) of Time;
 
+	-- # An array of Time_Array objects.
 	type Time_Matrix is array (Positive range <>) of access Time_Array;
 
+	-- # This represents a time table for a specific Route.
 	type Time_Table_Type(Entry_Size : Positive) is record
+		-- # Index of the route for which the Time table is specified.
 		Route_Index 			: Positive;
+		-- # The value to be added to recalculate the Table
 		Restart_Span			: Positive;
+		-- # Cursors.
 		Current_Array_Index 	: Positive := 1;
 		Current_Array_Position 	: Positive := 1;
+		-- # The time table.
 		Table 					: Time_Matrix(1..Entry_Size);
     end record;
 
+	-- # Type for the entire Time Table.
 	type Time_Table_Array is array (Positive range <>) of access Time_Table_Type;
 
+	-- #
+	-- # Updates the Time Table. If the Cursors are on the last position of the matrix,
+	-- # it is re-calculated.
+	-- #
 	procedure Update_Time_Table(
 		This 	: access Time_Table_Type);
 
+	-- #
+	-- # Creates a Time_Table_Type object from JSON.
+	-- #
 	function Get_Time_Table(Json_v : JSON_Value) return access Time_Table_Type;
 
 	function Get_Time_Table_Array(Json_File : String) return Time_Table_Array;

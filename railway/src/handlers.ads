@@ -34,6 +34,11 @@ with Routes;
 
 package Handlers is
 
+
+	ERROR 	: constant String := "ERROR";
+
+	OK 		: constant String := "OK";
+
 	-- #
 	-- # Handler used to Handle Messages to transfer Trains between Gateway Stations
 	-- #
@@ -41,9 +46,10 @@ package Handlers is
 		Msg : in 	Incoming_Message'Class);
 
 	-- #
-	-- # This Handler will be used to Free the Platform at the sender side, when a remote Train transfer is made.
+	-- # This Handler will be used to Free the Platform at the sender side, when a remote Train transfer is made and the Train
+	-- # left the Platform on the other node.
 	-- #
-	procedure Station_Train_Transfer_Ack_Handler(
+	procedure Station_Train_Transfer_Left_Handler(
 		Msg : in 	Incoming_Message'Class);
 
 	-- #
@@ -78,6 +84,12 @@ package Handlers is
 	-- # Handles ticket ready messages, of type [ticket_ready].
 	-- #
 	procedure Ticket_Ready_Handler(
+		Msg : in 	Incoming_Message'Class);
+
+	-- #
+	-- # Termination Handler
+	-- #
+	procedure Termination_Handler(
 		Msg : in 	Incoming_Message'Class);
 
 end Handlers;

@@ -26,8 +26,15 @@
 with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Strings.Unbounded;use  Ada.Strings.Unbounded;
 with Environment;
+with Train;use Train;
+with Trains;
 
 package body Routes is
+
+	procedure Init is
+	begin
+		All_Routes := Route.Get_Routes("res/routes.json");
+    end Init;
 
 	function Contains(
 		Route_Index : in 	Positive;
@@ -38,10 +45,12 @@ package body Routes is
 		I 		: Positive := 1;
 	begin
 		while (I <= All_Routes(Route_Index)'Length) and (Found = 0) loop
-			if 	(All_Routes(Route_Index)(I).Start_Station = From) and
-				(All_Routes(Route_Index)(I).Next_Station = To) and
-				(All_Routes(Route_Index)(I).Leave_Action = ENTER) and
-				(To_String(All_Routes(Route_Index)(I).Node_Name) = Environment.Get_Node_Name)	then
+			-- # If current route's stage can bring from [From] to [To], return it.
+			if 	(All_Routes(Route_Index)(I).Start_Station 		= From) 	and
+				(All_Routes(Route_Index)(I).Next_Station 		= To) 		and
+				(All_Routes(Route_Index)(I).Leave_Action 		= ENTER) 	and
+				(To_String(All_Routes(Route_Index)(I).Node_Name)= Environment.Get_Node_Name)
+			then
 				Found := I;
 			end if;
 			I := I + 1;
@@ -65,6 +74,5 @@ package body Routes is
 		end loop;
 		return Routes_Found(1..Size);
 	end;
-
 
 end Routes;

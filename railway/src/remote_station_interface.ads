@@ -44,7 +44,7 @@ package Remote_Station_Interface is
 	-- # Procedure used to Send an Acknowledge message to notify the sender Gateway Station
 	-- # that the sent Train left the destination Gateway Station.
 	-- #
-	procedure Send_Ack(
+	procedure Train_Left_Message(
 		Train_Descriptor_Index 	: in	 Positive;
 		Station	 				: in	 Positive;
 		Platform				: in 	 Positive;

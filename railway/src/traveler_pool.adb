@@ -57,7 +57,7 @@ package body Traveler_Pool is
 		Logger.Log(
 			Sender 	=> NAME,
 			Message => "Traveler Task Received Stop Signal",
-			L 		=> Logger.DEBUG);
+			L 		=> Logger.INFO);
     end Executor;
 
 	--

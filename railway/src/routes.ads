@@ -23,23 +23,42 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-with Route;use ROute;
+with Route;use Route;
 with Time_Table;
 
 package Routes is
 
-	All_Routes : Route.Routes := Route.Get_Routes("res/routes.json");
+	All_Routes : access Route.Routes := null;
+
+	-- #
+    -- #  Procedure used to load routes array.
+	-- #
+	procedure Init;
 
 	type Routes_Indexes is array (Positive range <>) of Positive;
 
+	-- #
+	-- # Functions which tells if the given route contains a stage that can take a Traveler
+	-- # from [From] to [To]. If this stage exists, return its index.
+	-- #
 	function Contains(
 		Route_Index : in 	Positive;
 		From		: in 	Positive;
 		To			: in 	Positive) return Natural;
 
+	-- #
+	-- # Returns an array of routes indexes; these routes contain a stage which goes from
+	-- # [From] to [To].
+	-- #
 	function Get_Routes_Containing(
 		From		: in 	Positive;
 		To			: in 	Positive) return Routes_Indexes;
+
+
+	-- #
+	-- # Returns an array of indexes of Routes traveled by FB trains
+	-- #
+--  	function Get_FB_Routes return access Route.Routes;
 
 
 end Routes;

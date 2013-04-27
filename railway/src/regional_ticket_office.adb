@@ -34,9 +34,66 @@ with Route;use Route;
 with Traveler_Pool;
 with Traveler;
 with Trains;
+with Train;use Train;
 with Central_Office_Interface;
+with Logger;
+with Ada.Calendar; use Ada.Calendar;
 
-package body Ticket_Office is
+package body Regional_Ticket_Office is
+
+	procedure Init(
+		File_Name	: in 	String)
+	is
+		Booking_Routes_Index : Positive := 1;
+	begin
+		Init_Path_Map(File_Name);
+
+--  		-- # Booking_Routes_Vector Initialization. Consider only FB Trains'Routes.
+--  		for I in 1 .. Trains.Trains'Length loop
+--  			-- # If the current Train is a FB Train
+--  			if Trains.Trains(I).T_Type = Train.FB then
+--  				declare
+--  					Start_Index	: Natural := 1;
+--  					Last_Index 	: Natural := 1;
+--  					Found		: Boolean := False;
+--  					J 			: Positive := 1;
+--  				begin
+--  					-- # Find the Start Index
+--  					while (J < Routes.All_Routes(Trains.Trains(I).Route_Index)'Length) and (not Found) loop
+--  						if Routes.All_Routes(Trains.Trains(I).Route_Index)(J).Node_Name = Environment.Get_Node_Name then
+--  							Found 		:= True;
+--  							Start_Index := J;
+--  							Last_Index	:= J;
+--  						end if;
+--  						J := J + 1;
+--  					end loop;
+--  					if Found then
+--  						J := Start_Index + 1;
+--  						while (J < Routes.All_Routes(Trains.Trains(I).Route_Index)'Length) and (not Found) loop
+--  							if Routes.All_Routes(Trains.Trains(I).Route_Index)(J).Node_Name = Environment.Get_Node_Name then
+--  								Last_Index	:= J;
+--  							end if;
+--  							J := J + 1;
+--  						end loop;
+--
+--  						-- # Add a new Stage to the Vector.
+--  						Booking_Routes_Map.Insert(
+--  							Key 		=> Trains.Trains(I).Route_Index,
+--  							New_Item 	=> (
+--  								Start_Index		=> Start_Index,
+--  								Last_Index 		=> Last_Index,
+--  								Route_Booking 	=> new Route_Booking_Type(Start_Index .. Last_Index)));
+--
+--  						-- # All Stages to the maximum
+--  						for K in Start_Index .. Last_Index loop
+--  							Booking_Routes_Map.Element(Trains.Trains(I).Route_Index).Route_Booking(K) := Trains.Trains(I).Sits_Number;
+--  						end loop;
+--
+--  					end if;
+--  				end;
+--  			end if;
+--  		end loop;
+    end Init;
 
 
     procedure Init_Path_Map(
@@ -73,6 +130,29 @@ package body Ticket_Office is
 
     end Init_Path_Map;
 
+	-- #
+	-- # Returns the index of the Train with ID = [Train_ID]
+    -- #
+    function Index_For_Id(Train_ID : Positive) return Natural is
+    begin
+		for I in 1 .. Trains.Trains'Length loop
+			if Trains.Trains(I).ID = Train_ID then
+				return I;
+			end if;
+		end loop;
+		return 0;
+    end Index_For_Id;
+
+
+	function Validate (
+		The_Ticket : access Ticket.Ticket_Type) return Boolean
+	is
+
+	begin
+		return True;
+
+    end Validate;
+
 	function Create_Ticket(
 		From	: in 	String;
 		To		: in 	String) return access Ticket.Ticket_Type
@@ -84,20 +164,27 @@ package body Ticket_Office is
 		-- # If both stations are contained in the Paths Map, continue, otherwise return null.
 		if Paths.Contains(Key => S_From) and Paths.Element(Key => S_From).Contains(Key => S_To) then
 			declare
-				-- # Get the best path to reach station S_To from S_From station.
+				-- # Get the best path to reach station S_To from S_From station; the result is an array of
+				-- # Station names, from witch build the Ticket.
 				Best_Path 		: Destinations_Ref := Paths.Element(Key => S_From).Element(Key => S_To);
+				-- # Index used to Iterate through Best_Path.
 				I 				: Positive := 1;
 				-- # The ticket that will be built
 				New_Ticket 		: access Ticket.Ticket_Type := new Ticket.Ticket_Type;
+				-- # The array of stages for New_Ticket, initially with the same size as Best_Path.
 				Stages 			: Ticket.Ticket_Stages(1..Best_Path'Length);
+				-- # It will keep the real size of Stages array.
 				Stages_Cursor	: Positive := 1;
 			begin
+				-- # In case of Best_Path'Length = 1, stop, because the Ticket is useless.
 				if Best_Path'Length = 1 then
 					return null;
 				end if;
+
 				while(I < Best_Path'Length) loop
+
 					declare
-						-- # Get all the routes that matches with (I,I+1)
+						-- # Get all the index of all the routes that contains a Stage which matches with (I,I+1)
 						Matches 	: Routes.Routes_Indexes := Routes.Get_Routes_Containing(Best_Path(I),Best_Path(I+1));
 						-- # The maximum match length, initially 0
 						Max_Length 	: Natural := 0;
@@ -118,7 +205,7 @@ package body Ticket_Office is
 						for J in 1 .. Matches'Length loop
 
 							declare
-								-- # The current route index from where to start searching for a match
+								-- # The current stages list index from where to start searching for a match
 								Start_Index 	: Natural := Routes.Contains(Matches(J),Best_Path(I),Best_Path(I+1));
 
 								-- # Index used to extend the match
@@ -132,7 +219,6 @@ package body Ticket_Office is
 							begin
 								-- # Continue extending the match if and only if Start_Index and K are under their limits, and
 								-- # (Best_Path(K),Best_Path(K+1)) is equals to the current route stage
-
 								while 	(Index <= Routes.All_Routes(Matches(J))'Length) and
 										(K < Best_Path'Length) and Equals loop
 
@@ -149,8 +235,6 @@ package body Ticket_Office is
 								if Routes.All_Routes(Matches(J))(Index-1).Enter_Action /= Route.ENTER then
 									Len := 0;
 								end if;
-
-								Put_Line("LEN = " & Integer'Image(Len));
 
 								-- # Case in witch we have a new Maximum
 								if Len > Max_Length then
@@ -179,8 +263,8 @@ package body Ticket_Office is
 							Start_Platform_Index 		=> Start_Platform,
 							-- # The region to which the next stage belongs to
 							Region						=> To_Unbounded_String(Environment.Get_Node_Name),
-							Destination_Platform_Index	=> Destination_Platform
-						);
+							Destination_Platform_Index	=> Destination_Platform);
+
 						Stages_Cursor := Stages_Cursor + 1;
 						I := I + Max_Length;
 					end;
@@ -188,7 +272,16 @@ package body Ticket_Office is
 				end loop;
 				-- # Return only the created stages
 				New_Ticket.Stages := new Ticket.Ticket_Stages'(Stages(1..Stages_Cursor-1));
+
+--  				if Validate (New_Ticket) then
+--  					return New_Ticket;
+--  				else
+--  					return null;
+--  				end if;
+
+				Ticket.Print(New_Ticket);
 				return New_Ticket;
+
 			end;
 		end if;
     	return null;
@@ -202,7 +295,10 @@ package body Ticket_Office is
 	is
 	begin
 		-- # If the Stations are contained in the current Region, create the ticket and return it directly.
-		Put_Line("CREATE : " & integer'image(Environment.Get_Index_For_Name(From)) & " to " & integer'image(Environment.Get_Index_For_Name(To)));
+		Logger.Log(
+			Sender	=> "Regional_Ticket_Office",
+			Message => "CREATE : " & integer'image(Environment.Get_Index_For_Name(From)) & " to " & integer'image(Environment.Get_Index_For_Name(To)),
+			L		=> Logger.DEBUG);
 
 		if Environment.Get_Index_For_Name(From) /= 0 and Environment.Get_Index_For_Name(To) /= 0 then
 
@@ -222,4 +318,5 @@ package body Ticket_Office is
 		end if;
     end Get_Ticket;
 
-end Ticket_Office;
+
+end Regional_Ticket_Office;

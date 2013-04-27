@@ -64,12 +64,12 @@ package body Name_Server_Interface is
 		-- #
 		procedure Process_Result(Content : in out YAMI.Parameters.Parameters_Collection)
 		is
-			Address : String := Content.Get_String("response");
+			Response : String := Content.Get_String("response");
 		begin
-			if Address /= "_" then
+			if Response = "OK" then
 				-- # Add the found Address to the List
-				Last_Addresses.Insert(Node_Name,Address);
-				Callback(Address);
+				Last_Addresses.Insert(Node_Name,Content.Get_String("address"));
+				Callback(Content.Get_String("address"));
 			else
 				Logger.Log(
 					Sender 		=> "Name_Server_Interface.Resolve",

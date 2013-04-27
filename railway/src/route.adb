@@ -31,11 +31,11 @@ package body Route is
 
 	use JSON_Helper;
 
-	function Get_Routes (Json_File : String) return Routes is
+	function Get_Routes (Json_File : String) return access Routes is
 		Json_v 			: JSON_Value := Get_Json_Value(Json_File_Name => Json_File);
 		J_Array 		: JSON_Array := Json_v.Get(Field => "routes");
 		Array_Length 	: constant Natural := Length (J_Array);
-		All_Routes	  	: Routes(1 .. Array_Length);
+		All_Routes	  	: access Routes := new Routes(1 .. Array_Length);
 	begin
 		for I in 1 .. Array_Length loop
 			All_Routes(I) := Get_Route (Get(Arr => J_Array,Index => I));
@@ -86,7 +86,8 @@ package body Route is
     			"Next Station     : " & Integer'Image(R(I).Next_Station) & ASCII.LF &
     			"Platform Index   : " & Integer'Image(R(I).Platform_Index) & ASCII.LF &
     			"Leave Action     : " & (if (R(I).Leave_Action = PASS) then "PASS" else "ENTER") & ASCII.LF &
-    			"Enter Action     : " & (if (R(I).Enter_Action = PASS) then "PASS" else "ENTER") & ASCII.LF
+    			"Enter Action     : " & (if (R(I).Enter_Action = PASS) then "PASS" else "ENTER") & ASCII.LF &
+    			"Node Name        : " & To_String(R(I).Node_Name)
     		);
     	end loop;
     end Print;

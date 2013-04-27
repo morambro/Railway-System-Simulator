@@ -31,7 +31,7 @@ with Trains;
 with Routes;
 with Ada.Exceptions;
 with Train;use Train;
-with Ticket_Office;
+with Regional_Ticket_Office;
 with Central_Controller_Interface;
 
 package body Regional_Station is
@@ -183,7 +183,7 @@ package body Regional_Station is
 	is
 	begin
 		Put_Line("CREATE : " & This.Get_Name & " to " & To);
-		Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
+		Regional_Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
 	end Buy_Ticket;
 
 
@@ -241,7 +241,7 @@ package body Regional_Station is
     	Logger.Log(
     		Sender	=> "Regional_Station",
     		Message => "Finalize Station " & Unbounded_Strings.To_String(This.Name),
-    		L 		=> Logger.DEBUG);
+    		L 		=> Logger.INFO);
     end Finalize;
 
 end Regional_Station;

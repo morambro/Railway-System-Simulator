@@ -106,7 +106,7 @@ package body Remote_Station_Interface is
     end Send_Train;
 
 
-	procedure Send_Ack(
+	procedure Train_Left_Message(
 		Train_Descriptor_Index 	: in	 Positive;
 		Station	 				: in	 Positive;
 		Platform				: in 	 Positive;
@@ -140,7 +140,7 @@ package body Remote_Station_Interface is
 					Message_Agent.Instance.Send(
 						Destination_Address => Address,
 						Object 				=> "message_handler",
-						Service 			=> "train_transfer_ack",
+						Service 			=> "train_left_platfrom",
 						Params 				=> Parameters,
 						Callback			=> null
 					);
@@ -160,7 +160,7 @@ package body Remote_Station_Interface is
    				Sender => "Remote_Station_Interface.Send_Train",
    				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
    				L => Logger.ERROR);
-    end Send_Ack;
+    end Train_Left_Message;
 
 
 

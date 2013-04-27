@@ -31,7 +31,6 @@ package body Segments is
 	procedure Init is
 	begin
 		Segments := Segment.Get_Segment_Array("res/" & Environment.Get_Node_Name & "-segments.json");
-
     end Init;
 
 end Segments;

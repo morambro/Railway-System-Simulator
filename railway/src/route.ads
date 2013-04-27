@@ -23,38 +23,60 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
---
--- This package contains a representation of a Route for a Train as an unbounded array
--- of Stage objects.
---
 with Gnatcoll.JSON; use Gnatcoll.JSON;
 with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 
+-- #
+-- # This package contains a representation of a Route for a Train as an unbounded array
+-- # of Stage objects.
+-- #
 package Route is
 
+	-- # Action type
 	type Action is (ENTER,PASS,FREE);
 
---  	type Stage is private;
+	-- # Route stage
 	type Stage is record
-	    -- Indexes of next Segment and Station
-		Next_Segment    : Positive;
-	    Next_Station    : Positive;
-        Platform_Index 	: Positive;
-        Node_Name		: Unbounded_String;
-		Enter_Action	: Action;
-		Leave_Action	: Action;
+	    -- Indexes of next Segment and Station.
 		Start_Station	: Positive;
+		Next_Station    : Positive;
+		-- # Start and Destination platforms.
 		Start_Platform	: Positive;
+		Platform_Index 	: Positive;
+		-- # Name of the Next_Station node.
+        Node_Name		: Unbounded_String;
+		Next_Segment    : Positive;
+
+		-- # Action to take at start and destination stations.
+		Leave_Action	: Action;
+		Enter_Action	: Action;
 	end record;
 
+	-- # Array of Stages
 	type Route_Type is array (Positive range <>) of Stage;
 
+	-- # Type representing an array of Routes.
 	type Routes is array (Positive range <>) of access Route_Type;
 
-	function Get_Route(Json_v : JSON_Value) return access Route_Type;
+	-- #
+	-- # Function which receives a file name, and creates all the routes
+	-- #
+	-- # @return The corresponding Routes object
+	-- #
+	function Get_Routes (Json_File : String) return access Routes;
 
-	function Get_Routes (Json_File : String) return Routes;
-
+	-- #
+	-- # Debug print procedure
+	-- #
 	procedure Print(R : Route_Type);
+
+private
+
+	-- #
+	-- # Function which receives a JSON Value and creates an object of Route_Type.
+	-- #
+	-- # @return The corresponding Route_Type object
+	-- #
+	function Get_Route(Json_v : JSON_Value) return access Route_Type;
 
 end Route;

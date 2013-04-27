@@ -33,8 +33,18 @@ with Ada.Exceptions;
 with Ticket;
 with Traveler_Pool;
 with Remote_Station_Interface;
+with Ada.Numerics.Discrete_Random;
 
 package body Move_Operation is
+
+	-- # Range for random numbers
+	type Random_Range is range 1..4;
+
+	package Rand_Int is new Ada.Numerics.Discrete_Random(Random_Range);
+
+	-- # Seed and number
+	Seed 	: Rand_Int.Generator;
+	Num 	: Random_Range;
 
 	use Ada.Strings.Unbounded;
 
@@ -132,11 +142,20 @@ package body Move_Operation is
     procedure Do_Operation(This : in Buy_Ticket_Operation_Type) is
    		Start_Station : Integer := Environment.Get_Index_For_Name(To_String(Environment.Travelers(This.Traveler_Manager_Index).Start_Station));
     begin
+
+		Rand_Int.Reset(Seed);
+
+		Num := Rand_Int.Random(Seed);
+
+		-- # Wait a random amount of time between 0 and 4 seconds
+		delay Duration(Num);
+
     	-- # Buy a Ticket at the Station Ticket Office.
 		Environment.Stations(Start_Station).Buy_Ticket(
 			Traveler_Index	=> This.Traveler_Manager_Index,
 			To 				=> To_String(Environment.Travelers(This.Traveler_Manager_Index).Destination));
     end Do_Operation;
+
 
     procedure Do_Operation(This : in Ticket_Ready_Operation_Type) is
     begin
