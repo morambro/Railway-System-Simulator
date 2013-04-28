@@ -1,6 +1,7 @@
 import scala.actors._
 import com.inspirel.yami._
 import net.minidev.json._
+import java.util.Date._
 
 case class Stop()
 case class Resolve(startNode:String,from:String,to:String,traveler_index:String)
@@ -331,6 +332,84 @@ object BookingManager extends Actor {
 		for (i <- 0 until size) 
 			bookingSits(routeIndex) = bookingSits(routeIndex) :+ trainRouteMap(trainID).sitsNumber
 	})
+	
+	import java.text.SimpleDateFormat
+	
+	class RouteTimeTable(val routeIndex:Int,val runs:Int,val span:Int,var table :Array[List[java.util.Date]]) {
+		var run 	: Int = 0
+		
+		if (table == null)  {
+			table = Array.fill(runs)(List())
+		
+			for (i <- 0 until runs) {
+				for (j <- 0 until routes(routeIndex).stages.size) {
+					table(i) = table(i) :+ new java.util.Date()
+				}
+			}
+		}
+		
+		def printDate () {
+			println("Runs for route : " + routeIndex )
+			table.foreach(list => {
+				list.foreach(date => {
+					print(new StringBuilder( new SimpleDateFormat("HH:mm:ss").format(date) ) + " , ")})
+				println
+			})
+		}
+		
+	}
+	
+	
+	var timeTables : Array[RouteTimeTable] = new Array(routes.size)
+	
+	val jsonTimeTable = scala.io.Source.fromFile("../../railway/res/time_table.json").mkString
+	
+	val ref = new java.util.Date() 
+	
+	/**
+	 * Loading time table
+	 */ 
+	JSONValue.parseStrict(jsonTimeTable) match {
+		case o : JSONObject => o.get("time_table") match {
+			case timeTable : JSONArray => {
+				println(timeTable.size)
+				for (j <- 0 until timeTable.size) {
+					timeTable.get(j) match {
+						case runTable : JSONObject => {
+							val routeIndex : Int = runTable.get("route") match {
+								case o : java.lang.Integer => o.intValue
+							}
+							val span : Int = runTable.get("restart_span") match {
+								case o : java.lang.Integer => o.intValue
+							}
+							
+							runTable.get("time") match {
+								case runs : JSONArray => {
+									var table : Array[List[java.util.Date]] = Array.fill(runs.size)(List())
+									for (k <- 0 until runs.size) {
+										runs.get(k) match {
+											case run : JSONArray => {
+												for (h <- 0 until run.size) {
+													run.get(h) match {
+														case i : java.lang.Integer => {
+															table(k) = table(k) :+ new java.util.Date(ref.getTime+(i*60000))
+														}
+													}
+												}
+											}
+										}
+									}
+									timeTables(j) = new RouteTimeTable((routeIndex-1),5,span,table)
+									timeTables(j).printDate
+								}
+							}
+							
+						}
+					}
+				}
+			} 
+		}
+	}
 	
 	/** 
 	 * Main loop for the Actor.
