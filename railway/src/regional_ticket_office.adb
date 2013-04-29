@@ -47,52 +47,6 @@ package body Regional_Ticket_Office is
 		Booking_Routes_Index : Positive := 1;
 	begin
 		Init_Path_Map(File_Name);
-
---  		-- # Booking_Routes_Vector Initialization. Consider only FB Trains'Routes.
---  		for I in 1 .. Trains.Trains'Length loop
---  			-- # If the current Train is a FB Train
---  			if Trains.Trains(I).T_Type = Train.FB then
---  				declare
---  					Start_Index	: Natural := 1;
---  					Last_Index 	: Natural := 1;
---  					Found		: Boolean := False;
---  					J 			: Positive := 1;
---  				begin
---  					-- # Find the Start Index
---  					while (J < Routes.All_Routes(Trains.Trains(I).Route_Index)'Length) and (not Found) loop
---  						if Routes.All_Routes(Trains.Trains(I).Route_Index)(J).Node_Name = Environment.Get_Node_Name then
---  							Found 		:= True;
---  							Start_Index := J;
---  							Last_Index	:= J;
---  						end if;
---  						J := J + 1;
---  					end loop;
---  					if Found then
---  						J := Start_Index + 1;
---  						while (J < Routes.All_Routes(Trains.Trains(I).Route_Index)'Length) and (not Found) loop
---  							if Routes.All_Routes(Trains.Trains(I).Route_Index)(J).Node_Name = Environment.Get_Node_Name then
---  								Last_Index	:= J;
---  							end if;
---  							J := J + 1;
---  						end loop;
---
---  						-- # Add a new Stage to the Vector.
---  						Booking_Routes_Map.Insert(
---  							Key 		=> Trains.Trains(I).Route_Index,
---  							New_Item 	=> (
---  								Start_Index		=> Start_Index,
---  								Last_Index 		=> Last_Index,
---  								Route_Booking 	=> new Route_Booking_Type(Start_Index .. Last_Index)));
---
---  						-- # All Stages to the maximum
---  						for K in Start_Index .. Last_Index loop
---  							Booking_Routes_Map.Element(Trains.Trains(I).Route_Index).Route_Booking(K) := Trains.Trains(I).Sits_Number;
---  						end loop;
---
---  					end if;
---  				end;
---  			end if;
---  		end loop;
     end Init;
 
 
@@ -144,22 +98,14 @@ package body Regional_Ticket_Office is
     end Index_For_Id;
 
 
-	function Validate (
-		The_Ticket : access Ticket.Ticket_Type) return Boolean
-	is
-
-	begin
-		return True;
-
-    end Validate;
-
 	function Create_Ticket(
 		From	: in 	String;
-		To		: in 	String) return access Ticket.Ticket_Type
+		To		: in 	String) return Create_Request_Result
 	is
 		-- # Retrieve the indexes from their names
-		S_From 	: String := Integer'Image(Environment.Get_Index_For_Name(From));
-		S_To	: String := Integer'Image(Environment.Get_Index_For_Name(To));
+		S_From 				: String := Integer'Image(Environment.Get_Index_For_Name(From));
+		S_To				: String := Integer'Image(Environment.Get_Index_For_Name(To));
+		Must_Be_Validated 	: Boolean := False;
 	begin
 		-- # If both stations are contained in the Paths Map, continue, otherwise return null.
 		if Paths.Contains(Key => S_From) and Paths.Element(Key => S_From).Contains(Key => S_To) then
@@ -170,7 +116,7 @@ package body Regional_Ticket_Office is
 				-- # Index used to Iterate through Best_Path.
 				I 				: Positive := 1;
 				-- # The ticket that will be built
-				New_Ticket 		: access Ticket.Ticket_Type := new Ticket.Ticket_Type;
+				New_Ticket 		: Ticket_Type_Ref := new Ticket.Ticket_Type;
 				-- # The array of stages for New_Ticket, initially with the same size as Best_Path.
 				Stages 			: Ticket.Ticket_Stages(1..Best_Path'Length);
 				-- # It will keep the real size of Stages array.
@@ -178,7 +124,7 @@ package body Regional_Ticket_Office is
 			begin
 				-- # In case of Best_Path'Length = 1, stop, because the Ticket is useless.
 				if Best_Path'Length = 1 then
-					return null;
+					return (null,False);
 				end if;
 
 				while(I < Best_Path'Length) loop
@@ -263,7 +209,14 @@ package body Regional_Ticket_Office is
 							Start_Platform_Index 		=> Start_Platform,
 							-- # The region to which the next stage belongs to
 							Region						=> To_Unbounded_String(Environment.Get_Node_Name),
+							-- # Set Current_Run to 0, it will be set to the proper value if the ticket needs to be validated.
+							Current_Run					=> 0,
 							Destination_Platform_Index	=> Destination_Platform);
+
+						-- # If at least one of the trains is a FB train, the Ticket MUST be validated
+						if Trains.Trains(Index_For_Id(Trains.Train_For_Route(Matches(Max_Match)))).T_Type = Train.FB then
+							Must_Be_Validated := True;
+						end if;
 
 						Stages_Cursor := Stages_Cursor + 1;
 						I := I + Max_Length;
@@ -273,18 +226,15 @@ package body Regional_Ticket_Office is
 				-- # Return only the created stages
 				New_Ticket.Stages := new Ticket.Ticket_Stages'(Stages(1..Stages_Cursor-1));
 
---  				if Validate (New_Ticket) then
---  					return New_Ticket;
---  				else
---  					return null;
---  				end if;
+				Put_Line("** CREATED TICKET:");
 
 				Ticket.Print(New_Ticket);
-				return New_Ticket;
+
+				return (New_Ticket,Must_Be_Validated);
 
 			end;
 		end if;
-    	return null;
+    	return (null,False);
     end Create_Ticket;
 
 
@@ -293,6 +243,29 @@ package body Regional_Ticket_Office is
 		From			: in 	String;
 		To				: in 	String)
 	is
+		-- #
+		-- # Callback Function, used to keep the result from Validation request.
+		-- #
+		procedure Callback (
+			The_Ticket	: in 	Ticket.Ticket_Type_Ref;
+			Response	: in 	Boolean) is
+		begin
+			Environment.Travelers(Traveler_Index).The_Ticket := The_Ticket;
+			if Response = True then
+				-- # The two stations are local, so execute TICKET_READY Operation
+				Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
+			else
+				-- # Delete the Ticket
+				Free_Ticket(Environment.Travelers(Traveler_Index).The_Ticket);
+				-- # Make the Traveler Request another Ticket
+				Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.BUY_TICKET));
+				Logger.Log(
+					Sender 	=> "Regional_Ticket_Office",
+					Message => "ERROR : Can not create the ticket for the destination ",
+					L		=> Logger.ERROR);
+			end if;
+		end Callback;
+
 	begin
 		-- # If the Stations are contained in the current Region, create the ticket and return it directly.
 		Logger.Log(
@@ -301,13 +274,23 @@ package body Regional_Ticket_Office is
 			L		=> Logger.DEBUG);
 
 		if Environment.Get_Index_For_Name(From) /= 0 and Environment.Get_Index_For_Name(To) /= 0 then
-
-			-- # The two stations are local, so let's create the ticket and execute the TICKET_READY Operation (synchronous case)
-			Environment.Travelers(Traveler_Index).Ticket := Create_Ticket(
-				From 	=> From,
-				To		=> To);
-
-			Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
+			declare
+				Res : Create_Request_Result := Create_Ticket(
+					From 	=> From,
+					To		=> To);
+			begin
+				-- # If the Ticket MUST be validated, make a call to Central Ticket Office, and
+				-- # give a callback point to collect the response.
+				if Res.Must_Be_Validated = True then
+					-- # Validate the Ticket
+					Central_Office_Interface.Validate(
+						Res.The_Ticket,
+						Callback'Access);
+				else
+					-- # The ticket does not need to be validated, so execute Callback body
+					Callback(Res.The_Ticket,True);
+				end if;
+			end;
 
 		else
 			-- # If no local resolution of the ticket can be done, make a request to the Central Ticket Office (asynchronous case)

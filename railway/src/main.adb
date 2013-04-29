@@ -175,53 +175,18 @@ begin
 				Regional_Ticket_Office.Init("res/" & Node_Name & "-paths.json");
 
 
+				if Node_Name = "Node_1" then
+					Regional_Ticket_Office.Get_Ticket(1,"1","G1");
+				end if;
+
 				if Node_Name = "Node_2" then
-					Regional_Ticket_Office.Get_Ticket(1,"K","2");
+					Regional_Ticket_Office.Get_Ticket(2,"K","G1");
 				end if;
 
 				delay 3.0;
 
 				--Start;
 
-
-
-
---  				declare
---  					Tic : access Ticket.Ticket_Type := Ticket_Office.Create_Ticket("1","G1");
---  				begin
---  					if Tic /= null then
---  						Ticket.Print(Tic);
---  					end if;
---
---  					Ticket_Office.Get_Ticket(1,"1","H");
---
---  				end;
-				--Ticket_Office.Init;
-
---  				if Node_Name = "Node_1" then
---  					Train_Pool.Associate(2);
---  					Train_Pool.Associate(1);
---  				end if;
-
---  				delay 2.0;
---  				Train_Pool.Associate(3);
---  				Train_Pool.Associate(4);
-
---  				for I in 1 .. Routes.Get_Routes_Containing(1,2)'Length loop
---  					Ada.Text_IO.Put_Line(" *** Found : ");
---  					Route.Print(Routes.All_Routes(Routes.Get_Routes_Containing(1,2)(I)).all);
---  				end loop;
-
-
-				--Ticket_Office.Get_Ticket(1,"G1","4");
-
---  				if Node_Name = "Node_1" then
---  					Traveler_Pool.Execute(Environment.Operations(1)(Traveler.LEAVE));
---  				end if;
---  				delay 4.0;
---
---  				Train_Pool.Stop;
---  				Traveler_Pool.Stop;
 			exception
 				when E : others =>
 				Logger.Log(

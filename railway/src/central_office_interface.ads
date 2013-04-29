@@ -25,6 +25,7 @@
 ----------------------------------------------------------------------------------
 with Message_Agent;
 with YAMI.Parameters;
+with Ticket;use Ticket;
 
 package Central_Office_Interface is
 
@@ -32,6 +33,10 @@ package Central_Office_Interface is
 			From			: String;
 			To				: String;
 			Traveler_Index	: Positive);
+
+	procedure Validate(
+			The_Ticket 	: Ticket.Ticket_Type_Ref;
+			Callback 	: access procedure(The_Ticket:Ticket.Ticket_Type_Ref;Response: Boolean));
 
 
 end Central_Office_Interface;

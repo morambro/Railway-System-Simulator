@@ -98,7 +98,7 @@ package Environment Is
 	procedure Update_Traveler(
 		Traveler_Index	: in 		Positive;
 		Trav_To_Copy 	: in		Traveler.Traveler_Manager;
-		Ticket_To_Copy 	: access 	Ticket.Ticket_Type);
+		Ticket_To_Copy 	: in	 	Ticket.Ticket_Type_Ref);
 
 	-- #
 	-- # Function used to get the index of the Station, given its unique name.

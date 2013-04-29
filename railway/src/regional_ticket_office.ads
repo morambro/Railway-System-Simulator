@@ -23,7 +23,7 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
-with Ticket;
+with Ticket;use Ticket;
 with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Strings;
 with Ada.Strings.Hash;
@@ -39,27 +39,6 @@ package Regional_Ticket_Office is
 
 	No_Route_For_Destination : exception;
 
---  	-- # Type array of integer used to store Remaining sits for each Stage.
---  	type Route_Booking_Type is array (Positive range <>) of Integer;
---
---  	-- # Record structure containing:
---  	-- #    * the index of the route
---  	-- #    * the start index of the route's stages array
---  	-- #    * the last index of the route's stages array
---  	-- #    * the array of remaining sits for each stage.
---  	type FB_Route is record
---  		Start_Index 	: Positive;
---  		Last_Index		: Positive;
---  		Route_Booking 	: access Route_Booking_Type;
---  	end record;
---
---  	package Integer_Vector is new Ada.Containers.Vectors(Positive,A);
---
---  	-- # All routes booking.
---  	package Booking_Routes is new Ada.Containers.Ordered_Maps(
---  		Key_Type 		=> Positive,
---        	Element_Type 	=> FB_Route);
-
 	-- #
 	-- # Procedure used to perform Ticket_Office initialization.
 	-- #
@@ -67,28 +46,28 @@ package Regional_Ticket_Office is
 		File_Name	: in 	String);
 
 
+	type Create_Request_Result is record
+ 		The_Ticket 				: Ticket_Type_Ref := null;
+ 		Must_Be_Validated	: Boolean := False;
+    end record;
+
 	-- #
 	-- # Creates and returns a Ticket_Type object, which represents a Ticket to
 	-- # go from [From] to [To].
 	-- #
 	function Create_Ticket(
 		From	: in 	String;
-		To		: in 	String) return access Ticket.Ticket_Type;
+		To		: in 	String) return Create_Request_Result;
 
 
 	-- #
-	-- # Procedure used to ask for a ticket to be created.
+	-- # Procedure used to ask for a ticket to be created. It First Creates a Ticket, and then
+	-- # if needed asks Central Ticket Office to Validate it.
 	-- #
 	procedure Get_Ticket (
 		Traveler_Index 	: in 	Positive;
 		From			: in 	String;
 		To				: in 	String);
-
-	-- #
-	-- # Given a Ticket, this function verifies if it can be created or not.
-	-- #
-	function Validate (
-		The_Ticket : access Ticket.Ticket_Type) return Boolean;
 
 private
 

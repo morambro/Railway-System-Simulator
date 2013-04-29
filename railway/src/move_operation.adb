@@ -38,7 +38,7 @@ with Ada.Numerics.Discrete_Random;
 package body Move_Operation is
 
 	-- # Range for random numbers
-	type Random_Range is range 1..4;
+	type Random_Range is range 3..10;
 
 	package Rand_Int is new Ada.Numerics.Discrete_Random(Random_Range);
 
@@ -49,10 +49,10 @@ package body Move_Operation is
 	use Ada.Strings.Unbounded;
 
 	procedure Do_Operation(This : in Leave_Operation_Type) is
-		Next_Stage 				: Positive 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
-		Start_Station 			: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Start_Station;
-		Train_ID	 			: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
-		Start_Platform_Index 	: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Start_Platform_Index;
+		Next_Stage 				: Positive 	:= Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Next_Stage;
+		Start_Station 			: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Start_Station;
+		Train_ID	 			: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Train_ID;
+		Start_Platform_Index 	: Natural 	:= Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Start_Platform_Index;
 	begin
 		Logger.Log(
 			Sender 	=> "Move_Operation.Leave_Operation_Type",
@@ -91,11 +91,11 @@ package body Move_Operation is
 	-- # Operation which lets the Traveler (Manager)
 	-- #
 	procedure Do_Operation(This : in Enter_Operation_Type) is
-		Next_Stage 					: Positive 			:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Next_Stage;
-		Next_Station 				: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Next_Station;
-		Next_Region 				: Unbounded_String 	:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Region;
-		Train_ID	 				: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Train_ID;
-		Destination_Platform_Index 	: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).Ticket.Stages(Next_Stage).Destination_Platform_Index;
+		Next_Stage 					: Positive 			:= Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Next_Stage;
+		Next_Station 				: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Next_Station;
+		Next_Region 				: Unbounded_String 	:= Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Region;
+		Train_ID	 				: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Train_ID;
+		Destination_Platform_Index 	: Natural 			:= Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Destination_Platform_Index;
 	begin
 		Logger.Log(
 			Sender 	=> "Move_Operation.Enter_Operation_Type",
@@ -147,13 +147,28 @@ package body Move_Operation is
 
 		Num := Rand_Int.Random(Seed);
 
-		-- # Wait a random amount of time between 0 and 4 seconds
+		Logger.Log(
+			Sender	=> 	"Move_Operation.Buy_Ticket_Operation_Type",
+			Message => 	"Traveler" & Integer'Image(This.Traveler_Manager_Index) & " will wait for" & Random_Range'image(Num) &
+						" seconds before asking for a new Ticket",
+			L 		=> 	Logger.DEBUG);
+
+		-- # Wait a random amount of time between 3 and 10 seconds
 		delay Duration(Num);
 
     	-- # Buy a Ticket at the Station Ticket Office.
 		Environment.Stations(Start_Station).Buy_Ticket(
 			Traveler_Index	=> This.Traveler_Manager_Index,
 			To 				=> To_String(Environment.Travelers(This.Traveler_Manager_Index).Destination));
+
+	exception
+		when Error : others =>
+			Logger.Log(
+				"Move_Operation.Buy_Ticket_Operation_Type",
+				"Exception: " & Ada.Exceptions.Exception_Name(Error) & " , " & Ada.Exceptions.Exception_Message(Error),
+				Logger.ERROR
+			);
+
     end Do_Operation;
 
 

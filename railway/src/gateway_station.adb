@@ -187,8 +187,8 @@ package body Gateway_Station is
 			Platform_Index		: in		Positive)
 	is
 		Next_Stage_Region : Unbounded_String :=
-			Environment.Travelers(Outgoing_Traveler).Ticket.Stages(
-				Environment.Travelers(Outgoing_Traveler).Ticket.Next_Stage).Region;
+			Environment.Travelers(Outgoing_Traveler).The_Ticket.Stages(
+				Environment.Travelers(Outgoing_Traveler).The_Ticket.Next_Stage).Region;
 	begin
 		if Next_Stage_Region /= Environment.Get_Node_Name then
 

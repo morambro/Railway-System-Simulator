@@ -96,8 +96,6 @@ package body Environment Is
     	-- # Creates regional stations array loading data from file
     	Stations 	:= Get_Station_Array("res/" & To_String(Node_Name) & "-stations.json");
 
-    	Put_Line("There are " & Integer'Image(Stations'Length) & " stations");
-
 		-- # Creates travelers array loading data from file
     	Travelers 	:= Traveler.Get_Traveler_Manager_array("res/travelers.json");
 
@@ -119,11 +117,11 @@ package body Environment Is
     procedure Update_Traveler(
 		Traveler_Index	: in 		Positive;
 		Trav_To_Copy 	: in		Traveler.Traveler_Manager;
-		Ticket_To_Copy 	: access 	Ticket.Ticket_Type) is
+		Ticket_To_Copy 	: in	 	Ticket.Ticket_Type_Ref) is
 	begin
 		if Traveler_Index <= Travelers'Length then
 			Travelers(Traveler_Index) := Trav_To_Copy;
-			Travelers(Traveler_Index).Ticket := Ticket_To_Copy;
+			Travelers(Traveler_Index).The_Ticket := Ticket_To_Copy;
 		end if;
     end Update_Traveler;
 

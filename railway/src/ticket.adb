@@ -30,7 +30,7 @@ package body Ticket is
 
 
 	procedure Print(
-		The_Ticket : access Ticket_Type) is
+		The_Ticket : Ticket_Type_Ref) is
 	begin
 		if The_Ticket = null then
 			Ada.Text_IO.Put_Line("Null Ticket!");
@@ -49,13 +49,13 @@ package body Ticket is
     end Print;
 
 
-	function Get_Ticket(Json_V : in JSON_Value) return access Ticket_Type is
+	function Get_Ticket(Json_V : in JSON_Value) return Ticket_Type_Ref is
 		-- Extract "ticket" json array in J_Array variable
 		J_Array : JSON_Array := Json_V.Get(Field => "ticket");
 --  		-- Extract J_Array length
 		Array_Length : constant Natural := Length (J_Array);
 --  		-- Instantiate a new Ticket_Type with Array_Length elements
-		T : access Ticket_Type := new Ticket_Type;
+		T : Ticket_Type_Ref := new Ticket_Type;
 
 	begin
 		T.Next_Stage 	:= Json_v.Get("next");
@@ -71,6 +71,7 @@ package body Ticket is
 					Region						=> Json_Ticket.Get("region"),
 					Train_ID 					=> Json_Ticket.Get("train_id"),
 					Start_Platform_Index		=> Json_Ticket.Get("start_platform_index"),
+					Current_Run					=> Json_Ticket.Get("current_run"),
 					Destination_Platform_Index	=> Json_Ticket.Get("destination_platform_index")
 				);
 			end;
@@ -79,29 +80,29 @@ package body Ticket is
 		return T;
 	end Get_Ticket;
 
-	function Get_Ticket(Json_String : in String) return access Ticket_Type is
+	function Get_Ticket(Json_String : in String) return Ticket_Type_Ref is
 	begin
 		return Get_Ticket(Get_Json_Value(Json_String => Json_String));
     end Get_Ticket;
 
 
-    function Get_All_Tickets(Json_File : String) return access Tickets_Array is
-		Json_v 			: JSON_Value := Get_Json_Value(Json_File_Name => Json_File);
-		J_Array			: JSON_Array := Json_v.Get(Field => "tickets");
-		Array_Length 	: constant Natural := Length (J_Array);
-		To_Return 		: access Ticket.Tickets_Array := new Ticket.Tickets_Array(1..Array_Length);
-	begin
-		for I in 1..Array_Length loop
-			To_Return(I) := Get_Ticket(Get(Arr => J_Array, Index => I));
-		end loop;
-
-
-		return To_Return;
-    end Get_All_Tickets;
+--      function Get_All_Tickets(Json_File : String) return access Tickets_Array is
+--  		Json_v 			: JSON_Value := Get_Json_Value(Json_File_Name => Json_File);
+--  		J_Array			: JSON_Array := Json_v.Get(Field => "tickets");
+--  		Array_Length 	: constant Natural := Length (J_Array);
+--  		To_Return 		: access Ticket.Tickets_Array := new Ticket.Tickets_Array(1..Array_Length);
+--  	begin
+--  		for I in 1..Array_Length loop
+--  			To_Return(I) := Get_Ticket(Get(Arr => J_Array, Index => I));
+--  		end loop;
+--
+--
+--  		return To_Return;
+--      end Get_All_Tickets;
 
 
     function To_Json(
-		Ticket 		: access Ticket_Type) return String
+		Ticket 		: Ticket_Type_Ref) return String
 	is
 		Json_Ticket : JSON_Value := Create_Object;
 		Json_Fields : JSON_Array := Empty_Array;

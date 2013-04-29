@@ -26,6 +26,7 @@
 with JSON_Helper;
 with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Calendar.Formatting;
+with Ada.Real_Time;
 
 package body Time_Table is
 
@@ -39,8 +40,6 @@ package body Time_Table is
 				for K in 1 .. T(I).Table(J)'Length loop
 					declare
 					begin
---  						Split (T(I).Table(J)(K),S,TS);
-						-- Seconds_Count'Image(S)
 						Put( Ada.Calendar.Formatting.Image(T(I).Table(J)(K))  & " , ");
 					end;
 				end loop;
@@ -71,13 +70,14 @@ package body Time_Table is
 				T_Table.Table(I) := new Time_Array(1 .. T_Length);
 				for J in 1 .. Length (T_Array) loop
 					declare
-						Span : Integer := Get(Get(Arr => T_Array,Index => J));
+						Span : String := "2013-04-29 07:55:15";--Get(Get(Arr => T_Array,Index => J));
 					begin
-						T_Table.Table(I)(J) := Ref_Clock + Duration(Span);
+						T_Table.Table(I)(J) := Ref_Clock;--Ada.Calendar.Formatting.Value(Span);--Ref_Clock + Duration(Span);
 					end;
 				end loop;
 			end;
 		end loop;
+
 		return T_Table;
     end Get_Time_Table;
 
@@ -91,6 +91,9 @@ package body Time_Table is
 		for I in 1 .. Array_Length loop
 			T_T_Array(I) := Get_Time_Table(Get(Arr => J_Array,Index => I));
 		end loop;
+
+		Print(T_T_Array);
+
 		return T_T_Array;
     end Get_Time_Table_Array;
 

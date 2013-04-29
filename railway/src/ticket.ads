@@ -25,6 +25,7 @@
 ----------------------------------------------------------------------------------
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
+with Ada.Unchecked_Deallocation;
 -- #
 -- # This package contains the definition of a ticket, that is an array of stages the
 -- # traveler will follow to reach the destination.
@@ -42,6 +43,8 @@ package Ticket is
 		Start_Platform_Index		: Natural := 0;
 		-- # The region to which the next stage belongs to
 		Region 						: Unbounded_String;
+		-- # The current run, to be specified if the Train is a FB train
+		Current_Run					: Integer := 0;
 		-- # Destination platform index
 		Destination_Platform_Index	: Natural := 0;
     end record;
@@ -53,24 +56,29 @@ package Ticket is
     	Stages 		: access Ticket_Stages := null;
 	end record;
 
-	type Tickets_Array is array (Positive range <>) of access Ticket_Type;
+	type Ticket_Type_Ref is access all Ticket_Type;
+
+--  	type Tickets_Array is array (Positive range <>) of Ticket_Type_Ref;
 
 	procedure Print(
-		The_Ticket : access Ticket_Type);
+		The_Ticket : Ticket_Type_Ref);
+
+	procedure Free_Ticket is new Ada.Unchecked_Deallocation
+      (Object => Ticket_Type, Name => Ticket_Type_Ref);
 
     -- ############################## Json -> Ticket ###############################
 
     function Get_Ticket (
-    	Json_String	: in String) return access Ticket_Type;
+    	Json_String	: in String) return Ticket_Type_Ref;
 
     function Get_Ticket (
-    	Json_V 		: in JSON_Value) return access Ticket_Type;
+    	Json_V 		: in JSON_Value) return Ticket_Type_Ref;
 
-    function Get_All_Tickets (
-    	Json_File 	: in String) return access Tickets_Array;
+--      function Get_All_Tickets (
+--      	Json_File 	: in String) return  Ticket_Type_Ref;
 
     function To_Json(
-		Ticket 		: access Ticket_Type) return String;
+		Ticket 		: in Ticket_Type_Ref) return String;
 
 
 end Ticket;

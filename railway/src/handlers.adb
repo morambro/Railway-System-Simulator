@@ -337,12 +337,12 @@ package body Handlers Is
 		begin
 			declare
 				-- # Creates
-				T : access Ticket.Ticket_Type := Regional_Ticket_Office.Create_Ticket(From,To);
+				T : Regional_Ticket_Office.Create_Request_Result := Regional_Ticket_Office.Create_Ticket(From,To);
 			begin
 
 				-- # Send back the Created Ticket!
 				Reply_Parameters.Set_String("response","RECEIVED");
-				Reply_Parameters.Set_String("ticket",Ticket.To_Json(T));
+				Reply_Parameters.Set_String("ticket",Ticket.To_Json(T.The_Ticket));
 
 
 			exception
@@ -420,7 +420,7 @@ package body Handlers Is
 					Ticket_Data		: String 	:= Content.Get_String("ticket");
 				begin
 					-- # Retrieve the Ticket
-					Environment.Travelers(Traveler_Index).Ticket := Ticket.Get_Ticket(Ticket_Data);
+					Environment.Travelers(Traveler_Index).The_Ticket := Ticket.Get_Ticket(Ticket_Data);
 
 					-- Ticket.Print(Environment.Travelers(Traveler_Index).Ticket);
 
