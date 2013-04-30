@@ -330,6 +330,7 @@ class PathResolver(fileName : String) extends Actor {
 							println("ERROR: The ticket can not be assigned")
 							throw new NoRouteFoundException
 						}
+						case _ => // Do nothing,all ok!
 					}
 					
 					// If we are here, we have a valid ticket

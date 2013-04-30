@@ -103,27 +103,20 @@ package body Train_Pool is
 			-- # ######################## NEXT Segment ACCESS ############################
 			begin
 
-				Logger.Log(
-					NAME,
-					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
-					" leaves Station " & Integer'Image(Start_Station) & ", platform " & Integer'Image(Start_Platform),
-					Logger.DEBUG
-				);
-
 				-- # Update Current Station!!
 				Trains.Trains(Current_Descriptor_Index).Current_Station := Start_Station;
 
 				-- # Wait Until time to leave
 
 				declare
-					Current_Array_Index 	: Positive :=
-						Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Array_Index;
+					Current_Run 	: Positive :=
+						Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Run;
 
-					Current_Array_Position	: Positive :=
-						Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Array_Position;
+					Current_Run_Cursor	: Positive :=
+						Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Run_Cursor;
 
 					Time_To_Wait : Ada.Calendar.Time := Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Table
-						(Current_Array_Index)(Current_Array_Position);
+						(Current_Run)(Current_Run_Cursor);
 				begin
 					Logger.Log(
 						NAME,
@@ -131,11 +124,20 @@ package body Train_Pool is
 						" wait until " & Time_Table.Get_Time_Representation(Time_To_Wait),
 						Logger.DEBUG
 					);
+
+					-- # Wait until time to go!
 					delay until Time_To_Wait;
 
 					Time_Table.Update_Time_Table(Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index));
 
 				end;
+
+				Logger.Log(
+					NAME,
+					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
+					" tries to leave Station " & Integer'Image(Start_Station) & ", platform " & Integer'Image(Start_Platform),
+					Logger.DEBUG
+				);
 
 				-- # Train Leaves the station
 		    	Environment.Stations(Start_Station).Leave(

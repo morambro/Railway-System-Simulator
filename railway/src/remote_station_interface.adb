@@ -69,10 +69,10 @@ package body Remote_Station_Interface is
 						Parameters.Set_String("platform",Integer'Image(Platform));
 						Parameters.Set_String("train_index",Integer'Image(Train_Descriptor_Index));
 						-- # Pass also current time table index and position
-						Parameters.Set_String("current_time_table_index",
-							Integer'Image(Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Array_Index));
-						Parameters.Set_String("current_time_table_position",
-							Integer'Image(Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Array_Position));
+						Parameters.Set_String("current_run",
+							Integer'Image(Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run));
+						Parameters.Set_String("current_run_position",
+							Integer'Image(Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run_Cursor));
 						Parameters.Set_String("train",Train.Get_Json(Trains.Trains(Train_Descriptor_Index)));
 
 						Message_Agent.Instance.Send(

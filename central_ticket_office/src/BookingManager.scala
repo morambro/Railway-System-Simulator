@@ -66,7 +66,7 @@ object BookingManager extends Actor {
 		 */
 		def toJSON : String = {
 			var timeTable = "{" 
-			timeTable += "\"route\" : " + (routeIndex+1) + ","
+			timeTable += "\"route_index\" : " + (routeIndex+1) + ","
 			//timeTable += "\"restart_span\" : " + span + ","
 			timeTable += "\"current_run\" : " + (current_run+1) + ","
 			timeTable += "\"time\" : ["
@@ -205,6 +205,9 @@ object BookingManager extends Actor {
 		jsonTimeTables
 	}
 	
+	
+	println(timeTablesToJSON)
+	
 	/** 
 	 * Main loop for the Actor.
 	 */
@@ -213,22 +216,24 @@ object BookingManager extends Actor {
 			
 			
 			case GetTimeTable => {
-				sender ! ("time_tables",timeTablesToJSON)
+				// Simply return the JSON representation of the Time Table.
+				reply{timeTablesToJSON}
+				bookingLoop
 			}
 			
 			
 			// Updates the current run index. It is done keeping always at least 2 route time tables,
 			// so if the updates reguardes 
-			case UpdateRun(trainID,routeIndex,current_run) => {
+			case UpdateRun(routeIndex,current_run) => {
 				// Update the RouteTimeTable element in position [routeIndex] with 
 				// the given current_run value.
 				// Check if the given routeIndex is a valid one
-				if ((routeIndex-1) >= timeTables.size) sender ! ("error","Invalid routeIndex " + routeIndex)
+				if ((routeIndex-1) >= timeTables.size) reply(("error","Invalid routeIndex " + routeIndex))
 				// Check if the current_run is a valid one
-				else if ((current_run-1) >= timeTables(routeIndex-1).table.size) sender ! ("error","Invalid current_run " + current_run)
+				else if ((current_run-1) >= timeTables(routeIndex-1).table.size) reply(("error","Invalid current_run " + current_run))
 				else {		
 					// All ok, update the run	
-					timeTables(routeIndex-1).current_run = current_run
+					timeTables(routeIndex-1).current_run = (current_run-1)
 					// If the current run is the penultimate, update the entire 
 					// table and give it back to the sender.
 					if ((current_run-1) == timeTables(routeIndex-1).table.size-2) {
@@ -250,11 +255,16 @@ object BookingManager extends Actor {
 						timeTables(routeIndex-1).table = newTable
 						// Set current_run to 0 .
 						timeTables(routeIndex-1).current_run = 0
+						
+						println("New Time Table for route " + (routeIndex-1) + ":\n" + timeTables(routeIndex-1).toJSON)			
+												
 						// Give it back to Sender
-						sender ! ("new_time_table",timeTables(routeIndex-1).toJSON)
+						reply(("new_time_table",timeTables(routeIndex-1).toJSON))
+						 
 						
 					}else{
-						sender ! ("updated")
+						println("Current Run for route " + (routeIndex-1) + " updated : " + (current_run-1))	
+						reply("updated")
 					}
 				}
 				bookingLoop
@@ -274,12 +284,17 @@ object BookingManager extends Actor {
 				
 				var valid : Boolean = true
 				
-				ticketList.foreach (ticket => {
+				for (i <- 0 until ticketList.size;if (valid)) {
+					
+					var ticket = ticketList(i)
 					
 					var routeMap : Map[Int,(Int,Int)] = Map();
 					
-					ticket.stages.foreach ( ticketStage => {
+					// Run over all the stages
+					for (j <- 0 until ticket.stages.size;if (valid)) {
 					
+						var ticketStage = ticket.stages(j)
+						
 						trainRouteMap get (ticketStage.trainId) match {
 							// Only if the train is a FB Train the ticket must be validated.
 							case Some(map) => {
@@ -322,24 +337,37 @@ object BookingManager extends Actor {
 										}
 									}
 								}
+								
+								// decide weather to search in the current run or in the next one
+								val selected_run = {
+									val current_run = timeTables(routeIndex).current_run
+									if (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)) 
+										timeTables(routeIndex).current_run
+									else
+										timeTables(routeIndex).current_run + 1
+								}
+								
 								// At this point firstIndex will be the first index of the route,
 								// secondIndex the last. 
 								// Check if there are enougth sits to assign to the Traveler
-								for (i <- firstIndex to secondIndex) {
-									valid = valid && bookingSits(routeIndex)(timeTables(routeIndex).current_run)(i) > 0
+								for (i <- firstIndex to secondIndex; if (valid)) {
+									valid = valid && bookingSits(routeIndex)(selected_run)(i) > 0
 								}
 								
 								// Add to routeMap, to be updated if the ticket will result validated
-								routeMap = routeMap + Tuple2(routeIndex,(firstIndex,secondIndex))
-								
+								if (valid) {
+									routeMap = routeMap + Tuple2(routeIndex,(firstIndex,secondIndex))
+									// memorize the run
+									ticketStage.run_number = selected_run+1
+								}
 							}
 							case None => println("Train " + ticketStage.trainId + " not a FB train ")
 						}
-					})
+					}
 					
 					bookingSitsToUpdate = bookingSitsToUpdate :+ routeMap
 									
-				})
+				}
 				// If we arrived here we have all sits needed. We can perform the update
 				// Finally, send the reply
 				if (valid) {
@@ -353,7 +381,7 @@ object BookingManager extends Actor {
 							println(routeIndex +","+firstIndex+ ","+secondIndex)
 						})
 					)
-					reply(true)
+					reply ((true,ticketList))
 				}
 				if (!valid) reply(false)
 				

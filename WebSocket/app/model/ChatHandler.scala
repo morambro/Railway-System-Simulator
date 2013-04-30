@@ -148,17 +148,6 @@ class ChatHandler extends Actor {
   	}
   	
   	def notifyAll(kind: String, user: String, text: String) {
-		/*val msg = JsObject(
-		  Seq(
-		    "kind" -> JsString(kind),
-		    "user" -> JsString(user),
-		    "message" -> JsString(text),
-		    "members" -> JsArray(
-		      members.toList.map(JsString)
-		    )
-		  )
-		)*/
-		//channel.push(kind + " " + user + " " + text)
 		channel.push(text)
   	}
 }

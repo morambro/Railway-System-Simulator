@@ -44,18 +44,18 @@ WITH YAMI.Parameters;
 package Environment Is
 
 	-- # All the Stations
-	Stations 		: Generic_Station.Stations_array_Ref := null;
+	Stations 			: Generic_Station.Stations_array_Ref 	:= null;
 
 	-- # All the Travelers
-    Travelers 		: Traveler.Traveler_Manager_Array_Ref := null;
+    Travelers 			: Traveler.Traveler_Manager_Array_Ref 	:= null;
 
 	-- # Operations for each Traveler
-	Operations 		: Traveler.Travelers_All_Operations_Ref := null;
+	Operations 			: Traveler.Travelers_All_Operations_Ref := null;
 
 	-- #
 	-- # Time Table for each Route
 	-- #
-	Route_Time_Table: Time_Table.Time_Table_Array := Time_Table.Get_Time_Table_Array("res/time_table.json");
+	Route_Time_Table 	: Time_Table.Time_Table_Array_Ref 		:= null;
 
 
 	type Destinations_Type is array (Positive range <>) of Unbounded_String;

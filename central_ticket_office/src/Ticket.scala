@@ -6,7 +6,7 @@ class TicketStage (
 	val trainId : Int,
 	val startPlatform  : Int, 
 	val destinationPlatform  : Int,
-	val run_number 	: Int = 1,
+	var run_number 	: Int = 1,
 	val	nextRegion : String) {
 
 	def print {

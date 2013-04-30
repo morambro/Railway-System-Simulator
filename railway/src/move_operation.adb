@@ -34,6 +34,8 @@ with Ticket;
 with Traveler_Pool;
 with Remote_Station_Interface;
 with Ada.Numerics.Discrete_Random;
+with Train_Pool;
+with Message_Agent;
 
 package body Move_Operation is
 
@@ -177,6 +179,16 @@ package body Move_Operation is
     	-- # Once the ticket is ready, let's start the travel!
     	Traveler_Pool.Execute(Environment.Operations(This.Traveler_Manager_Index)(Traveler.LEAVE));
     end Do_Operation;
+
+
+	overriding procedure Do_Operation(This : in Terminate_Operation_Type) is
+	begin
+		-- # Ask to terminate to Pools
+		Train_Pool.Stop;
+		Traveler_Pool.Stop;
+		-- # Close the Message Agent.
+		Message_Agent.Instance.Close;
+	end;
 
 end Move_Operation;
 

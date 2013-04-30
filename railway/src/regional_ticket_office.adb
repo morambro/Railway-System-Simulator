@@ -250,12 +250,17 @@ package body Regional_Ticket_Office is
 			The_Ticket	: in 	Ticket.Ticket_Type_Ref;
 			Response	: in 	Boolean) is
 		begin
+			if Environment.Travelers(Traveler_Index).The_Ticket /= null then
+				-- # If the Traveler had already a ticket, delete it before assigning the new one
+				Free_Ticket(Environment.Travelers(Traveler_Index).The_Ticket);
+			end if;
+			-- # Assign the new ticket to the Traveler
 			Environment.Travelers(Traveler_Index).The_Ticket := The_Ticket;
 			if Response = True then
 				-- # The two stations are local, so execute TICKET_READY Operation
 				Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
 			else
-				-- # Delete the Ticket
+				-- # Delete the assigned Ticket otherwise
 				Free_Ticket(Environment.Travelers(Traveler_Index).The_Ticket);
 				-- # Make the Traveler Request another Ticket
 				Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.BUY_TICKET));

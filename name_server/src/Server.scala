@@ -11,9 +11,7 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 	var serverAgent : Agent = null;
 	var addresses	: Map[String,String] = Map();
 
-	def act() {
-		myLoop
-	}
+	def act() =	myLoop
 
 	def myLoop : Unit = react {
 		

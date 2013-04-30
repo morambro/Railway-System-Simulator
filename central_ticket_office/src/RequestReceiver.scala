@@ -90,38 +90,39 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 			// First Call, returns the Entire Time Tables array 
 			case "get_time_table" => {
 				
-				BookingManager ! GetTimeTable()
+				println("Received GET_TIME_TABLE request")
+				
+				val time_table = BookingManager !? GetTimeTable
 				
 				var replyPar : Parameters = new Parameters
 				
-				receive {
-					case ("time_tables",tt:String) => {
-						replyPar.setString("response","OK")
-						replyPar.setString("time_tables",tt)
-					}
-				}
+				replyPar.setString("response","OK")
+				time_table match {
+					case tt : String => {replyPar.setString("time_tables",tt);println(tt)}
 				
+				}
 				im.reply(replyPar)
 				
 			}
 			
 			// Service called by train to update the current run value.
 			case "update_run" => {
-				// ...
-				val trainID 	= im.getParameters.getInteger("train_id").intValue
+				
+				println("Received UPDATE_RUN request")
+				
 				val routeIndex 	= im.getParameters.getInteger("route_index").intValue
 				val current_run	= im.getParameters.getInteger("current_run").intValue
 				
 				// Ask to update the route timeTable
-				BookingManager ! UpdateRun(trainID,routeIndex,current_run)
+				val result = BookingManager !? UpdateRun(routeIndex,current_run)
 				
 				var replyPar : Parameters = new Parameters
 				
-				receive {
+				result match {
 					case "updated" => replyPar.setString("response","OK")
 				
 					case ("new_time_table",timeTable:String) => {
-						replyPar.setString("response","OK")
+						replyPar.setString("response","UPDATED")
 						replyPar.setString("new_time_table",timeTable)
 					}
 					
@@ -135,6 +136,8 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 			}
 			
 			case "validate" => {
+				
+				println("Received VALIDATE request")
 				
 				val ticket 		= im.getParameters.getString("ticket")
 				val requestTime = im.getParameters.getString("request_time") 

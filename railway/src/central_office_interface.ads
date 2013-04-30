@@ -26,6 +26,7 @@
 with Message_Agent;
 with YAMI.Parameters;
 with Ticket;use Ticket;
+with Time_Table;
 
 package Central_Office_Interface is
 
@@ -35,8 +36,17 @@ package Central_Office_Interface is
 			Traveler_Index	: Positive);
 
 	procedure Validate(
-			The_Ticket 	: Ticket.Ticket_Type_Ref;
-			Callback 	: access procedure(The_Ticket:Ticket.Ticket_Type_Ref;Response: Boolean));
+			The_Ticket 		: Ticket.Ticket_Type_Ref;
+			Callback 		: access procedure(The_Ticket:Ticket.Ticket_Type_Ref;Response: Boolean));
 
+	procedure Update_Run(
+			Route_Index 	: Positive;
+			Current_Run		: Positive;
+			Callback 		: access procedure(
+								Updated			: in 	 Boolean;
+								New_Time_Table 	: access Time_Table.Time_Table_Type));
+
+	procedure Load_Time_Tables(
+			Callback 		: access procedure (Table : in	Time_Table.Time_Table_Array_Ref));
 
 end Central_Office_Interface;

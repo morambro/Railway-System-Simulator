@@ -74,8 +74,18 @@ package body Central_Office_Interface is
 			Response : String := Content.Get_String("response");
 		begin
 			if Response = "TRUE" then
-				Callback(The_Ticket,True);
+				declare
+					-- # Extract the validated ticket returned by the Central Office
+					Validated_Ticket : Ticket_Type_Ref := Ticket.Get_Ticket(Content.Get_String("ticket"));
+					Old_Ticket 		 : Ticket_Type_Ref := The_Ticket;
+				begin
+					-- # Delete the Old non-validated ticket
+					Free_Ticket(Old_Ticket);
+					-- # Call the callback procedure with the new validated ticket.
+					Callback(Validated_Ticket,True);
+				end;
 			elsif Response = "FALSE" then
+				-- # Callback procedure communicating the result
 				Callback(The_Ticket,False);
 			else
 				Logger.Log(
@@ -110,5 +120,78 @@ package body Central_Office_Interface is
 		end;
     end Validate;
 
+
+	procedure Update_Run(
+		Route_Index 	: Positive;
+		Current_Run		: Positive;
+		Callback 		: access procedure(
+							Updated			: in 	 Boolean;
+							New_Time_Table 	: access Time_Table.Time_Table_Type))
+	is
+		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
+		-- #
+		-- # Callback procedure used to collect the data retrieved by the Central Ticket Office, and
+		-- # call the callback procedure passed as a parameter.
+		-- #
+		procedure Process_Result(Content : in out YAMI.Parameters.Parameters_Collection)
+		is
+			Response : String := Content.Get_String("response");
+		begin
+			if Response = "UPDATED" then
+				declare
+					Time_T : String := Content.Get_String("new_time_table");
+				begin
+					-- # Call the Callback procedure to update the data.
+					Callback(
+						True,
+						Time_Table.Get_Time_Table(Time_T));
+				end;
+			elsif Response = "OK" then
+				-- # Do nothing, simply log it
+				Logger.Log(
+					"Central_Ticket_Office",
+					"Current_Run updated.",
+					Logger.DEBUG);
+			end if;
+		end Process_Result;
+
+	begin
+		Parameters.Set_Integer("route_index",YAMI.Parameters.YAMI_Integer(Route_Index));
+		Parameters.Set_Integer("current_run",YAMI.Parameters.YAMI_Integer(Current_Run));
+
+		Message_Agent.Instance.Send(
+			Destination_Address => Environment.Get_Central_Ticket_Office,
+			Object 				=> "central_ticket_server",
+			Service 			=> "update_run",
+			Params 				=> Parameters,
+			Callback			=> Process_Result'Access
+		);
+
+    end Update_Run;
+
+
+	procedure Load_Time_Tables(
+			Callback 		: access procedure (Table : in	Time_Table.Time_Table_Array_Ref))
+	is
+		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
+		procedure Process_Result(Content : in out YAMI.Parameters.Parameters_Collection)
+		is
+			Time_Tables : String := Content.Get_String("time_tables");
+		begin
+			-- # Once all the time tables have been retrieved, give them to the callback procedure.
+			Callback(Time_Table.Get_Time_Table_Array(Time_Tables));
+		end Process_Result;
+	begin
+		-- # Send the request without parameters
+		Message_Agent.Instance.Send(
+			Destination_Address => Environment.Get_Central_Ticket_Office,
+			Object 				=> "central_ticket_server",
+			Service 			=> "get_time_table",
+			Params 				=> Parameters,
+			Callback			=> Process_Result'Access);
+
+    end Load_Time_Tables;
 
 end Central_Office_Interface;

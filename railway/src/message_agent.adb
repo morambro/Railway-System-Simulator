@@ -101,11 +101,21 @@ package body Message_Agent is
 
     procedure Close(This: access Message_Agent_Type) is
     begin
-    	Logger.Log(
+		YAMI.Agents.Free(This.Client_Agent);
+		Logger.Log(
     		Sender => NAME & ".Message_Agent",
     		Message => "Closing the agent",
     		L => Logger.DEBUG);
-		YAMI.Agents.Free(This.Client_Agent);
+    exception
+			-- # If an error occurs, send an ERROR message
+			when E : others =>
+				declare
+				begin
+					Logger.Log(
+						Sender => "Termination_Handler",
+						Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+						L => Logger.ERROR);
+				end;
     end Close;
 
 

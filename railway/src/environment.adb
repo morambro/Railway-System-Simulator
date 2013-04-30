@@ -28,6 +28,7 @@ with JSON_Helper;use JSON_Helper;
 with Logger;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with Ada.Numerics.Discrete_Random;
+with Central_Office_Interface;
 
 package body Environment Is
 
@@ -77,6 +78,24 @@ package body Environment Is
     end Get_Station_Array;
 
 
+	-- #
+	-- # Procedure used to load Time Table. It sends a Message to the Central Ticket Office
+	-- # to get it.
+	-- #
+	procedure Load_Time_Table is
+
+		procedure Callback(
+			Table : in	Time_Table.Time_Table_Array_Ref) is
+		begin
+		 	-- # Initialize Route_Time_Table parameter
+			Route_Time_Table := Table;
+		end Callback;
+
+	begin
+		-- # Make the call
+		Central_Office_Interface.Load_Time_Tables(Callback'Access);
+    end Load_Time_Table;
+
 
     procedure Init(
  		N_N 		: in 	String;
@@ -95,6 +114,9 @@ package body Environment Is
 
     	-- # Creates regional stations array loading data from file
     	Stations 	:= Get_Station_Array("res/" & To_String(Node_Name) & "-stations.json");
+
+		-- # Load Time Table, making a Remote Request.
+    	Load_Time_Table;
 
 		-- # Creates travelers array loading data from file
     	Travelers 	:= Traveler.Get_Traveler_Manager_array("res/travelers.json");

@@ -14,26 +14,16 @@ import play.api.data.format.Formats._
 case class User(chatID:String)
 
 object Application extends Controller {
-
-	def index = Action {
-		
-		val form = Form(
-			mapping(
-				"chatID" -> text
-			)(User.apply)(User.unapply)
-		)
-		
-		Ok(views.html.index("Your new application is ready.",form))
-	}
 	
-	def chatPage(chatID : Option[String]) = Action {
-		implicit request =>
-			chatID.filterNot(_.isEmpty).map {
-				chatID => Ok(views.html.wb("WebSocket",request.id+""))
-			}.getOrElse {
-		  		Redirect(routes.Application.index)
-		  	}
+	var ids = 0;
+	
+	def index = Action {
+		implicit request => {
+			ids+=1
+			Ok(views.html.wb("WebSocket",ids+""))	
+		}
 	}
+
 	
 	def chat(chatID:String) = WebSocket.async[String] { request  =>
 		ChatHandler.join(chatID)

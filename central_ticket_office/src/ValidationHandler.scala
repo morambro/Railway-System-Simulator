@@ -15,7 +15,12 @@ class ValidationHandler extends Actor {
 				var replyPar : Parameters = new Parameters
 				
 				result match {
-					case true => replyPar.setString("response","TRUE")
+					case (true,ticketList:List[_]) => {
+						replyPar.setString("response","TRUE")
+						ticketList(0) match {
+							case t:Ticket => replyPar.setString("ticket",t) 
+						}
+					}
 					case false => replyPar.setString("response","FALSE")
 					case ("error",msg:String) => {
 						replyPar.setString("response","ERROR")

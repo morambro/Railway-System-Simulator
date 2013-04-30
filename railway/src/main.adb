@@ -147,7 +147,7 @@ begin
 			declare
 				-- Start the real simulation
 				Traveler_Tasks 	: Traveler_Pool.Traveler_Pool_Type(5);
-				Pool			: Train_Pool.Train_Task_Pool(6,5);
+				Pool			: Train_Pool.Train_Task_Pool(5,5);
 
 
 				procedure Start is
@@ -175,17 +175,17 @@ begin
 				Regional_Ticket_Office.Init("res/" & Node_Name & "-paths.json");
 
 
-				if Node_Name = "Node_1" then
-					Regional_Ticket_Office.Get_Ticket(1,"1","G1");
-				end if;
-
-				if Node_Name = "Node_2" then
-					Regional_Ticket_Office.Get_Ticket(2,"K","G1");
-				end if;
+--  				if Node_Name = "Node_1" then
+--  					Regional_Ticket_Office.Get_Ticket(1,"1","G1");
+--  				end if;
+--
+--  				if Node_Name = "Node_2" then
+--  					Regional_Ticket_Office.Get_Ticket(2,"K","G1");
+--  				end if;
 
 				delay 3.0;
 
-				--Start;
+				Start;
 
 			exception
 				when E : others =>
@@ -193,9 +193,10 @@ begin
 	   				Sender => "",
 	   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
 	   				L => Logger.ERROR);
+				Message_Agent.Instance.Close;
+				Traveler_Pool.Stop;
+				Train_Pool.Stop;
 			end;
-			Message_Agent.Instance.Close;
-
 		exception
    			when E : Name_Server_Interface.Name_Server_Exception =>
    				Logger.Log(
@@ -210,6 +211,8 @@ begin
 	   				Sender => "Main",
 	   				Message => "ERROR : " & Ada.Exceptions.Exception_Name(Error) & " " & Ada.Exceptions.Exception_Message(Error),
 	   				L => Logger.ERROR);
+	   			-- # Close the Message Agent before quitting.
+	   			Message_Agent.Instance.Close;
 		end;
 	end;
 exception

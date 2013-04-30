@@ -42,17 +42,17 @@ package Time_Table is
 	type Time_Table_Type(Entry_Size : Positive) is record
 		-- # Index of the route for which the Time table is specified.
 		Route_Index 			: Positive;
-		-- # The value to be added to recalculate the Table
-		Restart_Span			: Positive;
 		-- # Cursors.
-		Current_Array_Index 	: Positive := 1;
-		Current_Array_Position 	: Positive := 1;
+		Current_Run 			: Positive := 1;
+		Current_Run_Cursor 		: Positive := 1;
 		-- # The time table.
 		Table 					: Time_Matrix(1..Entry_Size);
     end record;
 
 	-- # Type for the entire Time Table.
 	type Time_Table_Array is array (Positive range <>) of access Time_Table_Type;
+
+	type Time_Table_Array_Ref is access all Time_Table_Array;
 
 	-- #
 	-- # Updates the Time Table. If the Cursors are on the last position of the matrix,
@@ -66,8 +66,19 @@ package Time_Table is
 	-- #
 	function Get_Time_Table(Json_v : JSON_Value) return access Time_Table_Type;
 
-	function Get_Time_Table_Array(Json_File : String) return Time_Table_Array;
+	-- #
+	-- # Creates a Time_Table_Type object from String.
+	-- #
+	function Get_Time_Table(Json_v : String) return access Time_Table_Type;
+
+	function Get_Time_Table_Array(Json_File : String) return Time_Table_Array_Ref;
 
 	function Get_Time_Representation(T : Time) return String;
+
+
+	-- #
+	-- # Simple Debug procedure
+	-- #
+	procedure Print(T : Time_Table_Array_Ref);
 
 end Time_Table;

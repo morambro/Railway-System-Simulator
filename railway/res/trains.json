@@ -31,6 +31,22 @@
 			"occupied_sits"		: 0,
 			"type"				: "regionale",
 			"start_node"		: "Node_1"
+		},
+		{
+			"id" 				: 3333,
+			"speed" 			: 50,
+			"max_speed" 		: 100,
+			
+			"current_station" 	: 4,
+			
+			"next_stage" 		: 1,
+			
+			"route_index" 		: 3,
+			
+			"sits_number"		: 10,
+			"occupied_sits"		: 0,
+			"type"				: "regionale",
+			"start_node"		: "Node_1"
 		}
 	]
 }

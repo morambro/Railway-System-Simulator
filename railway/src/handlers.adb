@@ -33,6 +33,7 @@ with Route;
 with Regional_Ticket_Office;
 with Traveler_Pool;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Move_Operation;
 
 package body Handlers Is
 
@@ -47,8 +48,8 @@ package body Handlers Is
 			Station_Index 			: Integer	:= Integer'Value(Content.Get_String("station"));
 			Platform_Index 			: Integer	:= Integer'Value(Content.Get_String("platform"));
 			Train_Index				: Integer	:= Integer'Value(Content.Get_String("train_index"));
-			Time_Table_Index		: Positive	:= Integer'Value(Content.Get_String("current_time_table_index"));
-			Time_Table_Position		: Positive	:= Integer'Value(Content.Get_String("current_time_table_position"));
+			Time_Table_Index		: Positive	:= Integer'Value(Content.Get_String("current_run"));
+			Time_Table_Position		: Positive	:= Integer'Value(Content.Get_String("current_run_position"));
 			Train_Data				: String 	:= Content.Get_String("train");
 
 			Reply_Parameters 	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
@@ -73,9 +74,9 @@ package body Handlers Is
 				Put_Line("Time_Table_Index = " & Integer'Image(Time_Table_Index));
 
 
-				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index).Current_Array_Position := Time_Table_Position;
+				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index).Current_Run_Cursor := Time_Table_Position;
 
-				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index).Current_Array_Index := Time_Table_Index;
+				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index).Current_Run := Time_Table_Index;
 
 				-- # At this point the Stage Index will have been incremented by Leave, so we are
 				-- # sure that the fake stage is passed, and that at the index Next_Stage there will be
@@ -469,18 +470,16 @@ package body Handlers Is
     procedure Termination_Handler(
 		Msg : in 	Incoming_Message'Class)
 	is
-
 		procedure Callback(Content : in out YAMI.Parameters.Parameters_Collection) is
 			Reply_Parameters 	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+
 		begin
 
 			-- # Reply Central Controller, to notify the message have been received.
 			Reply_Parameters.Set_String("response",OK);
 			Msg.Reply(Reply_Parameters);
 
-			-- # Ask to terminate.
-			Train_Pool.Stop;
-			Traveler_Pool.Stop;
+			Traveler_Pool.Execute(new Move_Operation.Terminate_Operation_Type);
 
 			Logger.Log(
 				Sender 	=> "Termination_Handler",
