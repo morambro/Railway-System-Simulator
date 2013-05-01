@@ -13,48 +13,31 @@ class DebugSender(val addr : String) extends Actor{
 		
 			case Event(message) => {
 				val params : Parameters = new Parameters()
-				params.setString("station","5")
-				params.setString("platform","1")
-				params.setString("traveler_index","1")
-				params.setString("traveler","""
-					{
-						"traveler": {
-						    "id": 1,
-						    "name": "Gero",
-						    "surname": "Caccamo"
-						},
-						"next_operation": 1,
-						"destination": 2
-					}
+				if (message == "d") {
+					params.setString("request_time","2013-05-01 16:59:02")//""+new StringBuilder(new java.text.SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new java.util.Date)))
+					params.setString("ticket","""
 					
-				""")
-				params.setString("ticket","""
-					
-					{
-						"next" 	 : 1,
-						"ticket" : [
-							{
-								"start_station"				: 2,
-								"next_station" 				: 3,
-								"train_id"					: 2222,
-								"region"					: "Node_1",
-								"start_platform_index"		: 2,
-								"destination_platform_index": 1
-							},
-							{
-								"start_station"				: 3,
-								"next_station" 				: 4,
-								"train_id"					: 2222,
-								"region"					: "Node_1",
-								"start_platform_index"		: 1,
-								"destination_platform_index": 1
-							}
-						]
-					}
-				""")
-				println("Sending message to " + addr + " : " + message)
-				agent.sendOneWay(addr,"central_ticket_server", "terminate", params);
-				
+						{
+							"next" 	 : 1,
+							"ticket" : [
+								{
+									"start_station"				: 2,
+									"next_station" 				: 5,
+									"train_id"					: 1111,
+									"region"					: "Node_1",
+									"start_platform_index"		: 2,
+									"destination_platform_index": 1
+								}
+							]
+						}
+					""")
+					println("Sending message to " + addr + " : " + message)
+					agent.sendOneWay(addr,"central_ticket_server", "validate", params);
+				} else {
+					params.setInteger("route_index",1.intValue)
+					params.setInteger("current_run",4.intValue)
+					agent.sendOneWay(addr,"central_ticket_server", "update_run", params);
+				}
 				debugLoop
 			}
 		

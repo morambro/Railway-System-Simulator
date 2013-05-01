@@ -43,8 +43,8 @@ package Ticket is
 		Start_Platform_Index		: Natural := 0;
 		-- # The region to which the next stage belongs to
 		Region 						: Unbounded_String;
-		-- # The current run, to be specified if the Train is a FB train
-		Current_Run					: Integer := 0;
+		-- # The current run progressive number, to be specified if the Train is a FB train
+		Current_Run_Id				: Integer := 0;
 		-- # Destination platform index
 		Destination_Platform_Index	: Natural := 0;
     end record;

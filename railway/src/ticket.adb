@@ -71,7 +71,7 @@ package body Ticket is
 					Region						=> Json_Ticket.Get("region"),
 					Train_ID 					=> Json_Ticket.Get("train_id"),
 					Start_Platform_Index		=> Json_Ticket.Get("start_platform_index"),
-					Current_Run					=> Json_Ticket.Get("current_run"),
+					Current_Run_Id				=> Json_Ticket.Get("current_run"),
 					Destination_Platform_Index	=> Json_Ticket.Get("destination_platform_index")
 				);
 			end;

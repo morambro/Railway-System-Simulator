@@ -295,6 +295,8 @@ package body Handlers Is
 					Train_ID 			=> Train_ID,
 					Platform_Index		=> Platform_Index);
 
+				Reply_Parameters.Set_String("response",OK);
+
 			else
 				Logger.Log(
 					Sender		=> "Station_Traveler_Arrive_Transfer_Handler",

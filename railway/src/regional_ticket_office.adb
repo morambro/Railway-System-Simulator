@@ -210,7 +210,7 @@ package body Regional_Ticket_Office is
 							-- # The region to which the next stage belongs to
 							Region						=> To_Unbounded_String(Environment.Get_Node_Name),
 							-- # Set Current_Run to 0, it will be set to the proper value if the ticket needs to be validated.
-							Current_Run					=> 0,
+							Current_Run_Id				=> 0,
 							Destination_Platform_Index	=> Destination_Platform);
 
 						-- # If at least one of the trains is a FB train, the Ticket MUST be validated

@@ -30,7 +30,12 @@ object BookingManager extends Actor {
 		/*
 		 * The run index.
 		 */
-		var current_run : Int = 0
+		var current_run 	: Int = 0
+		
+		/*
+		 * It identifies uniquely the run. It will be incremented at each run update
+		 */
+		var current_run_id 	: Int = 0
 		
 		/**
 		 * The timeTable
@@ -52,7 +57,7 @@ object BookingManager extends Actor {
 			table.foreach(list => {
 				list.foreach(date => {
 					// Print on a specific format
-					val format = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss")
+					val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 					// Set timezone to GMT, to print UTC-0 time 
 					format.setTimeZone(TimeZone.getTimeZone("GMT"))
 					print(new StringBuilder( format.format(date) + " , "))
@@ -76,7 +81,7 @@ object BookingManager extends Actor {
 				var j = 0
 				table(i).foreach(date => {
 					// Print on a specific format
-					val format = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss")
+					val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 					// Set timezone to GMT, to print UTC-0 time 
 					format.setTimeZone(TimeZone.getTimeZone("GMT"))
 					timeTable += "\"" + new StringBuilder( format.format(date)) + "\""
@@ -234,20 +239,38 @@ object BookingManager extends Actor {
 				else {		
 					// All ok, update the run	
 					timeTables(routeIndex-1).current_run = (current_run-1)
-					// If the current run is the penultimate, update the entire 
+					// Increase the identificator of the run by one.
+					timeTables(routeIndex-1).current_run_id += 1
+					
+					// If the current run is the last, update the entire 
 					// table and give it back to the sender.
-					if ((current_run-1) == timeTables(routeIndex-1).table.size-2) {
+					if ((current_run-1) == timeTables(routeIndex-1).table.size-1) {
 						
 						val newTable : Array[Array[Date]]= new Array(timeTables(routeIndex-1).runs)
 						// Put last two elements on the first two positions
-						newTable(0) = timeTables(routeIndex-1).table(timeTables(routeIndex-1).table.size-2)
-						newTable(1) = timeTables(routeIndex-1).table(timeTables(routeIndex-1).table.size-1)
+						newTable(0) = timeTables(routeIndex-1).table(timeTables(routeIndex-1).table.size-1)
+						//newTable(1) = timeTables(routeIndex-1).table(timeTables(routeIndex-1).table.size-1)
+						
+						bookingSits get (routeIndex-1) match {
+							case Some(t) => t match {
+								case table : Array[_] => {
+									table(0) = table(table.size-1)
+									//table(1) = table(table.size-1)
+									for(j <- 1 until table.size)  {
+										table(j) = Array.fill(table(0).size)(5)
+									}
+									
+								}
+								case _ => println("ERROR!!")
+							}
+							case None => println("ERROR!!")
+						}
 						
 						// Copy all other Time Tables, adding new span!
-						for(i <- 0 until timeTables(routeIndex-1).runs-2) {
-							newTable(i+2) = timeTables(routeIndex-1).table(i)
-							for (j<- 0 until newTable(i+2).size) {
-								newTable(i+2)(j) = new Date(newTable(1).last.getTime + timeTables(routeIndex-1).spans_table(i)(j)) 
+						for(i <- 0 until timeTables(routeIndex-1).runs-1) {
+							newTable(i+1) = timeTables(routeIndex-1).table(i)
+							for (j<- 0 until newTable(i+1).size) {
+								newTable(i+1)(j) = new Date(newTable(1).last.getTime + timeTables(routeIndex-1).spans_table(i)(j)) 
 							}
 							
 						}
@@ -256,7 +279,17 @@ object BookingManager extends Actor {
 						// Set current_run to 0 .
 						timeTables(routeIndex-1).current_run = 0
 						
-						println("New Time Table for route " + (routeIndex-1) + ":\n" + timeTables(routeIndex-1).toJSON)			
+						println("New Time Table for route " + (routeIndex-1) + ":\n" + timeTables(routeIndex-1).toJSON)
+						
+						println("Current run = " + timeTables(routeIndex-1).current_run + 
+								", run id = " + timeTables(routeIndex-1).current_run_id)
+						
+						println("booking table :")
+						bookingSits(routeIndex-1).foreach ( el => {
+							el.foreach(i => print(" | "+i))
+							println
+						})
+									
 												
 						// Give it back to Sender
 						reply(("new_time_table",timeTables(routeIndex-1).toJSON))
@@ -274,13 +307,14 @@ object BookingManager extends Actor {
 			// it would not be able to validate.
 			case Validate(ticketList,requestTime) => {
 				
-				// Get the Date object corresondig to the specified requestTime
-				val requestTimeDate = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").parse(requestTime)
-				
-				println("VALIDATION REQUEST TIME = " + new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(requestTimeDate))
+				val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+				// Set timezone to GMT, to print UTC-0 time 
+				format.setTimeZone(TimeZone.getTimeZone("GMT"))
+				// Create Date from String
+				val requestTimeDate = format.parse(requestTime)
 				
 				// Map used to keep track of the sits to edit once the sit is booked.
-				var bookingSitsToUpdate : List[Map[Int,(Int,Int)]] = List()
+				var bookingSitsToUpdate : List[Map[Int,(Int,Int,Int)]] = List()
 				
 				var valid : Boolean = true
 				
@@ -288,7 +322,7 @@ object BookingManager extends Actor {
 					
 					var ticket = ticketList(i)
 					
-					var routeMap : Map[Int,(Int,Int)] = Map();
+					var routeMap : Map[Int,(Int,Int,Int)] = Map();
 					
 					// Run over all the stages
 					for (j <- 0 until ticket.stages.size;if (valid)) {
@@ -339,13 +373,19 @@ object BookingManager extends Actor {
 								}
 								
 								// decide weather to search in the current run or in the next one
-								val selected_run = {
+								val (selected_run,selected_run_id) = {
 									val current_run = timeTables(routeIndex).current_run
+									// If the time at witch the train leaves in the current run is after the
+									// time at witch the request was made, consider the current run, otherwise the next
+									println("after ? " + (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)))
 									if (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)) 
-										timeTables(routeIndex).current_run
+										(timeTables(routeIndex).current_run,timeTables(routeIndex).current_run_id)
 									else
-										timeTables(routeIndex).current_run + 1
+										(timeTables(routeIndex).current_run + 1,timeTables(routeIndex).current_run_id + 1)
 								}
+								
+								println("selected_run = " + selected_run)
+								println("selected_run_id = " + selected_run_id)
 								
 								// At this point firstIndex will be the first index of the route,
 								// secondIndex the last. 
@@ -356,9 +396,9 @@ object BookingManager extends Actor {
 								
 								// Add to routeMap, to be updated if the ticket will result validated
 								if (valid) {
-									routeMap = routeMap + Tuple2(routeIndex,(firstIndex,secondIndex))
-									// memorize the run
-									ticketStage.run_number = selected_run+1
+									routeMap = routeMap + Tuple2(routeIndex,(firstIndex,secondIndex,selected_run))
+									// memorize the run id on the ticket
+									ticketStage.run_number = (selected_run_id + 1)
 								}
 							}
 							case None => println("Train " + ticketStage.trainId + " not a FB train ")
@@ -373,10 +413,11 @@ object BookingManager extends Actor {
 				if (valid) {
 					bookingSitsToUpdate.foreach( el =>
 						el.keys.foreach( routeIndex => {
-							val firstIndex = el(routeIndex)._1
-							val secondIndex = el(routeIndex)._2
+							val firstIndex 		= el(routeIndex)._1
+							val secondIndex 	= el(routeIndex)._2
+							val selected_run 	= el(routeIndex)._3
 							for (i <- firstIndex to secondIndex) {
-								bookingSits(routeIndex)(timeTables(routeIndex).current_run)(i) -= 1
+								bookingSits(routeIndex)(selected_run)(i) -= 1
 							}
 							println(routeIndex +","+firstIndex+ ","+secondIndex)
 						})
