@@ -76,5 +76,5 @@ Un diagramma infromale delle componenti distribuite che compongono il sistema è
 	Il Conterollo Centrale è una entità distribuita, alla quale tutti i nodi inviano Eventi per notificare lo stato di avanzamento globale della simulazione. Esso fornisce una interfaccia alle varie Regioni per ricevere gli Eventi di simulazione, ed un'interfaccia per permettere a client remoti di poter visualizzare gli effetti di tali Eventi. Quest'ultima possibilità è ottenuta mediante un meccanismo di tipo Publish/Subscribe, attraverso il quale client remoti possono registrarsi presso il Controller per ricevere, in modalità Push, gli Eventi.
 	In questo modo è possibile per un qualsiasi client interfacciarsi al Controller e fornire, ad esempio, una rappresentazione grafica della simulazione.
 
-	Il Controller sarà anche responsabile dell'invio di un \ii{segnale di terminazione}, che verrà recapitato a tutti i nodi che componegono la simulazione, mediante un algoritmo di Snapshot Distribuito, descritto in sezione \ref{sec:distributed_termination}.
+	Il Controller sarà anche responsabile dell'invio di un \ii{segnale di terminazione}, che verrà recapitato a tutti i nodi che componegono la simulazione, mediante la procedura descritta in sezione \ref{sec:distributed_termination}.
 \newpage

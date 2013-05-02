@@ -2,11 +2,8 @@
 \subsection{Creazione di un Biglietto}
 
 Per la creazione di un Biglietto, necessario per permettere ai Viaggiatori di poter raggiungere una destinazione, ho utilizzato un algoritmo che coinvolge le componenti (distribuite) introdotte in sezione \ref{subsec:ticket_offices}.
-Di seguito verranno descritte le fasi del processo di crezione e validazione di un Ticket.
 
-%Per richiedere la creazione di un Biglietto, ho introdotto un tipo di operazione per le entità viaggiatori, che indicherò con \ttt{CREATE\_TICKET}, mentre per gestire l'avvenuta creazione e ottenimento del Biglietto un'operazione che indicherò con \ttt{TICKET\_READY}. Quest'ultima operazione è necessaria poiché l'algoritmo ha una natura asincrona.
-
-La descrizione sarà suddivisa in fasi sucessive:
+Di seguito viene riportata una descrizione delle fasi previste dalla soluzione progettata.
 
 	\subsubsection {Richiesta di Creazione}\label{subsubsec:ticket_creation_request}
 	
@@ -15,7 +12,7 @@ La descrizione sarà suddivisa in fasi sucessive:
 	\subsubsection {Creazione del Ticket} \label{subsubsec:ticket_creation}
 	
 	\begin{figure}[htbp]
-		\includegraphics[trim = 65mm 0mm 0mm 0mm,scale=0.48]{imgs/Buy_Ticket_Sequence_Diagram.pdf}
+		\includegraphics[trim = 55mm 0mm 0mm 0mm,scale=0.5]{imgs/Buy_Ticket_Sequence_Diagram.pdf}
 		\caption{\footnotesize{Diagramma di Sequenza, creazione di un Ticket per una destinazione \ii{locale} alla regione di partenza.}}
 		\label{fig:local_ticket_creation_diagram}
 	\end{figure}
@@ -58,7 +55,7 @@ La descrizione sarà suddivisa in fasi sucessive:
 			\item Una volta creato il \ttt{Ticket}, allora se esso conterrà almeno una Tratta che prevede l'utilizzo di un Treno a prenotazione (ovvero di tipo \ttt{FB}), allora si dovrà procedere alla \ii{Validazione}, descritta nella sezione \ref{subsubsec:validation}.
 			\item Altrimenti, il \ttt{Ticket} creato viene assegnato al Viaggiatore e viene quindi inserita l'operazione \ttt{TICKET\_READY} nella coda di operazioni di \ttt{Traveler\_Pool}.
 			\end {itemize} 
-		\item Se \ttt{To} non appartiene alla Regione corrente, allora viene effettuata una richiesta remota alla Biglietteria Centrale. Tale richiesta è asincrona, in modo tale da permettere al thread che sta effettuando la richiesta di creazione del Biglietto di non effettuare attesa attiva, e quindi di poter eseguire altre operazioni eventualmente presenti nella coda di \ttt{Traveler\_Pool}.
+		\item Se \ttt{To} non appartiene alla Regione corrente, allora viene effettuata una richiesta remota alla Biglietteria Centrale. \'E opportuno che la richiesta di creazione sia asincrona, in modo tale da permettere al thread che la effettua di non dover attendere attivamente per una risposta, e quindi di poter eseguire altre operazioni eventualmente presenti nella coda di \ttt{Traveler\_Pool}.
 	\end{itemize} 
 	
 	In figura \ref{fig:local_ticket_creation_diagram} è riportato un diagramma di sequenza che presenta le operazioni svolte per la creazione di un Ticket locale alla Regione dalla quale la richiesta è effettuata. 
@@ -68,7 +65,7 @@ La descrizione sarà suddivisa in fasi sucessive:
 	
 	
 	\begin{figure}[htbp]
-		\includegraphics[trim = 65mm 0mm 0mm 0mm,scale=0.48]{imgs/Buy_Ticket_Sequence_Diagram_Remote.pdf}
+		\includegraphics[trim = 55mm 0mm 0mm 0mm,scale=0.5]{imgs/Buy_Ticket_Sequence_Diagram_Remote.pdf}
 		\caption{\footnotesize{Diagramma di Sequenza, creazione di un Ticket per una destinazione \ii{non appartenente} alla regione di partenza.}}
 		\label{fig:remote_ticket_creation_diagram}
 	\end{figure}

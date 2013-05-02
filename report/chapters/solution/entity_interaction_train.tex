@@ -45,7 +45,15 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		\item Si è raggiunta l'ultima Corsa ($N-esima$), e quindi viene restituita una nuova \ttt{Time\_Table} contenente gli orari per $N$ corse, composta dalla corsa $N-esima$ della Tabella precedente in prima posizione, e da $N-1$ Corse calcolate. L'indice \ttt{Current\_Run} viene posto ad 1, e viene memorizzato l'identificativo della Corsa corrente \ttt{Current\_Run\_Id}, il quale può essere ad esempio, un numero progressivo che la identifica.
 		\item Non si è raggiunta l'ultima corsa, e quindi viene aggiornata la corsa corrente presso la Biglietteria Centrale e restituito l'identificativo della stessa.
 	\end{itemize}
-
+	
+	La scelta di riportare solo l'orario di partenza nella definizione della Tabella degli orari, permette di risolvere i problemi causati dal passaggio di alcuni Treni attraverso Regioni su nodi distribuiti, dovuti, ad esempio, dai clock non sincronizzati dei nodi di calcolo che compongono il sistema, o dai ritardi che possono essere introdotti dalla trasmissione sulla rete. Si supponga una differenza in valore assoluto $\Delta t$ tra i clock $t_1$ e $t_2$ di due Nodi $N_1$ ed $N_2$, e supponiamo di avere un treno $T$ che viaggia da $N_1$ ad $N_2$. Si presentano i seguenti due casi:
+	
+	\begin{itemize}
+		\item $t_1 = t_2+\Delta t$: il Treno $T$ localmente ad $N_2$ potrà avere un ritardo aggiuntivo compreso tra $0$ e $\Delta t$ rispetto all'eventuale ritardo accumulato in $N_1$;
+		\item $t_2 = t_1+\Delta t$: il Treno $T$ si ritroverà in anticipo rispetto al clock di $N_1$, e quindi vi è la possibilità che prolunghi la sua attesa.
+	\end{itemize}
+	
+	
 % ############################################################################################################
 % ################################################# ACCESSO_SEGMENTO #########################################
 % ############################################################################################################
@@ -67,17 +75,17 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 			 \begin{itemize}
 			 	\item Inserimento del Descrittore nella coda \ttt{Train\_Queue};
 			 	\item Aggiornamento della velocità di percorrenza del Treno entrato, in base a quella dei Treni che lo precedono.
-			 	\item Nel caso in cui la risorsa risulti vuota (viene consultato il flag booleano che mantiene questa informazione), allora viene modificato il valore del flag in modo tale da indicare lo stato occupato della risorsa, e memorizzata la stazione di provenienza del Treno.
+			 	\item Nel caso in cui la risorsa risulti vuota (viene consultato il flag booleano che mantiene questa informazione), allora viene modificato il valore di un flag booleano \ttt{Free} che permette di indicare lo stato occupato della risorsa, e memorizzata la stazione di provenienza del Treno.
 			\end{itemize}
-			Una volta terminate queste due operazioni, il Treno rilascia la risorsa e, basandosi sulla lunghezza e sulla velocità da mantenere, simula la percorrenza rendendosi inattivo (non competitivo per l'ottenimento della CPU) per un tempo dato dalla semplice equazione: $ Time = Segment\_Length / Actual\_Speed $.
+			Una volta terminate queste operazioni, il thread rappresentante il Treno rilascia la risorsa e, basandosi sulla lunghezza del Segmento e sulla velocità da mantenere, simula la percorrenza rendendosi inattivo (non competitivo per l'ottenimento della CPU) per un tempo dato dalla semplice equazione: $ Time = Segment\_Length / Actual\_Speed $.
 			
-			Data la possibilità di percorrenza multipla del Segmento, si presentano però diverse problematiche: nel caso in cui una volta ottenuta la risorsa protetta Segmento, un Treno richieda l'accesso nella direzione opposta a quella dei Treni che percorrono il Segmento (ovvero abbiamo la situazione in cui il flag booleano \ttt{Free = False}, e la stazione di provenienza memorizzata presso il Segmento è diversa da quella del Treno richiedente) allora questo dovrà attendere fino a che il Segmento non si sarà liberato dai Treni in transito. Questa attesa dev'essere tale da evitare starvation del Treno in attesa.
+			Data la possibilità di percorrenza multipla del Segmento, si presentano diverse problematiche: nel caso in cui una volta ottenuta la risorsa protetta Segmento, un Treno richieda l'accesso nella direzione opposta a quella dei Treni che percorrono il Segmento (ovvero abbiamo la situazione in cui il flag booleano \ttt{Free = False}, e la stazione di provenienza memorizzata presso il Segmento è diversa da quella del Treno richiedente) allora questo dovrà attendere fino a che il Segmento non si sarà liberato dai Treni in transito. Questa attesa dev'essere tale da evitare starvation del Treno in attesa.
 			
 			Una primo approccio possibile per risolvere questo problema è prevedere una coda, con politica FIFO, per poter permettere attesa su guardia booleana, internamente alla risorsa Segmento, per i Treni provenienti dalla direzione opposta rispetto al senso di marcia corrente: tali Treni dovranno avere priorità maggiore nell'accedere al Segmento appena esso diviene libero rispetto ad altri Treni che sopraggiungono successivamente. Indicheremo questa coda con \ttt{Waiting\_Queue}.
 			Questi accorgimenti non risultano però sufficiente a garantire che i Treni nella coda avranno accesso al Segmento in qualche momento: si consideri, ad esempio, la presenza di un percorso circolare composto da $N$ Segmenti, e di $M$ Treni che viaggiano lungo tale percorso in senso orario in modo tale che in ogni istante ci sia almeno un treno all'interno di ciascun Segmento. Se ora aggiungiamo al sistema un Treno che viaggia in direzione opposta, allora esso, adottando la semantica di accesso descritta, non riuscirà mai a percorrere uno dei Segmenti.			
 			
 			Una possibile soluzione a questo problema, è prevedere un \ii{numero massimo di accessi consecutivi per direzione}. Nella coda \ttt{Waiting\_Queue} vengono quindi mantenute \ii{tutte} le entità Treno che non possono accedere correntemente, sia perché provenienti dalla direzione opposta, sia perché il numero massimo di accessi da una direzione è stato raggiunto. 
-		Sia \ttt{Access\_Number} il numero di accessi nella direzione corrente, e siano \ttt{First\_Diection\_Queue} e \ttt{Second\_Diection\_Queue} contatori del numero di Treni in attesa di accedere al Segmento per ciascuna delle due direzioni possibili.
+		Sia \ttt{Access\_Number} il numero di accessi nella direzione corrente, e siano \ttt{First\_Direction\_Queue} e \ttt{Second\_Direction\_Queue} contatori del numero di Treni in attesa di accedere al Segmento per ciascuna delle due direzioni possibili.
 		
 		La semantica adottata per la regolazione dell'accesso al Segmento è la seguente:
 		\begin{itemize}
@@ -90,14 +98,15 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 				\end{itemize}
 			\item Se $T$ può accedere allora:
 				\begin{itemize}
-					\item Se \ttt{Free = True} allora occupa il Segmento (imposta \ttt{Free} a \ttt{False}), assegna a \ttt{Access\_Number} il valore $1$ se la direzione di $T$ è diversa da quella corrente memorizzata nel Segmento, altrimenti incrementa di $1$ il valore di \ttt{Access\_Number}.
-					\item Altrimenti incrementa di $1$ il valore di \ttt{Access\_Number} se esso è inferiore al limite massimo consentito.
+					\item Se \ttt{Free = True} allora occupa il Segmento (imposta \ttt{Free} a \ttt{False}) e assegna a \ttt{Access\_Number} il valore $1$, se la direzione di $T$ è diversa da quella corrente memorizzata nel Segmento;
+					\item Nel caso in cui la direzione di $T$ sia uguale a quella corrente memorizzata nel Segmento, incrementa di $1$ il valore di \ttt{Access\_Number} se esso è inferiore al limite massimo consentito.
 					\item In ciascuno dei due casi infine, inserisce il Descrittore del Treno nella coda \ttt{Train\_Queue} e aggiorna la Velocità di percorrenza.
 				\end{itemize}
-			\item Se $T$ non può accedere, allora a seconda della direzione con la quale intende percorrere il Segmento incrementa di $1$ il valore di \ttt{First\_Diection\_Queue} oppure \ttt{Second\_Diection\_Queue}, e accoda il thread $T$ presso la coda \ttt{Waiting\_Queue}.
+			\item Se $T$ non può accedere, allora a seconda della direzione con la quale intende percorrere il Segmento incrementa di $1$ il valore di \ttt{First\_Direction\_Queue} oppure \ttt{Second\_Direction\_Queue}, e accoda il thread $T$ presso la coda \ttt{Waiting\_Queue}.
 		\end{itemize}
 			
-			Una volta che il Segmento si sarà liberato (\ttt{Free=True}) allora ciascun Treno in attesa nella coda \ttt{Waiting\_Queue} potrà ritentare l'accesso al Segmento e, nel caso in cui possa accedere, decrementa il valore di \ttt{First\_Diection\_Queue} o di \ttt{Second\_Diection\_Queue}, a seconda della direzione percorrenza.
+			Una volta che il Segmento si sarà liberato (\ttt{Free=True}) allora ciascun Treno in attesa nella coda \ttt{Waiting\_Queue} potrà ritentare l'accesso al Segmento (la coda viene svuotata e ripopolata) e, nel caso in cui possa accedere, decrementa il valore di \ttt{First\_Direction\_Queue} o di \ttt{Second\_Direction\_Queue}, a seconda della direzione di percorrenza.
+			Per semplicità, si può assumere che vi sia uno spazio apposito dove i Treni possano attendere affinché si liberi il Segmento.
 			  
 			\item {\ii{Uscita}} \\ 
 			
@@ -107,7 +116,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 			\begin{itemize}
 				 \item Viene controllato per prima cosa se il Treno corrente è effettivamente il prossimo che deve uscire secondo l'ordine di ingresso stabilito da \ttt{Train\_Queue}.
 				 \item Se è è il prossimo (vengono confrontati i Descrittori) allora il Treno può abbandonare la risorsa protetta, e di conseguenza viene rimosso dalla coda \ttt{Train\_Queue}. Nel caso in cui il Treno corrente fosse l'ultimo, e che ci fossero Treni nella coda \ttt{Waiting\_Queue}, allora viene permesso a quest'ultimi di ritentare l'accesso al Segmento.
-				 \item Altrimenti il Descrittore del Treno corrente viene posto in attesa su una coda di uscita; tale coda verrà riesaminata ogni volta che un Treno abbandonerà il Segmento (disponendo ad esempio di instruzioni wait e signal, ciascun Treno uscente invocherà una signal sulla coda), e se il Treno in esecuzione non sarà nuovamente il Treno destinato ad uscire, esso verrà riaccodato. 
+				 \item Altrimenti il Descrittore del Treno corrente viene posto in attesa su una coda di uscita; tale coda verrà riesaminata ogni volta che un Treno abbandonerà il Segmento (disponendo ad esempio di instruzioni \ttt{wait} e \ttt{signal}, ciascun Treno uscente invocherà \ttt{signal} su una condizione), e se il Treno in esecuzione non sarà nuovamente il Treno destinato ad uscire, esso verrà riaccodato. 
 			\end{itemize}
 		\end {description}
 	
@@ -120,7 +129,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		\subsubsection{Accesso ad una Stazione Regionale}\label{subsubsec:regional_station_access}
 		
 		\begin{figure}[htbp]
-			\includegraphics[trim = 40mm 0mm 0mm 0mm,scale=0.5]{imgs/platform_access_Sequence_Diagram.pdf}
+			\includegraphics[trim = 45mm 0mm 0mm 0mm,scale=0.53]{imgs/platform_access_Sequence_Diagram.pdf}
 			\caption{\footnotesize{Diagramma di Sequenza, operazioni necessarie per l'ingresso ad una Piattaforma.}}
 			\label{fig:platform_access}
 		\end{figure}
@@ -206,7 +215,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 	\item{\ii{Uscita da una Piattaforma}}\\
 
 		\begin{figure}[htbp]
-			\includegraphics[trim = 30mm 0mm 0mm 0mm,scale=0.5]{imgs/platform_exit_Sequence_Diagram.pdf}
+			\includegraphics[trim = 45mm 0mm 0mm 0mm,scale=0.55]{imgs/platform_exit_Sequence_Diagram.pdf}
 			\caption{\footnotesize{Diagramma di Sequenza, operazioni necessarie per l'uscita da una Piattaforma.}}
 			\label{fig:platform_access}
 		\end{figure}
