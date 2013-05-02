@@ -119,8 +119,10 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 				var replyPar : Parameters = new Parameters
 				
 				result match {
-					case "updated" => replyPar.setString("response","OK")
-				
+					case ("updated",run_id:Int) => {
+						replyPar.setString("response","OK")
+						replyPar.setInteger("run_id",run_id.intValue)
+					}
 					case ("new_time_table",timeTable:String) => {
 						replyPar.setString("response","UPDATED")
 						replyPar.setString("new_time_table",timeTable)

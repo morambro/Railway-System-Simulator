@@ -348,7 +348,6 @@ class PathResolver(fileName : String) extends Actor {
 		
 					// ******************** Send the Ticket Back to the Node ********* 
 		
-					//print(Ticket.ticket2Json(result_ticket))
 		
 					// Finally send the ticket back to the Node 
 					val p = new Parameters

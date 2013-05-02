@@ -44,7 +44,8 @@ package Central_Office_Interface is
 			Current_Run		: Positive;
 			Callback 		: access procedure(
 								Updated			: in 	 Boolean;
-								New_Time_Table 	: access Time_Table.Time_Table_Type));
+								New_Time_Table 	: access Time_Table.Time_Table_Type;
+								Current_Run_Id	: in	 Natural));
 
 	procedure Load_Time_Tables(
 			Callback 		: access procedure (Table : in	Time_Table.Time_Table_Array_Ref));

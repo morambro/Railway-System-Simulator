@@ -45,6 +45,7 @@ package body Ticket is
 			Ada.Text_IO.Put_Line("    Train_ID : " & Integer'Image(The_Ticket.Stages(I).Train_ID));
 			Ada.Text_IO.Put_Line("    Start_Platform_Index : " & Integer'Image(The_Ticket.Stages(I).Start_Platform_Index));
 			Ada.Text_IO.Put_Line("    Destination_Platform_Index : " & Integer'Image(The_Ticket.Stages(I).Destination_Platform_Index));
+			Ada.Text_IO.Put_Line("    Current_Run : " & Integer'Image(The_Ticket.Stages(I).Current_Run_Id));
 		end loop;
     end Print;
 
@@ -72,8 +73,7 @@ package body Ticket is
 					Train_ID 					=> Json_Ticket.Get("train_id"),
 					Start_Platform_Index		=> Json_Ticket.Get("start_platform_index"),
 					Current_Run_Id				=> Json_Ticket.Get("current_run"),
-					Destination_Platform_Index	=> Json_Ticket.Get("destination_platform_index")
-				);
+					Destination_Platform_Index	=> Json_Ticket.Get("destination_platform_index"));
 			end;
 		end loop;
 

@@ -14,16 +14,37 @@
 					\end{verbatim}
 				\end{center}
 dove \ttt{leave\_action} e \ttt{enter\_action} indicano rispettivamente quello che un Treno dovrà compiere alla partenza dalla stazione \ttt{start\_station} e all'arrivo presso la prossima stazione \ttt{next\_station}, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione; il campo \ttt{node\_name} invece, indica la regione di destinazione, e viene utilizzato nel caso di transito su stazione di Gateway.
-
+	Il percorso di ciascun Treno è scandito da una Tabella degli Orari (\ttt{Time\_Table}), la quale definisce per $N>1$ Corse (\ttt{Runs}) successive del Percorso, gli \ii{orari di partenza} dalle Stazioni da rispettare per ciascuna Tappa. 
+	 
 Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un Descrittore, effettua le seguenti  operazioni, per ciascuna Tappa del Percorso corrente (di andata o di ritorno):
 				\begin{itemize} 
-					\item Partenza dalla Stazione \ttt{start\_station}, Piattaforma \ttt{start\_platfom}.
+					\item Partenza dalla Stazione \ttt{start\_station}, Piattaforma \ttt{start\_platfom} all'orario indicato da \ttt{Time\_Table} per la Tappa corrente.
 					\item Accesso al prossimo Segmento \ttt{next\_segment}.
 					\item Percorrenza all'interno del Segmento come attesa finita di durata proporzionale alla lunghezza del Segmento e alla velocità massima alla quale il Treno può percorrerlo.
 					\item Uscita dal Segmento e richiesta di Accesso alla Stazione successiva (\ttt{next\_station}) presso la Piattaforma indicata da \ttt{next\_platfom}, per eseguire l'azione \ttt{action}.
 					\item Se \ttt{action = ENTER} allore effettua discesa e salita dei Viaggiatori in attesa dell'arrivo del Treno.
 					\item Se ci sono ancora Tappe da percorrere nel percorso (\ttt{Route}), allora il l'indice della prossima tappa del Descrittore del Treno corrente viene incrementato, e lo stesso Descrittore viene inserito in una delle code di \ttt{Train\_Pool} (in base alla priorità). 
 				\end{itemize}
+
+
+% ############################################################################################################
+% ################################################ DEFINIZIONE_ORARI #########################################
+% ############################################################################################################
+
+		\subsubsection{Gestione della Tabella degli Orari}
+		
+		Per limitare la dimensione della Tabella degli Orari per ciascun percorso, esso mantiene un numero $N$ di corse. Essa viene fornita dalla Biglietteria Centrale, la quale dovrà essere sempre aggiornata relativamente alla corsa correntemente percorsa da un Treno per poter permettere la prenotazione dei Biglietti per Treni di tipo \ttt{FB} (si veda il paragrafo \ref{subsubsec:validation}). Per poter consultare la \ttt{Time\_Table}, vengono quindi utilizzati due indici:
+		
+		\begin{itemize}
+			\item \ttt{Current\_Run} che mantiene l'indice della Corsa corrente.
+			\item \ttt{Current\_Stage} che serve ad accedere l'orario per la tappa successiva.
+		\end{itemize}
+		
+	Tali indici vengono aggiornati dal Treno al momento della partenza da una Stazione per raggiungere la Tappa successiva. Nel caso in cui il Treno ultimi una corsa, esso incrementa l'indice \ttt{Current\_Run}, ed invia un messaggio remoto \ii{sincrono} alla Biglietteria Centrale comunicando il passaggio alla Corsa successiva. Ci sono due possibili risultati alla richiesta di aggiornamento:
+	\begin{itemize}
+		\item Si è raggiunta l'ultima Corsa ($N-esima$), e quindi viene restituita una nuova \ttt{Time\_Table} contenente gli orari per $N$ corse, composta dalla corsa $N-esima$ della Tabella precedente in prima posizione, e da $N-1$ Corse calcolate. L'indice \ttt{Current\_Run} viene posto ad 1, e viene memorizzato l'identificativo della Corsa corrente \ttt{Current\_Run\_Id}, il quale può essere ad esempio, un numero progressivo che la identifica.
+		\item Non si è raggiunta l'ultima corsa, e quindi viene aggiornata la corsa corrente presso la Biglietteria Centrale e restituito l'identificativo della stessa.
+	\end{itemize}
 
 % ############################################################################################################
 % ################################################# ACCESSO_SEGMENTO #########################################
@@ -145,6 +166,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		La coda interna a ciascun \ttt{Access\_Controller} viene aggiornata nel momento in cui ciascun Treno esce dal Segmento corrispondente. 
 		
 	% ############################################## INGRESSO_PIATTAFORMA #########################################
+		
 		\item{\ii{Ingresso in una Piattaforma}}\\
 		
 		Dopo aver superato la barriera di controllo d'accesso \ttt{Access\_Controller}, ciascun Treno è libero di richiedere l'accesso alla Piattaforma successiva prevista dal percorso, interna a ciascuna Stazione, poiché sicuramente sarà l'unico ad eseguire a questo punto. La semantica di accesso su di una generica Piattaforma $P$ (supponiamo disponibile mediante procedura eseguita in mutua esclusione) è la seguente:
@@ -200,6 +222,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		
 			\begin{itemize}
 				\item Viene effettuata la Salita dei Viaggiatori in attesa presso $P$.
+				\item Il Treno corrente registra il proprio passaggio presso la Piattaforma, memorizzando in una struttura dati apposita \ttt{Last\_Train\_Run} il proprio identificativo univoco e l'identificativo univoco della Corsa corrente \ttt{Current\_Run\_Id}.
 				\item La risorsa viene rilasciata dal Treno in esecuzione, cambiando il valore del flag \ttt{Free} a \ttt{True}.
 			\end{itemize}
 		
@@ -212,7 +235,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 						\item il numero di posti occupati di $T$ viene incrementato;
 						\item l'Operazione \ttt{ENTER} del Viaggiatore viene \ii{eseguita} a differenza di quanto avviene nella fase di Descesa dei Passeggeri: in questo modo infatti si avrà la garanzia che tutti i Viaggiatori saliti a bordo del Treno saranno in attesa nella coda \ttt{Arrival\_Queue} della Piattaforma di Stazione corretta, nel momento in cui il Treno vi accederà durante il proprio viaggio. 
 					\end{itemize}
-				\item Se $T$ invece non è il Treno atteso da $V$, quest'ultimo viene reinserito nella coda \ttt{Leaving\_Queue}.
+				\item Se $T$ invece non è il Treno atteso da $V$, allora viene verificato se il Treno per il quale esso è in attesa non sia già passato, qualora esso sia di tipo \ttt{FB}: per effettuare tale controllo viene acceduta la struttura dati \ttt{Last\_Train\_Run} e verificato se la corsa per la quale il Viaggiatore corrente è in attesa del Treno non sia stata già effettuata. In tal caso viene inserita l'operazione \ttt{BUY\_TICKET} per il Viaggiatore corrente nella coda di \ttt{Traveler\_Pool}, per permettere l'acquisto di un nuovo Biglietto per raggiungere la destinazione prevista a partire dalla Stazione corrente. In tutti gli altri casi, il Viaggiatore viene re-inserito nella coda \ttt{Leaving\_Queue}.
 			\end {itemize}
 		\end{itemize}
 	\end {description}

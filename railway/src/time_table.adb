@@ -53,14 +53,16 @@ package body Time_Table is
 	is
 		Route_Index		: Positive := Json_v.Get(Field => "route_index");
 		Current_Run    	: Positive := Json_v.Get(Field => "current_run");
+		Current_Run_Id 	: Positive := Json_v.Get(Field => "current_run_id");
 		-- # Array of time array
 		J_Array 		: JSON_Array := Json_v.Get(Field => "time");
 		Array_Length 	: constant Natural := Length (J_Array);
 		T_Table 		: access Time_Table_Type := new Time_Table_Type(Array_Length);
 		Ref_Clock 		: Time := Clock;
 	begin
-		T_Table.Route_Index := Route_Index;
-		T_Table.Current_Run := Current_Run;
+		T_Table.Route_Index 	:= Route_Index;
+		T_Table.Current_Run 	:= Current_Run;
+		T_Table.Current_Run_Id 	:= Current_Run_Id;
 		for I in 1 .. Array_Length loop
 			declare
 				Row		: JSON_Value := Get(Arr => J_Array,Index => I);
@@ -123,12 +125,21 @@ package body Time_Table is
 		-- #
 		procedure Callback(
 			Updated			: in 	 Boolean;
-			New_Time_Table 	: access Time_Table_Type) is
+			New_Time_Table 	: access Time_Table_Type;
+			Current_Run_Id	: in	 Natural) is
 		begin
-			-- # Current_Run now is the first one
-			This.Current_Run 	:= 1;
-			-- # Set the new Time Table.
-			This.Table 			:= New_Time_Table.Table;
+			if Updated then
+				-- # Current_Run now is the first one
+				This.Current_Run 	:= 1;
+				-- # Update Current_Run_Id
+				This.Current_Run_Id := New_Time_Table.Current_Run_Id;
+
+				-- # Set the new Time Table.
+				This.Table 			:= New_Time_Table.Table;
+			else
+				This.Current_Run_Id := Current_Run_Id;
+			end if;
+
 		end Callback;
 
 	begin

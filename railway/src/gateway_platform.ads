@@ -29,6 +29,7 @@ with Traveler;use Traveler;
 with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 with Generic_Platform;
 with Route;use Route;
+with Ada.Containers.Ordered_Maps;
 
 -- #
 -- # Represents a Platform for a generic Station, both for Trains and Travelers.
@@ -86,21 +87,31 @@ package Gateway_Platform is
 	end Gateway_Platform_Type;
 
 
+	package Train_Run_Map is new Ada.Containers.Ordered_Maps(
+		Key_Type 		=> Positive,
+      	Element_Type 	=> Natural);
+
+
 private
 
 	type Gateway_Platform_Handler(
 		ID	: Integer;
 		S 	: access Unbounded_String) is limited new Generic_Platform.Platform_Interface with record
 
-		The_Platform	: Gateway_Platform_Type(2,null);
+		The_Platform	: Gateway_Platform_Type(ID,S);
 
 		-- # Queue for Arriving Traveler
 		Arrival_Queue 	: Traveler_Queue_Package.Unbounded_Queue.Queue;
 
 		-- # Queue for Travelers waiting for the train to leave
 		Leaving_Queue 	: Traveler_Queue_Package.Unbounded_Queue.Queue;
+
+		Train_Run		: Train_Run_Map.Map;
     end record;
 
+	function Get_Run_For_Train(
+			This 					: access Gateway_Platform_Handler;
+			Train_ID				: in	 Integer) return Integer;
 
 	procedure Perform_Entrance(
 		This 					: access Gateway_Platform_Handler;

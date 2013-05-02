@@ -9,9 +9,10 @@
 					- train_id 
 					- start_platform 
 					- destination_platform
+					- run_number
 					- next_region
 				\end{verbatim}
-			e da un indice della prossima tappa del Percorso (\ttt{Next\_Stage}).
+			e da un indice della prossima tappa del Percorso (\ttt{Next\_Stage}). Nel caso in cui il Treno \ttt{train\_id} sia un Treno a prenotazione, il valore di \ttt{run\_number} sarà > 0.
 			
 			\item Una volta ottenuto un Ticket, vengono eseguite le seguenti operazioni per ciascuna Tappa del Biglietto:
 				\begin{itemize}

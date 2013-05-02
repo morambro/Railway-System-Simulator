@@ -26,7 +26,7 @@
 
 with Generic_Station;use Generic_Station;
 with Train;
-with Gateway_Platform;
+with Platform;
 with Traveler;
 with Notice_Panel;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
@@ -161,7 +161,7 @@ private
 		Station_Interface
 	with record
 		Name 				: aliased  Unbounded_Strings.Unbounded_String;
-		Platforms 			: Gateway_Platform.Platforms(1..Platforms_Number);
+		Platforms 			: Platform.Platforms(1..Platforms_Number);
 		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
 
 		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;

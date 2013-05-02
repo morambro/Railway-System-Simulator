@@ -36,4 +36,7 @@ package Trains is
 	function Train_For_Route(
 		Route_Index		: in 	Positive) return Natural;
 
+	function Get_Train_Index(
+		Train_ID 		: in 	Positive) return Natural;
+
 end Trains;

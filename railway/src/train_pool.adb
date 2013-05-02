@@ -109,12 +109,14 @@ package body Train_Pool is
 				-- # Wait Until time to leave
 
 				declare
+					-- # Get the Current Run index
 					Current_Run 	: Positive :=
 						Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Run;
 
+					-- # Get the index of the next time to leave the station
 					Current_Run_Cursor	: Positive :=
 						Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Current_Run_Cursor;
-
+					-- # Time to wait before leaving
 					Time_To_Wait : Ada.Calendar.Time := Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Table
 						(Current_Run)(Current_Run_Cursor);
 				begin
@@ -128,6 +130,7 @@ package body Train_Pool is
 					-- # Wait until time to go!
 					delay until Time_To_Wait;
 
+					-- # Update Time Table!
 					Time_Table.Update_Time_Table(Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index));
 
 				end;

@@ -258,10 +258,11 @@ package body Gateway_Station is
 		Station : access Gateway_Station_Type := new Gateway_Station_Type(Platforms_Number);
 	begin
 		Station.Name := Unbounded_Strings.To_Unbounded_String(Name);
-		for I in Positive range 1..Platforms_Number loop
-			Station.Platforms(I) := new Gateway_Platform.Gateway_Platform_Handler(I,Station.Name'Access);
-		end loop;
 		Station.Panel := new Notice_Panel.Notice_Panel_Entity(new String'(To_String(Station.Name)));
+		for I in Positive range 1..Platforms_Number loop
+			Station.Platforms(I) := new Platform.Platform_Handler(I,Station.Name'Access,Station.Panel);
+		end loop;
+
 		Station.Destinations := Destinations;
 		return Station;
 	end;

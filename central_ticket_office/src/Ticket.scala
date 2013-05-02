@@ -6,7 +6,7 @@ class TicketStage (
 	val trainId : Int,
 	val startPlatform  : Int, 
 	val destinationPlatform  : Int,
-	var run_number 	: Int = 1,
+	var run_number 	: Int = 0,
 	val	nextRegion : String) {
 
 	def print {
@@ -16,6 +16,7 @@ class TicketStage (
 		println ("start platform : " + startPlatform)
 		println ("dest platform  : " + destinationPlatform)
 		println ("next region    : " + nextRegion)
+		println ("run number     : " + run_number)
 	}
 }
 
@@ -127,6 +128,7 @@ object Ticket {
 			json += """ "train_id" : """ + stage.trainId + ","
 			json += """ "start_platform_index" : """ + stage.startPlatform + ","
 			json += """ "destination_platform_index" : """ + stage.destinationPlatform + ","
+			json += """ "current_run" : """ + stage.run_number + ","
 			json += """ "region" : """ + "\"" + stage.nextRegion + "\""
 			
 			json += "}"

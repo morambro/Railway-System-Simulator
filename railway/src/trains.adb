@@ -65,4 +65,17 @@ package body Trains is
 		return 0;
     end Train_For_Route;
 
+
+   	function Get_Train_Index(
+   		Train_ID		: in 	Positive) return Natural
+   	is
+   	begin
+   		for I in 1 .. Trains'Length loop
+   			if Trains(I).Id = Train_ID then
+   				return I;
+   			end if;
+   		end loop;
+   		return 0;
+    end Get_Train_Index;
+
 end Trains;

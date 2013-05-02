@@ -74,6 +74,7 @@ object BookingManager extends Actor {
 			timeTable += "\"route_index\" : " + (routeIndex+1) + ","
 			//timeTable += "\"restart_span\" : " + span + ","
 			timeTable += "\"current_run\" : " + (current_run+1) + ","
+			timeTable += "\"current_run_id\" : " + (current_run_id+1) + ","
 			timeTable += "\"time\" : ["
 			var i : Int = 1
 			for (i<- 0 until table.size) {
@@ -263,7 +264,7 @@ object BookingManager extends Actor {
 								}
 								case _ => println("ERROR!!")
 							}
-							case None => println("ERROR!!")
+							case None => 
 						}
 						
 						// Copy all other Time Tables, adding new span!
@@ -285,11 +286,17 @@ object BookingManager extends Actor {
 								", run id = " + timeTables(routeIndex-1).current_run_id)
 						
 						println("booking table :")
-						bookingSits(routeIndex-1).foreach ( el => {
-							el.foreach(i => print(" | "+i))
-							println
-						})
-									
+						bookingSits get (routeIndex-1) match {
+							case Some(t) => t match {
+								case table : Array[_] => {
+									table.foreach ( el => {
+										el.foreach(i => print(" | "+i))
+										println
+									})
+								}
+							}
+							case None => 
+						}		
 												
 						// Give it back to Sender
 						reply(("new_time_table",timeTables(routeIndex-1).toJSON))
@@ -297,7 +304,7 @@ object BookingManager extends Actor {
 						
 					}else{
 						println("Current Run for route " + (routeIndex-1) + " updated : " + (current_run-1))	
-						reply("updated")
+						reply(("updated",timeTables(routeIndex-1).current_run_id+1))
 					}
 				}
 				bookingLoop
@@ -318,11 +325,13 @@ object BookingManager extends Actor {
 				
 				var valid : Boolean = true
 				
+				var routeMap : Map[Int,(Int,Int,Int,Int)] = Map()
+				
 				for (i <- 0 until ticketList.size;if (valid)) {
 					
 					var ticket = ticketList(i)
 					
-					var routeMap : Map[Int,(Int,Int,Int)] = Map();
+					//var routeMap : Map[Int,(Int,Int,Int)] = Map()
 					
 					// Run over all the stages
 					for (j <- 0 until ticket.stages.size;if (valid)) {
@@ -378,7 +387,10 @@ object BookingManager extends Actor {
 									// If the time at witch the train leaves in the current run is after the
 									// time at witch the request was made, consider the current run, otherwise the next
 									println("after ? " + (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)))
-									if (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)) 
+									
+									if (routeMap.contains(routeIndex))
+										(routeMap(routeIndex)._3,routeMap(routeIndex)._4)
+									else if (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)) 
 										(timeTables(routeIndex).current_run,timeTables(routeIndex).current_run_id)
 									else
 										(timeTables(routeIndex).current_run + 1,timeTables(routeIndex).current_run_id + 1)
@@ -396,7 +408,14 @@ object BookingManager extends Actor {
 								
 								// Add to routeMap, to be updated if the ticket will result validated
 								if (valid) {
-									routeMap = routeMap + Tuple2(routeIndex,(firstIndex,secondIndex,selected_run))
+									routeMap get (routeIndex) match { 
+										// In case no entry for routeIndex was already in the map, add new
+										case None => routeMap = routeMap + 
+											Tuple2(routeIndex,(firstIndex,secondIndex,selected_run,selected_run_id))
+										// Simply updates it
+										case Some(el) => routeMap + 
+											Tuple2(routeIndex,(el._1,secondIndex,el._3,el._4))
+									}
 									// memorize the run id on the ticket
 									ticketStage.run_number = (selected_run_id + 1)
 								}
@@ -405,23 +424,21 @@ object BookingManager extends Actor {
 						}
 					}
 					
-					bookingSitsToUpdate = bookingSitsToUpdate :+ routeMap
+					//bookingSitsToUpdate = bookingSitsToUpdate :+ routeMap
 									
 				}
 				// If we arrived here we have all sits needed. We can perform the update
 				// Finally, send the reply
 				if (valid) {
-					bookingSitsToUpdate.foreach( el =>
-						el.keys.foreach( routeIndex => {
-							val firstIndex 		= el(routeIndex)._1
-							val secondIndex 	= el(routeIndex)._2
-							val selected_run 	= el(routeIndex)._3
-							for (i <- firstIndex to secondIndex) {
-								bookingSits(routeIndex)(selected_run)(i) -= 1
-							}
-							println(routeIndex +","+firstIndex+ ","+secondIndex)
-						})
-					)
+					routeMap.keys.foreach( routeIndex => {
+						val firstIndex 		= routeMap(routeIndex)._1
+						val secondIndex 	= routeMap(routeIndex)._2
+						val selected_run 	= routeMap(routeIndex)._3
+						for (i <- firstIndex to secondIndex) {
+							bookingSits(routeIndex)(selected_run)(i) -= 1
+						}
+						println(routeIndex +","+firstIndex+ ","+secondIndex)
+					})
 					reply ((true,ticketList))
 				}
 				if (!valid) reply(false)

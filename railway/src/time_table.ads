@@ -45,6 +45,7 @@ package Time_Table is
 		-- # Cursors.
 		Current_Run 			: Positive := 1;
 		Current_Run_Cursor 		: Positive := 1;
+		Current_Run_Id			: Positive := 1;
 		-- # The time table.
 		Table 					: Time_Matrix(1..Entry_Size);
     end record;

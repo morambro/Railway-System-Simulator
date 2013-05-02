@@ -264,6 +264,19 @@ package body Gateway_Platform is
 
     end Perform_Entrance;
 
+
+	function Get_Run_For_Train(
+			This 					: access Gateway_Platform_Handler;
+			Train_ID				: in	 Integer) return Integer is
+	begin
+		if This.Train_Run.Contains(Train_ID) then
+			return This.Train_Run.Element(Train_ID);
+		end if;
+		-- # If the given Train_ID did not passed yet
+		return 0;
+    end Get_Run_For_Train;
+
+
 	procedure Perform_Exit(
 		This 					: access Gateway_Platform_Handler;
 		Train_Descriptor_Index 	: in 	Positive;
@@ -295,43 +308,91 @@ package body Gateway_Platform is
 					Next_Stage := Environment.Travelers(Traveler_Manager_Index).The_Ticket.Next_Stage;
 
 					if Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Train_ID /= Trains.Trains(Train_Descriptor_Index).Id then
-						-- # If the current Traveler was not waiting for this train, re-queue it
-						This.Leaving_Queue.Enqueue(Traveler_Manager_Index);
-					else
-						-- # Increase the number of occupied sits
-						Trains.Trains(Train_Descriptor_Index).Occupied_Sits := Trains.Trains(Train_Descriptor_Index).Occupied_Sits + 1;
-
-						-- # If the current traveler have to board to the train...
-						Logger.Log(
-							Sender  => NAME,
-							Message => "Traveler " &
-									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
-									   " boarding at station " &
-									   Integer'Image(Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Next_Station),
-							L       => Logger.DEBUG);
-
-
 						declare
-							-- # The next Traveler operation
-							Next_Operation : Traveler.Traveler_Operations_Types := Traveler.ENTER;
+							-- # Current Run for witch the Ticket have been booked.
+							Current_Run_Id 	: Natural := Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Current_Run_Id;
+							-- # The last run for the waited Train
+							Last_Run 		: Natural := This.Get_Run_For_Train(Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Train_ID);
 						begin
-							-- # Execute the operation number 2 (Traveler waits to leave the train).
-							Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
-							-- # Set the new Operation Index
-							Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
-
-						exception
-							when Error : others =>
-								Logger.Log(
-									Sender  => NAME,
-								    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
-								    			Ada.Exceptions.Exception_Message(Error),
-								    L       => Logger.ERROR);
-
+							-- # If the Train have already passed the platform.
+							if Current_Run_Id > 0 and Current_Run_Id <= Last_Run then
+								-- # Make user buy another Ticket!!
+								Logger.log(
+									Sender 	=> "Platform",
+									Message => "Traveler " & Integer'Image(Traveler_Manager_Index) & " lost the booked Train; buy a new Ticket!",
+									L		=> Logger.ERROR);
+								-- # Set Current Station as Start Station
+								Environment.Travelers(Traveler_Manager_Index).Start_Station := This.S.all;
+								Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Traveler.BUY_TICKET));
+							else
+								-- # If the current Traveler was not waiting for this train, re-queue it
+								This.Leaving_Queue.Enqueue(Traveler_Manager_Index);
+							end if;
+							null;
 						end;
+					else
 
+						if 	Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Current_Run_Id > 0 and
+							This.Get_Run_For_Train(Trains.Trains(Train_Descriptor_Index).Id) >
+							Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Current_Run_Id then
+
+							Put_Line("" & integer'image(This.Get_Run_For_Train(Trains.Trains(Train_Descriptor_Index).Id)));
+							Put_Line("" & integer'image(Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Current_Run_Id));
+
+							Logger.log(
+								Sender 	=> "Platform",
+								Message => "Traveler " & Integer'Image(Traveler_Manager_Index) & " lost the booked Train; buy a new Ticket!",
+								L		=> Logger.ERROR);
+
+							Environment.Travelers(Traveler_Manager_Index).Start_Station := This.S.all;
+							Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Traveler.BUY_TICKET));
+
+						else
+							-- # Increase the number of occupied sits
+							Trains.Trains(Train_Descriptor_Index).Occupied_Sits := Trains.Trains(Train_Descriptor_Index).Occupied_Sits + 1;
+
+							-- # If the current traveler have to board to the train...
+							Logger.Log(
+								Sender  => NAME,
+								Message => "Traveler " &
+										   Integer'Image(Environment.Travelers(Traveler_Manager_Index).Traveler.ID) &
+										   " boarding at station " &
+										   Integer'Image(Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Next_Station),
+								L       => Logger.DEBUG);
+
+
+							declare
+								-- # The next Traveler operation
+								Next_Operation : Traveler.Traveler_Operations_Types := Traveler.ENTER;
+							begin
+								-- # Execute the operation number 2 (Traveler waits to leave the train).
+								Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
+								-- # Set the new Operation Index
+								Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
+
+							exception
+								when Error : others =>
+									Logger.Log(
+										Sender  => NAME,
+									    Message => "EXCEPTION: " & Ada.Exceptions.Exception_Name(Error) & " , " &
+									    			Ada.Exceptions.Exception_Message(Error),
+									    L       => Logger.ERROR);
+
+							end;
+						end if;
 					end if;
 				end loop;
+
+				-- # Update the Map with the current Run ID!
+				if This.Train_Run.Contains(Trains.Trains(Train_Descriptor_Index).Id) then
+					This.Train_Run.Replace(
+						Trains.Trains(Train_Descriptor_Index).Id,
+						Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run_Id);
+				else
+					This.Train_Run.Insert(
+						Trains.Trains(Train_Descriptor_Index).Id,
+						Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run_Id);
+				end if;
 
 				Logger.Log(
 					Sender  => NAME,
@@ -360,6 +421,5 @@ package body Gateway_Platform is
 					L       => Logger.DEBUG);
 		end case;
     end Perform_Exit;
-
 
 end Gateway_Platform;

@@ -30,6 +30,7 @@ with Ada.Strings.Unbounded;
 with Generic_Platform;
 with Route;use Route;
 with Notice_Panel;
+with Ada.Containers.Ordered_Maps;
 
 -- #
 -- # Represents a Platform for a generic Station, both for Trains and Travelers.
@@ -66,6 +67,11 @@ package Platform is
 
 	-- # Create a queue for Traveler type
 	package Traveler_Queue_Package is new Queue(Element => Positive);
+
+	package Train_Run_Map is new Ada.Containers.Ordered_Maps(
+		Key_Type 		=> Positive,
+      	Element_Type 	=> Natural);
+
 
 private
 
@@ -108,16 +114,22 @@ private
 		-- # Queue for Travelers waiting for the train to leave
 		Leaving_Queue 	: access Traveler_Queue_Package.Unbounded_Queue.Queue := new Traveler_Queue_Package.Unbounded_Queue.Queue;
 
+		Train_Run		: Train_Run_Map.Map;
+
 	end record;
+
+	function Get_Run_For_Train(
+			This 					: access Platform_Handler;
+			Train_ID				: in	 Integer) return Integer;
 
 	procedure Perform_Entrance(
 			This 					: access Platform_Handler;
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action);
+			Train_Descriptor_Index 	: in 	 Positive;
+			Action 					: in	 Route.Action);
 
 	procedure Perform_Exit(
 			This 					: access Platform_Handler;
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action);
+			Train_Descriptor_Index 	: in 	 Positive;
+			Action 					: in	 Route.Action);
 
 end Platform;

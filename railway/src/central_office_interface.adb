@@ -126,7 +126,8 @@ package body Central_Office_Interface is
 		Current_Run		: Positive;
 		Callback 		: access procedure(
 							Updated			: in 	 Boolean;
-							New_Time_Table 	: access Time_Table.Time_Table_Type))
+							New_Time_Table 	: access Time_Table.Time_Table_Type;
+							Current_Run_Id	: in	 Natural))
 	is
 		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
 
@@ -145,7 +146,7 @@ package body Central_Office_Interface is
 					-- # Call the Callback procedure to update the data.
 					Callback(
 						True,
-						Time_Table.Get_Time_Table(Time_T));
+						Time_Table.Get_Time_Table(Time_T),0);
 				end;
 			elsif Response = "OK" then
 				-- # Do nothing, simply log it
@@ -153,6 +154,14 @@ package body Central_Office_Interface is
 					"Central_Ticket_Office",
 					"Current_Run updated.",
 					Logger.DEBUG);
+				declare
+					Current_Run_Id : Natural := Integer(Content.Get_Integer("run_id"));
+				begin
+					Callback(
+						False,
+						null,
+						Current_Run_Id);
+				end;
 			end if;
 		end Process_Result;
 
