@@ -1,4 +1,4 @@
-import net.minidev.json._
+import language.implicitConversions
 
 class TicketStage (
 	val startStation : Int,
@@ -10,13 +10,13 @@ class TicketStage (
 	val	nextRegion : String) {
 
 	def print {
-		println ("start station  : " + startStation)
-		println ("next station   : " + nextStation)
-		println ("train id       : " + trainId)
-		println ("start platform : " + startPlatform)
-		println ("dest platform  : " + destinationPlatform)
-		println ("next region    : " + nextRegion)
-		println ("run number     : " + run_number)
+		PrintsSerializer ! Print ("start station  : " + startStation)
+		PrintsSerializer ! Print ("next station   : " + nextStation)
+		PrintsSerializer ! Print ("train id       : " + trainId)
+		PrintsSerializer ! Print ("start platform : " + startPlatform)
+		PrintsSerializer ! Print ("dest platform  : " + destinationPlatform)
+		PrintsSerializer ! Print ("next region    : " + nextRegion)
+		PrintsSerializer ! Print ("run number     : " + run_number)
 	}
 }
 
@@ -57,57 +57,22 @@ object Ticket {
 	 * Performs implicit conversion from String to Ticket.
 	 */
 	implicit def stringToTicket(json : String) : Ticket = {
-		var ticket : Ticket = null
-		JSONValue.parseStrict(json) match {
-			case o : JSONObject => {
-				o.get("next") match {
-					case n : java.lang.Integer => {
-						ticket = new Ticket(n)
-					}
-				}
-				if (ticket != null) {
-					o.get("ticket") match {
-						case stages : JSONArray => {
-							for (i <- 0 until stages.size) {
-								stages.get(i) match {
-									case stage : JSONObject => {
-										val startStation : Int = stage.get("start_station") match {
-											case s : java.lang.Integer => s
-										}
-										val nextStation : Int = stage.get("next_station") match {
-											case s : java.lang.Integer => s
-										}
-										val trainId : Int = stage.get("train_id") match {
-											case s : java.lang.Integer => s
-										}
-										val startPlatform : Int = stage.get("start_platform_index") match {
-											case s : java.lang.Integer => s
-										}
-										val destinationPlatform : Int = 
-											stage.get("destination_platform_index") match {
-											case s : java.lang.Integer => s
-										}
-										val nextRegion : String = 
-											stage.get("region") match {
-											case s : String => s
-										}
-										ticket.stages = ticket.stages :+ new TicketStage(
-											startStation,
-											nextStation ,
-											trainId,
-											startPlatform, 
-											destinationPlatform,
-											0,
-											nextRegion)
-									}
-								} 
-							}
-						}
-					}
-				}
-			}
-		}
-		ticket
+		val parsed = JSON.parseJSON(json)
+		
+		var ticket : Ticket = new Ticket(parsed.next.toInt)
+		val stages = scala.collection.mutable.ListBuffer[TicketStage]()
+		parsed.ticket.foreach(stage => {
+			stages += new TicketStage(
+				stage.start_station.toInt,
+				stage.next_station.toInt,
+				stage.train_id.toInt,
+				stage.start_platform_index.toInt,
+				stage.destination_platform_index.toInt,
+				0,
+				stage.region.toString)
+		})
+		ticket.stages = stages.toList
+		return ticket
 	}
 	
 	implicit def ticket2Json(T:Ticket) : String = {
@@ -149,8 +114,8 @@ class Ticket (n : Int) {
 	var stages : List[TicketStage] = List()
 	
 	def print {
-		println ("Ticket")
-		println ("next = "+next)
+		PrintsSerializer ! Print ("Ticket")
+		PrintsSerializer ! Print ("next = "+next)
 		stages.foreach( stage =>
 			stage.print
 		)

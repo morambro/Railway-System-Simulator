@@ -1,10 +1,19 @@
 import scala.actors._
-import net.minidev.json._
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
 
 /**
  * This object is responsible of serializing the validation requests.
  */
 object BookingManager extends Actor {
+
+	/**
+	 * Default date formatter
+	 */
+	val dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+	// Set timezone to GMT, to print UTC-0 time 
+	dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"))
 	
 	/**
 	 * All FB Trains 
@@ -16,10 +25,7 @@ object BookingManager extends Actor {
 	 */
 	var routes : Array[Route] = Route.loadRoutes("../../railway/res/routes.json")
 	
-	import java.text.SimpleDateFormat
-	import java.util.Date
-	import java.util.TimeZone
-
+	
 	
 	/**
 	 * This class represents a Timetable for a Route. It specifies the index of the route, the number of runs 
@@ -51,18 +57,12 @@ object BookingManager extends Actor {
 		 * Simple debug method to print the Time Table.
 		 */
 		def printDate {
-			println("Time Table for route : " + routeIndex )
-			println("Runs number : " + runs )
-			println("Current Run : " + current_run )
+			PrintsSerializer ! Print("Time Table for route : " + routeIndex )
+			PrintsSerializer ! Print("Runs number : " + runs )
+			PrintsSerializer ! Print("Current Run : " + current_run )
 			table.foreach(list => {
-				list.foreach(date => {
-					// Print on a specific format
-					val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-					// Set timezone to GMT, to print UTC-0 time 
-					format.setTimeZone(TimeZone.getTimeZone("GMT"))
-					print(new StringBuilder( format.format(date) + " , "))
-				})
-				println
+				list.foreach(date => print(new StringBuilder(dateFormatter.format(date) + " , ")))
+				PrintsSerializer ! Print("")
 			})
 		}
 		
@@ -81,11 +81,7 @@ object BookingManager extends Actor {
 				timeTable += "["
 				var j = 0
 				table(i).foreach(date => {
-					// Print on a specific format
-					val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-					// Set timezone to GMT, to print UTC-0 time 
-					format.setTimeZone(TimeZone.getTimeZone("GMT"))
-					timeTable += "\"" + new StringBuilder( format.format(date)) + "\""
+					timeTable += "\"" + new StringBuilder(dateFormatter.format(date)) + "\""
 					if (j < table(i).size - 1) timeTable += ","
 					j += 1
 				})
@@ -111,55 +107,26 @@ object BookingManager extends Actor {
 	// reference time from which build the time table.
 	val ref = new Date 
 	
-	// Loading time table
-	JSONValue.parseStrict(jsonTimeTable) match {
-		case o : JSONObject => o.get("time_table") match {
-			case timeTable : JSONArray => {
-				println(timeTable.size)
-				for (j <- 0 until timeTable.size) {
-					timeTable.get(j) match {
-						case runTable : JSONObject => {
-							val routeIndex : Int = runTable.get("route") match {
-								case o : java.lang.Integer => o.intValue
-							}
-							val span : Int = runTable.get("restart_span") match {
-								case o : java.lang.Integer => o.intValue
-							}
-							
-							runTable.get("time") match {
-								case runs : JSONArray => {
-									var r = new RouteTimeTable((routeIndex-1),runs.size,span)
-									
-									for (k <- 0 until runs.size) {
-										runs.get(k) match {
-											case run : JSONArray => {
-												
-												r.spans_table(k) 	= new Array(run.size)
-												r.table(k) 			= new Array(run.size)
-												
-												for (h <- 0 until run.size) {
-													run.get(h) match {
-														case i : java.lang.Integer => {
-															// Add an element to the current Time table
-															r.table(k)(h) = new Date(ref.getTime+(i*1000))
-															// Save also the span
-															r.spans_table(k)(h) = (i*1000)
-														}
-													}
-												}
-											}
-										}
-									}
-									timeTables(j) = r
-//									timeTables(j).printDate
-//									timeTables(j).spans_table.foreach(sp => {sp.foreach(s => print(s + "  "));println})
-								}
-							}
-							
-						}
-					}
-				}
-			} 
+	val timeTable = JSON.parseJSON(jsonTimeTable).time_table
+	
+	// Loads time tables for each run
+	for (k <- 0 until timeTable.size) {
+		val tt = timeTable(k)
+		val r = new RouteTimeTable(tt.route.toInt-1,tt.time.size,tt.restart_span.toInt)
+		
+		for (i <- 0 until tt.time.size) {
+			
+			r.spans_table(i) = new Array(tt.time(i).size)
+			r.table(i) 		 = new Array(tt.time(i).size)
+			
+			for (j <- 0 until tt.time(i).size) {
+				val time = tt.time(i)(j).toInt
+				// Add an element to the current Time table
+				r.table(i)(j) = new Date(ref.getTime+(time*1000))
+				// Save also the span
+				r.spans_table(i)(j) = (time*1000)
+			}
+			timeTables(k) = r
 		}
 		
 	}
@@ -179,7 +146,7 @@ object BookingManager extends Actor {
 			bookingSitsElem(i) = Array.fill(timeTable.table(i).size)(t.sitsNumber)
 		}
 		
-		bookingSits = bookingSits + Tuple2(t.routeIndex,bookingSitsElem) 
+		bookingSits += t.routeIndex -> bookingSitsElem 
 	})
 	
 	
@@ -188,7 +155,7 @@ object BookingManager extends Actor {
 		bookingSits.keys.foreach(k => {
 			bookingSits(k).foreach(array => {
 				array.foreach(el => print(el+ " , "))
-				println
+				PrintsSerializer ! Print("")
 			})
 		
 		})
@@ -211,8 +178,6 @@ object BookingManager extends Actor {
 		jsonTimeTables
 	}
 	
-	
-	println(timeTablesToJSON)
 	
 	/** 
 	 * Main loop for the Actor.
@@ -262,7 +227,7 @@ object BookingManager extends Actor {
 									}
 									
 								}
-								case _ => println("ERROR!!")
+								case _ => PrintsSerializer ! Print("ERROR!!")
 							}
 							case None => 
 						}
@@ -280,18 +245,18 @@ object BookingManager extends Actor {
 						// Set current_run to 0 .
 						timeTables(routeIndex-1).current_run = 0
 						
-						println("New Time Table for route " + (routeIndex-1) + ":\n" + timeTables(routeIndex-1).toJSON)
+						PrintsSerializer ! Print("New Time Table for route " + (routeIndex-1) + ":\n" + timeTables(routeIndex-1).toJSON)
 						
-						println("Current run = " + timeTables(routeIndex-1).current_run + 
+						PrintsSerializer ! Print("Current run = " + timeTables(routeIndex-1).current_run + 
 								", run id = " + timeTables(routeIndex-1).current_run_id)
 						
-						println("booking table :")
+						PrintsSerializer ! Print("booking table :")
 						bookingSits get (routeIndex-1) match {
 							case Some(t) => t match {
 								case table : Array[_] => {
 									table.foreach ( el => {
 										el.foreach(i => print(" | "+i))
-										println
+										PrintsSerializer ! Print("")
 									})
 								}
 							}
@@ -303,7 +268,7 @@ object BookingManager extends Actor {
 						 
 						
 					}else{
-						println("Current Run for route " + (routeIndex-1) + " updated : " + (current_run-1))	
+						PrintsSerializer ! Print("Current Run for route " + (routeIndex-1) + " updated : " + (current_run-1))	
 						reply(("updated",timeTables(routeIndex-1).current_run_id+1))
 					}
 				}
@@ -314,11 +279,8 @@ object BookingManager extends Actor {
 			// it would not be able to validate.
 			case Validate(ticketList,requestTime) => {
 				
-				val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-				// Set timezone to GMT, to print UTC-0 time 
-				format.setTimeZone(TimeZone.getTimeZone("GMT"))
 				// Create Date from String
-				val requestTimeDate = format.parse(requestTime)
+				val requestTimeDate = dateFormatter.parse(requestTime)
 				
 				// Map used to keep track of the sits to edit once the sit is booked.
 				var bookingSitsToUpdate : List[Map[Int,(Int,Int,Int)]] = List()
@@ -327,9 +289,13 @@ object BookingManager extends Actor {
 				
 				var routeMap : Map[Int,(Int,Int,Int,Int)] = Map()
 				
+				PrintsSerializer ! Print(ticketList.size+"")
+				
 				for (i <- 0 until ticketList.size;if (valid)) {
 					
 					var ticket = ticketList(i)
+					
+					PrintsSerializer ! Print(ticket.stages.size+"")
 					
 					//var routeMap : Map[Int,(Int,Int,Int)] = Map()
 					
@@ -346,18 +312,22 @@ object BookingManager extends Actor {
 							
 								var firstIndex 	= -1
 								var secondIndex = -1		
-							
-								println("Curren index = " + routeIndex)
-								println("startStation = " + ticketStage.startStation)
-								println("nextStation  = " + ticketStage.nextStation)
+								PrintsSerializer ! Print("\nCurren index = " + routeIndex)
+								PrintsSerializer ! Print("startStation = " + ticketStage.startStation)
+								PrintsSerializer ! Print("nextStation  = " + ticketStage.nextStation)
 					
 								// check in first half
 								for (i <- 0 until routes(routeIndex).stages.size/2) {
-									
+									PrintsSerializer ! Print("Start Station = " + routes(routeIndex).stages(i).startStation)
+									PrintsSerializer ! Print("Ticket Start = " + ticketStage.startStation)
+									PrintsSerializer ! Print("NN = " +routes(routeIndex).stages(i).nodeName)
+									PrintsSerializer ! Print("Next = " + ticketStage.nextRegion)
 									if (routes(routeIndex).stages(i).startStation 	== ticketStage.startStation && 
 										routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 										firstIndex = i 
 									}
+									PrintsSerializer ! Print("Next Station = " + routes(routeIndex).stages(i).nextStation)
+									PrintsSerializer ! Print("Ticket Next = " + ticketStage.nextStation+"\n")
 									if (routes(routeIndex).stages(i).nextStation 	== ticketStage.nextStation &&
 										routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 										secondIndex = i
@@ -367,13 +337,24 @@ object BookingManager extends Actor {
 								
 								if (firstIndex > secondIndex || firstIndex == -1 || secondIndex == -1) {
 									// If we haven't a match in the first half, search in the second half.
+									PrintsSerializer ! Print("")
+									PrintsSerializer ! Print("SECOND HALF")
+									PrintsSerializer ! Print("")
+									
+									
 									for (i <- routes(routeIndex).stages.size/2 until routes(routeIndex).stages.size) {
 										
+										PrintsSerializer ! Print("Start Station = " + routes(routeIndex).stages(i).startStation)
+										PrintsSerializer ! Print("Ticket Start = " + ticketStage.startStation)
+										PrintsSerializer ! Print("NN = " +routes(routeIndex).stages(i).nodeName)
+										PrintsSerializer ! Print("Next = " + ticketStage.nextRegion)	
+											
 										if (routes(routeIndex).stages(i).startStation	== ticketStage.startStation&& 
 											routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 											firstIndex = i 
 										}
-										
+										PrintsSerializer ! Print("Next Station = " + routes(routeIndex).stages(i).nextStation)
+										PrintsSerializer ! Print("Ticket Next = " + ticketStage.nextStation)
 										if (routes(routeIndex).stages(i).nextStation 	== ticketStage.nextStation&& 
 											routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 											secondIndex = i
@@ -381,12 +362,15 @@ object BookingManager extends Actor {
 									}
 								}
 								
+								PrintsSerializer ! Print(firstIndex+"")
+								PrintsSerializer ! Print(secondIndex+"")
+								
 								// decide weather to search in the current run or in the next one
 								val (selected_run,selected_run_id) = {
 									val current_run = timeTables(routeIndex).current_run
 									// If the time at witch the train leaves in the current run is after the
 									// time at witch the request was made, consider the current run, otherwise the next
-									println("after ? " + (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)))
+									PrintsSerializer ! Print("after ? " + (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)))
 									
 									if (routeMap.contains(routeIndex))
 										(routeMap(routeIndex)._3,routeMap(routeIndex)._4)
@@ -396,8 +380,8 @@ object BookingManager extends Actor {
 										(timeTables(routeIndex).current_run + 1,timeTables(routeIndex).current_run_id + 1)
 								}
 								
-								println("selected_run = " + selected_run)
-								println("selected_run_id = " + selected_run_id)
+								PrintsSerializer ! Print("selected_run = " + selected_run)
+								PrintsSerializer ! Print("selected_run_id = " + selected_run_id)
 								
 								// At this point firstIndex will be the first index of the route,
 								// secondIndex the last. 
@@ -410,26 +394,26 @@ object BookingManager extends Actor {
 								if (valid) {
 									routeMap get (routeIndex) match { 
 										// In case no entry for routeIndex was already in the map, add new
-										case None => routeMap = routeMap + 
-											Tuple2(routeIndex,(firstIndex,secondIndex,selected_run,selected_run_id))
+										case None => routeMap += routeIndex -> (firstIndex,secondIndex,selected_run,selected_run_id)
 										// Simply updates it
-										case Some(el) => routeMap + 
-											Tuple2(routeIndex,(el._1,secondIndex,el._3,el._4))
+										case Some(el) => routeMap += routeIndex -> (el._1,secondIndex,el._3,el._4)
 									}
 									// memorize the run id on the ticket
 									ticketStage.run_number = (selected_run_id + 1)
 								}
 							}
-							case None => println("Train " + ticketStage.trainId + " not a FB train ")
+							case None => PrintsSerializer ! Print("Train " + ticketStage.trainId + " not a FB train ")
 						}
 					}
-					
-					//bookingSitsToUpdate = bookingSitsToUpdate :+ routeMap
-									
 				}
-				// If we arrived here we have all sits needed. We can perform the update
-				// Finally, send the reply
-				if (valid) {
+				
+				
+				if (!valid) {
+					// Send negative response in case the ticket could not be booked
+					reply(false)
+				}else{
+					// If we arrived here we have all sits needed. We can perform the update
+					// Finally, send the reply	
 					routeMap.keys.foreach( routeIndex => {
 						val firstIndex 		= routeMap(routeIndex)._1
 						val secondIndex 	= routeMap(routeIndex)._2
@@ -437,21 +421,20 @@ object BookingManager extends Actor {
 						for (i <- firstIndex to secondIndex) {
 							bookingSits(routeIndex)(selected_run)(i) -= 1
 						}
-						println(routeIndex +","+firstIndex+ ","+secondIndex)
+						PrintsSerializer ! Print(routeIndex +","+firstIndex+ ","+secondIndex)
 					})
 					reply ((true,ticketList))
 				}
-				if (!valid) reply(false)
 				
+				// debug print
 				printBookingSits
-				
 				
 				bookingLoop
 			}
 			
 			
 			case Stop => {
-				println("Validator shutted down")
+				PrintsSerializer ! Print("BookingManager shutted down")
 			}
 		}
 	}

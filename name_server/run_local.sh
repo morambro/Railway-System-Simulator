@@ -1,3 +1,3 @@
 cd out
-scala -classpath ../../lib/yami4.jar Main $@
+scala -classpath ../out/:../../lib/yami4.jar Main tcp://localhost:1234 #$@
 cd ..

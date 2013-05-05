@@ -1,10 +1,9 @@
 import scala.actors._
 import com.inspirel.yami._
-import net.minidev.json._
 
-case class Event (description : String) 
-case class Stop();
-case class DistributedStop();
+case class Event(description:String) 
+case class Stop()
+case class DistributedStop()
 
 
 class Publisher(val address : String) extends Actor {
@@ -24,27 +23,10 @@ class Publisher(val address : String) extends Actor {
 	 * @return A list of couples (name,address)
 	 */ 
 	def getMap(json : String) : Map[String,String] = {
-		
-		//val json = scala.io.Source.fromFile(fileName).mkString
-
 		var res : Map[String,String] = Map()
-
-
-		JSONValue.parseStrict(json) match {
-			case o : JSONObject => o.get("nodes") match {
-				case arr : net.minidev.json.JSONArray => {
-					for(i <- 0 until arr.size) {
-						arr get (i) match {
-							case el : net.minidev.json.JSONObject => {
-								val name 	: String = el.get("name").toString
-								val address : String = el.get("address").toString
-								res = res + Tuple2(name,address)
-							}
-						}
-					}
-				}
-			}
-		}
+		JSON.parseJSON(json).nodes.foreach(node => {res += node.name.toString -> node.address.toString})
+		
+		res.keys.foreach(k => println(k + "," + res(k)))
 		
 		res	
 	}
@@ -63,7 +45,7 @@ class Publisher(val address : String) extends Actor {
 				// Ask Name server for the list of Nodes
 				val agent = new Agent
 				
-				println("Asking Name Server for Nodes addresses at " + ControllerMain.NAME_SERVER_ADDRESS);
+				ViewAgent ! Write("Asking Name Server for Nodes addresses at " + ControllerMain.NAME_SERVER_ADDRESS);
 				
 				try {
 					
@@ -73,46 +55,49 @@ class Publisher(val address : String) extends Actor {
 						"list", 
 						new Parameters);
 					
-					println("Waiting For Name Server response...")				
+					ViewAgent ! Write("Waiting For Name Server response...")				
 					message.waitForCompletion
 				
 					// Received the response by name server
 					message.getState match {
 						case OutgoingMessage.MessageState.REPLIED => {
 			
-							val reply = message.getReply();
-							var nodes : String = null;
-			
-							if (reply.getString("response") == "OK") {
-								nodes = reply.getString("list")
-							}
-		
-							val map = getMap(nodes)
+							message.getReply.getString("response") match {
+								case "OK" => {
+									val map = getMap(message.getReply.getString("list"))
 							
-							println("Node Addresses Gained!")
-							if (map == Map()) println("WARNING: No Nodes to terminate!") 
-							// Once the map is gained, ask each Node to Terminate:
-							map.keys.foreach( k => {
-								val message : OutgoingMessage = agent.send(
-									map(k),
-									"message_handler", 
-									"terminate", 
-									new Parameters)
+									ViewAgent ! Write("Node Addresses Gained!")
+									if (map == Map()) println("WARNING: No Nodes to terminate!") 
+									// Once the map is gained, ask each Node to Terminate:
+									
+									
+									map.keys.foreach( k => {
+										
+										println(map(k))
+										
+										val message : OutgoingMessage = agent.send(
+											map(k),
+											"message_handler", 
+											"terminate", 
+											new Parameters)
 								
-								message.waitForCompletion
+										message.waitForCompletion
 								
-								message.getState match {
-									case OutgoingMessage.MessageState.REPLIED => {
-										println("Node "+k+" Received termination request.")
-									}
-									case OutgoingMessage.MessageState.REJECTED => 
-										println("ERROR: The message has been rejected by node "+ k +" : " + message.getExceptionMsg)
-									case _ => 
-										println("ERROR: The message has been abandoned by node " + k)
+										message.getState match {
+											case OutgoingMessage.MessageState.REPLIED => {
+												println("Node "+k+" Received termination request.")
+											}
+											case OutgoingMessage.MessageState.REJECTED => 
+												println("ERROR: The message has been rejected by node "+ k +" : " + message.getExceptionMsg)
+											case _ => 
+												println("ERROR: The message has been abandoned by node " + k)
+										}
+									})
 								}
-							})
+								case _ => println("Name Server Sent ERROR")
+							}
 						
-							println("Central Controller can be termianted writing 'q' or 'Q'!")
+							ViewAgent ! Write("Central Controller can be termianted writing 'q' or 'Q'!")
 							controllerLoop
 						
 						} 
@@ -142,6 +127,31 @@ class Publisher(val address : String) extends Actor {
 	
 }
 
+case class Write(m:String)
+case class Init(c : Actor)
+object ViewAgent extends Actor {
+	
+	var controller : Actor = null
+	
+	val view = new CentralControllerView
+	
+	def viewAgentLoop() : Unit = react {
+		case Write(m:String) => {
+			view.write(m)
+			viewAgentLoop()
+		}
+		case Stop() => 
+	}
+	
+	def act() = react {
+		case Init(c:Actor) => {
+			controller = c
+			view.setStopOperation(_ => controller ! DistributedStop())
+			viewAgentLoop()	
+		}
+	}
+}
+
 class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 	
 	var serverAgent = new Agent
@@ -156,7 +166,6 @@ class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 		im.getMessageName match {
 			case "event" => {
 				controller ! Event(im.getParameters.getString("event"))
-				//println("Received event " + im.getParameters.getString("event"))
 			}
 			case other => {
 				print("ERROR : Invalid EVENT "+ other.toString )
@@ -169,13 +178,13 @@ class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 	}
 }
 
-
 object ControllerMain extends App {
 	
 	var NAME_SERVER_ADDRESS = "";
 	
 	var controller 	: Publisher = null
 	var receiver 	: Receiver = null
+//	var viewAgent 	: ViewAgent = null
 	
 	def waitExit {
 		readLine() match {
@@ -183,10 +192,6 @@ object ControllerMain extends App {
 				controller ! Stop()
 				receiver.close
 				println ("Bye!")
-			}
-			case "stop simulation" | "Stop Simulation" | "STOP SIMULATION" => {
-				controller ! DistributedStop()
-				waitExit
 			}
 			case a : String => {
 				controller ! Event(a)
@@ -205,6 +210,9 @@ object ControllerMain extends App {
 		controller.start		
 		receiver = new Receiver(controller)
 		receiver.addHandler(args(0))
+		
+		ViewAgent.start
+		ViewAgent ! Init(controller)
 		
 		NAME_SERVER_ADDRESS = args(1)
 		

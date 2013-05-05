@@ -1,6 +1,5 @@
 import scala.actors._
 import com.inspirel.yami._
-import net.minidev.json._
 
 class NoRouteFoundException extends Exception
 
@@ -11,89 +10,67 @@ object PathResolver {
 	var NAME_SERVER_ADDRESS = "";
 	
 	// Map containg for each region the list of regions to go through to reach it 
-	var regionsMap 		: Map[(String,String),List[(String,String)]] = PathResolver.load("../../railway/res/links.json")
+	var regionsMap 		: Map[(String,String),List[(String,String)]] = PathResolver.loadLinks("../../railway/res/links.json")
 	
 	/**
 	 * Loads the json file containg the location of regional ticket offices
 	 *
-	 * @return A list of couples (name,address)
+	 * @return A table of entries (name,address)
 	 */ 
-	def getMap(json : String) : Map[String,String] = {
+	def jsonNodesListToMap(json : String) : Map[String,String] = {
 		
-		//val json = scala.io.Source.fromFile(fileName).mkString
-
 		var res : Map[String,String] = Map()
 
-
-		JSONValue.parseStrict(json) match {
-			case o : JSONObject => o.get("nodes") match {
-				case arr : net.minidev.json.JSONArray => {
-					for(i <- 0 until arr.size) {
-						arr get (i) match {
-							case el : net.minidev.json.JSONObject => {
-								val name 	: String = el.get("name").toString
-								val address : String = el.get("address").toString
-								res = res + Tuple2(name,address)
-							}
-						}
-					}
-				}
-			}
-		}
-		
+		JSON.parseJSON(json).nodes.foreach(node => {
+			res += node.name.toString -> node.address.toString
+		})
+	
 		res	
 	}
 	
-	def load(fileName : String) : Map[(String,String),List[(String,String)]] = {
+	/**
+	 * This method loads a Map containing, for each couple of Regions, the list of 
+	 * Regions and Gateway Stations to go from the first to the second one.
+	 */ 
+	def loadLinks(fileName : String) : Map[(String,String),List[(String,String)]] = {
 		
 		val json = scala.io.Source.fromFile(fileName).mkString
 		
 		var res : Map[(String,String),List[(String,String)]] = Map()
 		
-		JSONValue.parseStrict(json) match {
-			case o : JSONObject => o.get("links") match {
-				case links : JSONArray => {
-					for (i <- 0 until links.size) {
-						links.get(i) match {
-							case el : JSONObject => {
-								val reg1 : String = el.get("region1").toString
-								val reg2 : String = el.get("region2").toString
-								var pathsList : List[(String,String)] = List()
-								el.get("paths") match {
-									case paths : JSONArray => {
-										for (j <- 0 until paths.size()) {
-											paths.get(j) match {
-												case item : JSONObject => {
-													pathsList = pathsList :+ Tuple2(
-														item.get("node").toString,
-														item.get("station").toString)
-												}
-											}
-										}
-									}
-								}
-								res = res + Tuple2(Tuple2(reg1,reg2),pathsList)
-							}
-						}
-					}
-				}
-			}
-		}
+		val tree = JSON.parseJSON(json)
 		
+		for(i <- 0 until tree.links.size) {
+			var pathsList = scala.collection.mutable.ListBuffer[(String,String)]()
+			tree.links(i).paths.foreach(path => {pathsList += ((path.node.toString,path.station.toString))})
+			res += ((tree.links(i).region1.toString,tree.links(i).region2.toString)) -> pathsList.toList
+		}		
+
+//		res.keys.foreach(el => {
+//			PrintsSerializer ! Print("Region 1 : " + el._1)
+//			PrintsSerializer ! Print("Region 2 : " + el._2)
+//			res(el).foreach({ path =>
+//				PrintsSerializer ! Print("("+path._1+","+path._2+")")
+//			})
+//		})
 		res
 	}
 	
 }
 
+/**
+ * Class PathResolver is an Actor type allowing to create a Ticket where source and destination stations are
+ * on different Regions.
+ **/ 
 class PathResolver(fileName : String) extends Actor {
 	
 	/** 
-	 * The list of couples <regional office,address> 
+	 * The list of couples (region,address)
 	 */
 	var nodesAddresses	: Map[String,String] = null
 	
 	/** 
-	 * Agent used to send back to the Node the created Ticket, and to perform requests.
+	 * Yami agent used to send back to the Node the created Ticket, and to perform requests.
 	 */
 	val agent = new Agent
 	
@@ -118,23 +95,20 @@ class PathResolver(fileName : String) extends Actor {
 		
 		// Received the response by name server
 		message.getState match {
-			case OutgoingMessage.MessageState.REPLIED => {
-			
-		    	val reply = message.getReply();
-			
-				var nodes : String = null
-				if (reply.getString("response") == "OK") {
-					nodes = reply.getString("list")
-				}
-		
-				PathResolver.getMap(nodes)
-		    } 
+			case OutgoingMessage.MessageState.REPLIED => message.getReply.getString("response") match {
+	    		// Case "OK" return simply the conversion in Map of the received JSON
+    			case "OK" 	=> PathResolver.jsonNodesListToMap(message.getReply.getString("list"))
+	    		case _ => {
+	    			PrintsSerializer ! Print("ERROR: Ivalid response to NameServer::LIST request")
+	    			null
+	    		}
+	    	}
 		    case OutgoingMessage.MessageState.REJECTED => {
-				println("The message has been rejected: " + message.getExceptionMsg)
+				PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
 				null
 			}
 			case _ => {
-				println("The message has been abandoned.")
+				PrintsSerializer ! Print("The message has been abandoned.")
 				null
 			}
 		}
@@ -158,11 +132,12 @@ class PathResolver(fileName : String) extends Actor {
 				p.setString("station",to) 
 					
 				// Region not in cache, so search for it.
-				nodesAddresses.keys.foreach(k => {
+				nodesAddresses.keys.foreach( node => {
 					
 					try{
+						PrintsSerializer ! Print(nodesAddresses(node))
 						val message : OutgoingMessage = agent.send(
-							nodesAddresses(k),
+							nodesAddresses(node),
 							"message_handler", 
 							"is_present", 
 							p);
@@ -170,30 +145,29 @@ class PathResolver(fileName : String) extends Actor {
 			
 						message.getState match {
 							case OutgoingMessage.MessageState.REPLIED => {
-								val reply = message.getReply();
-								val found = reply.getString("response")
-								if (found == "TRUE") {
-									// Add a new entry to the local cache
-									pathRegionCache = pathRegionCache + Tuple2(to,k)
-									return k
+								message.getReply.getString("response") match {
+									case "TRUE" => {
+										pathRegionCache += to -> node
+										return node
+									}
+									case _ => // DO NOTHING
 								}
 							} 
 							case OutgoingMessage.MessageState.REJECTED => {
-								println("The message for node " +k+ " has been rejected: " + message.getExceptionMsg)
+								PrintsSerializer ! Print("The message for node " +node+ " has been rejected: " + message.getExceptionMsg)
 							}
 							case _ => {
-								println("The message for node " +k+ " has been abandoned.")
+								PrintsSerializer ! Print("The message for node " +node+ " has been abandoned.")
 							}
 						}
-					} catch {
+					}catch{
 						case e : com.inspirel.yami.YAMIIOException => {
-							println("ERRORE: Connessione rifiutata all'indirizzo " + nodesAddresses(k))
+							PrintsSerializer ! Print("ERRORE: Connessione rifiutata all'indirizzo " + nodesAddresses(node))
 						}
 					} 
 				})
 			}
 		}
-		// If no region was found for the destination, return null
 		null
 	}
 	
@@ -221,26 +195,22 @@ class PathResolver(fileName : String) extends Actor {
 		message.getState match {
 			case OutgoingMessage.MessageState.REPLIED => {
 			
-		    	val reply = message.getReply();
-				
-				reply.getString("response") match {
+		    	message.getReply.getString("response") match {
 					case "ERROR" => {
-						println(reply.getString("type"))
+						PrintsSerializer ! Print("ERROR:" + message.getReply.getString("type"))
 					}
 					case "RECEIVED" => {
-						println("Ticket Found!")
-						println(reply.getString("ticket"))
-						return reply.getString("ticket")
+						return message.getReply.getString("ticket")
 					}
-					case _ => println("ERROR")
+					case _ => PrintsSerializer ! Print("ERROR")
 				}
 				
 		    } 
 		    case OutgoingMessage.MessageState.REJECTED => {
-				println("The message has been rejected: " + message.getExceptionMsg)
+				PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
 			}
 			case _ => {
-				println("The message has been abandoned.")
+				PrintsSerializer ! Print("The message has been abandoned.")
 			}
 		}
 		null
@@ -255,26 +225,19 @@ class PathResolver(fileName : String) extends Actor {
 		p.setString("response","ERROR")
 		p.setString("traveler_index",traveler_index)
 		
-		
-		
 		val message : OutgoingMessage = agent.send(
 			dest,
 			"message_handler", 
 			"ticket_ready", 
 			p)
 		
+		// Wait to make the request synchornous
 		message.waitForCompletion
 		
 		message.getState match {
-			case OutgoingMessage.MessageState.REPLIED => {
-		    	println("Error message has been received");
-		    } 
-		    case OutgoingMessage.MessageState.REJECTED => {
-				println("The message has been rejected: " + message.getExceptionMsg)
-			}
-			case _ => {
-				println("The message has been abandoned.")
-			}
+			case OutgoingMessage.MessageState.REPLIED => PrintsSerializer ! Print("Error message has been received");
+		    case OutgoingMessage.MessageState.REJECTED => PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
+			case _ => PrintsSerializer ! Print("The message has been abandoned.")
 		}
 	}
 
@@ -284,7 +247,7 @@ class PathResolver(fileName : String) extends Actor {
 	def resolverLoop() {
 		react {
 			case Resolve(startNode,from,to,travelerIndex,requestTime) => {
-				println("I have to resolve from " + from + " to " + to)
+				PrintsSerializer ! Print("I have to resolve from " + from + " to " + to)
 				
 				try {
 					
@@ -299,17 +262,17 @@ class PathResolver(fileName : String) extends Actor {
 					// Obtain the Region containing the Station [To]
 					getRegionContaining(to) match {
 						case null => {
-							println("ERROR : No region found for station " + to)
+							PrintsSerializer ! Print("ERROR : No region found for station " + to)
 							throw new NoRouteFoundException
 						}
 						
 						case  region : String => {
 							// Region Found!
-							println("Station " + to + " is in Region " + region)
+							PrintsSerializer ! Print("Station " + to + " is in Region " + region)
 
 							// Now we have startNode and region to reach. We have to find
 							// the gateways to cross to build a path					
-							var tickets : List[Ticket] = List()
+							var ticketsBuffer = scala.collection.mutable.ListBuffer[Ticket]()
 					
 							// ****************** COLLECT PARTIAL TICEKTS FROM NODES *****************
 					
@@ -318,66 +281,66 @@ class PathResolver(fileName : String) extends Actor {
 								case Some(item) => {
 									var node 	= startNode
 									var f 		= from
+									
 									item match {
-										case l : List[_] => {
+										case l : List[(String,String)] => {
+											
 											l.foreach(c => {
-												println("Search from "+f+" to "+c._2+" region " +  node)
-												val askedTicket = createTicket(node,f,c._2)
-												if (askedTicket != null)
-													tickets = tickets :+ askedTicket
-												else
-													throw new NoRouteFoundException	
+												PrintsSerializer ! Print("Search from "+f+" to "+c._2+" region " +  node)
+												createTicket(node,f,c._2) match {
+													case ticket : Ticket => ticketsBuffer += ticket
+													case _ => throw new NoRouteFoundException	
+												}
 												node = c._1
 												f = c._2
 											})
-											println("Search from "+f+" to "+to+" region " +  node)
-											val askedTicket = createTicket(node,f,to) 
-											if (askedTicket != null)
-												tickets = tickets :+ askedTicket
-											else
-												throw new NoRouteFoundException	
+											PrintsSerializer ! Print("Search from "+f+" to "+to+" region " +  node)
+											
+											createTicket(node,f,to) match {
+												case ticket : Ticket => ticketsBuffer += ticket
+												case _ => throw new NoRouteFoundException	
+											}
+
 										}
+										case _ => throw new NoRouteFoundException
 									}
 								}
 								case None => {
-									println("No path to reach " + region + " from " + startNode)
+									PrintsSerializer ! Print("No path to reach " + region + " from " + startNode)
 									throw new NoRouteFoundException			
 								}
 							}
 		
 							// *********************** VALIDATE COLLECTED TICKETS *************
+							
+							val tickets = ticketsBuffer.toList
 					
-							val result = BookingManager !? Validate(tickets,requestTime)
-							result match {
+							// Synchronous request to BookingManager, to verify whether the Ticket can be released or not
+							BookingManager !? Validate(tickets,requestTime) match {
 								case false => {
-									println("ERROR: The ticket can not be assigned")
+									PrintsSerializer ! Print("ERROR: The ticket can not be assigned")
 									throw new NoRouteFoundException
 								}
 								case _ => // Do nothing,all ok!
 							}
 					
-							// If we are here, we have a valid ticket
-							var result_ticket : Ticket = tickets(0)
-		
 		
 							// *********************** MERGE TICKETS *************************
+							
+							// Merge all the tickets into one
+							var resultTicket = tickets.reduceLeft((t1,t2) => Ticket.mergeTickets(t1,t2))
 					
-							for (i <- 1 until tickets.length) {
-								result_ticket = Ticket.mergeTickets(result_ticket,tickets(i))
-							}
-		
-							println("\n** Final Ticket is:")
-							result_ticket.print
+							PrintsSerializer ! Print("\n** Final Ticket is:")
+							resultTicket.print
 		
 							// ******************** Send the Ticket Back to the Node ********* 
-		
 		
 							// Finally send the ticket back to the Node 
 							val p = new Parameters
 					
 							p.setString("response","OK")
 							p.setString("traveler_index",travelerIndex)
-							p.setString("ticket",Ticket.ticket2Json(result_ticket))
+							p.setString("ticket",Ticket.ticket2Json(resultTicket))
 
 							val message : OutgoingMessage = agent.send(
 								nodesAddresses(startNode),
@@ -388,15 +351,10 @@ class PathResolver(fileName : String) extends Actor {
 							message.waitForCompletion
 
 							message.getState match {
-								case OutgoingMessage.MessageState.REPLIED => {
-									println("Message Received")
-								} 
-								case OutgoingMessage.MessageState.REJECTED => {
-									println("The message has been rejected: " + message.getExceptionMsg)
-								}
-								case _ => {
-									println("The message has been abandoned.")
-								}
+								case OutgoingMessage.MessageState.REPLIED => PrintsSerializer ! Print("Message Received")
+								case OutgoingMessage.MessageState.REJECTED => 
+									PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
+								case _ => PrintsSerializer ! Print("The message has been abandoned.")
 							}
 						}
 					}
@@ -414,14 +372,12 @@ class PathResolver(fileName : String) extends Actor {
 				resolverLoop
 			}
 			case Stop() => {
-				println("Tearing down Path resolver")
+				PrintsSerializer ! Print("Tearing down Path resolver")
 				agent.close
 			}
 		}
 	}
 
 	def act() = resolverLoop()
-	
-
 }
 
