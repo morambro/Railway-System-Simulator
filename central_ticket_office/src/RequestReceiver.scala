@@ -13,12 +13,15 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 	 */
 	val ticketResolutionHandlers 	: Array[Actor] = Array.fill(10) {new PathResolver(fileName)}
 	
+	/**
+	 * Actors Pool used to Handle Synchronous requests
+	 */
+	val synchReqHandlers 			: Array[Actor] = Array.fill(5)(new SynchRequestsHandler)
+	
 	// Resolvers initialization 
 	ticketResolutionHandlers.foreach(a => a.start)
-	
-	val validationHandlers 			: Array[Actor] = Array.fill(5)(new ValidationHandler)
-	
-	validationHandlers.foreach(a => a.start)
+	// Start synch handlers
+	synchReqHandlers.foreach(a => a.start)
 	
 	/**
 	 * The index of the next Resolver to be used
@@ -28,7 +31,7 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 	/**
 	 * The index of the next Resolver to be used
 	 */
-	var validationIndex = 0
+	var synchHandlersIndex = 0
 	
 	/**
 	 * Yami Agent from which receive messages
@@ -51,7 +54,7 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 			case Stop()	=> {
 				serverAgent.close
 				ticketResolutionHandlers.foreach(a => a ! Stop())
-				validationHandlers.foreach(a => a ! Stop())
+				synchReqHandlers.foreach(a => a ! Stop())
 				println("Central Ticket Office is shutting down")
 			}
 		}
@@ -67,6 +70,8 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 		
 			case "resolve"	=>	{
 				
+				println("Received RESOLVE request")
+				
 				// Retrieve all the parameters from the request
 				val traveler_index	= im.getParameters.getString("traveler_index")
 				val from 			= im.getParameters.getString("from")
@@ -74,12 +79,14 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 				val to				= im.getParameters.getString("to")
 				val requestTime		= im.getParameters.getString("request_time")
 				
+				// Delegate Ticket Creation
 				ticketResolutionHandlers(ticketResolutionIndex) ! Resolve(startNode,from,to,traveler_index,requestTime) 
 		
 				ticketResolutionIndex = (ticketResolutionIndex + 1)% ticketResolutionHandlers.size
 				
 				println("INDEX = " + ticketResolutionIndex)
-		
+			
+				// Return immediately
 				var replyPar : Parameters = new Parameters
 				
 				replyPar.setString("response","OK");
@@ -92,16 +99,11 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 				
 				println("Received GET_TIME_TABLE request")
 				
-				val time_table = BookingManager !? GetTimeTable
+				// Dispatch to Synch request handler
+				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(GetTimeTable(),im)
 				
-				var replyPar : Parameters = new Parameters
-				
-				replyPar.setString("response","OK")
-				time_table match {
-					case tt : String => {replyPar.setString("time_tables",tt);println(tt)}
-				
-				}
-				im.reply(replyPar)
+				synchHandlersIndex += 1
+				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
 				
 			}
 			
@@ -111,30 +113,14 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 				println("Received UPDATE_RUN request")
 				
 				val routeIndex 	= im.getParameters.getInteger("route_index").intValue
-				val current_run	= im.getParameters.getInteger("current_run").intValue
+				val currentRun	= im.getParameters.getInteger("current_run").intValue
 				
 				// Ask to update the route timeTable
-				val result = BookingManager !? UpdateRun(routeIndex,current_run)
+				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(UpdateRun(routeIndex,currentRun),im)
 				
-				var replyPar : Parameters = new Parameters
-				
-				result match {
-					case ("updated",run_id:Int) => {
-						replyPar.setString("response","OK")
-						replyPar.setInteger("run_id",run_id.intValue)
-					}
-					case ("new_time_table",timeTable:String) => {
-						replyPar.setString("response","UPDATED")
-						replyPar.setString("new_time_table",timeTable)
-					}
-					
-					case ("error",message:String) => {
-						replyPar.setString("response","ERROR")
-						replyPar.setString("message",message)
-					}
-				}
-				
-				im.reply(replyPar)
+				synchHandlersIndex += 1
+				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
+
 			}
 			
 			case "validate" => {
@@ -144,19 +130,16 @@ class RequestReceiver(address : String,fileName:String) extends Actor with Incom
 				val ticket 		= im.getParameters.getString("ticket")
 				val requestTime = im.getParameters.getString("request_time") 
 				
-				
 				// Delegate Validation request to a ValidationHandler actorr
-				validationHandlers(validationIndex) ! HandleValidation(ticket,requestTime,im)
+				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(Validate(ticket::List(),requestTime),im)
 				
-				validationIndex += 1
-				validationIndex = validationIndex % validationHandlers.size
-				
-				//println("validation delegated")
+				synchHandlersIndex += 1
+				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
 
 			}
 			
 			case "terminate" => {
-				println("terminate")
+				println("Received TERMINATE request")
 				this ! Stop()
 			}
 			

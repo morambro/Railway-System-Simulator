@@ -1,12 +1,13 @@
 import com.inspirel.yami._
 
-case class Validate(ticket : List[Ticket],requestTime:String)
-case class UpdateRun(routeIndex:Int,current_run:Int)
-case class GetTimeTable()
-
 case class Stop()
 case class Resolve(startNode:String,from:String,to:String,traveler_index:String,requestTime:String)
 case class Error(message:String)
 
-case class HandleValidation(ticket:Ticket,requestTime:String,im:IncomingMessage)
+trait SynchRequest
+case class Validate(ticket : List[Ticket],requestTime:String) extends SynchRequest
+case class UpdateRun(routeIndex:Int,current_run:Int) extends SynchRequest
+case class GetTimeTable() extends SynchRequest
+
+case class HandleSynchRequest(request:SynchRequest,incomingMessage:IncomingMessage)
 

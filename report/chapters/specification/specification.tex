@@ -6,13 +6,13 @@ Di seguito verrà fornita una descrizione dell'architettura del progetto realizz
 \section{Simulazione}
 
 	\begin{figure}[htbp]
-		\includegraphics[scale=0.32,trim= 100mm 0mm 0mm 0mm]{imgs/Class_Diagram_2.pdf}
+		\includegraphics[scale=0.39,trim= 100mm 0mm 0mm 0mm]{imgs/Simplified_Class_Diagram.pdf}
 		\caption{\footnotesize{Diagramma delle classi che illustra le componenti e le relazioni più significative che coinvolgono la simulazione.}}
 		\label{img:class_diagram}
 	\end{figure}
 
 L'architettura di massima adottata per la realizzazione del core di simulazione, è visibile nel diagramma delle classi in figura \ref{img:class_diagram} nel quale, per brevità, sono stati riportati solo le informazioni più significative.
-	Viene ora fornita una descrizione delle varie componenti Package. Nelle sezioni seguenti si utilizzeranno le nozioni di \ii{Task} e \ii{Tipo protetto} definite dal linguaggio \ii{Ada} utilizzato per la realizzazione delle componenti di simulazione del sistema. 
+	Viene ora fornita una breve descrizione delle varie componenti che sono state utilizzate, procedendo per Package. Nelle sezioni seguenti si utilizzeranno le nozioni di \ii{Task} e \ii{Tipo protetto} definite dal linguaggio \ii{Ada}, utilizzato per l'implementazione, e verrà mostrato come le soluzioni presentate nel capitolo precedente sono state tradotte con strumenti di linguaggio.
 
 	\subsection{Message\_Agent}
 	
@@ -28,7 +28,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	\begin{description}
 		\item \ttt{+ Listen\_To(Server\_Address)} \\
-		Indica all'oggetto \ttt{Client\_Agent} di rimanere in ascolto presso l'indirizzo \ttt{Server\_Address}, attraverso il quale riceverà tutti i messaggi destinati al nodo. Nella fase di registrazione dell'oggetto remoto, viene definito un handler per la ricezione dei messaggi, il quale effettua il dispatching del messaggio invocando la procedura corrispondente al servizio richiesto, definita nella mappa \ttt{Handlers\_Map}.
+		Indica all'oggetto \ttt{Client\_Agent} di rimanere in ascolto presso l'indirizzo \ttt{Server\_Address}, attraverso il quale riceverà tutti i messaggi destinati al nodo. Nella fase di registrazione dell'oggetto remoto, viene definito un handler per la ricezione dei messaggi, il quale effettua il dispatching di ciascun messaggio ricevuto invocando la procedura corrispondente al servizio richiesto, definita nella mappa \ttt{Handlers\_Map}.
 		
 		\item \ttt{+ Close()} \\
 		Chiude la connessione dell'oggetto \ttt{Client\_Agent}.
@@ -57,7 +57,19 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	\subsection{Central\_Office\_Interface}
 	
-	Il package \ttt{Central\_Office\_Interface} fornisce un'interfaccia per permettere la comunicazione con la Biglietteria Centrale. Per questo è messa a disposizione una procedure \ttt{Create\_Ticket} la quale richiede la creazione di un Biglietto inviando un messaggio remoto mediante il metodo \ttt{Send\_Message} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}. Non viene specificata una procedura di callback, in quanto il risultato verrà inviato dalla Biglietteria Centrale una volta calcolato il Biglietto.
+	Il package \ttt{Central\_Office\_Interface} fornisce un'interfaccia per permettere la comunicazione con la Biglietteria Centrale:
+		\begin{description}
+			\item \ttt{+ Create\_Ticket( \\
+				From : String,\\
+				To	 : String,\\
+				Traveler\_Index: Integer)} \\
+			Richiede la creazione di un Biglietto inviando un messaggio remoto mediante il metodo \ttt{Send\_Message} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}. Non viene specificata una procedura di callback, in quanto il risultato verrà inviato dalla Biglietteria Centrale una volta calcolato il Biglietto.
+			
+			\item \ttt{+ Validate(\\
+				The\_Ticket:Ticket,\\
+				Callback:access procedure(The\_Ticket:Ticket,Response:Boolean))}\\
+				
+		\end{description}
 	
 	\subsection{Name\_Server\_Interface}
 	

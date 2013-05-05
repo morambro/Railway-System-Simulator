@@ -67,24 +67,24 @@ package Gateway_Platform is
 	type Platforms is array (Positive range <>) of access Gateway_Platform_Handler;
 
 
-	protected type Gateway_Platform_Type(
-		ID	: Integer;
-		S 	: access Ada.Strings.Unbounded.Unbounded_String) is
-
-		entry Enter_FB(
-			Train_Descriptor_Index 	: in 	Positive);
-
-		entry Enter_Regional(
-			Train_Descriptor_Index 	: in 	Positive);
-
-		procedure Leave(
-			Train_Descriptor_Index 	: in 	Positive);
-	private
-		Free 			: Boolean := True;
-
-		Current_Train	: Natural := 0;
-
-	end Gateway_Platform_Type;
+--  	protected type Gateway_Platform_Type(
+--  		ID	: Integer;
+--  		S 	: access Ada.Strings.Unbounded.Unbounded_String) is
+--
+--  		entry Enter_FB(
+--  			Train_Descriptor_Index 	: in 	Positive);
+--
+--  		entry Enter_Regional(
+--  			Train_Descriptor_Index 	: in 	Positive);
+--
+--  		procedure Leave(
+--  			Train_Descriptor_Index 	: in 	Positive);
+--  	private
+--  		Free 			: Boolean := True;
+--
+--  		Current_Train	: Natural := 0;
+--
+--  	end Gateway_Platform_Type;
 
 
 	package Train_Run_Map is new Ada.Containers.Ordered_Maps(

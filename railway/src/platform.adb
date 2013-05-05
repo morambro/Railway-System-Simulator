@@ -349,7 +349,7 @@ package body Platform is
 		Action 					: in	Route.Action) is
 	begin
 
-		-- # Lets the Train leave the platform
+		-- # Let the Train leave the platform
 		This.Perform_Exit(
 			Train_Descriptor_Index	=> Train_Descriptor_Index,
 			Action					=> Action);
