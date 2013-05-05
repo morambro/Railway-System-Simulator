@@ -98,6 +98,11 @@ class PathResolver(fileName : String) extends Actor {
 	val agent = new Agent
 	
 	/**
+	 * A cache containing for each station the Region where it is located. 
+	 */
+	var pathRegionCache : Map[String,String] = Map() 
+	
+	/**
 	 * Requests the list of all the nodes registered to the Name Server.
 	 * 
 	 * @return : A table which contains for each node the address where it is located.
@@ -141,43 +146,54 @@ class PathResolver(fileName : String) extends Actor {
 	 *	@return the name of the node containg the station <To>
 	 *
 	 **/
-	def ask(to : String) : String = {
-		nodesAddresses.keys.foreach(k => {
-			
-			val p = new Parameters
-			
-			p.setString("station",to) 
-			
-			try{
-				val message : OutgoingMessage = agent.send(
-					nodesAddresses(k),
-					"message_handler", 
-					"is_present", 
-					p);
-				message.waitForCompletion
-			
-				message.getState match {
-					case OutgoingMessage.MessageState.REPLIED => {
-			
-						val reply = message.getReply();
-			
-						val found = reply.getString("response")
+	def getRegionContaining(to : String) : String = {
 		
-						if (found == "TRUE") return k
+		pathRegionCache get (to) match {
+			case Some(region) => {
+				// Cache contains a region for the Station, so return it.
+				return region
+			}
+			case None => {
+				val p = new Parameters
+				p.setString("station",to) 
+					
+				// Region not in cache, so search for it.
+				nodesAddresses.keys.foreach(k => {
+					
+					try{
+						val message : OutgoingMessage = agent.send(
+							nodesAddresses(k),
+							"message_handler", 
+							"is_present", 
+							p);
+						message.waitForCompletion
+			
+						message.getState match {
+							case OutgoingMessage.MessageState.REPLIED => {
+								val reply = message.getReply();
+								val found = reply.getString("response")
+								if (found == "TRUE") {
+									// Add a new entry to the local cache
+									pathRegionCache = pathRegionCache + Tuple2(to,k)
+									return k
+								}
+							} 
+							case OutgoingMessage.MessageState.REJECTED => {
+								println("The message for node " +k+ " has been rejected: " + message.getExceptionMsg)
+							}
+							case _ => {
+								println("The message for node " +k+ " has been abandoned.")
+							}
+						}
+					} catch {
+						case e : com.inspirel.yami.YAMIIOException => {
+							println("ERRORE: Connessione rifiutata all'indirizzo " + nodesAddresses(k))
+						}
 					} 
-					case OutgoingMessage.MessageState.REJECTED => {
-						println("The message for node " +k+ " has been rejected: " + message.getExceptionMsg)
-					}
-					case _ => {
-						println("The message for node " +k+ " has been abandoned.")
-					}
-				}
-			} catch {
-				case e : com.inspirel.yami.YAMIIOException => {
-					println("ERRORE: Connessione rifiutata all'indirizzo " + nodesAddresses(k))
-				}
-			} 
-		})
+				})
+			}
+		}
+		// If no region was found for the destination, return null
 		null
 	}
 	
@@ -187,7 +203,7 @@ class PathResolver(fileName : String) extends Actor {
 	 * @return the created ticket, or null if no ticket is created. 
 	 *
 	 **/
-	def ask (node:String,from:String,to:String) : Ticket = {
+	def createTicket(node:String,from:String,to:String) : Ticket = {
 
 		val p = new Parameters
 
@@ -262,124 +278,136 @@ class PathResolver(fileName : String) extends Actor {
 		}
 	}
 
-
+	/**
+	 * Main Loop for the resolver
+	 */
 	def resolverLoop() {
 		react {
-			case Resolve(startNode,from,to,traveler_index,requestTime) => {
+			case Resolve(startNode,from,to,travelerIndex,requestTime) => {
 				println("I have to resolve from " + from + " to " + to)
 				
 				try {
-				
-					if (nodesAddresses == null)
+					
+					// Check if node addresses list is null
+					if (nodesAddresses == null) {
 						nodesAddresses = getNodesAddressList
-					if (nodesAddresses == null) 
-						throw new NoRouteFoundException
+						// If the list is still null, send Error
+						if (nodesAddresses == null) 
+							throw new NoRouteFoundException
+					}
 					
-					val region = ask(to)
-	
-					if (region == null) {
-						println("ERROR : No region found for station " + to)
-						throw new NoRouteFoundException
-					} 
-					
-					println("Station " + to + " is in Region " + region)
+					// Obtain the Region containing the Station [To]
+					getRegionContaining(to) match {
+						case null => {
+							println("ERROR : No region found for station " + to)
+							throw new NoRouteFoundException
+						}
+						
+						case  region : String => {
+							// Region Found!
+							println("Station " + to + " is in Region " + region)
 
-					// Now we have startNode and region to reach. We have to find
-					// the gateways to cross to build a path					
-					var tickets : List[Ticket] = List()
+							// Now we have startNode and region to reach. We have to find
+							// the gateways to cross to build a path					
+							var tickets : List[Ticket] = List()
 					
-					// ****************** COLLECT PARTIAL TICEKTS FROM NODES *****************
+							// ****************** COLLECT PARTIAL TICEKTS FROM NODES *****************
 					
-					// Retrieve from regionsMap the path to go from [from] to [to]
-					PathResolver.regionsMap get (startNode,region) match {
-						case Some(item) => {
-							var node 	= startNode
-							var f 		= from
-							item match {
-								case l : List[_] => {
-									l.foreach(c => {
-										println("Search from "+f+" to "+c._2+" region " +  node)
-										val askedTicket = ask(node,f,c._2)
-										if (askedTicket != null)
-											tickets = tickets :+ askedTicket
-										else
-											throw new NoRouteFoundException	
-										node = c._1
-										f = c._2
-									})
-									println("Search from "+f+" to "+to+" region " +  node)
-									val askedTicket = ask(node,f,to) 
-									if (askedTicket != null)
-										tickets = tickets :+ askedTicket
-									else
-										throw new NoRouteFoundException	
+							// Retrieve from regionsMap the path to go from [from] to [to]
+							PathResolver.regionsMap get (startNode,region) match {
+								case Some(item) => {
+									var node 	= startNode
+									var f 		= from
+									item match {
+										case l : List[_] => {
+											l.foreach(c => {
+												println("Search from "+f+" to "+c._2+" region " +  node)
+												val askedTicket = createTicket(node,f,c._2)
+												if (askedTicket != null)
+													tickets = tickets :+ askedTicket
+												else
+													throw new NoRouteFoundException	
+												node = c._1
+												f = c._2
+											})
+											println("Search from "+f+" to "+to+" region " +  node)
+											val askedTicket = createTicket(node,f,to) 
+											if (askedTicket != null)
+												tickets = tickets :+ askedTicket
+											else
+												throw new NoRouteFoundException	
+										}
+									}
+								}
+								case None => {
+									println("No path to reach " + region + " from " + startNode)
+									throw new NoRouteFoundException			
+								}
+							}
+		
+							// *********************** VALIDATE COLLECTED TICKETS *************
+					
+							val result = BookingManager !? Validate(tickets,requestTime)
+							result match {
+								case false => {
+									println("ERROR: The ticket can not be assigned")
+									throw new NoRouteFoundException
+								}
+								case _ => // Do nothing,all ok!
+							}
+					
+							// If we are here, we have a valid ticket
+							var result_ticket : Ticket = tickets(0)
+		
+		
+							// *********************** MERGE TICKETS *************************
+					
+							for (i <- 1 until tickets.length) {
+								result_ticket = Ticket.mergeTickets(result_ticket,tickets(i))
+							}
+		
+							println("\n** Final Ticket is:")
+							result_ticket.print
+		
+							// ******************** Send the Ticket Back to the Node ********* 
+		
+		
+							// Finally send the ticket back to the Node 
+							val p = new Parameters
+					
+							p.setString("response","OK")
+							p.setString("traveler_index",travelerIndex)
+							p.setString("ticket",Ticket.ticket2Json(result_ticket))
+
+							val message : OutgoingMessage = agent.send(
+								nodesAddresses(startNode),
+								"message_handler", 
+								"ticket_ready", 
+								p)
+
+							message.waitForCompletion
+
+							message.getState match {
+								case OutgoingMessage.MessageState.REPLIED => {
+									println("Message Received")
+								} 
+								case OutgoingMessage.MessageState.REJECTED => {
+									println("The message has been rejected: " + message.getExceptionMsg)
+								}
+								case _ => {
+									println("The message has been abandoned.")
 								}
 							}
 						}
-						case None => {
-							println("No path to reach " + region + " from " + startNode)
-							throw new NoRouteFoundException			
-						}
 					}
-		
-					// *********************** VALIDATE COLLECTED TICKETS *************
+	
 					
-					val result = BookingManager !? Validate(tickets,requestTime)
-					result match {
-						case false => {
-							println("ERROR: The ticket can not be assigned")
-							throw new NoRouteFoundException
-						}
-						case _ => // Do nothing,all ok!
-					}
-					
-					// If we are here, we have a valid ticket
-					var result_ticket : Ticket = tickets(0)
-		
-		
-					// *********************** MERGE TICKETS *************************
-					
-					for (i <- 1 until tickets.length) {
-						result_ticket = Ticket.mergeTickets(result_ticket,tickets(i))
-					}
-		
-					println("\n** Final Ticket is:")
-					result_ticket.print
-		
-					// ******************** Send the Ticket Back to the Node ********* 
-		
-		
-					// Finally send the ticket back to the Node 
-					val p = new Parameters
-					
-					p.setString("response","OK")
-					p.setString("traveler_index",traveler_index)
-					p.setString("ticket",Ticket.ticket2Json(result_ticket))
-
-					val message : OutgoingMessage = agent.send(
-						nodesAddresses(startNode),
-						"message_handler", 
-						"ticket_ready", 
-						p)
-
-					message.waitForCompletion
-
-					message.getState match {
-						case OutgoingMessage.MessageState.REPLIED => {
-							println("Message Received")
-						} 
-						case OutgoingMessage.MessageState.REJECTED => {
-							println("The message has been rejected: " + message.getExceptionMsg)
-						}
-						case _ => {
-							println("The message has been abandoned.")
-						}
-					}
+							
 			
 				} catch {
 					case e : NoRouteFoundException => {
 						// If there was an error, send a notification to the requesting node.
-						sendError(nodesAddresses(startNode),traveler_index)
+						sendError(nodesAddresses(startNode),travelerIndex)
 					}
 				}	
 				
