@@ -56,12 +56,13 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 	def receiverLoop() {
 		react {
 			case Stop()	=> {
+				// Stop all the Actors used
 				PrintsSerializer ! Print("Central Ticket Office is shutting down...")
 				serverAgent.close
 				ticketResolutionHandlers.foreach(a => a ! Stop())
 				synchReqHandlers.foreach(a => a ! Stop())
 				BookingManager ! Stop()
-				PrintsSerializer ! Stop()
+				PrintsSerializer ! StopPrint()
 			}
 		}
 	}
@@ -154,10 +155,18 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 					// Terminate!
 					// Save to file (?)
 					// Tear down all Actors!
+					println("Marker received twice")
 					this ! Stop()
 				}else{
+					println("Setting markerReceived = TRUE")
 					markerReceived = true
 				}
+				// Return immediately
+				var replyPar : Parameters = new Parameters
+				
+				replyPar.setString("response","OK");
+				
+				im.reply(replyPar)
 			}
 			
 			case other => {

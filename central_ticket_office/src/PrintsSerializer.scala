@@ -1,5 +1,8 @@
 import scala.actors._
 
+case class Print(message:String)
+case class StopPrint()
+
 object PrintsSerializer extends Actor {
 
 	def printSerializerLoop() : Unit = react {
@@ -7,7 +10,7 @@ object PrintsSerializer extends Actor {
 			println(message)
 			printSerializerLoop
 		}
-		case Stop => 			
+		case StopPrint() => println("Print Serializer is shutting down...")		
 	}
 
 	def act() = printSerializerLoop()

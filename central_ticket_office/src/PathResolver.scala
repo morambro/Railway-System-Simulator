@@ -372,7 +372,7 @@ class PathResolver(fileName : String) extends Actor {
 				resolverLoop
 			}
 			case Stop() => {
-				PrintsSerializer ! Print("Tearing down Path resolver")
+				println("Tearing down Path resolver")
 				agent.close
 			}
 		}

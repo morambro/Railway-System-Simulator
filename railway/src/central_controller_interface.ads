@@ -49,5 +49,10 @@ package Central_Controller_Interface is
 		Platform	: Positive;
 		Action 		: Traveler_Action);
 
+	-- #
+	-- # This procedure is used to notify the termination of the current Node
+	-- # to the Controller, to complete the termination procedure.
+	-- #
+	procedure Notify_Termination;
 
 end Central_Controller_Interface;

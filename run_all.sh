@@ -3,7 +3,7 @@ gnome-terminal --hide-menubar --title="Name Server" --command="sh name_server/ru
 echo "done"
 
 echo "Load Central Controller..."
-gnome-terminal --hide-menubar --title="Central Controller" --command="sh central_controller/run.sh tcp://localhost:8888 tcp://localhost:1234"
+gnome-terminal --hide-menubar --title="Central Controller" --command="sh central_controller/run.sh tcp://localhost:8888 tcp://localhost:1234 tcp://localhost:9999"
 echo "done"
 
 echo "Load Central Ticket Office..." 

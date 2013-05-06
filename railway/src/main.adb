@@ -48,6 +48,8 @@ with Ada.Exceptions;  use Ada.Exceptions;
 with Handlers;
 with Name_Server_Interface;
 
+with Central_Controller_Interface;
+
 procedure Main is
 
 	use Message_Agent;
@@ -125,7 +127,9 @@ begin
 			return;
 		end if;
 
+		-- # Start a new block to perform initializations
 		declare
+
 		begin
 			Message_Agent.Init;
 			Message_Agent.Instance.Listen_To(Node_Addr);
@@ -145,11 +149,14 @@ begin
 				Address 	 => Node_Addr'Access);
 
 			declare
-				-- Start the real simulation
+				-- # Start the real simulation, creating the two Pools.
+
 				Traveler_Tasks 	: Traveler_Pool.Traveler_Pool_Type(5);
 				Pool			: Train_Pool.Train_Task_Pool(5,5);
 
-
+				-- #
+				-- # Performs the initialization of Trains and Travelers
+				-- #
 				procedure Start is
 				begin
 
@@ -167,36 +174,41 @@ begin
 
 				end Start;
 
+			-- # This block will be in co-begin with the Tasks in Traveler_Pool and Train_Pool
 			begin
 
+				-- # Perform initialization of the Environment
 				Environment.Init(Node_Name,Name_Server,Central_T,Central_C);
+				-- # Perform initialization of all the Segments
 				Segments.Init;
+				-- # Perform initialization of all the Routes
 				Routes.Init;
+				-- # Perform initialization of the Regional Ticket Office
 				Regional_Ticket_Office.Init("res/" & Node_Name & "-paths.json");
 
-
---  				if Node_Name = "Node_1" then
---  					Regional_Ticket_Office.Get_Ticket(1,"1","G1");
---  				end if;
---
---  				if Node_Name = "Node_2" then
---  					Regional_Ticket_Office.Get_Ticket(2,"K","G1");
---  				end if;
-
-				delay 3.0;
+				-- # Wait some seconds before starting
+				delay 5.0;
 
 				Start;
 
 			exception
 				when E : others =>
-				Logger.Log(
-	   				Sender => "",
-	   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
-	   				L => Logger.ERROR);
-				Message_Agent.Instance.Close;
-				Traveler_Pool.Stop;
-				Train_Pool.Stop;
+					-- # In case of an Error, terminate all and close
+					Logger.Log(
+		   				Sender => "Main",
+		   				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+		   				L => Logger.ERROR);
+					Traveler_Pool.Stop;
+					Train_Pool.Stop;
 			end;
+			Ada.Text_IO.Put_Line("NOW WE CAN TERMINATE");
+			-- # At this point, all the Tasks will be out of scope, so we can Terminate in peace.
+			-- # Notify termination to the Central Controller.
+			Central_Controller_Interface.Notify_Termination;
+
+			-- # Finally close Message Agent
+			Message_Agent.Instance.Close;
+
 		exception
    			when E : Name_Server_Interface.Name_Server_Exception =>
    				Logger.Log(

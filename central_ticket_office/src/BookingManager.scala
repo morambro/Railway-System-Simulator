@@ -433,8 +433,8 @@ object BookingManager extends Actor {
 			}
 			
 			
-			case Stop => {
-				PrintsSerializer ! Print("BookingManager shutted down")
+			case Stop() => {
+				println("BookingManager shutted down")
 			}
 		}
 	}

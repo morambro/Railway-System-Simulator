@@ -482,7 +482,11 @@ package body Handlers Is
 			Reply_Parameters.Set_String("response",OK);
 			Msg.Reply(Reply_Parameters);
 
-			Traveler_Pool.Execute(new Move_Operation.Terminate_Operation_Type);
+			--Traveler_Pool.Execute(new Move_Operation.Terminate_Operation_Type);
+
+			-- # Ask to terminate to Pools
+			Train_Pool.Stop;
+			Traveler_Pool.Stop;
 
 			Logger.Log(
 				Sender 	=> "Termination_Handler",

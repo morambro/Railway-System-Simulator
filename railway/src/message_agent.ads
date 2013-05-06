@@ -33,6 +33,9 @@ with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Strings.Hash;
 with YAMI.Incoming_Messages;use YAMI.Incoming_Messages;
 
+-- #
+-- # This Package provides an interface to send and receive remote messages.
+-- #
 package Message_Agent is
 
 	No_Destination_For_Name : exception;
@@ -48,6 +51,7 @@ package Message_Agent is
 	);
 
 	use Maps;
+
 	-- #######################################################################################################
 	-- #
 	-- # A message Agent, used to send remote messages.
@@ -85,6 +89,9 @@ package Message_Agent is
 			This 				: access Message_Agent_Type;
 			Server_Address 		: in	 String);
 
+		-- #
+		-- # Closes the Agent
+		-- #
 		procedure Close(
 			This				: access Message_Agent_Type);
 
@@ -118,6 +125,9 @@ package Message_Agent is
 	-- #
 	procedure Process_Reply(Content : in out YAMI.Parameters.Parameters_Collection);
 
+	-- #
+	-- # Performs Agent Initializations
+	-- #
 	procedure Init;
 
 	-- #
@@ -127,6 +137,9 @@ package Message_Agent is
 
 private
 
+	-- #
+	-- # Message Agent private fields
+	-- #
 	type Message_Agent_Type(Options : Parameters_Collection_Access) is tagged limited record
 		Client_Agent 	: YAMI.Agents.Agent_Access := YAMI.Agents.New_Agent(Options.all);
 		Handlers_Map	: Maps.Map;

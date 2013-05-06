@@ -80,7 +80,7 @@ class SynchRequestsHandler extends Actor {
 			}
 			
 			case Stop() => {
-				println("Shutting down ValidationHandler")
+				println("Shutting down SynchREquestsHandler")
 			}
 			
 			case _ => {

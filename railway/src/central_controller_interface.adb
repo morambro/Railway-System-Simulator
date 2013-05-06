@@ -96,4 +96,18 @@ package body Central_Controller_Interface is
 	end Set_Traveler_Status;
 
 
+	procedure Notify_Termination is
+		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+	begin
+		Parameters.Set_String("node_name",Environment.Get_Node_Name);
+
+		Message_Agent.Instance.Send(
+			Destination_Address => Environment.Get_Central_Controller,
+			Object 				=> "central_controller",
+			Service 			=> "node_terminated",
+			Params 				=> Parameters,
+			Callback 			=> null);
+
+    end Notify_Termination;
+
 end Central_Controller_Interface;

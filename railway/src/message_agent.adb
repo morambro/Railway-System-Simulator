@@ -35,7 +35,10 @@ package body Message_Agent is
 	procedure Process_Reply(Content : in out YAMI.Parameters.Parameters_Collection) is
 	 	State : constant String := Content.Get_String("response");
 	begin
-		Put_Line("Result : " & State);
+		Logger.Log(
+			Sender	=> "Message_Agent.Default_Handler",
+			Message	=> "Result : " & State,
+			L		=> Logger.DEBUG);
 	end Process_Reply;
 
 	procedure Send(

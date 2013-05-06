@@ -12,13 +12,16 @@ object Main extends App {
 		println(argv(1))
 		println(argv(2))
 		
-		
-		val receiver = new RequestReceiver(argv(0),argv(2))
+		// Create the Message Receiver
+		val receiver = new MessagesReceiver(argv(0),argv(2))
 		receiver.start
 		
+		// Set Name Server Address
 		PathResolver.NAME_SERVER_ADDRESS = argv(1)
 		
+		// Start BookingManager and PrintsSerializer actors
 		BookingManager.start
+		PrintsSerializer.start
 		
 	}
 }

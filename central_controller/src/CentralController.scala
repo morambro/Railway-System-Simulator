@@ -4,16 +4,28 @@ import com.inspirel.yami._
 case class Event(description:String) 
 case class Stop()
 case class DistributedStop()
-
+case class NodeTerminated(nodeName : String)
 
 class Publisher(val address : String) extends Actor {
 	
 	val publisherValue	= new ValuePublisher
 	val publisherAgent	= new Agent
 	
-	// Setting address
+	/**
+	 * Nodes asked to terminate
+	 */
+	var askedNodes = List[String]()
+	
+	/**
+	 * Terminated Nodes
+	 */
+	var	terminatedNodes = List[String]()
+	
+	
+	// Set the Address from witch the publisher will be ready 
 	publisherAgent.addListener(address)
 	
+	// Pub-Sub service definition
 	publisherAgent.registerValuePublisher("events",publisherValue)
 	
 
@@ -45,78 +57,124 @@ class Publisher(val address : String) extends Actor {
 				// Ask Name server for the list of Nodes
 				val agent = new Agent
 				
-				ViewAgent ! Write("Asking Name Server for Nodes addresses at " + ControllerMain.NAME_SERVER_ADDRESS);
+				// Send a Marker to Central Ticket Office
+				val message : OutgoingMessage = agent.send(
+					ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
+					"central_ticket_server", 
+					"marker", 
+					new Parameters);
 				
-				try {
-					
-					val message : OutgoingMessage = agent.send(
-						ControllerMain.NAME_SERVER_ADDRESS,
-						"name_server", 
-						"list", 
-						new Parameters);
-					
-					ViewAgent ! Write("Waiting For Name Server response...")				
-					message.waitForCompletion
+				message.waitForCompletion
 				
-					// Received the response by name server
-					message.getState match {
-						case OutgoingMessage.MessageState.REPLIED => {
-			
-							message.getReply.getString("response") match {
-								case "OK" => {
-									val map = getMap(message.getReply.getString("list"))
+				message.getState match {
+					case OutgoingMessage.MessageState.REPLIED => {
+						try {
+							// Ask Name Server for the List of Addresses
+							val message : OutgoingMessage = agent.send(
+								ControllerMain.NAME_SERVER_ADDRESS,
+								"name_server", 
+								"list", 
+								new Parameters);
+					
+							ViewAgent ! Write("Waiting For Name Server response...")				
 							
-									ViewAgent ! Write("Node Addresses Gained!")
-									if (map == Map()) println("WARNING: No Nodes to terminate!") 
-									// Once the map is gained, ask each Node to Terminate:
-									
-									
-									map.keys.foreach( k => {
-										
-										println(map(k))
-										
-										val message : OutgoingMessage = agent.send(
-											map(k),
-											"message_handler", 
-											"terminate", 
-											new Parameters)
-								
-										message.waitForCompletion
-								
-										message.getState match {
-											case OutgoingMessage.MessageState.REPLIED => {
-												println("Node "+k+" Received termination request.")
+							message.waitForCompletion
+				
+							// Received the response by name server
+							message.getState match {
+								case OutgoingMessage.MessageState.REPLIED => {
+			
+									message.getReply.getString("response") match {
+										case "OK" => {
+											val map = getMap(message.getReply.getString("list"))
+											if (map == Map()){
+												 println("WARNING: No Nodes to terminate!") 
+											}else {
+												map.keys.foreach( k => {
+													val message : OutgoingMessage = agent.send(
+														map(k),
+														"message_handler", 
+														"terminate", 
+														new Parameters)
+													message.waitForCompletion
+													message.getState match {
+														case OutgoingMessage.MessageState.REPLIED => {
+															println("Node "+k+" Received termination request.")
+															// Add the node to asked list
+															askedNodes ::= k
+														}
+														case OutgoingMessage.MessageState.REJECTED => 
+															println("ERROR: The message has been rejected by node "+ k +
+																	" : " +	message.getExceptionMsg)
+														case _ => 
+															println("ERROR: The message has been abandoned by node " + k)
+													}
+												})
 											}
-											case OutgoingMessage.MessageState.REJECTED => 
-												println("ERROR: The message has been rejected by node "+ k +" : " + message.getExceptionMsg)
-											case _ => 
-												println("ERROR: The message has been abandoned by node " + k)
 										}
-									})
+										case _ => println("Name Server Sent ERROR")
+									}
+						
+									ViewAgent ! Write("Central Controller can be termianted writing 'q' or 'Q'!")
+									controllerLoop
+						
+								} 
+								case OutgoingMessage.MessageState.REJECTED => {
+									println("ERROR: The message has been rejected: " + message.getExceptionMsg)
+									controllerLoop
 								}
-								case _ => println("Name Server Sent ERROR")
+								case _ => {
+									println("ERROR: The message has been abandoned.")
+									controllerLoop
+								}
 							}
-						
-							ViewAgent ! Write("Central Controller can be termianted writing 'q' or 'Q'!")
-							controllerLoop
-						
-						} 
-						case OutgoingMessage.MessageState.REJECTED => {
-							println("ERROR: The message has been rejected: " + message.getExceptionMsg)
-							controllerLoop
-						}
-						case _ => {
-							println("ERROR: The message has been abandoned.")
-							controllerLoop
+						} catch {
+							case e : com.inspirel.yami.YAMIIOException => {
+								println("ERRORE: Connessione rifiutata all'indirizzo " + ControllerMain.NAME_SERVER_ADDRESS)
+								controllerLoop
+							}
 						}
 					}
-				} catch {
-					case e : com.inspirel.yami.YAMIIOException => {
-						println("ERRORE: Connessione rifiutata all'indirizzo " + ControllerMain.NAME_SERVER_ADDRESS)
-						controllerLoop
+					case OutgoingMessage.MessageState.REJECTED => 
+						println("ERROR: The message has been rejected by Central Ticket Office")
+					case _ => 
+						println("ERROR: The message has been abandoned by Central Ticket Office")
+				}
+				agent.close
+			}
+			
+			case NodeTerminated(nodeName) => {
+				println("Node "+nodeName+" confirmed Termination")
+				askedNodes = askedNodes.filter(_ != nodeName)
+				if (askedNodes.size == 0) {
+					// All nodes terminated, so we can send another Marker to Central Ticket Office to 
+					// Shut it down!
+					// Send a Marker to Central Ticket Office
+					val agent = new Agent
+					val message = agent.send(
+						ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
+						"central_ticket_server", 
+						"marker", 
+						new Parameters);
+				
+					message.waitForCompletion
+					
+					message.getState match {
+						case OutgoingMessage.MessageState.REPLIED => 
+							println("Central Ticket Office Received Second Marker")
+						case OutgoingMessage.MessageState.REJECTED => 
+							println("ERROR: The message has been rejected by Central Ticket Office")
+						case _ => 
+							println("ERROR: The message has been abandoned by Central Ticket Office")
 					}
+					agent.close
+					this ! Stop()
+				}else{
+					// If there are > 0 nodes to wait, loop again.
+					controllerLoop
 				}
 			}
+			
 			case Stop() => println("controller Stops")
 		}
 	}
@@ -129,6 +187,9 @@ class Publisher(val address : String) extends Actor {
 
 case class Write(m:String)
 case class Init(c : Actor)
+/**
+ * Object used to wrap the View.
+ **/
 object ViewAgent extends Actor {
 	
 	var controller : Actor = null
@@ -152,6 +213,11 @@ object ViewAgent extends Actor {
 	}
 }
 
+/**
+ *
+ * Defines a Message Receiver agent
+ *
+ **/
 class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 	
 	var serverAgent = new Agent
@@ -167,6 +233,13 @@ class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 			case "event" => {
 				controller ! Event(im.getParameters.getString("event"))
 			}
+			case "node_terminated" => {
+				controller ! NodeTerminated(im.getParameters.getString("node_name"))
+				
+				val replyPar = new Parameters
+				replyPar.setString("response","OK")
+				im.reply(replyPar)
+			}
 			case other => {
 				print("ERROR : Invalid EVENT "+ other.toString )
 			}
@@ -180,11 +253,11 @@ class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 
 object ControllerMain extends App {
 	
-	var NAME_SERVER_ADDRESS = "";
+	var NAME_SERVER_ADDRESS = ""
+	var CENTRAL_TICKET_OFFICE_ADDRESS = ""
 	
 	var controller 	: Publisher = null
 	var receiver 	: Receiver = null
-//	var viewAgent 	: ViewAgent = null
 	
 	def waitExit {
 		readLine() match {
@@ -202,19 +275,33 @@ object ControllerMain extends App {
 	
 	override def main(args : Array[String]) {
 		
-		if (args.length < 2) {
-			println ("ERROR: Controller and Name Server tcp addresses must be specified");
+		if (args.length < 3) {
+			println ("""
+ERROR: Following parameters MUST be specifed:
+	1) Controller address;
+	2) Name Server address;
+	3) Central Ticket Office address""");
 			return;
 		}
+		
+		val controllerAddress = args(0)
+		val nameServerAddress = args(1)
+		val centralTicketOfficeAddress = args(2)
+		
+		// Controller creation,
 		controller = new Publisher("tcp://localhost:2222")
 		controller.start		
-		receiver = new Receiver(controller)
-		receiver.addHandler(args(0))
 		
+		// Receiver creation
+		receiver = new Receiver(controller)
+		receiver.addHandler(controllerAddress)
+		
+		// Initialization of the View Agent
 		ViewAgent.start
 		ViewAgent ! Init(controller)
 		
-		NAME_SERVER_ADDRESS = args(1)
+		NAME_SERVER_ADDRESS = nameServerAddress
+		CENTRAL_TICKET_OFFICE_ADDRESS = centralTicketOfficeAddress
 		
 		waitExit
 		
