@@ -58,7 +58,7 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 			case Stop()	=> {
 				// Stop all the Actors used
 				PrintsSerializer ! Print("Central Ticket Office is shutting down...")
-				serverAgent.close
+//				serverAgent.close
 				ticketResolutionHandlers.foreach(a => a ! Stop())
 				synchReqHandlers.foreach(a => a ! Stop())
 				BookingManager ! Stop()
@@ -151,6 +151,14 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 			case "marker" => {
 				// Now the receiver knows it have to buffer all asynchronous requests, such as ticket creation requests
 				PrintsSerializer ! Print("Received MARKER request")
+				
+				// Return immediately
+				var replyPar : Parameters = new Parameters
+				
+				replyPar.setString("response","OK");
+				
+				im.reply(replyPar)
+				
 				if (markerReceived) {
 					// Terminate!
 					// Save to file (?)
@@ -161,12 +169,6 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 					println("Setting markerReceived = TRUE")
 					markerReceived = true
 				}
-				// Return immediately
-				var replyPar : Parameters = new Parameters
-				
-				replyPar.setString("response","OK");
-				
-				im.reply(replyPar)
 			}
 			
 			case other => {

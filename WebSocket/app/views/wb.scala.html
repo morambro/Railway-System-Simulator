@@ -132,49 +132,56 @@
 			paddingTop+stationDim/2,
 			paddingLeft+stationDim+segmentLength,
 			paddingTop+stationDim/2,
-			"1","2");
+			"A","B");
         
         segments[2] = new segment(
         	paddingLeft+(2*stationDim+segmentLength),
         	paddingTop+stationDim/2,
         	paddingLeft+(2*stationDim+segmentLength)+segmentLength,
         	paddingTop+stationDim/2,
-        	"2","3");
+        	"B","C");
         	
         segments[3] = new segment(
         	paddingLeft+(3*stationDim+2*segmentLength),
         	paddingTop+stationDim/2,
         	paddingLeft+(3*stationDim+2*segmentLength)+segmentLength,
         	paddingTop+stationDim/2,
-        	"3","4");
+        	"C","D");
         	
         segments[4] = new segment(
         	paddingLeft+(stationDim+segmentLength)+stationDim,
         	paddingTop+stationDim-(stationDim/3),
         	paddingLeft+(stationDim+segmentLength)+stationDim+segmentLength,
         	paddingTop+stationDim+segmentLength,
-        	"2","G1");
+        	"B","G1");
         
         segments[5] = new segment(
         	paddingLeft+3*stationDim+2*segmentLength,
         	paddingTop+stationDim+segmentLength,
         	paddingLeft+3*stationDim+3*segmentLength,
         	paddingTop+stationDim+segmentLength,
-        	"G1","H");
+        	"G1","E");
         
         segments[6] = new segment(
         	paddingLeft+4*stationDim+3*segmentLength,
         	paddingTop+stationDim+segmentLength,
         	paddingLeft+4*stationDim+4*segmentLength,
         	paddingTop+stationDim+segmentLength,
-        	"H","K");
+        	"E","F");
         
         segments[7] = new segment(
         	paddingLeft+5*stationDim+4*segmentLength,
         	paddingTop+stationDim+segmentLength,
         	paddingLeft+5*stationDim+5*segmentLength,
         	paddingTop+stationDim+segmentLength,
-        	"K","L");
+        	"F","E");
+        	
+        segments[8] = new segment(
+        	paddingLeft+5*stationDim+4*segmentLength,
+        	paddingTop+stationDim+segmentLength+(stationDim/3),
+        	paddingLeft+5*stationDim+5*segmentLength,
+        	paddingTop+2*stationDim+2*segmentLength,
+        	"F","I");
         
 
         /***************************************************************************************************************/
@@ -182,83 +189,83 @@
         /***************************************************************************************************************/
         stations = {};
    		
-   		r.text(paddingLeft+stationDim/2,paddingTop-10,"Station 1");
-   		stations["1"] = new station("1", r.rect(paddingLeft,paddingTop,stationDim,stationDim));
-   		stations["1"].platforms[1] = r.rect(
+   		r.text(paddingLeft+stationDim/2,paddingTop-10,"Station A");
+   		stations["A"] = new station("A", r.rect(paddingLeft,paddingTop,stationDim,stationDim));
+   		stations["A"].platforms[1] = r.rect(
    			paddingLeft+platformPaddingLeft,
    			paddingTop+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["1"].platforms[2] = r.rect(
+   		stations["A"].platforms[2] = r.rect(
    			paddingLeft+platformPaddingLeft,
    			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["1"].platforms[3] = r.rect(
+   		stations["A"].platforms[3] = r.rect(
    			paddingLeft+platformPaddingLeft,
    			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["1"].platforms[4] = r.rect(
+   		stations["A"].platforms[4] = r.rect(
    			paddingLeft+platformPaddingLeft,
    			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
    		
-   		r.text(segments[1].to_x+stationDim/2,segments[1].to_y-(stationDim/2)-10,"Station 2");
-   		stations["2"] = new station("2", r.rect(segments[1].to_x,segments[1].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["2"].platforms[1] = r.rect(
+   		r.text(segments[1].to_x+stationDim/2,segments[1].to_y-(stationDim/2)-10,"Station B");
+   		stations["B"] = new station("B", r.rect(segments[1].to_x,segments[1].to_y-(stationDim/2),stationDim,stationDim));
+   		stations["B"].platforms[1] = r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			paddingTop+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["2"].platforms[2] = r.rect(
+   		stations["B"].platforms[2] = r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["2"].platforms[3] = r.rect(
+   		stations["B"].platforms[3] = r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["2"].platforms[4] = r.rect(
+   		stations["B"].platforms[4] = r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
    		
-   		r.text(segments[2].to_x+stationDim/2,segments[2].to_y-(stationDim/2)-10,"Station 3");
-   		stations["3"] = new station("3", r.rect(segments[2].to_x,segments[2].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["3"].platforms[1] = r.rect(
+   		r.text(segments[2].to_x+stationDim/2,segments[2].to_y-(stationDim/2)-10,"Station C");
+   		stations["C"] = new station("C", r.rect(segments[2].to_x,segments[2].to_y-(stationDim/2),stationDim,stationDim));
+   		stations["C"].platforms[1] = r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			paddingTop+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["3"].platforms[2] = r.rect(
+   		stations["C"].platforms[2] = r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["3"].platforms[3] = r.rect(
+   		stations["C"].platforms[3] = r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["3"].platforms[4] = r.rect(
+   		stations["C"].platforms[4] = r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
    		
-   		r.text(segments[3].to_x+stationDim/2,segments[3].to_y-(stationDim/2)-10,"Station 4");
-   		stations["4"] = new station("4", r.rect(segments[3].to_x,segments[3].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["4"].platforms[1] = r.rect(
+   		r.text(segments[3].to_x+stationDim/2,segments[3].to_y-(stationDim/2)-10,"Station D");
+   		stations["D"] = new station("D", r.rect(segments[3].to_x,segments[3].to_y-(stationDim/2),stationDim,stationDim));
+   		stations["D"].platforms[1] = r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			paddingTop+2*platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["4"].platforms[2] = r.rect(
+   		stations["D"].platforms[2] = r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			paddingTop+4*platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
@@ -301,89 +308,106 @@
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
    		
-   		r.text(segments[5].to_x+stationDim/2,segments[5].to_y-(stationDim/2)-10,"Station H");
-   		stations["H"] = new station("H", r.rect(segments[5].to_x,segments[5].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["H"].platforms[1] = r.rect(
+   		r.text(segments[5].to_x+stationDim/2,segments[5].to_y-(stationDim/2)-10,"Station E");
+   		stations["E"] = new station("E", r.rect(segments[5].to_x,segments[5].to_y-(stationDim/2),stationDim,stationDim));
+   		stations["E"].platforms[1] = r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["H"].platforms[2] = r.rect(
+   		stations["E"].platforms[2] = r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["H"].platforms[3] = r.rect(
+   		stations["E"].platforms[3] = r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["H"].platforms[4] = r.rect(
+   		stations["E"].platforms[4] = r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
    		
-   		r.text(segments[6].to_x+stationDim/2,segments[6].to_y-(stationDim/2)-10,"Station K");
-   		stations["K"] = new station("K", r.rect(segments[6].to_x,segments[6].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["K"].platforms[1] = r.rect(
+   		r.text(segments[6].to_x+stationDim/2,segments[6].to_y-(stationDim/2)-10,"Station F");
+   		stations["F"] = new station("F", r.rect(segments[6].to_x,segments[6].to_y-(stationDim/2),stationDim,stationDim));
+   		stations["F"].platforms[1] = r.rect(
    			paddingLeft+platformPaddingLeft+4*stationDim+4*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["K"].platforms[2] = r.rect(
+   		stations["F"].platforms[2] = r.rect(
    			paddingLeft+platformPaddingLeft+4*stationDim+4*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["K"].platforms[3] = r.rect(
+   		stations["F"].platforms[3] = r.rect(
    			paddingLeft+platformPaddingLeft+4*stationDim+4*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
    			
-   		r.text(segments[7].to_x+stationDim/2,segments[7].to_y-(stationDim/2)-10,"Station L");
-   		stations["L"] = new station("L", r.rect(segments[7].to_x,segments[7].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["L"].platforms[1] = r.rect(
+   		r.text(segments[7].to_x+stationDim/2,segments[7].to_y-(stationDim/2)-10,"Station H");
+   		stations["H"] = new station("H", r.rect(segments[7].to_x,segments[7].to_y-(stationDim/2),stationDim,stationDim));
+   		stations["H"].platforms[1] = r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["L"].platforms[2] = r.rect(
+   		stations["H"].platforms[2] = r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		stations["L"].platforms[3] = r.rect(
+   		stations["H"].platforms[3] = r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   			
+   		r.text(segments[8].to_x+stationDim/2,segments[8].to_y-(stationDim/2)-10,"Station I");
+   		stations["I"] = new station("H", r.rect(segments[8].to_x,segments[8].to_y-(stationDim/2),stationDim,stationDim));
+   		stations["I"].platforms[1] = r.rect(
+   			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
+   			segments[8].to_y-(stationDim/2)+platformPaddingTop,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["I"].platforms[2] = r.rect(
+   			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
+   			segments[8].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["I"].platforms[3] = r.rect(
+   			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
+   			segments[8].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
 
 
    		usersPerPlatform = {};
    		
-   		usersPerPlatform["1"] = [];
-   		usersPerPlatform["1"][1] = 0; 
-   		usersPerPlatform["1"][2] = 0;
-   		usersPerPlatform["1"][3] = 0;
-   		usersPerPlatform["1"][4] = 0;
+   		usersPerPlatform["A"] = [];
+   		usersPerPlatform["A"][1] = 0; 
+   		usersPerPlatform["A"][2] = 0;
+   		usersPerPlatform["A"][3] = 0;
    		
-   		usersPerPlatform["2"] = [];
-   		usersPerPlatform["2"][1] = 0; 
-   		usersPerPlatform["2"][2] = 0;
-   		usersPerPlatform["2"][3] = 0;
-   		usersPerPlatform["2"][4] = 0;
+   		usersPerPlatform["B"] = [];
+   		usersPerPlatform["B"][1] = 0; 
+   		usersPerPlatform["B"][2] = 0;
+   		usersPerPlatform["B"][3] = 0;
+   		usersPerPlatform["B"][4] = 0;
    		
-   		usersPerPlatform["3"] = [];
-   		usersPerPlatform["3"][1] = 0; 
-   		usersPerPlatform["3"][2] = 0;
-   		usersPerPlatform["3"][3] = 0;
-   		usersPerPlatform["3"][4] = 0;
+   		usersPerPlatform["C"] = [];
+   		usersPerPlatform["C"][1] = 0; 
+   		usersPerPlatform["C"][2] = 0;
+   		usersPerPlatform["C"][3] = 0;
+   		usersPerPlatform["C"][4] = 0;
    		
-   		usersPerPlatform["4"] = [];
-   		usersPerPlatform["4"][1] = 0; 
-   		usersPerPlatform["4"][2] = 0;
+   		usersPerPlatform["D"] = [];
+   		usersPerPlatform["D"][1] = 0; 
+   		usersPerPlatform["D"][2] = 0;
    		
    		usersPerPlatform["G1"] = [];
    		usersPerPlatform["G1"][1] = 0; 
@@ -393,21 +417,27 @@
    		usersPerPlatform["G1"][5] = 0;
    		usersPerPlatform["G1"][6] = 0;
 
+   		usersPerPlatform["E"] = [];
+   		usersPerPlatform["E"][1] = 0; 
+   		usersPerPlatform["E"][2] = 0;
+   		usersPerPlatform["E"][3] = 0;
+   		usersPerPlatform["E"][4] = 0;
+   		
+   		usersPerPlatform["F"] = [];
+   		usersPerPlatform["F"][1] = 0; 
+   		usersPerPlatform["F"][2] = 0;
+   		usersPerPlatform["F"][3] = 0;
+   		usersPerPlatform["F"][4] = 0;
+   		
    		usersPerPlatform["H"] = [];
    		usersPerPlatform["H"][1] = 0; 
    		usersPerPlatform["H"][2] = 0;
    		usersPerPlatform["H"][3] = 0;
-   		usersPerPlatform["H"][4] = 0;
    		
-   		usersPerPlatform["K"] = [];
-   		usersPerPlatform["K"][1] = 0; 
-   		usersPerPlatform["K"][2] = 0;
-   		usersPerPlatform["K"][3] = 0;
-   		
-   		usersPerPlatform["L"] = [];
-   		usersPerPlatform["L"][1] = 0; 
-   		usersPerPlatform["L"][2] = 0;
-   		usersPerPlatform["L"][3] = 0;
+   		usersPerPlatform["I"] = [];
+   		usersPerPlatform["I"][1] = 0; 
+   		usersPerPlatform["I"][2] = 0;
+   		usersPerPlatform["I"][3] = 0;
    		
         /***************************************************************************************************************/
         /****************************************** TRAINS_DEFINITIONS *************************************************/
@@ -415,13 +445,17 @@
 		
 		trains = {};
 		
-		trains[1111] = r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
+		trains[1111] = r.image("@routes.Assets.at("images/regional.png")",0,0,90,15);
 		// First Position
-		moveToPlatform(1111,"2",2);
+		moveToPlatform(1111,"A",2);
 		
-		trains[2222] = r.image("@routes.Assets.at("images/regional.png")",0,0,90,15);
+		trains[2222] = r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
 		// Second Position
-		moveToPlatform(2222,"1",3);
+		moveToPlatform(2222,"A",1);
+		
+		trains[4444] = r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
+		// Second Position
+		moveToPlatform(4444,"B",4);
 		
 		
 		function moveToPlatform(trainId,stationId,platformId) {
@@ -452,10 +486,10 @@
 		
 		travelers = {};
 		
-		travelers[1] = new traveler("1",5); 
+		travelers[1] = new traveler("A",5); 
 		travelers[1].image.attr('fill','#4169E1');
 		
-		travelers[2] = new traveler("2",5); 
+		travelers[2] = new traveler("B",5); 
 		travelers[2].image.attr('fill','#4169E1');
 	
 	

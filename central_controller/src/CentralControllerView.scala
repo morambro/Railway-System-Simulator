@@ -1,16 +1,31 @@
 import scala.swing._
 import scala.swing.event._
 import java.awt.GridLayout
+import java.util.Date
+import java.text.SimpleDateFormat
+
+class MyTextArea extends TextArea {
+	
+	val format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+	
+	lineWrap = true
+	
+	def addRow(t:String) {
+		this.text += "[" + format.format(new Date) + "] " + t + "\n"
+	}
+	
+}
 
 class CentralControllerView extends MainFrame {
 
 	private val startButton = new Button("Start")
 	private val stopButton = new Button("Stop")
-	private val textArea = new TextArea	
-	resizable = false
+	private val textArea = new MyTextArea
+	
 	
 	title = "Central Controller GUI"
-	val s = new Dimension(300,200)
+	val s = new Dimension(500,400)
+	resizable = false
     minimumSize = s
     maximumSize = s
     preferredSize = s
@@ -30,12 +45,18 @@ class CentralControllerView extends MainFrame {
 	
 	override def closeOperation() { showCloseDialog() }
 	
+	import javax.swing.ScrollPaneConstants._
+	
+	val sc = new ScrollPane(textArea){
+		horizontalScrollBarPolicy = new scala.swing.ScrollPane.BarPolicy.Value(HORIZONTAL_SCROLLBAR_NEVER,VERTICAL_SCROLLBAR_ALWAYS)
+	}
+	
 	contents = new BorderPanel {
 		add(new FlowPanel {
 			contents += startButton
 			contents += stopButton
 		}, BorderPanel.Position.North)
-		add(textArea, BorderPanel.Position.Center)
+		add(sc, BorderPanel.Position.Center)
 	}
 	
 	visible = true
@@ -49,8 +70,13 @@ class CentralControllerView extends MainFrame {
     	}
 	}
 	
+	def disableButtons() {
+		startButton.enabled = false
+		stopButton.enabled = false
+	}
+	
 	def setStopOperation(doOperation : Unit => Unit) {
-		stopButton.listenTo(startButton)
+		stopButton.listenTo(stopButton)
     	stopButton.reactions += { 	
     		case e:ButtonClicked => {
     			doOperation()
@@ -60,7 +86,7 @@ class CentralControllerView extends MainFrame {
 	}
 	
 	def write(message : String) {
-		textArea.text += message
+		textArea.addRow(message)
 	}
 	
 }

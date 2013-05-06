@@ -10,29 +10,19 @@
 					"station"	: 5
 				},
 				{
-					"region" 	: "Node_3",
+					"region" 	: "Node_2",
 					"station"	: 1
 				}
 			]
 		},
 		{
-			"platform_number" 	: 4,
-			"name" 				: "E",
-			"type"				: "R"
-		},
-		{
-			"platform_number" 	: 4,
-			"name" 				: "F",
-			"type"				: "R"
-		},
-		{
 			"platform_number" 	: 3,
-			"name" 				: "H",
+			"name" 				: "L",
 			"type"				: "R"
 		},
 		{
-			"platform_number" 	: 3,
-			"name" 				: "I",
+			"platform_number" 	: 1,
+			"name" 				: "M",
 			"type"				: "R"
 		}
 	]

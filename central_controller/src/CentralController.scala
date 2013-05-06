@@ -42,6 +42,61 @@ class Publisher(val address : String) extends Actor {
 		
 		res	
 	}
+	
+	def getNodesList : Map[String,String] = {
+		val agent = new Agent
+		// Ask Name Server for the List of Addresses
+		val message : OutgoingMessage = agent.send(
+			ControllerMain.NAME_SERVER_ADDRESS,
+			"name_server", 
+			"list", 
+			new Parameters);
+
+		ViewAgent ! Write("Waiting for Nodes list from Name Server...")				
+		
+		message.waitForCompletion
+		
+		val result = message.getState match {
+			case OutgoingMessage.MessageState.REPLIED => message.getReply.getString("response") match {
+					case "OK" => getMap(message.getReply.getString("list"))
+					case _ => null
+			}
+			case OutgoingMessage.MessageState.REJECTED => {
+				println("ERROR: The message has been rejected: " + message.getExceptionMsg)
+				null
+			}
+			case _ => {
+				println("ERROR: The message has been abandoned.")
+				null
+			}
+		}
+		
+		result
+	}
+	
+	def sendMarker : Boolean = {
+		val agent = new Agent
+		val message = agent.send(
+			ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
+			"central_ticket_server", 
+			"marker", 
+			new Parameters);
+
+		message.waitForCompletion
+		var received = false
+
+		message.getState match {
+			case OutgoingMessage.MessageState.REPLIED => {
+				println("Central Ticket Office Received the Marker")
+				received = true
+			}
+			case OutgoingMessage.MessageState.REJECTED => println("ERROR: The message has been rejected by Central Ticket Office")
+			case _ => println("ERROR: The message has been abandoned by Central Ticket Office")
+		}
+		agent.close
+		
+		received
+	}
 
 
 	def controllerLoop() {
@@ -53,129 +108,82 @@ class Publisher(val address : String) extends Actor {
 				publisherValue.publish(content)
 				controllerLoop
 			}
-			case DistributedStop() => {
-				// Ask Name server for the list of Nodes
-				val agent = new Agent
-				
-				// Send a Marker to Central Ticket Office
-				val message : OutgoingMessage = agent.send(
-					ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
-					"central_ticket_server", 
-					"marker", 
-					new Parameters);
-				
-				message.waitForCompletion
-				
-				message.getState match {
-					case OutgoingMessage.MessageState.REPLIED => {
-						try {
-							// Ask Name Server for the List of Addresses
-							val message : OutgoingMessage = agent.send(
-								ControllerMain.NAME_SERVER_ADDRESS,
-								"name_server", 
-								"list", 
-								new Parameters);
-					
-							ViewAgent ! Write("Waiting For Name Server response...")				
-							
-							message.waitForCompletion
-				
-							// Received the response by name server
-							message.getState match {
-								case OutgoingMessage.MessageState.REPLIED => {
 			
-									message.getReply.getString("response") match {
-										case "OK" => {
-											val map = getMap(message.getReply.getString("list"))
-											if (map == Map()){
-												 println("WARNING: No Nodes to terminate!") 
-											}else {
-												map.keys.foreach( k => {
-													val message : OutgoingMessage = agent.send(
-														map(k),
-														"message_handler", 
-														"terminate", 
-														new Parameters)
-													message.waitForCompletion
-													message.getState match {
-														case OutgoingMessage.MessageState.REPLIED => {
-															println("Node "+k+" Received termination request.")
-															// Add the node to asked list
-															askedNodes ::= k
-														}
-														case OutgoingMessage.MessageState.REJECTED => 
-															println("ERROR: The message has been rejected by node "+ k +
-																	" : " +	message.getExceptionMsg)
-														case _ => 
-															println("ERROR: The message has been abandoned by node " + k)
-													}
-												})
-											}
+			case DistributedStop() => {
+				ViewAgent ! Write("Requested Distributed Termination")
+				
+				sendMarker match {
+					case true => {
+						try {
+							getNodesList match {
+								case map : Map[_,_] => {
+									if (map == Map()){
+										ViewAgent ! Write("WARNING: No Nodes to terminate!")
+										ViewAgent ! Write("Sending the second Marker to Central Ticket Office...")
+										if (sendMarker) {
+											ViewAgent ! Write("Central Controller can be now termianted!")
+											this ! Stop()
 										}
-										case _ => println("Name Server Sent ERROR")
+									}else {
+										val agent = new Agent
+										map.keys.foreach( k => {
+											val message : OutgoingMessage = agent.send(
+												map(k),
+												"message_handler", 
+												"terminate", 
+												new Parameters)
+											message.waitForCompletion
+											message.getState match {
+												case OutgoingMessage.MessageState.REPLIED => {
+													ViewAgent ! Write("Node "+k+" Received termination request.")
+													// Add the node to asked list
+													askedNodes ::= k
+												}
+												case OutgoingMessage.MessageState.REJECTED => 
+													ViewAgent ! Write("ERROR: The message has been rejected by node "+ k +
+															" : " +	message.getExceptionMsg)
+												case _ => 
+													ViewAgent ! Write("ERROR: The message has been abandoned by node " + k)
+											}
+										})
+										agent.close
 									}
-						
-									ViewAgent ! Write("Central Controller can be termianted writing 'q' or 'Q'!")
-									controllerLoop
-						
-								} 
-								case OutgoingMessage.MessageState.REJECTED => {
-									println("ERROR: The message has been rejected: " + message.getExceptionMsg)
-									controllerLoop
 								}
-								case _ => {
-									println("ERROR: The message has been abandoned.")
-									controllerLoop
-								}
+								case null => 
 							}
+							controllerLoop()
 						} catch {
 							case e : com.inspirel.yami.YAMIIOException => {
 								println("ERRORE: Connessione rifiutata all'indirizzo " + ControllerMain.NAME_SERVER_ADDRESS)
-								controllerLoop
+								controllerLoop()
 							}
 						}
 					}
-					case OutgoingMessage.MessageState.REJECTED => 
-						println("ERROR: The message has been rejected by Central Ticket Office")
-					case _ => 
-						println("ERROR: The message has been abandoned by Central Ticket Office")
+					case false => 
 				}
-				agent.close
 			}
 			
 			case NodeTerminated(nodeName) => {
-				println("Node "+nodeName+" confirmed Termination")
+				ViewAgent ! Write("Node "+nodeName+" confirmed Termination")
 				askedNodes = askedNodes.filter(_ != nodeName)
 				if (askedNodes.size == 0) {
 					// All nodes terminated, so we can send another Marker to Central Ticket Office to 
 					// Shut it down!
-					// Send a Marker to Central Ticket Office
-					val agent = new Agent
-					val message = agent.send(
-						ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
-						"central_ticket_server", 
-						"marker", 
-						new Parameters);
-				
-					message.waitForCompletion
-					
-					message.getState match {
-						case OutgoingMessage.MessageState.REPLIED => 
-							println("Central Ticket Office Received Second Marker")
-						case OutgoingMessage.MessageState.REJECTED => 
-							println("ERROR: The message has been rejected by Central Ticket Office")
-						case _ => 
-							println("ERROR: The message has been abandoned by Central Ticket Office")
+					if(sendMarker) {
+						ViewAgent ! Write("Central Controller can be now termianted!")
+						this ! Stop()
 					}
-					agent.close
-					this ! Stop()
 				}else{
 					// If there are > 0 nodes to wait, loop again.
 					controllerLoop
 				}
 			}
 			
-			case Stop() => println("controller Stops")
+			case Stop() => {
+				ViewAgent ! DisableButtons()
+				ViewAgent ! Write("Close the Window to quit central controller")
+				ViewAgent ! Stop()
+			}
 		}
 	}
 
@@ -187,6 +195,7 @@ class Publisher(val address : String) extends Actor {
 
 case class Write(m:String)
 case class Init(c : Actor)
+case class DisableButtons()
 /**
  * Object used to wrap the View.
  **/
@@ -199,6 +208,10 @@ object ViewAgent extends Actor {
 	def viewAgentLoop() : Unit = react {
 		case Write(m:String) => {
 			view.write(m)
+			viewAgentLoop()
+		}
+		case DisableButtons() => {
+			view.disableButtons()
 			viewAgentLoop()
 		}
 		case Stop() => 
@@ -234,6 +247,7 @@ class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 				controller ! Event(im.getParameters.getString("event"))
 			}
 			case "node_terminated" => {
+				
 				controller ! NodeTerminated(im.getParameters.getString("node_name"))
 				
 				val replyPar = new Parameters

@@ -1,0 +1,55 @@
+{
+ "paths" : [
+    {
+        "from"         : 1,
+        "destinations" : [
+            {
+                "dest" : 1,
+                "path" : [1]
+            },
+            {
+                "dest" : 2,
+                "path" : [1,2]
+            },
+            {
+                "dest" : 3,
+                "path" : [1,2,3]
+            }
+        ]
+    },
+    {
+        "from"         : 2,
+        "destinations" : [
+            {
+                "dest" : 1,
+                "path" : [2,1]
+            },
+            {
+                "dest" : 2,
+                "path" : [2]
+            },
+            {
+                "dest" : 3,
+                "path" : [2,3]
+            }
+        ]
+    },
+    {
+        "from"         : 3,
+        "destinations" : [
+            {
+                "dest" : 1,
+                "path" : [3,2,1]
+            },
+            {
+                "dest" : 2,
+                "path" : [3,2]
+            },
+            {
+                "dest" : 3,
+                "path" : [3]
+            }
+        ]
+    }
+  ]
+}

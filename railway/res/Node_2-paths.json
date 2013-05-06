@@ -1,8 +1,37 @@
 {
  "paths" : [
     {
+        "from"         : 5,
+        "destinations" : [
+            {
+                "dest" : 5,
+                "path" : [5]
+            },
+            {
+                "dest" : 1,
+                "path" : [5,3,2,1]
+            },
+            {
+                "dest" : 2,
+                "path" : [5,3,2]
+            },
+            {
+                "dest" : 3,
+                "path" : [5,3]
+            },
+            {
+                "dest" : 4,
+                "path" : [5,3,4]
+            }
+        ]
+    },
+    {
         "from"         : 1,
         "destinations" : [
+            {
+                "dest" : 5,
+                "path" : [1,2,3,5]
+            },
             {
                 "dest" : 1,
                 "path" : [1]
@@ -25,6 +54,10 @@
         "from"         : 2,
         "destinations" : [
             {
+                "dest" : 5,
+                "path" : [2,3,5]
+            },
+            {
                 "dest" : 1,
                 "path" : [2,1]
             },
@@ -46,6 +79,10 @@
         "from"         : 3,
         "destinations" : [
             {
+                "dest" : 5,
+                "path" : [3,5]
+            },
+            {
                 "dest" : 1,
                 "path" : [3,2,1]
             },
@@ -66,6 +103,10 @@
     {
         "from"         : 4,
         "destinations" : [
+            {
+                "dest" : 5,
+                "path" : [4,3,5]
+            },
             {
                 "dest" : 1,
                 "path" : [4,3,2,1]

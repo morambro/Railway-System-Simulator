@@ -13,7 +13,7 @@
 			
 			"sits_number"		: 5,
 			"occupied_sits"		: 0,
-			"type"				: "fb",
+			"type"				: "regionale",
 			"start_node"		: "Node_1"
 		},
 		{
@@ -29,23 +29,23 @@
 			
 			"sits_number"		: 10,
 			"occupied_sits"		: 0,
-			"type"				: "regionale",
+			"type"				: "fb",
 			"start_node"		: "Node_1"
 		},
 		{
-			"id" 				: 3333,
+			"id" 				: 4444,
 			"speed" 			: 50,
 			"max_speed" 		: 100,
 			
-			"current_station" 	: 4,
+			"current_station" 	: 2,
 			
 			"next_stage" 		: 1,
 			
-			"route_index" 		: 3,
+			"route_index" 		: 4,
 			
 			"sits_number"		: 10,
 			"occupied_sits"		: 0,
-			"type"				: "regionale",
+			"type"				: "fb",
 			"start_node"		: "Node_1"
 		}
 	]

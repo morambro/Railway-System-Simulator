@@ -7,8 +7,8 @@
                 "surname"	: "Rossi"
             },
             "next_operation"	: 1,
-            "destination"		: "4",
-            "start_station" 	: "1",
+            "destination"		: "D",
+            "start_station" 	: "A",
             "start_node"		: "Node_1"
         },
         {
@@ -18,9 +18,9 @@
                 "surname"	: "Giuseppe"
             },
             "next_operation"	: 1,
-            "destination"		: "L",
-            "start_station" 	: "1",
-            "start_node"		: "Node_1"
+            "destination"		: "G1",
+            "start_station" 	: "M",
+            "start_node"		: "Node_3"
         }
     ]
 }
