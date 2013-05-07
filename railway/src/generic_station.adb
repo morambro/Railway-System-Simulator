@@ -11,7 +11,7 @@
 --  This file is part of Railway_Simulation project.							--
 --																				--
 --  Railway_Simulation is free software: you can redistribute it and/or modify	--
---  it under the terms of the GNU General Public License as published by		--
+--  it under the terms of tIOhe GNU General Public License as published by		--
 --  the Free Software Foundation, either version 3 of the License, or			--
 --  (at your option) any later version.											--
 --																				--
@@ -25,6 +25,8 @@
 ----------------------------------------------------------------------------------
 with Trains;
 with Logger;
+with Ada.Text_IO;use Ada.Text_IO;
+with Ada.Containers;use Ada.Containers;
 
 package body Generic_Station is
 
@@ -108,7 +110,12 @@ package body Generic_Station is
 		begin
 			-- # Add a new element in the Queue.
 			Trains_Order.Enqueue(Train_ID);
+			Put_Line(integer'image(ID) & " QUEUE = " & Ada.Containers.Count_Type'image(Trains_Order.Queue.Length));
+--  			for I in 1..Integer(Trains_Order.Queue.Length) loop
+--  				Put_Line("Element " & integer'image(I) & " = " & integer'image(Trains_Order.Queue(i)));
+--  			end loop;
 		end Add_Train;
+
 
  	end Access_Controller;
 

@@ -236,7 +236,7 @@ object BookingManager extends Actor {
 						for(i <- 0 until timeTables(routeIndex-1).runs-1) {
 							newTable(i+1) = timeTables(routeIndex-1).table(i)
 							for (j<- 0 until newTable(i+1).size) {
-								newTable(i+1)(j) = new Date(newTable(1).last.getTime + timeTables(routeIndex-1).spans_table(i)(j)) 
+								newTable(i+1)(j) = new Date(newTable(0).last.getTime + timeTables(routeIndex-1).spans_table(i)(j)) 
 							}
 							
 						}

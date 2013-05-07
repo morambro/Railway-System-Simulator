@@ -28,8 +28,17 @@ package Notice_Panel is
 
 	protected type Notice_Panel_Entity(Station_ID : access String) is
 
-		procedure Set_Status(
-			Status 	: in		String);
+		procedure Set_Train_Arriving(
+			Train_ID	: in 	Integer;
+			Platform	: in 	Integer);
+
+		procedure Set_Train_Accessed_Platform(
+			Train_ID	: in 	Integer;
+			Platform	: in 	Integer);
+
+		procedure Set_Train_Left_Platform(
+			Train_ID	: in 	Integer;
+			Platform	: in 	Integer);
 
 	end Notice_Panel_Entity;
 

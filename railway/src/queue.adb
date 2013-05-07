@@ -99,7 +99,7 @@ package body Queue is
 		This 		: in out Unlimited_Simple_Queue;
 		The_Element : 	 out Element) is
 	begin
-		if not This.Queue.Is_Empty then
+		if not This.Is_Empty then
 			-- # Get the value of the first element
 			The_Element := This.Queue.Element(
 				Index => 1);
@@ -115,6 +115,9 @@ package body Queue is
 			This 	: in out Unlimited_Simple_Queue;
 			Index 	: in	 Natural) return Element is
 	begin
+		if This.Is_Empty then
+			Put_Line ("IS EMPTY!!!!");
+		end if;
 		return This.Queue.Element(Index => Index);
     end Get;
 

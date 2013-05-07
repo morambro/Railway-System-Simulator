@@ -24,6 +24,7 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>.		--
 ----------------------------------------------------------------------------------
 with Logger;
+with Central_Controller_Interface;
 
 package body Notice_Panel is
 
@@ -37,6 +38,34 @@ package body Notice_Panel is
 				Logger.NOTICE);
 
 		end Set_Status;
+
+		procedure Set_Train_Arriving(
+			Train_ID	: in 	Integer;
+			Platform	: in 	Integer) is
+		begin
+			Set_Status("Train " & Integer'Image(Train_ID) & " arriving at Platform " & Integer'Image(Platform));
+
+			Central_Controller_Interface.Set_Train_Arriving_Status(
+				Station		=> Station_ID.all,
+				Train_ID	=> Train_ID,
+				Platform	=> Platform,
+				Action		=> Central_Controller_Interface.ARRIVING);
+		end Set_Train_Arriving;
+
+		procedure Set_Train_Accessed_Platform(
+			Train_ID	: in 	Integer;
+			Platform	: in 	Integer) is
+		begin
+			Set_Status("Train " & Integer'Image(Train_ID) & " gained access to Platform " & Integer'Image(Platform));
+		end Set_Train_Accessed_Platform;
+
+		procedure Set_Train_Left_Platform(
+			Train_ID	: in 	Integer;
+			Platform	: in 	Integer) is
+		begin
+			Set_Status("Train " & Integer'Image(Train_ID) & " left Platform " & Integer'Image(Platform));
+		end Set_Train_Left_Platform;
+
 
 	end Notice_Panel_Entity;
 

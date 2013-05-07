@@ -34,6 +34,8 @@ with Trains;
 with Traveler;
 with Routes;
 with Central_Controller_Interface;
+with Ada.Calendar;
+with Ada.Calendar.Formatting;use Ada.Calendar.Formatting;
 
 package body Platform is
 
@@ -326,15 +328,30 @@ package body Platform is
 				Train_Descriptor_Index 	=> Train_Descriptor_Index);
 		end if;
 
-		-- # At this point the Task Train has access to the platform!
-		Central_Controller_Interface.Set_Train_Status(
-			Train		=> Trains.Trains(Train_Descriptor_Index).ID,
-			Station		=> To_String(This.S.all),
-			Platform	=> Routes.All_Routes(Trains.Trains(Train_Descriptor_Index).Route_Index)
-											(Trains.Trains(Train_Descriptor_Index).Next_Stage).Platform_Index,
-			Time		=> 1,
-			Segment		=> 1,
-			Action		=> Central_Controller_Interface.ENTER);
+		declare
+					-- # Get the Current Run index
+			Current_Run 	: Positive :=
+				Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run;
+
+			-- # Get the index of the next time to leave the station
+			Current_Run_Cursor	: Positive :=
+				Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run_Cursor;
+			-- # Time to wait before leaving
+			Time_To_Wait : Ada.Calendar.Time := Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Table
+				(Current_Run)(Current_Run_Cursor);
+
+			Train_Delay : Duration := Ada.Calendar."-"(Ada.Calendar.Clock, Time_To_Wait);
+		begin
+
+			-- # At this point the Task Train has access to the platform!
+			Central_Controller_Interface.Set_Train_Arrived_Status(
+				Train_ID	=> Trains.Trains(Train_Descriptor_Index).ID,
+				Station		=> To_String(This.S.all),
+				Platform	=> Routes.All_Routes(Trains.Trains(Train_Descriptor_Index).Route_Index)
+												(Trains.Trains(Train_Descriptor_Index).Next_Stage).Platform_Index,
+				Time 		=> Ada.Calendar.Formatting.Image(Time_To_Wait),
+				Train_Delay	=> Integer(Train_Delay));
+		end;
 
 		-- # CODE FOR ENTRANCE
 		This.Perform_Entrance(

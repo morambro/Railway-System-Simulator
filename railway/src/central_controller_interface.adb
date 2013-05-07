@@ -30,48 +30,77 @@ with Ada.Text_IO;
 package body Central_Controller_Interface is
 
 	procedure Send_Event(Json_Event : String) is
-
 		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
-
 	begin
-
 		Parameters.Set_String("event",Json_Event);
-
 		Message_Agent.Instance.Send_One_Way(
 			Destination_Address => Environment.Get_Central_Controller,
 			Object 				=> "central_controller",
 			Service 			=> "event",
 			Params 				=> Parameters);
-
 	exception
 		-- # Ignore errors
 		when E : others => null;
-
     end Send_Event;
 
 
-    procedure Set_Train_Status(
-		Train		: Positive;
-		Station		: String;
-		Platform	: Positive;
-		Time		: Positive;
-		Segment		: Positive;
-		Action		: Train_Action)
+	procedure Set_Train_Arriving_Status(
+		Station		: in	String;
+		Train_ID	: in 	Integer;
+		Platform	: in 	Integer;
+		Action		: in 	Train_Action)
 	is
 		J_Event : JSON_Value := Create_Object;
 	begin
-		J_Event.Set_Field("type","train_event");
-		J_Event.Set_Field("time",Time);
-		J_Event.Set_Field("segment",Segment);
-		J_Event.Set_Field("train_id",Train);
+		J_Event.Set_Field("type","train_arriving");
+		J_Event.Set_Field("train_id",Train_ID);
 		J_Event.Set_Field("station",Station);
 		J_Event.Set_Field("platform",Platform);
 		J_Event.Set_Field("action",(if (Action = ENTER) then "enter" else "leave"));
 
-		--Ada.Text_IO.Put_Line(J_Event.Write);
+		Send_Event(J_Event.Write);
 
-		Central_Controller_Interface.Send_Event(J_Event.Write);
-	end Set_Train_Status;
+    end Set_Train_Arriving_Status;
+
+
+	procedure Set_Train_Arrived_Status(
+		Train_ID 	: in 	Integer;
+		Station		: in 	String;
+		Platform 	: in 	Integer;
+		Time		: in 	String;
+		Train_Delay	: in 	Integer)
+	is
+		J_Event : JSON_Value := Create_Object;
+	begin
+		J_Event.Set_Field("type","train_arrived");
+		J_Event.Set_Field("train_id",Train_ID);
+		J_Event.Set_Field("station",Station);
+		J_Event.Set_Field("platform",Platform);
+		J_Event.Set_Field("time",Time);
+		J_Event.Set_Field("delay",Train_Delay);
+
+		Send_Event(J_Event.Write);
+
+    end Set_Train_Arrived_Status;
+
+
+    procedure Set_Train_Left_Status(
+		Train		: Positive;
+		Station		: String;
+		Time		: Positive;
+		Segment		: Positive)
+	is
+		J_Event : JSON_Value := Create_Object;
+	begin
+		J_Event.Set_Field("type","train_left");
+		J_Event.Set_Field("time",Time);
+		J_Event.Set_Field("segment",Segment);
+		J_Event.Set_Field("train_id",Train);
+		J_Event.Set_Field("station",Station);
+
+		Send_Event(J_Event.Write);
+
+	end Set_Train_Left_Status;
 
 	procedure Set_Traveler_Status(
 		Traveler	: Positive;

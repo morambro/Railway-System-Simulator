@@ -109,7 +109,7 @@ package Generic_Station is
 	-- # Protected resource, which defines an object used to maintain an access order to
 	-- # the platforms, for all the Train-tasks coming from the same Segment.
 	-- #
-	protected type Access_Controller is
+	protected type Access_Controller(ID : Integer) is
 
 		-- #
 		-- # Entry called by the train task to regulate the entrance order for a Segment

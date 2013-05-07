@@ -38,6 +38,8 @@ with Ada.Calendar;
 with Time_Table;
 with Central_Controller_Interface;
 
+with Ada.Text_IO;
+
 package body Train_Pool is
 
 
@@ -169,14 +171,12 @@ package body Train_Pool is
 				-- # expressed in [unit], the second in [unit]/[sec]
 				Time_In_Segment := Float(Leg_Length)/Float(Trains.Trains(Current_Descriptor_Index).Speed);
 
-
-				Central_Controller_Interface.Set_Train_Status(
+				-- # Notify the Central controller that the Train is running on the segment
+				Central_Controller_Interface.Set_Train_Left_Status(
 					Train		=> Trains.Trains(Current_Descriptor_Index).ID,
 					Station		=> Environment.Stations(Next_Station).Get_Name,
-					Platform	=> Next_Platform,
 					Time		=> Integer(Time_In_Segment),
-					Segment		=> Segments.Segments(Next_Segment).Id,
-					Action		=> Central_Controller_Interface.LEAVE);
+					Segment		=> Segments.Segments(Next_Segment).Id);
 
 
 
@@ -192,7 +192,7 @@ package body Train_Pool is
 
 				Logger.Log(NAME,
 		      		"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).Id) &
-		      		" leaved Segment " & Integer'Image(Next_Segment),
+		      		" left Segment " & Integer'Image(Next_Segment),
 		      		Logger.DEBUG);
 
 				-- # ######################## NEXT STATION ACCESS ############################
@@ -204,6 +204,9 @@ package body Train_Pool is
 					Segment_ID 			=> Segments.Segments(Next_Segment).Id,
 					Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Enter_Action
 				);
+
+				-- # Slow down factor
+				delay 3.0;
 
 				-- # Go to the next Stage!
 				Trains.Trains(Current_Descriptor_Index).Next_Stage := Trains.Trains(Current_Descriptor_Index).Next_Stage + 1;

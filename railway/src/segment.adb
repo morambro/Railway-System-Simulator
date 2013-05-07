@@ -80,7 +80,6 @@ package body Segment is
 				end if;
 				-- In any other cases, the Train can ENTER
 				Free := False;
-				Current_Direction := Trains.Trains(To_Add).Current_Station;
 
 				if Current_Direction = Trains.Trains(To_Add).Current_Station then
 					-- #  Increase the number of entered trains for this direction
@@ -88,6 +87,7 @@ package body Segment is
 				else
 					-- # New Direction, the limit is set to 1
 					Train_Entered_Per_Direction := 1;
+					Current_Direction := Trains.Trains(To_Add).Current_Station;
 				end if;
 
 			else
@@ -153,7 +153,7 @@ package body Segment is
 		end Enter;
 
 		-- #
-		-- # In this entry the guard Can_Retry_Enter is opened (true) if and only if all running trains leaved
+		-- # In this entry the guard Can_Retry_Enter is opened (true) if and only if all running trains left
 		-- # the Segment, and there are trains queued. If a train task executed inside the entry body, the Segment will be
 		-- # still free, but due to Ada protected resource model only trains queued by this entry will run!
 		-- # And thanks to the access protocol, here there will be only trains queued coming from the
@@ -275,13 +275,19 @@ package body Segment is
 					end if;
 				end if;
 
+--  				Put_Line("CURRENT_DIRECTION = " & integer'image(Current_Direction));
+--  				Put_LIne("FIRST_END = " & integer'image(First_End));
+--  				Put_LIne("SECOND_END = " & integer'image(Second_End));
+
 				-- # Add the current Train ID to the next station's Access control queue
  				if Current_Direction /= First_End then
+--   					Put_Line("****FIRST_END  LEAVE : Will ask to station " & integer'image(First_End));
 					Environment.Stations(First_End).Add_Train(
 						Train_ID 	=> Train_D,
 						Segment_ID	=> Id
 					);
 				else
+--  					Put_Line("****SECOND_END LEAVE : Will ask to station " & integer'image(Second_End));
 					Environment.Stations(Second_End).Add_Train(
 						Train_ID 	=> Train_D,
 						Segment_ID	=> Id
@@ -347,13 +353,19 @@ package body Segment is
 					end if;
 				end if;
 
+--  				Put_Line("CURRENT_DIRECTION = " & integer'image(Current_Direction));
+--  				Put_LIne("FIRST_END = " & integer'image(First_End));
+--  				Put_LIne("SECOND_END = " & integer'image(Second_End));
+
 				-- # Add the current Train ID to the next station's Access control queue
- 				if Current_Direction /= First_End then
-					Environment.Stations(Second_End).Add_Train(
+ 				if Trains.Trains(Train_D).Current_Station /= First_End then
+--  					Put_Line("****FIRST_END RETRY : Will ask to station " & integer'image(First_End));
+					Environment.Stations(First_End).Add_Train(
 						Train_ID 	=> Train_D,
 						Segment_ID	=> Id
 					);
 				else
+--  					Put_Line("****SECOND_END RETRY : Will ask to station " & integer'image(Second_End));
 					Environment.Stations(Second_End).Add_Train(
 						Train_ID 	=> Train_D,
 						Segment_ID	=> Id

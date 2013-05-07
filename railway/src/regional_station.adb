@@ -33,6 +33,7 @@ with Ada.Exceptions;
 with Train;use Train;
 with Regional_Ticket_Office;
 with Central_Controller_Interface;
+with Ada.Exceptions;  use Ada.Exceptions;
 
 package body Regional_Station is
 
@@ -64,14 +65,14 @@ package body Regional_Station is
 			Train_Descriptor_Index 	=> Descriptor_Index,
 			Action					=> Action);
 
-
 		-- # Frees the Access controller, to let other Tasks to be awaked.
 		This.Segments_Map_Order.Element(Segment_ID).Free;
 
-		This.Panel.Set_Status(
-			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " gained access to Platform " &
-			Integer'Image(Platform_Index)
-		);
+		-- # Tell the Notice Panel to display the Train gained access
+		This.Panel.Set_Train_Accessed_Platform(
+			Train_ID	=> Trains.Trains(Descriptor_Index).ID,
+			Platform 	=> Platform_Index);
+
 	end Enter;
 
 
@@ -88,10 +89,10 @@ package body Regional_Station is
 			Train_Descriptor_Index 	=> Descriptor_Index,
 			Action					=> Action);
 
-		This.Panel.Set_Status(
-			"Train " & Integer'Image(Trains.Trains(Descriptor_Index).ID) & " leaved Platform " &
-			Integer'Image(Platform_Index)
-		);
+		-- # Notify the Notice Panel that the Train Left the Platform
+		This.Panel.Set_Train_Left_Platform(
+			Train_ID 	=> Trains.Trains(Descriptor_Index).ID,
+			PLatform	=> Platform_Index);
 	end Leave;
 
 	-- #
@@ -105,9 +106,11 @@ package body Regional_Station is
 			Platform_Index		: in		Positive) is
 	begin
 		This.Platforms(Platform_Index).Add_Outgoing_Traveler(Outgoing_Traveler);
-		This.Panel.Set_Status(
-			"Traveler " & Traveler.Get_Name(Environment.Travelers(Outgoing_Traveler)) &
-			" waits by platform " & Integer'Image(Platform_Index) & " to GO");
+
+		Logger.Log(
+			Sender 	=> "Station " & Unbounded_Strings.To_String(This.Name) & " Platform" & Integer'Image(Platform_Index),
+			Message => "Traveler " & Traveler.Get_Name(Environment.Travelers(Outgoing_Traveler)) & " waits to GO",
+			L		=> Logger.NOTICE);
 
 		Central_Controller_Interface.Set_Traveler_Status(
 			Traveler	=> Outgoing_Traveler,
@@ -127,9 +130,11 @@ package body Regional_Station is
 			Platform_Index		: in		Positive) is
 	begin
 		This.Platforms(Platform_Index).Add_Incoming_Traveler(Incoming_Traveler);
-		This.Panel.Set_Status(
-			"Traveler " & Traveler.Get_Name(Environment.Travelers(Incoming_Traveler)) &
-			" waits by platform " & Integer'Image(Platform_Index) & " to ARRIVE");
+
+		Logger.Log(
+			Sender 	=> "Station " & Unbounded_Strings.To_String(This.Name) & " Platform" & Integer'Image(Platform_Index),
+			Message => "Traveler " & Traveler.Get_Name(Environment.Travelers(Incoming_Traveler)) & " waits to ARRIVE",
+			L		=> Logger.NOTICE);
 
 		Central_Controller_Interface.Set_Traveler_Status(
 			Traveler	=> Incoming_Traveler,
@@ -146,6 +151,9 @@ package body Regional_Station is
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive) is
 	begin
+
+		Put_Line("Adding Train" & integer'image(Trains.Trains(Train_ID).ID) & " for Access Segment " & integer'image(Segment_ID));
+
 		if not This.Segments_Map_Order.Contains(Segment_ID) then
 			Logger.Log(
 				Sender 	=> "Regional_Station",
@@ -154,7 +162,7 @@ package body Regional_Station is
 			);
 			declare
 				-- # Create a new Access Controller for the Segment.
-				R : Access_Controller_Ref := new Access_Controller;
+				R : Access_Controller_Ref := new Access_Controller(Segment_ID);
 			begin
 				This.Segments_Map_Order.Insert(
 					Key 		=> Segment_ID,
@@ -166,13 +174,14 @@ package body Regional_Station is
 			Message => "Adding Train " & Integer'Image(Train_ID),
 			L 		=> Logger.DEBUG
 		);
+
 		This.Segments_Map_Order.Element(Segment_ID).Add_Train(Trains.Trains(Train_ID).ID);
-		This.Panel.Set_Status(
-			"Train " & Integer'Image(Trains.Trains(Train_ID).ID) &
-			" arriving at platform " &
-			Integer'Image(
-				Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index
-			));
+
+		-- # Notify the Panel that the Train is arriving
+		This.Panel.Set_Train_Arriving(
+			Train_ID 	=> Trains.Trains(Train_ID).ID,
+			PLatform 	=> Routes.All_Routes(Trains.Trains(Train_ID).Route_Index)(Trains.Trains(Train_ID).Next_Stage).Platform_Index);
+
     end Add_Train;
 
 

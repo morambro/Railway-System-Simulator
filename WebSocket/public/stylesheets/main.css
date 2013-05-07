@@ -1,0 +1,21 @@
+.noticePanel {
+	float:left;
+	min-height:430px;
+	max-height:430px;
+	margin:10px;
+}
+
+.noticePanel table, th, td {
+	border-collapse:collapse;
+	border:1px solid;
+	border-color:white;
+	padding : 5px;
+}
+
+.noticePanel th {
+	background-color:#C0C0C0;
+}
+
+.noticePanel table {
+	margin-bottom : 10px;
+}

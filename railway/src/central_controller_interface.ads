@@ -26,22 +26,58 @@
 with Message_Agent;
 with YAMI.Parameters;
 
+-- #
+-- # This package provides a simple interface to let the system communicate with
+-- # the Central Controller, via small messages.
+-- #
 package Central_Controller_Interface is
 
 	type Traveler_Action is (ENTER,LEAVE,FINISHED);
 
-	type Train_Action is (ENTER,LEAVE);
+	type Train_Action is (ENTER,LEAVE,ARRIVING);
 
+	-- #
+	-- # Procedure used to send the one-way message to the Controller.
+	-- #
 	procedure Send_Event(Json_Event : String);
 
-	procedure Set_Train_Status(
-			Train		: Positive;
-			Station		: String;
-			Platform	: Positive;
-			Time		: Positive;
-			Segment		: Positive;
-			Action		: Train_Action);
+	-- #
+	-- # Sends an event telling the Controller that the Train [Train] left station [Station]
+	-- # platform [Platform], and accesses segment [Segment], running for [Time] seconds.
+	-- #
+    procedure Set_Train_Left_Status(
+		Train		: Positive;
+		Station		: String;
+		Time		: Positive;
+		Segment		: Positive);
 
+	-- #
+	-- # Sends an event telling that the Train [Train_ID] is arriving to
+	-- # Station [Station] at platform [Platform], and is going to
+	-- # do the action [Action].
+	-- #
+	procedure Set_Train_Arriving_Status(
+		Station		: in	String;
+		Train_ID	: in 	Integer;
+		Platform	: in 	Integer;
+		Action		: in 	Train_Action);
+
+
+	-- #
+	-- # Sends an Event telling the Controller that the Train [Train_ID] arrived at station [Station]
+	-- # platform [Platform], and will leave at [Time], with a delay of [Train_Delay]
+	-- #
+	procedure Set_Train_Arrived_Status(
+		Train_ID 	: in 	Integer;
+		Station		: in 	String;
+		Platform 	: in 	Integer;
+		Time		: in 	String;
+		Train_Delay	: in 	Integer);
+
+
+	-- #
+	-- # Updates the status of the given traveler.
+	-- #
 	procedure Set_Traveler_Status(
 		Traveler	: Positive;
 		Train		: Positive;

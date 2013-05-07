@@ -50,21 +50,26 @@
 		function handleMessage(jsonData) {
 			obj = JSON.parse(jsonData,null);
 			switch (obj.type) {
-				case "train_event" :
-					if (obj.action == "enter") {
-						// Move train to platform
-						console.log(obj.train_id + " ENTERS TO STATION " + obj.station + " PLATFORM " + obj.platform);
-						moveToPlatform(obj.train_id,obj.station,obj.platform);
-					} else {
-						// trainId,segmentId,destination,time
-						startTravel(obj.train_id,obj.segment,obj.station,(obj.time * 1000));
-					} 
+				case "train_arriving" :
+					addArrivalRow(obj.train_id,obj.station,obj.platform);
 					break;
-				case "traveler_event" : 
+				case "train_arrived" :
+					// Move train to platform
+					console.log(obj.train_id + " ENTERS TO STATION " + obj.station + " PLATFORM " + obj.platform);
+					moveToPlatform(obj.train_id,obj.station,obj.platform);
 					
-					moveTravelerToPlatform(obj.traveler_id,obj.station,obj.platform,obj.action);
-				
+					addLeavingRow(obj.train_id,obj.station,obj.platform,obj.time,obj.delay);
+					
 					break;
+				case "train_left" : 
+					// trainId,segmentId,destination,time
+					startTravel(obj.train_id,obj.segment,obj.station,(obj.time * 1000));
+					break;
+				
+				case "traveler_event" : 
+					moveTravelerToPlatform(obj.traveler_id,obj.station,obj.platform,obj.action);
+					break;
+					
 				default : alert("undefined event type \""+obj.type+"\"!");
 			}
 		}
@@ -113,8 +118,8 @@
 		
 		r = Animations.createRaphael(true,{
 			container_id	: "canvas",
-			width			: 3000,
-			height			: 2000	
+			width			: 1800,
+			height			: 800
 		});
 		
 		var paddingLeft 		= 50;
@@ -182,7 +187,26 @@
         	paddingLeft+5*stationDim+5*segmentLength,
         	paddingTop+2*stationDim+2*segmentLength,
         	"F","I");
+        	
+        segments[9] = new segment(
+        	paddingLeft+(stationDim+segmentLength)+stationDim,
+        	paddingTop+stationDim+3*segmentLength,
+        	paddingLeft+(stationDim+segmentLength)+stationDim+segmentLength,
+        	paddingTop+stationDim+segmentLength+(stationDim/3),
+        	"L","G1");
         
+		segments[10] = new segment(
+        	paddingLeft+segmentLength,
+        	paddingTop+stationDim+3*segmentLength,
+        	paddingLeft+(stationDim+segmentLength),
+        	paddingTop+stationDim+3*segmentLength,
+        	"M","L");
+
+		trainsPerSegment = {}
+		
+		for (seg in segments) {
+			trainsPerSegment[seg] = 0;
+		}
 
         /***************************************************************************************************************/
         /**************************************** STATIONS_DEFINITIONS *************************************************/
@@ -273,8 +297,6 @@
 
    		r.text(segments[4].to_x+stationDim/2,segments[4].to_y-(stationDim/2)-10,"Station G1");
    		stations["G1"] = new station("G1", r.rect(segments[4].to_x,segments[4].to_y-(stationDim/2),stationDim,1.5*stationDim));
-   		stations["G1"].shape.attr('fill',"#FFE4C4");
-   		
    		stations["G1"].platforms[1] = r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			segments[5].to_y-(stationDim/2)+platformPaddingTop,
@@ -295,13 +317,11 @@
    			segments[5].to_y-(stationDim/2)+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		
    		stations["G1"].platforms[5] = r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+4*platformHeigth+4*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
-   		
    		stations["G1"].platforms[6] = r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+5*platformHeigth+5*platformPaddingLeft,
@@ -368,7 +388,7 @@
    			platformHeigth);
    			
    		r.text(segments[8].to_x+stationDim/2,segments[8].to_y-(stationDim/2)-10,"Station I");
-   		stations["I"] = new station("H", r.rect(segments[8].to_x,segments[8].to_y-(stationDim/2),stationDim,stationDim));
+   		stations["I"] = new station("I", r.rect(segments[8].to_x,segments[8].to_y-(stationDim/2),stationDim,stationDim));
    		stations["I"].platforms[1] = r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[8].to_y-(stationDim/2)+platformPaddingTop,
@@ -384,8 +404,57 @@
    			segments[8].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
    			platformHeigth);
+   		
+   		/******************************************* REGION 3 ***********************************************************/	
+   			
+   		r.text(segments[9].from_x-stationDim/2,segments[9].from_y-(stationDim/2)-10,"Station L");
+   		stations["L"] = new station("L", r.rect(segments[9].from_x-stationDim,segments[9].from_y-(stationDim/2),stationDim,stationDim));
+   		stations["L"].platforms[1] = r.rect(
+   			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
+   			segments[10].from_y-(stationDim/2)+platformPaddingTop,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["L"].platforms[2] = r.rect(
+   			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
+   			segments[10].from_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["L"].platforms[3] = r.rect(
+   			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
+   			segments[10].from_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+		
+   		r.text(segments[10].from_x-stationDim/2,segments[10].from_y-(stationDim/2)-10,"Station M");
+   		stations["M"] = new station("M", r.rect(segments[10].from_x-stationDim,segments[10].from_y-(stationDim/2),stationDim,stationDim));
+   		stations["M"].platforms[1] = r.rect(
+   			paddingLeft+platformPaddingLeft,
+   			segments[10].to_y-(stationDim/2)+platformPaddingTop,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["M"].platforms[2] = r.rect(
+   			paddingLeft+platformPaddingLeft,
+   			segments[10].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
+   		stations["M"].platforms[3] = r.rect(
+   			paddingLeft+platformPaddingLeft,
+   			segments[10].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
+   			stationDim-2*platformPaddingLeft,
+   			platformHeigth);
 
+		for (var station in stations) {
+			stations[station].shape.attr("fill","#F4F5C5")
+		}
+		stations["G1"].shape.attr("fill","#C0EEA5")
 
+		for (station in stations) {
+			for (platform in stations[station].platforms) {
+				stations[station].platforms[platform].attr('fill',"#C0C0C0");
+			}
+		}
+		
+		
    		usersPerPlatform = {};
    		
    		usersPerPlatform["A"] = [];
@@ -439,23 +508,55 @@
    		usersPerPlatform["I"][2] = 0;
    		usersPerPlatform["I"][3] = 0;
    		
+   		
+   		usersPerPlatform["L"] = [];
+   		usersPerPlatform["L"][1] = 0; 
+   		usersPerPlatform["L"][2] = 0;
+   		usersPerPlatform["L"][3] = 0;
+   		
+   		usersPerPlatform["M"] = [];
+   		usersPerPlatform["M"][1] = 0; 
+   		usersPerPlatform["M"][2] = 0;
+   		usersPerPlatform["M"][3] = 0;
+   		
         /***************************************************************************************************************/
         /****************************************** TRAINS_DEFINITIONS *************************************************/
         /***************************************************************************************************************/
+				
+		var trainLength = 50
+		var trainHeigth = 15
+		var trainRadiux = 3
 		
+		var fbColor = "90-#f00:20-#fff:95"
+		var regionalColor = "90-#A0CE00:20-#fff:95"
+				
 		trains = {};
 		
-		trains[1111] = r.image("@routes.Assets.at("images/regional.png")",0,0,90,15);
+		trains[1111] = r.rect(0,0,trainLength,trainHeigth,trainRadiux);//r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
+		trains[1111].attr("fill",regionalColor)
+		
 		// First Position
 		moveToPlatform(1111,"A",2);
 		
-		trains[2222] = r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
+		trains[2222] = r.rect(0,0,trainLength,trainHeigth,trainRadiux);//r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
+		trains[2222].attr("fill",fbColor)
 		// Second Position
 		moveToPlatform(2222,"A",1);
 		
-		trains[4444] = r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
+		trains[3333] = r.rect(0,0,trainLength,trainHeigth,trainRadiux);//r.image("@routes.Assets.at("images/regional.png")",0,0,90,15);
+		trains[3333].attr("fill",regionalColor)
+		
+		// Second Position
+		moveToPlatform(3333,"G1",3);
+		
+		
+		trains[4444] = r.rect(0,0,trainLength,trainHeigth,trainRadiux);//r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
+		trains[4444].attr('fill',fbColor);
 		// Second Position
 		moveToPlatform(4444,"B",4);
+		
+		
+		startTravel(3333,4,"G1",4000)
 		
 		
 		function moveToPlatform(trainId,stationId,platformId) {
@@ -477,21 +578,26 @@
 		
 		function traveler(text,dim,startStation,startPlatform) {
 			this.dim 	= dim;
-			this.image 	= r.circle(10,11,dim);
-			this.text	= r.text(10,0,text);
+			this.image 	= r.circle(10,12,dim);
+			this.text	= r.text(10,-3,text);
 			this.currentStation = startStation;
 			this.currentPlatform = startPlatform;
 		}
 		
+		var travelersRadius = 6;
+		var ENTER = "0-#B0C4DE:20-#fff:95";
+		var LEAVE = "0-#4169E1:20-#fff:95";
+		var FINISHED = "0-#008800:20-#fff:95";
 		
 		travelers = {};
 		
-		travelers[1] = new traveler("A",5); 
-		travelers[1].image.attr('fill','#4169E1');
+		travelers[1] = new traveler("T_1",travelersRadius); 
+		travelers[1].image.attr('fill',ENTER);
 		
-		travelers[2] = new traveler("B",5); 
-		travelers[2].image.attr('fill','#4169E1');
-	
+		travelers[2] = new traveler("T_2",travelersRadius); 
+		travelers[2].image.attr('fill',ENTER);
+		
+		moveTravelerToPlatform(1,"A",2,"finished")
 	
 		/**
 		 * Function used to Move a Traveler to <stationId,platformId>, to 
@@ -513,13 +619,13 @@
 			//travelers[travelerId].image.remove();
 			switch(action) {
 				case "enter" :
-					travelers[travelerId].image.attr('fill','#B0C4DE');
+					travelers[travelerId].image.attr('fill',ENTER);
 					break;
 				case "leave" :
-					travelers[travelerId].image.attr('fill','#4169E1');
+					travelers[travelerId].image.attr('fill',LEAVE);
 					break;
 				case "finished" : 
-					travelers[travelerId].image.attr('fill','#008800');
+					travelers[travelerId].image.attr('fill',FINISHED);
 					break;
 				default :  
 					console.log("Invalid option " + action + "!");
@@ -546,6 +652,111 @@
 		}
 		
 	</script>
+	
+	<h2>Pannelli informativi:</h2>
+	
+	<div id="panels"></div>
     
+    <script>
+    	
+    	var panelsDiv = document.getElementById('panels');
+    	
+    	var max = 5;
+    	
+    	for (station in stations) {
+    		var div = document.createElement('div');
+    		
+    		var title = document.createElement('h3')
+    		title.innerHTML = "Stazione " + station
+    		div.appendChild(title);
+    		
+    		div.setAttribute('class','noticePanel');
+    		
+    		var arrivalTable = document.createElement('table');
+    		arrivalTable.setAttribute('id',station + '-arrival');
+    		var th1 = document.createElement('th');
+    		th1.innerHTML = "Treno";
+    		var th2 = document.createElement('th');
+    		th2.innerHTML = "Piattaforma";
+    		var th3 = document.createElement('th');
+    		th3.innerHTML = "Ferma";
+    		var tr = document.createElement('tr');
+    		tr.appendChild(th1);
+    		tr.appendChild(th2);
+    		tr.appendChild(th3);
+    		
+    		arrivalTable.appendChild(tr);
+    		
+    		var leavingTable = document.createElement('table');
+    		leavingTable.setAttribute('id',station + '-leaving');
+    		th1 = document.createElement('th');
+    		th1.innerHTML = "Treno";
+    		th2 = document.createElement('th');
+    		th2.innerHTML = "Piattaforma";
+    		th3 = document.createElement('th');
+    		th3.innerHTML = "Ferma";
+    		th4 = document.createElement('th');
+    		th4.innerHTML = "Orario";
+    		th5 = document.createElement('th');
+    		th5.innerHTML = "Ritardo";
+    		tr = document.createElement('tr');
+    		tr.appendChild(th1);
+    		tr.appendChild(th2);
+    		tr.appendChild(th3);
+    		tr.appendChild(th4);
+    		tr.appendChild(th5);
+    		
+    		leavingTable.appendChild(tr);
+    		
+    		div.appendChild(arrivalTable);
+    		div.appendChild(leavingTable);
+    		
+    		panelsDiv.appendChild(div);
+    	}
+    
+    	function addArrivalRow(trainid,station,platform) {
+    		var table = document.getElementById(station + '-arrival');
+    		var tr = null;
+     		if (table.children.length == max+1) {
+    			tr = table.children[table.children.length-1];
+    			table.removeChild(tr);
+    		}
+    		tr = document.createElement('tr');
+    		var td1 = document.createElement('td');td1.innerHTML = trainid;
+    		var td2 = document.createElement('td');td2.innerHTML = platform;
+    		var td3 = document.createElement('td');td3.innerHTML = false;
+    		tr.appendChild(td1);
+    		tr.appendChild(td2);
+    		tr.appendChild(td3);
+    		table.insertBefore(tr,table.children[1]);
+    	}
+		
+		function addLeavingRow(trainid,station,platform,time,delay) {
+    		var table = document.getElementById(station + '-leaving');
+    		var tr = null;
+     		if (table.children.length == max+1) {
+    			tr = table.children[table.children.length-1];
+    			table.removeChild(tr);
+    		}
+    		tr = document.createElement('tr');
+    		var td1 = document.createElement('td');td1.innerHTML = trainid;
+    		var td2 = document.createElement('td');td2.innerHTML = platform;
+    		var td3 = document.createElement('td');td3.innerHTML = false;
+    		var td4 = document.createElement('td');td4.innerHTML = time;
+    		var td5 = null
+    		if (delay < 0) {
+    			td5 = document.createElement('td');td5.innerHTML = "-";
+    		}else{
+    			td5 = document.createElement('td');td5.innerHTML = delay;
+    		}
+    		tr.appendChild(td1);
+    		tr.appendChild(td2);
+    		tr.appendChild(td3);
+    		tr.appendChild(td4);
+    		tr.appendChild(td5);
+    		table.insertBefore(tr,table.children[1]);
+    	}
+			
+    </script>
 }
 
