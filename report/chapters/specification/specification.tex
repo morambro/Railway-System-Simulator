@@ -1,5 +1,5 @@
 \newpage
-\chapter {Specifica di Dettaglio}
+\chapter {Specifica della soluzione Realizzata}
 
 Di seguito verrà fornita una descrizione dell'architettura del progetto realizzato, e in particolare verrà descritto come le soluzioni progettate sono state realizzate nella pratica.
 
@@ -165,15 +165,271 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	\subsection{Regional\_Ticket\_Office}
 	
-	Il package \ttt{Regional\_Ticket\_Office} mantiene una tabella \ttt{Paths}, la quale per ciascuna Stazione della Regione corrente, definisce i percorsi più brevi per raggiungere ciascuna altra destinazione nella Regione. Esso inoltre espone un'interfaccia con un unica procedura:
-	\begin{center}
-	\ttt{Get\_Ticket (Traveler\_Index:Integer,From:String,To:String)} \\
-	\end {center}
-	la quale si occupa dell'effettiva creazione del Biglietto (oggetto di tipo \\ \ttt{Ticket\_Type}). Tale procedura effettua un controllo: se le Stazioni \ttt{From} e \ttt{To} sono contenute all'interno della Regione corrente, allora procede alla creazione del Biglietto vero e proprio attraverso la funzione privata 
-	\begin{center}
-		\ttt{Create\_Ticket(From:String,To:String):Ticket\_Type} \\
-	\end{center}
-che viene quindi assegnato al Viaggiatore di indice \ttt{Traveler\_Index}, e successivamente viene inserita l'operazione \ttt{TICKET\_READY} nella coda di operazioni di \ttt{Traveler\_Pool}. Se invece la Stazione di destinazione \ttt{To} non è contenuta nella Regione corrente, allora viene richiesta la creazione del Biglietto alla Biglietteria Centrale attraverso l'interfaccia \ttt{Central\_Office\_Interface}.
-	La funzione \ttt{Create\_Ticket} implementa l'algoritmo di creazione di un oggetto \ttt{Ticket\_Type} descritto in sezione \ref{subsubsec:ticket_creation}.
+	Il package \ttt{Regional\_Ticket\_Office} mantiene una tabella \ttt{Paths}, la quale per ciascuna Stazione della Regione corrente, definisce i percorsi più brevi per raggiungere ciascuna altra destinazione nella Regione. Esso inoltre espone la seguente interfaccia:
+	\begin{description}
+		\item \ttt{+ Create\_Ticket(From:String,To:String) : Ticket\_Type} \\
+	Crea un istanza di oggetto \ttt{Ticket\_Type} che rappresenta un biglietto per raggiungere la destinazione \ttt{To} a partire da \ttt{From} nella regione corrente. Essa realizza l'algoritmo di creazione di un Biglietto descritto in sezione \ref{subsubsec:ticket_creation}.
+		\item \ttt{+ Get\_Ticket (Traveler\_Index:Integer,From:String,To:String)} \\
+	La procedure si occupa dell'effettiva creazione del Biglietto (oggetto di tipo \ttt{Ticket\_Type}). Tale procedura effettua un controllo: se le Stazioni \ttt{From} e \ttt{To} sono contenute all'interno della Regione corrente, allora procede alla creazione del Biglietto vero e proprio attraverso la funzione \ttt{Create\_Ticket}, che viene quindi assegnato al Viaggiatore di indice \ttt{Traveler\_Index}; successivamente viene inserita l'operazione \ttt{TICKET\_READY} nella coda di operazioni di \ttt{Traveler\_Pool}. Se invece la Stazione di destinazione \ttt{To} non è contenuta nella Regione corrente, allora viene richiesta la creazione del Biglietto alla Biglietteria Centrale attraverso l'interfaccia \ttt{Central\_Office\_Interface}.
+	\end{description}
 	
-	Il package \ttt{Regional\_Ticket\_Office} contiene inoltre una procedura \\ \ttt{Init\_Path\_Map} per caricare la mappa contenente i percorsi più brevi, utilizzata per l'algoritmo di creazione del Biglietto.
+	Il package \ttt{Regional\_Ticket\_Office} contiene inoltre la procedura \ttt{Init\_Path\_Map} utilizzata per caricare la mappa contenente i percorsi più brevi, usata dall'algoritmo di creazione del Biglietto. 
+	
+	\subsection{Segment}
+	
+	Il package \ttt{Segment} contiene la definizione del tipo \ttt{Segment\_Type}, \ii{risorsa protetta} che rappresenta una il segmento di congiunzione tra due Stazioni introdotto in sezione \ref{subsec:segment_def}. Esso contiene i seguenti campi dato:
+	\begin{itemize}
+		
+		\item \ttt{Id}: Identificativo univoco del Segmento;
+		\item \ttt{Segment\_Max\_Speed}: Velocità massima di percorrenza del Segmento;
+		\item \ttt{Current\_Max\_Speed}: Velocità massima alla quale i Treni percorrono il Segmento;
+		\item \ttt{Free}: Indica lo stato di occupazione del Segmento, se \ttt{True} il Segmento è da considerarsi occupato, altrimenti libero.
+		\item \ttt{Segment\_Length}: Lunghezza del Segmento;
+		
+		\item \ttt{Current\_Direction}: Direzione di percorrenza corrente;
+		
+		\item \ttt{Queue\_Dim} Dimensione massima della coda usata per memorizzare gli identificativi univoci dei Treni in transito;
+		\item \ttt{Running\_Trains\_Queue}: Coda di tipo \ttt{Limited\_Simple\_Queue} di \ttt{Queue\_Dim} elementi, che contiene gli identificativi dei Treni in transito;
+		\item \ttt{Trains\_Number}: Mantiene il numero di Treni attualmente in transito;
+		
+		
+		\item \ttt{First\_End,Second\_End}: Stazioni che sono collegate dal Segmento; 
+		
+		\item \ttt{First\_End\_In\_Queue}: Numero di Task in attesa per accedere il Segmento dal primo estremo.
+		\item \ttt{Second\_End\_In\_Queue}: Numero di Task in attesa per accedere il Segmento dal secondo estremo.
+		
+		\item \ttt{Can\_Retry\_Leave, Can\_Retry\_Enter}: Vengono usati come guardie booleane per regolare rispettivamente i tentativi successivi di uscita e accesso al Segmento.
+		
+		\item \ttt{Enter\_Retry\_Num}: Numero di Task in attesa su guardia booleana, rappresentata da \ttt{Can\_Retry\_Enter}
+		\item \ttt{Exit\_Retry\_Num}: Numero di Task in attesa su guardia booleana rappresentata da \ttt{Can\_Retry\_Leave} 
+
+		\item \ttt{Train\_Entered\_Per\_Direction}: Numero di Treni transitati per la direzione corrente.		
+		
+	\end{itemize}
+	
+	Il tipo protetto \ttt{Segment\_Type} fornisce un'interfaccia pubblica accessibile ai Task \ttt{Train\_Executor\_Task} per regolare \ii{ingresso} e \ii{uscita} nel/dal Segmento rappresentato, come descritto nella sezione \label{subsubsec:segment_access}. Di seguito viene riportata una descrizione dettagliata delle \ii{entries} utilizzate.
+	
+	\subsubsection{Ingresso nel Segmento}
+	
+	L'ingresso è realizzato mediate l'utilizzo di una entry pubblica \ttt{Enter}, e due entries privare \ttt{Retry\_First\_End} e \ttt{Retry\_Second\_End}.	
+	L'entry \ttt{Enter}, permette l'ingresso controllato nel Segmento, e consiste quindi in una barriera.
+
+\begin{lstlisting}
+entry Enter(
+	To_Add      : in     Positive;
+	Max_Speed   : 	 out Positive;
+	Leg_Length  :    out Positive) when True is
+begin
+	...
+end Enter;
+\end{lstlisting}
+
+	Come prima operazione, esso effettua un controllo sulla direzione con la quale il Treno tenta l'accesso e, se diversa dalle due estremità \ttt{First\_End} e \ttt{Second\_End}, solleva una eccezione.
+
+\begin{lstlisting}
+if  (Trains.Trains(To_Add).Current_Station /= First_End) and 
+    (Trains.Trains(To_Add).Current_Station /= Second_End) then
+	raise Bad_Segment_Access_Request_Exception with "...";
+end if;
+\end{lstlisting}
+
+Una volta che il controllo è stato superato, viene controllato se il Treno accede dall'estremo \ttt{First\_End} o \ttt{Second\_End}, per poi poter proseguire all'accesso di conseguenza. Viene riportato solo il codice per uno dei due casi, ovvero il caso in cui \ttt{Trains.Trains(To\_Add).Current\_Station = First\_End}, in quanto sono analoghi.
+
+Nel caso in cui il Segmento sia libero (\ttt{Free=True}) allora il Treno può accedere al Segmento.
+
+\begin{lstlisting}
+
+if Free then
+	-- Il numero di Treni per direzione viene 
+	-- impostato a 1
+	Train_Entered_Per_Direction := 1;
+	-- Viene impostato ad occupato
+	Free := False;
+	-- Viene aggiornata la direzione di marcia corrente,
+	-- con la Stazione di provenienza del Treno.
+	Current_Direction := 
+		Trains.Trains(To_Add).Current_Station;
+	-- Viene chiusa la guardia booleana dell'entry 
+	-- Retry_Second_End. 
+	Can_Enter_Second_End := False;
+...
+
+\end{lstlisting}
+
+Nel caso in cui invece il Segmento non sia libero, allora viene verificata la possibilità di accesso multiplo, ovvero se e solo se la direzione di percorrenza del Treno è la stessa di quella corrente, se il numero massimo di accessi per direzione (\ttt{Max}) non è stato raggiunto, oppure se nessun Task è accodato all'estremo opposto, ovvero sulla entry \ttt{Retry\_Second\_End}. In tutti gli altri casi il Task corrente viene riaccodato sull'entry \ttt{Retry\_First\_End} che avrà guardia booleana chiusa. Si noti che per il riaccodamento ho utilizzato lo strumento \ttt{requeue} offerto dal linguaggio \ttt{Ada}.
+
+\begin{lstlisting}
+
+...
+else
+	if Trains.Trains(To_Add).Current_Station = 
+	   Current_Direction 
+	then
+		if Train_Entered_Per_Direction = Max then
+			-- Se il numero di accessi e' il massimo 
+			-- consentito per direzione...
+			if Retry_Second_End'Count > 0 then
+				-- se vi sono task in attesa dall'estremo
+				-- opposto del Segmento, allora il
+				-- task corrente viene accodato presso la 
+				-- entry Retry_First_End, in attesa che arrivi
+				-- il proprio turno.
+				Can_Enter_First_End := False;
+				requeue Retry_First_End;
+			end if;
+		else
+			-- se il massimo numero di accessi per 
+			-- direzione NON e' stato raggiunto, allora
+			-- viene incrementato il numero di accessi
+			Train_Entered_Per_Direction := 
+				Train_Entered_Per_Direction + 1;
+		end if;
+	else
+		-- nel caso in cui il Treno corrente volesse 
+		-- accedere nel senso opposto al senso di 
+		-- marcia, dovra' attendere.
+		Can_Enter_First_End := False;
+		requeue Retry_First_End;
+	end if;
+end if;
+\end{lstlisting}
+
+Se il Task corrente non è stato riaccodato ad un'altra entry, allora viene incrementato di uno il contatore dei Treni in transito, e viene inserito nella coda \ttt{Running\_Trains} l'identificativo del Treno corrente. Vengono infine aggiornati i dati relativi alla velocità di percorrenza (il codice viene omesso per brevità).
+
+	Le entries private \ttt{Retry\_First\_End} e \ttt{Retry\_Second\_End} sono molto simili e sono utilizzate per mantenere accodati i Task relativi ai Treni in attesa di accedere al Segmento, rispettivamente presso l'estremo \ttt{First\_End} e \ttt{Second\_End}. Viene riportato di seguito il codice che realizza l'entry \ttt{Retry\_First\_End}.
+	
+	\begin{lstlisting}
+
+entry Retry_First_End(
+	To_Add     :in		Positive;
+	Max_Speed  : 	out Positive;
+	Leg_Length :	out	Positive) when Can_Enter_First_End
+is
+begin
+	-- Decremento del numero di Task che 
+	-- possono ri-tentare l'accesso
+	Enter_Retry_Num := Enter_Retry_Num - 1;
+	-- una volta che tale numero e' 0, 
+	-- la guardia viene richiusa.
+	if Enter_Retry_Num = 0 then
+		Can_Enter_First_End := False;
+	end if;
+	-- il nuovo tentativo viene effettuato ri-accodando
+	-- il task corrente presso l'entry Enter.
+	requeue Enter;
+end Retry_First_End;
+
+	\end{lstlisting}
+	
+	L'attesa dei task presso questa entry è regolata dalla guardia booleana \ttt{Can\_Enter\_First\_End}, mentre il numero di tentativi di nuovo accesso al Segmento, viene regolato dal parametro \ttt{Enter\_Retry\_Num}.
+	
+	\subsubsection{Uscita dal Segmento}
+	
+	L'uscita da un Segmento da parte di un Treno, ha il prerequisito fondamentale per cui esso ha prima avuto accesso a tale Segmento, e quindi il suo identificativo univoco sarà contenuto nella coda \ttt{Running\_Trains}.
+	Il processo di uscita garantisce che l'ordine di ingresso sia rispettato, senza possibili assunzioni sull'ordine di esecuzione dei Task coinvolti dato dalle politiche di scheduling sottostanti.
+	Esso viene realizzato dalla entry pubblica \ttt{Leave} e dalla entry privata \ttt{Retry\_Leave}.
+	
+	La entry \ttt{Leave} per prima cosa controlla che il Task correntemente in esecuzione, sia effettivamente il prossimo a dover uscire dal Segmento. Tale controllo viene effettuato confrontando il primo elemento della coda \ttt{Running\_Trains} con l'identificativo del Treno rappresentato dal Task in esecuzione: se essi sono uguali allora l'identificativo viene rimosso dalla coda e viene effettuata l'uscita, altrimenti il Task corrente viene accodato presso l'entry \ttt{Retry\_Leave}.
+	
+\begin{lstlisting}
+	
+	entry Leave(
+		Train_D : in Positive) when not Free is
+	begin
+		if Running_Trains.Get(1) = Trains.Trains(Train_D).ID 
+		then
+			-- il primo elemento della coda viene rimosso
+			declare
+				T : Positive;
+			begin
+				Running_Trains.Dequeue(T);
+			end;
+			...
+		else
+			-- Requeue alla entry Retry_Leave per
+			-- rispettare l'ordine di accesso.
+			requeue Retry_Leave;
+		end if;
+	end Leave;
+		
+\end{lstlisting}
+	 
+	L'uscita viene completata nel seguente modo: per prima cosa viene verificata l'eventuale presenza di Task in attesa sulla gardia (chiusa) della entry \ttt{Retry\_Leave};
+	
+\begin{lstlisting}
+	
+	...
+	-- se c'e' almeno un Task in attesa presso la
+	-- guardia di uscita, essa puo' essere aperta
+	-- per permettere al prossimo Task di uscire.
+	if(Retry_Leave'Count > 0) then
+		-- viene memorizzato il numero di task
+		-- che possono tentare l'uscita.
+		Retry_Num := Retry_Leave'Count;
+		Can_Retry_Leave := True;
+	end if;
+	...
+	
+\end{lstlisting}
+	
+	successivamente, viene verificato se il Segmento si è svuotato completamente o meno. Nel primo caso, viene verificata l'eventuale presenza di Treni (Task) in attesa presso l'estremità opposta del Segmento, e in tal caso la loro guardia viene aperta per permettere
+di ritentare l'accesso. Nel caso il Segmento sia vuoto ma non vi sia nessun Task in attesa, viene re-impostato il valore di \ttt{Free} a \ttt{True}.
+
+\begin{lstlisting}
+	
+	...
+	-- viene ridotto di 1 il numero di Treni in transito
+	Trains_Number := Trains_Number - 1;
+	if Trains_Number = 0 then
+		-- se il Segmento risulta libero...
+		if Current_Direction = First_End then
+			-- caso in cui la direzione corrente sia 
+			-- proveniente dal primo estremo del segmento.
+			if Retry_Second_End'Count > 0 then
+				-- se ci sono task in attesa presso la
+				-- entry Retry_Second_End, allora essi 
+				-- potranno riprovare l'accesso.
+				Enter_Retry_Num := Retry_Second_End'Count;
+				-- viene aperta la guardia booleana
+				Can_Enter_Second_End := True;
+				Can_Enter_First_End := False;
+			else
+				-- se non vi sono treni in attesa, allore
+				-- il Segmento viene dichiarato libero.
+				Free := True;
+			end if;
+		else
+			-- Caso analogo relativo alla direzione opposta
+			...
+		end if;
+	end if;
+	...
+	
+\end{lstlisting}
+	
+	Infine, deve essere comunicato l'ordine di uscita alla successiva Stazione. Questa operazione si traduce nell'invocazione della procedura \ttt{Add\_Train} messa a disposizione dall'interfaccia \ttt{Station\_Interface} del package \ttt{Generic\_Station}. 
+	
+	La entry \ttt{Retry\_Leave} è la seguente:
+	
+\begin{lstlisting}
+	entry Retry_Leave(
+		Train_D : in Positive) when Can_Retry_Leave is
+	begin
+		-- Decremento del numero di task che
+		-- possono ritentare l'uscita.
+		Retry_Num := Retry_Num - 1;
+		-- una volta che tale numero e' 0, 
+		-- la guardia viene richiusa per permettere
+		-- nuovo accodamento
+		if(Retry_Num = 0) then
+			Can_Retry_Leave := False;
+		end if;
+		-- infine viene riaccodato il task corrente
+		-- presso Leave, per ritentare l'uscita.
+		requeue Leave;
+	end Retry_Leave;
+
+\end{lstlisting}
+
+La soluzione presentata sfrutta gli strumenti offerti dal linguaggio Ada per garantire una semantica adeguata di accesso, percorrenza e uscita.
+	

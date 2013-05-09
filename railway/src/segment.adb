@@ -59,22 +59,22 @@ package body Segment is
 					" Instead of " & Integer'Image(First_End) & " or " & Integer'Image(Second_End);
 			end if;
 
-			-- # The case in which the Segment is Free, so no other Train is Running
+			-- # The case in which the Segment is Free (no other Train running)...
 			if Free then
 				-- # If the Maximum Number of Trains per side was reached for the current direction...
-				if Train_Entered_Per_Direction = Max_Trains then
+				if Train_Entered_Per_Direction = Queue_Dim then
 					-- # If opposite queue is not empty, wait
 					if Trains.Trains(To_Add).Current_Station = First_End then
 						if Second_End_In_Queue > 0 then
 							-- REQUEUE TO WAIT
 							First_End_In_Queue := First_End_In_Queue + 1;
-							requeue Wait;
+							requeue Retry_Enter;
 						end if;
 					else
 						if First_End_In_Queue > 0 then
 							-- REQUEUE TO WAIT
 							Second_End_In_Queue := Second_End_In_Queue + 1;
-							requeue Wait;
+							requeue Retry_Enter;
 						end if;
 					end if;
 				end if;
@@ -93,18 +93,18 @@ package body Segment is
 			else
 				-- # Segment not FREE
 				if Current_Direction = Trains.Trains(To_Add).Current_Station then
-					if Train_Entered_Per_Direction = Max_Trains then
+					if Train_Entered_Per_Direction = Queue_Dim then
 						if Trains.Trains(To_Add).Current_Station = First_End then
 							if Second_End_In_Queue > 0 then
 								-- REQUEUE TO WAIT
 								First_End_In_Queue := First_End_In_Queue + 1;
-								requeue Wait;
+								requeue Retry_Enter;
 							end if;
 						else
 							if First_End_In_Queue > 0 then
 								-- REQUEUE TO WAIT
 								Second_End_In_Queue := Second_End_In_Queue + 1;
-								requeue Wait;
+								requeue Retry_Enter;
 							end if;
 						end if;
 					end if;
@@ -112,16 +112,16 @@ package body Segment is
 					-- REQUEUE TO WAIT in both this cases
 					if Trains.Trains(To_Add).Current_Station = First_End then
 						First_End_In_Queue := First_End_In_Queue + 1;
-						requeue Wait;
+						requeue Retry_Enter;
 					else
 						Second_End_In_Queue := Second_End_In_Queue + 1;
-						requeue Wait;
+						requeue Retry_Enter;
 					end if;
 				end if;
 				-- In any other cases, the Train can ENTER
 
 				-- # Only if the Number of Trains per side is not the maximum, increment it.
-				if Train_Entered_Per_Direction < Max_Trains then
+				if Train_Entered_Per_Direction < Queue_Dim then
 					Train_Entered_Per_Direction := Train_Entered_Per_Direction + 1;
 				end if;
 			end if;
@@ -159,7 +159,7 @@ package body Segment is
 		-- # And thanks to the access protocol, here there will be only trains queued coming from the
 		-- # same station.
 		-- #
-		entry Wait(
+		entry Retry_Enter(
 			To_Add 		: 	in 	 	Positive;
 			Max_Speed 	: 		out Positive;
 			Leg_Length 	: 		out Positive) when Can_Retry_Enter is
@@ -173,19 +173,19 @@ package body Segment is
 
 			-- # We are for sure in the case in which the Segment is Free!
 			-- # If the Maximum Number of Trains per side was reached for the current direction...
-			if Train_Entered_Per_Direction = Max_Trains then
+			if Train_Entered_Per_Direction = Queue_Dim then
 				-- # If opposite queue is not empty, wait
 				if Trains.Trains(To_Add).Current_Station = First_End then
 					if Second_End_In_Queue > 0 then
 						-- REQUEUE TO WAIT
 						First_End_In_Queue := First_End_In_Queue + 1;
-						requeue Wait;
+						requeue Retry_Enter;
 					end if;
 				else
 					if First_End_In_Queue > 0 then
 						-- REQUEUE TO WAIT
 						Second_End_In_Queue := Second_End_In_Queue + 1;
-						requeue Wait;
+						requeue Retry_Enter;
 					end if;
 				end if;
 			end if;
@@ -229,7 +229,7 @@ package body Segment is
 				"Train " & Integer'Image(Trains.Trains(To_Add).ID) & " added to running trains queue",
 				Logger.DEBUG);
 
-		end Wait;
+		end Retry_Enter;
 
 -- ############################################### LEAVE ENTRIES #############################################
 		-- #
@@ -249,8 +249,8 @@ package body Segment is
 
 				-- # If there is at least one train in exit queue, open the guard
 				-- # to let it leave the segment
-				if(Retry'Count > 0) then
-					Retry_Num := Retry'Count;
+				if(Retry_Leave'Count > 0) then
+					Retry_Num := Retry_Leave'Count;
 					Can_Retry_Leave := True;
 				end if;
 
@@ -267,8 +267,8 @@ package body Segment is
 				if( Trains_Number = 0 ) then
 					-- # If there is at least one train waiting to enter the Segment,
 					-- # Open the guard!
-					if( Wait'Count > 0) then
-						Enter_Retry_Num := Wait'Count;
+					if( Retry_Enter'Count > 0) then
+						Enter_Retry_Num := Retry_Enter'Count;
 						Can_Retry_Enter := True;
 					else
 						Free := True;
@@ -299,7 +299,7 @@ package body Segment is
 					NAME,
 					"Train " & Integer'Image(Trains.Trains(Train_D).ID) & " Can not leave because it's not the first",
 					Logger.DEBUG);
-				requeue Retry;
+				requeue Retry_Leave;
 			end if;
 
 		end Leave;
@@ -308,7 +308,7 @@ package body Segment is
 		-- #
 		-- # Entry used to perform ordered exit from the Segment
 		-- #
-		entry Retry(Train_D : in Positive) when Can_Retry_Leave is
+		entry Retry_Leave(Train_D : in Positive) when Can_Retry_Leave is
 		begin
 
 			-- # Decrease the number of tasks that can retry to exit
@@ -329,8 +329,8 @@ package body Segment is
 				end;
 
 				-- # If there are tasks trying to exit, open the guard.
-				if(Retry'Count > 0) then
-					Retry_Num := Retry'Count;
+				if(Retry_Leave'Count > 0) then
+					Retry_Num := Retry_Leave'Count;
 					Can_Retry_Leave := True;
 				end if;
 
@@ -344,8 +344,8 @@ package body Segment is
 
 				-- Set to Free the Segment if no other train is in or waiting
 				if( Trains_Number = 0 ) then
-					if( Wait'Count > 0) then
-						Enter_Retry_Num := Wait'Count;
+					if( Retry_Enter'Count > 0) then
+						Enter_Retry_Num := Retry_Enter'Count;
 						Can_Retry_Enter := True;
 					else
 						Free := True;
@@ -377,9 +377,9 @@ package body Segment is
 					NAME,
 					"Train " & Integer'Image(Trains.Trains(Train_D).ID) & " Can not leave because is not the first",
 					Logger.DEBUG);
-				requeue Retry;
+				requeue Retry_Leave;
 			end if;
-		end Retry;
+		end Retry_Leave;
 
 	end Segment_Type;
 
@@ -394,7 +394,6 @@ package body Segment is
 		Segment_Length	: Positive 	:= Json_Segment.Get("length");
 		First_End 		: Positive 	:= Json_Segment.Get("first_end");
 		Second_End 		: Positive 	:= Json_Segment.Get("second_end");
-		Max_Trains 		: Positive 	:= Json_Segment.Get("max_trains");
 		-- instantiate the new Segment
 		New_Segment 		: access Segment_Type := new Segment_Type(
 			Id => Segment_Id,
@@ -402,8 +401,7 @@ package body Segment is
 			Segment_Length => Segment_Length,
 			Queue_Dim => Queue_Dim,
 			First_End => First_End,
-			Second_End => Second_End,
-			Max_Trains => Max_Trains
+			Second_End => Second_End
 		);
 	begin
 		if

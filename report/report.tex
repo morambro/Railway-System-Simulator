@@ -23,6 +23,25 @@
 \usepackage{verbatim}
 \usepackage{changepage}
 \usepackage{ifthen}
+\usepackage{listings}
+
+\definecolor{darkGreen}{rgb}{0,0.6,0}
+
+\lstset{
+%	numbers=left,
+%	numberstyle=\ttfamily,
+	language=Ada,
+	extendedchars=true,
+	basicstyle=\ttfamily\small,
+	keywordstyle=\color{blue}\ttfamily,
+	stringstyle=\color{red}\ttfamily,
+	commentstyle=\color{darkGreen}\ttfamily,
+	tabsize=2,
+	captionpos=b,
+	extendedchars=true,  
+	keepspaces=true,
+	showstringspaces=false
+}
 
 \title{\Huge Railway Simulation}
 \author	{

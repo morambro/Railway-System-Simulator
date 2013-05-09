@@ -13,8 +13,9 @@ object Main extends App {
 		println(argv(2))
 		
 		// Create the Message Receiver
-		val receiver = new MessagesReceiver(argv(0),argv(2))
-		receiver.start
+		//MessagesReceiver(argv(0),argv(2))
+		MessagesReceiver.start
+		MessagesReceiver ! Init(argv(0))
 		
 		// Set Name Server Address
 		PathResolver.NAME_SERVER_ADDRESS = argv(1)

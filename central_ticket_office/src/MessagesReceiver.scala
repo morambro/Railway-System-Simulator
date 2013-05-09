@@ -5,7 +5,7 @@ import com.inspirel.yami._
  * This class represents an actor responsible for keeping requests and dispatching them correctly.
  *
  **/ 
-class MessagesReceiver(address : String,fileName:String) extends Actor with IncomingMessageCallback{
+object MessagesReceiver extends Actor with IncomingMessageCallback{
 	
 	/**
 	 * This boolean value tells if the first Marker message was received
@@ -15,7 +15,7 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 	/**
 	 * Actors Pool used to execute Ticket Resolution requests. 
 	 */
-	val ticketResolutionHandlers 	: Array[Actor] = Array.fill(10) {new PathResolver(fileName)}
+	val ticketResolutionHandlers 	: Array[Actor] = Array.fill(10) {new PathResolver("../railway/res/links.json",this)}
 	
 	/**
 	 * Actors Pool used to Handle Synchronous requests
@@ -42,13 +42,28 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 	 */
 	val serverAgent : Agent = new Agent;
 	
-	// initialization
-	val resolvedAddress = serverAgent.addListener(address);
 	
-	PrintsSerializer ! Print("Central Ticket Office listening to : " + address)
+	var creationRequests : Int = 0;
 	
-	// Register remote object "central_ticket_server"
-	serverAgent.registerObject("central_ticket_server", this);
+	
+	def sendControllerAck() {
+		val agent = new Agent
+		val message : OutgoingMessage = agent.send(
+			"tcp://localhost:8888",
+			"central_controller", 
+			"central_office_ack", 
+			new Parameters)
+
+		message.waitForCompletion
+
+		message.getState match {
+			case OutgoingMessage.MessageState.REPLIED => PrintsSerializer ! Print("Message Received")
+			case OutgoingMessage.MessageState.REJECTED => 
+				PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
+			case _ => PrintsSerializer ! Print("The message has been abandoned.")
+		}
+		agent.close
+	}
 	
 	/**
 	 * Main loop. It is used to keep the Actor alive until Stop message is received
@@ -64,21 +79,18 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 				BookingManager ! Stop()
 				PrintsSerializer ! StopPrint()
 			}
-		}
-	}
-	
-	val queue = scala.collection.mutable.Queue[AsynchRequest]()
-	
-	def act() = receiverLoop()
-	
-	
-	def call(im : IncomingMessage) {
-		// Case on the requested service. 
-		im.getMessageName match {
-		
-			case "resolve"	=>	{
-				
+			
+			case CreationRequestResolved() => {
+				creationRequests -= 1
+				if (markerReceived && creationRequests == 0) {
+					sendControllerAck()
+				}
+			}
+			
+			case ("resolve",im:IncomingMessage) => {
 				PrintsSerializer ! Print("Received RESOLVE request")
+				
+				creationRequests += 1
 				
 				// Retrieve all the parameters from the request
 				val traveler_index	= im.getParameters.getString("traveler_index")
@@ -102,6 +114,33 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 				replyPar.setString("response","OK");
 				
 				im.reply(replyPar)
+			}
+			
+		}
+	}
+	
+	val queue = scala.collection.mutable.Queue[AsynchRequest]()
+	
+	def act() = react {
+		case Init(address) => {
+			// initialization
+			val resolvedAddress = serverAgent.addListener(address);
+	
+			PrintsSerializer ! Print("Central Ticket Office listening to : " + address)
+	
+			// Register remote object "central_ticket_server"
+			serverAgent.registerObject("central_ticket_server", this);
+			receiverLoop()
+		}
+	}
+	
+	
+	def call(im : IncomingMessage) {
+		// Case on the requested service. 
+		im.getMessageName match {
+		
+			case "resolve"	=>	{
+				this ! ("resolve",im)				
 			}
 			
 			// First Call, returns the Entire Time Tables array 
@@ -168,6 +207,12 @@ class MessagesReceiver(address : String,fileName:String) extends Actor with Inco
 				}else{
 					println("Setting markerReceived = TRUE")
 					markerReceived = true
+					// If when the marker first arrived, there are no 
+					// pending creation requests, send the ack immefiately 
+					if (creationRequests == 0) {
+						println("Send Ack to the controller")
+						sendControllerAck()
+					}
 				}
 			}
 			

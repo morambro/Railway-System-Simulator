@@ -4,6 +4,7 @@ import com.inspirel.yami._
 case class Event(description:String) 
 case class Stop()
 case class DistributedStop()
+case class Proceed()
 case class NodeTerminated(nodeName : String)
 
 class Publisher(val address : String) extends Actor {
@@ -113,53 +114,59 @@ class Publisher(val address : String) extends Actor {
 				ViewAgent ! Write("Requested Distributed Termination")
 				
 				sendMarker match {
-					case true => {
-						try {
-							getNodesList match {
-								case map : Map[_,_] => {
-									if (map == Map()){
-										ViewAgent ! Write("WARNING: No Nodes to terminate!")
-										ViewAgent ! Write("Sending the second Marker to Central Ticket Office...")
-										if (sendMarker) {
-											ViewAgent ! Write("Central Controller can be now termianted!")
-											this ! Stop()
-										}
-									}else {
-										val agent = new Agent
-										map.keys.foreach( k => {
-											val message : OutgoingMessage = agent.send(
-												map(k),
-												"message_handler", 
-												"terminate", 
-												new Parameters)
-											message.waitForCompletion
-											message.getState match {
-												case OutgoingMessage.MessageState.REPLIED => {
-													ViewAgent ! Write("Node "+k+" Received termination request.")
-													// Add the node to asked list
-													askedNodes ::= k
-												}
-												case OutgoingMessage.MessageState.REJECTED => 
-													ViewAgent ! Write("ERROR: The message has been rejected by node "+ k +
-															" : " +	message.getExceptionMsg)
-												case _ => 
-													ViewAgent ! Write("ERROR: The message has been abandoned by node " + k)
-											}
-										})
-										agent.close
-									}
+					case true => // do nothing
+					case false => ViewAgent ! Write("ERROR: Central Ticket Office did not receive the Marker!")
+				}
+				
+				controllerLoop()
+			}
+			
+			case Proceed() => {
+			
+				println("PROCEED")
+				try {
+					getNodesList match {
+						case map : Map[_,_] => {
+							if (map == Map()){
+								ViewAgent ! Write("WARNING: No Nodes to terminate!")
+								ViewAgent ! Write("Sending the second Marker to Central Ticket Office...")
+								if (sendMarker) {
+									ViewAgent ! Write("Central Controller can be now termianted!")
+									this ! Stop()
 								}
-								case null => 
-							}
-							controllerLoop()
-						} catch {
-							case e : com.inspirel.yami.YAMIIOException => {
-								println("ERRORE: Connessione rifiutata all'indirizzo " + ControllerMain.NAME_SERVER_ADDRESS)
-								controllerLoop()
+							}else {
+								val agent = new Agent
+								map.keys.foreach( k => {
+									val message : OutgoingMessage = agent.send(
+										map(k),
+										"message_handler", 
+										"terminate", 
+										new Parameters)
+									message.waitForCompletion
+									message.getState match {
+										case OutgoingMessage.MessageState.REPLIED => {
+											ViewAgent ! Write("Node "+k+" Received termination request.")
+											// Add the node to asked list
+											askedNodes ::= k
+										}
+										case OutgoingMessage.MessageState.REJECTED => 
+											ViewAgent ! Write("ERROR: The message has been rejected by node "+ k +
+													" : " +	message.getExceptionMsg)
+										case _ => 
+											ViewAgent ! Write("ERROR: The message has been abandoned by node " + k)
+									}
+								})
+								agent.close
 							}
 						}
+						case null => 
 					}
-					case false => 
+					controllerLoop()
+				} catch {
+					case e : com.inspirel.yami.YAMIIOException => {
+						println("ERRORE: Connessione rifiutata all'indirizzo " + ControllerMain.NAME_SERVER_ADDRESS)
+						controllerLoop()
+					}
 				}
 			}
 			
@@ -246,6 +253,17 @@ class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 			case "event" => {
 				controller ! Event(im.getParameters.getString("event"))
 			}
+			
+			case "central_office_ack" => {
+				println("RECEIVED ACK FROM TICKET OFFICE")
+				
+				im.reply(new Parameters)
+				
+				// Now that we received the ack, we can proceed with the termiation of the nodes				
+				controller ! Proceed()
+				
+			}
+			
 			case "node_terminated" => {
 				
 				controller ! NodeTerminated(im.getParameters.getString("node_name"))

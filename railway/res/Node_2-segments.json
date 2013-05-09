@@ -6,8 +6,7 @@
 			"queue_dim" 	: 10,
 			"length" 		: 400,
 			"first_end"		: 1,
-			"second_end"	: 2,
-			"max_trains"	: 10
+			"second_end"	: 2
 		},
 		{
 			"id" 			: 6,
@@ -15,8 +14,7 @@
 			"queue_dim" 	: 10,
 			"length" 		: 350,
 			"first_end"		: 2,
-			"second_end"	: 3,
-			"max_trains"	: 10
+			"second_end"	: 3
 		},
 		{
 			"id" 			: 7,
@@ -24,8 +22,7 @@
 			"queue_dim" 	: 10,
 			"length" 		: 500,
 			"first_end"		: 3,
-			"second_end"	: 4,
-			"max_trains"	: 10
+			"second_end"	: 4
 		},
 		{
 			"id" 			: 8,
@@ -33,8 +30,7 @@
 			"queue_dim" 	: 10,
 			"length" 		: 400,
 			"first_end"		: 3,
-			"second_end"	: 5,
-			"max_trains"	: 10
+			"second_end"	: 5
 		}
 	]
 }

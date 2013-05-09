@@ -58,7 +58,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 % ################################################# ACCESSO_SEGMENTO #########################################
 % ############################################################################################################
 	
-		\subsubsection{Accesso ad un Segmento}
+		\subsubsection{Accesso ad un Segmento}\label{subsubsec:segment_access}
 		
 		L'accesso alla risorsa protetta Segmento è regolato da una interfaccia ben definita, che permette:
 			\begin{itemize}
@@ -81,18 +81,17 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 			
 			Data la possibilità di percorrenza multipla del Segmento, si presentano diverse problematiche: nel caso in cui una volta ottenuta la risorsa protetta Segmento, un Treno richieda l'accesso nella direzione opposta a quella dei Treni che percorrono il Segmento (ovvero abbiamo la situazione in cui il flag booleano \ttt{Free = False}, e la stazione di provenienza memorizzata presso il Segmento è diversa da quella del Treno richiedente) allora questo dovrà attendere fino a che il Segmento non si sarà liberato dai Treni in transito. Questa attesa dev'essere tale da evitare starvation del Treno in attesa.
 			
-			Una primo approccio possibile per risolvere questo problema è prevedere una coda, con politica FIFO, per poter permettere attesa su guardia booleana, internamente alla risorsa Segmento, per i Treni provenienti dalla direzione opposta rispetto al senso di marcia corrente: tali Treni dovranno avere priorità maggiore nell'accedere al Segmento appena esso diviene libero rispetto ad altri Treni che sopraggiungono successivamente. Indicheremo questa coda con \ttt{Waiting\_Queue}.
+			Una primo approccio possibile per risolvere questo problema è prevedere una coda, con politica FIFO, per poter permettere attesa su guardia booleana, internamente alla risorsa Segmento, per i Treni provenienti dalla direzione opposta rispetto al senso di marcia corrente: tali Treni dovranno avere priorità maggiore nell'accedere al Segmento appena esso diviene libero rispetto ad altri Treni che sopraggiungono successivamente. Indichiamo la coda presso il primo estremo del Segmento con \ttt{First_End_Queue}, mentre la seconda con \ttt{Second\_End\_Queue}.
 			Questi accorgimenti non risultano però sufficiente a garantire che i Treni nella coda avranno accesso al Segmento in qualche momento: si consideri, ad esempio, la presenza di un percorso circolare composto da $N$ Segmenti, e di $M$ Treni che viaggiano lungo tale percorso in senso orario in modo tale che in ogni istante ci sia almeno un treno all'interno di ciascun Segmento. Se ora aggiungiamo al sistema un Treno che viaggia in direzione opposta, allora esso, adottando la semantica di accesso descritta, non riuscirà mai a percorrere uno dei Segmenti.			
 			
-			Una possibile soluzione a questo problema, è prevedere un \ii{numero massimo di accessi consecutivi per direzione}. Nella coda \ttt{Waiting\_Queue} vengono quindi mantenute \ii{tutte} le entità Treno che non possono accedere correntemente, sia perché provenienti dalla direzione opposta, sia perché il numero massimo di accessi da una direzione è stato raggiunto. 
-		Sia \ttt{Access\_Number} il numero di accessi nella direzione corrente, e siano \ttt{First\_Direction\_Queue} e \ttt{Second\_Direction\_Queue} contatori del numero di Treni in attesa di accedere al Segmento per ciascuna delle due direzioni possibili.
+			Una possibile soluzione a questo problema, è prevedere un \ii{numero massimo di accessi consecutivi per direzione}. Nella coda relativa all'estremo presso il quale si vuole effettuare l'accesso, vengono quindi inserite le entità Treno che non possono accedere correntemente perché il numero massimo di accessi da una direzione è stato raggiunto. 
+		Sia \ttt{Access\_Number} il numero di accessi nella direzione corrente.
 		
 		La semantica adottata per la regolazione dell'accesso al Segmento è la seguente:
 		\begin{itemize}
 			\item Sia $T$ il thread Treno che esegue correntemente. Esso potrà accedere al segmento se e soltanto se una delle seguenti condizioni è verificata:
 				\begin{itemize}
-					\item \ttt{Free = True} e il numero massimo di accessi per direzione non è stato raggiunto.
-					\item \ttt{Free = True} e il numero massimo di accessi è stato raggiunto, ma il numero di Treni in attesa di accedere in direzione opposta è 0.
+					\item \ttt{Free = True}
 					\item \ttt{Free = False}, la direzione corrente dei Treni nel segmento è la stessa di $T$ ma il numero massimo di accessi per direzione non è stato raggiunto.
 					\item \ttt{Free = False}, la direzione corrente dei Treni nel segmento è la stessa di $T$, e il numero massimo di accessi per direzione è stato raggiunto ma il numero di Treni in attesa di accedere in direzione opposta è 0.
 				\end{itemize}
@@ -102,10 +101,10 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 					\item Nel caso in cui la direzione di $T$ sia uguale a quella corrente memorizzata nel Segmento, incrementa di $1$ il valore di \ttt{Access\_Number} se esso è inferiore al limite massimo consentito.
 					\item In ciascuno dei due casi infine, inserisce il Descrittore del Treno nella coda \ttt{Train\_Queue} e aggiorna la Velocità di percorrenza.
 				\end{itemize}
-			\item Se $T$ non può accedere, allora a seconda della direzione con la quale intende percorrere il Segmento incrementa di $1$ il valore di \ttt{First\_Direction\_Queue} oppure \ttt{Second\_Direction\_Queue}, e accoda il thread $T$ presso la coda \ttt{Waiting\_Queue}.
+			\item Se $T$ non può accedere, allora a seconda della direzione con la quale intende percorrere il Segmento, viene aggiunto alla coda \ttt{First\_End\_Queue} oppure \ttt{Second\_End\_Queue}.
 		\end{itemize}
 			
-			Una volta che il Segmento si sarà liberato (\ttt{Free=True}) allora ciascun Treno in attesa nella coda \ttt{Waiting\_Queue} potrà ritentare l'accesso al Segmento (la coda viene svuotata e ripopolata) e, nel caso in cui possa accedere, decrementa il valore di \ttt{First\_Direction\_Queue} o di \ttt{Second\_Direction\_Queue}, a seconda della direzione di percorrenza.
+			Una volta che il Segmento si sarà liberato (\ttt{Free=True}) allora ciascun Treno in attesa nella coda relativa all'estremità opposta a quella di accesso dell'ultimo Treno uscito, potrà ritentare l'accesso al Segmento (la coda viene svuotata e ripopolata).
 			Per semplicità, si può assumere che vi sia uno spazio apposito dove i Treni possano attendere affinché si liberi il Segmento.
 			  
 			\item {\ii{Uscita}} \\ 

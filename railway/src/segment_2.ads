@@ -29,7 +29,7 @@ with Gnatcoll.JSON;use Gnatcoll.JSON;
 with JSON_Helper;use JSON_Helper;
 with Queue;
 
-package Segment is
+package Segment_2 is
 
 	package Train_Queue_Package is new Queue(Element => Positive);
 	use Train_Queue_Package;
@@ -60,11 +60,13 @@ package Segment is
 
 	private
 
-		-- #
-		-- # Private Entry used to enqueue trains whose direction are not the same
-		-- # as the direction of already running trains.
-		-- #
-		entry Retry_Enter(
+		entry Retry_First_End(
+			To_Add 		:	in 		Positive;
+			Max_Speed 	: 	 	out Positive;
+			Leg_Length 	:		out	Positive);
+
+
+		entry Retry_Second_End(
 			To_Add 		:	in 		Positive;
 			Max_Speed 	: 	 	out Positive;
 			Leg_Length 	:		out	Positive);
@@ -87,13 +89,6 @@ package Segment is
 		-- # Queue of all the running trains
 		Running_Trains 		: access Limited_Simple_Queue := new Limited_Simple_Queue(Queue_Dim);
 
-
-		-- # Queue for first End
-		First_End_In_Queue 	: Natural := 0;
-
-		-- # Queue for second End
-		Second_End_In_Queue : Natural := 0;
-
 		-- # Boolean guard telling if a train can retry to Leave the Segment
 		Can_Retry_Leave 	: Boolean := False;
 
@@ -110,6 +105,11 @@ package Segment is
 		Trains_Number 		: Natural := 0;
 
 		Train_Entered_Per_Direction	: Natural := 0;
+
+		Can_Enter_First_End : Boolean := False;
+		Can_Enter_Second_End : Boolean := False;
+		Max : Natural := 10;
+
 
 	end Segment_Type;
 
@@ -131,4 +131,4 @@ private
 
 	function Get_Segment_Array(Json_v : Json_Value) return access Segments_Array;
 
-end Segment;
+end Segment_2;

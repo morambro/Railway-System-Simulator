@@ -46,13 +46,6 @@ object PathResolver {
 			res += ((tree.links(i).region1.toString,tree.links(i).region2.toString)) -> pathsList.toList
 		}		
 
-//		res.keys.foreach(el => {
-//			PrintsSerializer ! Print("Region 1 : " + el._1)
-//			PrintsSerializer ! Print("Region 2 : " + el._2)
-//			res(el).foreach({ path =>
-//				PrintsSerializer ! Print("("+path._1+","+path._2+")")
-//			})
-//		})
 		res
 	}
 	
@@ -62,7 +55,7 @@ object PathResolver {
  * Class PathResolver is an Actor type allowing to create a Ticket where source and destination stations are
  * on different Regions.
  **/ 
-class PathResolver(fileName : String) extends Actor {
+class PathResolver(fileName : String,messagesReceiver:Actor) extends Actor {
 	
 	/** 
 	 * The list of couples (region,address)
@@ -235,10 +228,14 @@ class PathResolver(fileName : String) extends Actor {
 		message.waitForCompletion
 		
 		message.getState match {
-			case OutgoingMessage.MessageState.REPLIED => PrintsSerializer ! Print("Error message has been received");
-		    case OutgoingMessage.MessageState.REJECTED => PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
+			case OutgoingMessage.MessageState.REPLIED => 
+				PrintsSerializer ! Print("Error message has been received");
+		    case OutgoingMessage.MessageState.REJECTED => 
+		    	PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
 			case _ => PrintsSerializer ! Print("The message has been abandoned.")
 		}
+		// Tell MessagesReceiver that the Creation Request have been done
+		messagesReceiver ! CreationRequestResolved()	
 	}
 
 	/**
@@ -356,11 +353,10 @@ class PathResolver(fileName : String) extends Actor {
 									PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
 								case _ => PrintsSerializer ! Print("The message has been abandoned.")
 							}
+							// Tell MessagesReceiver that the Creation Request have been done
+							messagesReceiver ! CreationRequestResolved()
 						}
 					}
-	
-					
-							
 			
 				} catch {
 					case e : NoRouteFoundException => {

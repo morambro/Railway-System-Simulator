@@ -25,10 +25,11 @@
 ----------------------------------------------------------------------------------
 with Segment;
 with Environment;
+with Segment_2;
 
 package Segments is
 
-	Segments : access Segment.Segments_Array := null;
+	Segments : access Segment_2.Segments_Array := null;
 
 	procedure Init;
 
