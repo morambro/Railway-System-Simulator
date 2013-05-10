@@ -1,7 +1,7 @@
 \newpage
 \chapter {Specifica della soluzione Realizzata}
 
-Di seguito verrà fornita una descrizione dell'architettura del progetto realizzato, e in particolare verrà descritto come le soluzioni progettate sono state realizzate nella pratica.
+Di seguito verrà fornita una descrizione dell'architettura del progetto realizzato, e in particolare verrà descritto come le soluzioni progettate sono state realizzate nella pratica. Dove necessario, verranno riportati listati di codice sorgente a supporto della descrizione.
 
 \section{Simulazione}
 
@@ -53,11 +53,12 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	\subsection{Central\_Controller\_Interface}
 	
-	Il package \ttt{Central\_Controller\_Interface} fornisce un'interfaccia per permettere alle entità della simulazione di inviare un evento di notifica alla componente remota di Controllo Centrale. A tal proposito sono messi a disposizione le procedure \ttt{Set\_Train\_Status} e \ttt{Set\_Traveler\_Status}, le quali effettuano il marshalling dei dati in ingresso (in formato \ttt{JSON}) e inviano un messaggio remoto mediante il metodo \ttt{Send\_One\_Way} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}.
+	Il package \ttt{Central\_Controller\_Interface} fornisce un'interfaccia per permettere alle entità della simulazione di inviare un evento di notifica all'oggetto remoto \ttt{central\_controller}. A tal proposito sono messi a disposizione le procedure \ttt{Set\_Train\_Status} e \ttt{Set\_Traveler\_Status}, le quali effettuano il marshalling dei dati in ingresso (in formato \ttt{JSON}) e inviano un messaggio remoto mediante il metodo \ttt{Send\_One\_Way} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}.
 	
 	\subsection{Central\_Office\_Interface}
 	
-	Il package \ttt{Central\_Office\_Interface} fornisce un'interfaccia per permettere la comunicazione con la Biglietteria Centrale:
+	Il package \ttt{Central\_Office\_Interface} fornisce un'interfaccia per permettere la comunicazione con la Biglietteria Centrale, mediante l'invio di messaggi all'oggetto remoto \ttt{central\_ticket\_server}.
+	
 		\begin{description}
 			\item \ttt{+ Create\_Ticket( \\
 				From : String,\\
@@ -68,6 +69,17 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 			\item \ttt{+ Validate(\\
 				The\_Ticket:Ticket,\\
 				Callback:access procedure(The\_Ticket:Ticket,Response:Boolean))}\\
+			Richiede la validazione di un Biglietto inviando un messaggio remoto mediante il metodo \ttt{Send\_Message} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}. La richiesta è sincrona, e la risposta viene quindi elaborata e viene invocata la procedura \ttt{Callback} passando come parametri i risultati estratti.
+			
+			\item \ttt{+ Update\_Run(\\
+				Route\_Index:Integer,\\
+				Current\_Run:Integer,\\
+				Callback:access procedure(...))}\\ 
+			Invia un messaggio remoto per comunicare l'aggiornamento della corsa corrente \ttt{Current\_Run} per il percorso \ttt{Route\_Index}. Nel caso in cui la corsa sia l'ultima delle $N$ mantenute, viene creata una nuova Time Table per il percorso \ttt{Route\_Index} dalla Biglietteria Centrale che viene restituito al chiamante. Nel caso in cui essa venga ricevuta (in formato \ttt{JSON}), viene effettuato l'unmarshalling e creata l'istanza corrispondente di \ttt{Time\_Table\_Type} da sostituire a quella corrente.
+			
+			\item \ttt{+ Load\_Time\_Tables(\\
+				Callback:access procedure(Table:Time\_Table\_Array\_Ref))}\\
+			Invocazione di un messaggio remoto per richiedere l'insieme delle Time Tables per tutti i percorsi.
 				
 		\end{description}
 	
@@ -79,17 +91,56 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 		Name\_Server : String,\\
 		Node\_Name 	: String,\\
 		Address	: String)} \\
+		
 	Permette di registrare presso il Server dei Nomi che l'entità remota \ttt{Node\_Name} è disponibile alla locazione indicata da \ttt{Address}. 
 	
 	\item \ttt{+  Resolve(\\
 		Name\_Server : String,\\
 		Node\_Name 	: String),\\
 		Callback : access procedure(Result:String)} \\
+		
 		Permette di richiedere al Server dei Nomi la risoluzione della locazione alla quale si trova l'entità \ttt{Node\_Name}. Una volta che la risposta è disponibile, viene invocata la procedura di callback \ttt{Callback}. 
 				
 	\end{description}
 	
-	Per entrambe le procedure, viene inviato un messaggio remoto tramite il metodo \ttt{Send\_Message} di \ttt{Message\_Agent\_Type}, al quale viene passato una procedura di callback che estrae il campo \ttt{address} dal messaggio di ritorno e lo passa all'invocazione di \ttt{Callback}. Presso il package viene mantenuta una hash-map, la quale permette di memorizzare le destinazioni risolte, in modo da limitare l'invio di messaggi remoti.
+	Per entrambe le procedure, viene inviato un messaggio all'oggetto remoto identificato da \ttt{name\_server}, mediante il metodo \ttt{Send\_Message} di \ttt{Message\_Agent\_Type}, al quale viene passato una procedura di callback che estrae il campo \ttt{address} dal messaggio di ritorno e lo passa all'invocazione di \ttt{Callback}. Presso il package viene mantenuta una hash-map, la quale permette di memorizzare le destinazioni risolte, in modo da limitare l'invio di messaggi remoti.
+	
+	\subsection{Remote\_Station\_Interface}
+	
+	Il package \ttt{Remote\_Station\_Interface} espone un insieme di procedure che permettono l'invio di messaggi remoti tra i Nodi che cooperano alla simulazione, che saranno diretti agli oggetti remoti \ttt{message\_handler}.
+	\begin{description}
+		
+		\item \ttt{+ Send\_Train(\\
+			Train\_Descriptor\_Index:Integer,\\
+			Station:Integer,\\
+			Platform:Integer,\\
+			Next\_Node\_Name:String)}\\ 
+		Tale procedura permette l'invio di un messaggio remoto al Nodo identificato da \ttt{Next\_Node\_Name} per effettuare il trasferimento del Treno indicato da \ttt{Train\_Descriptor\_Index} presso la Stazione \ttt{Station}, Piattaforma \ttt{Platform}. 
+		
+		\item \ttt{+ Train\_Left\_Message(\\
+			Train\_Descriptor\_Index:Integer,\\
+			Station:Integer,\\
+			Platform:Integer,\\
+			Next\_Node\_Name:String)}\\ 
+		Questa procedura permette l'invio di un messaggio remoto al Nodo identificato da \ttt{Next\_Node\_Name} per indicare la partenza del Treno \ttt{Train\_Descriptor\_Index} dalla Piattaforma \ttt{Platform} della Stazione \ttt{Station}.
+		
+		\item \ttt{+ Send\_Traveler\_To\_Leave(\\
+			Traveler\_Index:Integer,\\
+			Train\_ID:Integer,\\
+			Station:Integer,\\
+			Platform:Integer,\\
+			Node\_Name:String)}\\
+		Permette l'invio di un messaggio remoto al Nodo identificato da \ttt{Node\_Name} per aggiungere il Viaggiatore \ttt{Traveler\_Index} in attesa presso la Piattaforma \ttt{Platform} della Stazione \ttt{Station} dell'arrivo del Treno \ttt{Train\_ID} per poter lasciare tale Stazione.
+		
+		\item \ttt{+ Wait\_For\_Train\_To\_Arrive(\\
+			Next\_Station:Integer,\\
+			Traveler\_Manager\_Index:Integer,\\
+			Train\_ID:Integer,\\
+			Destination\_Platform\_Index:Integer,\\
+			Next\_Region:String)}\\
+		Permette l'invio di un messaggio remoto al Nodo identificato da \ttt{Node\_Name} per aggiungere il Viaggiatore \ttt{Traveler\_Index} in attesa presso la Piattaforma \ttt{Platform} della Stazione \ttt{Station} dell'arrivo del Treno \ttt{Train\_ID} per poter arrivare presso tale Stazione.
+		
+	\end{description}
 	
 	\subsection{Queue}
 	
@@ -175,6 +226,102 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	Il package \ttt{Regional\_Ticket\_Office} contiene inoltre la procedura \ttt{Init\_Path\_Map} utilizzata per caricare la mappa contenente i percorsi più brevi, usata dall'algoritmo di creazione del Biglietto. 
 	
+	\subsection{Train}
+	
+	Il package \ttt{Train} contiene la definizione del tipo \ttt{Train\_Descriptor}, record contenente tutti i dati che caratterizzano una entità Treno, e alcune funzioni necessarie ad effettuare la conversione da JSON a oggetto \ttt{Train\_Descriptor} e viceversa.
+	I campi principali del record \ttt{Train\_Descriptor} sono:
+	\begin{itemize}
+		\item \ttt{Id}: identificativo univoco del Treno.
+		\item \ttt{Speed}: Velocità di percorrenza Corrente.
+	    \item \ttt{Max\_Speed}: Velocità massima raggiungibile dal Treno.
+	    \item \ttt{Current\_Station} Indice della stazione corrente.
+	    \item \ttt{Route\_Index}: Indice del Percorso assegnato al Treno.
+	    \item \ttt{Next\_Stage}: Prossima tappa del Percorso assegnato.
+	    \item \ttt{Sits\_Number}: Numero di posti a sedere.
+	    \item \ttt{Occupied\_Sits}: Numero di posti occupati correntemente.
+		\item \ttt{T\_Type}: Indica il tipo di Treno, tra \ttt{FB} e \ttt{REGIONAL}.
+		\item \ttt{Start\_Node}: Regione dalla quale il Treno parte.
+	\end{itemize}
+	
+	Tali descrittori sono memorizzati in un array \ttt{Trains} presso il package \ttt{Trains}, in modo tale da poter essere acceduti in modo diretto dalle varie componenti del sistema.
+	
+	\subsection{Train\_Pool}
+	
+	Il package \ttt{Train\_Pool} definisce il pool di Task, che serve ad eseguire le operazioni previste per i Treni. Esso mantiene due code (di tipo \ttt{Terminable\_Queue}) di valori interi, una per ciascuna categoria di Treno, nelle quali verranno inseriti gli indici dell'array di descrittori \ttt{Trains.Trains}, e definisce il tipo Task \ttt{Train\_Executor\_Task}, il quale effettua le seguenti operazioni ciclicamente:
+	\begin{itemize}
+		\item Preleva da una delle due code il prossimo indice dell'array di descrittori. 
+
+\begin{lstlisting}
+...
+Trains.Queue.Dequeue(
+	To_Get      => Current_Descriptor_Index,
+	Terminated  => Terminated);
+...
+\end{lstlisting}
+
+		\item Effettua la partenza dalla stazione corrente all'orario previsto dalla Time Table per il percorso assegnato al Treno.
+\begin{lstlisting}
+...
+delay until Time_To_Wait;
+Environment.Stations(Start_Station).Leave(
+	Descriptor_Index => Current_Descriptor_Index,
+	Platform_Index   => Start_Platform,
+	-- Azione da intraprendere al momento della 
+	-- partenza, definita dalla tappa corrente
+	-- del percorso
+	Action           => Leave_Action);
+...
+\end{lstlisting}
+		 
+		\item Richiede l'accesso al prossimo Segmento:
+
+\begin{lstlisting}
+...
+Segments.Segments(Next_Segment).Enter(
+	Current_Descriptor_Index,
+	Max_Speed,
+	Leg_Length);
+...
+\end{lstlisting}		
+		\item Una volta ottenuto l'accesso, notifica la partenza del Treno al Controller Centrale mediante la procedura \ttt{Set\_Train\_Left\_Status} di \\\ttt{Central\_Controller\_Interface} e simula la percorrenza nel Segmento con il costrutto:
+
+\begin{lstlisting}
+...
+delay Duration (Time_In_Segment);
+...
+\end{lstlisting}
+		
+		\item Richiedi l'uscita dal Segmento. 
+
+\begin{lstlisting}
+...
+Segments.Segments(Next_Segment).Leave(
+		Current_Descriptor_Index);
+...
+\end{lstlisting}	
+	
+		\item Richiede l'accesso alla prossima Stazione.
+
+\begin{lstlisting}
+...
+Environment.Stations(Next_Station).Enter(...);
+...
+\end{lstlisting}		
+
+		\item Passa alla prossima Tappa del Percorso e inserice l'indice del Descrittore nella coda apposita.
+
+\begin{lstlisting}
+...
+Trains.Trains(Current_Descriptor_Index).Next_Stage := 
+		Trains.Trains(Current_Descriptor_Index).Next_Stage + 1;
+...
+\end{lstlisting}
+
+	\end{itemize}
+	
+	L'esecuzione dei Task viene interrotta quando l'operazione di Dequeue nelle code di indici di Descrittori di Treni restituisce \ttt{Terminated=True}. Per permettere invece l'interruzione delle operazioni in corso nel caso in cui l'accesso alla prossima Stazione comporti il trasferimento remoto del Treno indicato da \ttt{Current\_Train\_Descriptor}, viene utilizzata l'eccezione \ttt{Stop\_Train\_Execution} definita nel package \ttt{Remote\_Station\_Interface}.
+	
+	
 	\subsection{Segment}
 	
 	Il package \ttt{Segment} contiene la definizione del tipo \ttt{Segment\_Type}, \ii{risorsa protetta} che rappresenta una il segmento di congiunzione tra due Stazioni introdotto in sezione \ref{subsec:segment_def}. Esso contiene i seguenti campi dato:
@@ -188,22 +335,19 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 		
 		\item \ttt{Current\_Direction}: Direzione di percorrenza corrente;
 		
-		\item \ttt{Queue\_Dim} Dimensione massima della coda usata per memorizzare gli identificativi univoci dei Treni in transito;
-		\item \ttt{Running\_Trains\_Queue}: Coda di tipo \ttt{Limited\_Simple\_Queue} di \ttt{Queue\_Dim} elementi, che contiene gli identificativi dei Treni in transito;
+		\item \ttt{Running\_Trains\_Queue}: Coda di tipo \ttt{Unlimited\_Simple\_Queue} che contiene gli identificativi dei Treni in transito;
 		\item \ttt{Trains\_Number}: Mantiene il numero di Treni attualmente in transito;
 		
 		
 		\item \ttt{First\_End,Second\_End}: Stazioni che sono collegate dal Segmento; 
 		
-		\item \ttt{First\_End\_In\_Queue}: Numero di Task in attesa per accedere il Segmento dal primo estremo.
-		\item \ttt{Second\_End\_In\_Queue}: Numero di Task in attesa per accedere il Segmento dal secondo estremo.
+		\item \ttt{Can\_Enter\_First\_End, Can\_Enter\_Second\_End}: Variabili booleane utilizzati come guardie per le enties \ttt{Retry\_First\_End} e \ttt{Retry\_Second\_End}.
 		
-		\item \ttt{Can\_Retry\_Leave, Can\_Retry\_Enter}: Vengono usati come guardie booleane per regolare rispettivamente i tentativi successivi di uscita e accesso al Segmento.
+		\item \ttt{Enter\_Retry\_Num}: Numero di Task in attesa per poter accedere alla risorsa protetta.
 		
-		\item \ttt{Enter\_Retry\_Num}: Numero di Task in attesa su guardia booleana, rappresentata da \ttt{Can\_Retry\_Enter}
-		\item \ttt{Exit\_Retry\_Num}: Numero di Task in attesa su guardia booleana rappresentata da \ttt{Can\_Retry\_Leave} 
-
-		\item \ttt{Train\_Entered\_Per\_Direction}: Numero di Treni transitati per la direzione corrente.		
+		\item \ttt{Exit\_Retry\_Num}:  Numero di Task in attesa per poter liberare a risorsa protetta. 
+		
+		\item \ttt{Train\_Entered\_Per\_Direction}: Numero di Treni transitati per la direzione corrente.
 		
 	\end{itemize}
 	
@@ -399,7 +543,7 @@ di ritentare l'accesso. Nel caso il Segmento sia vuoto ma non vi sia nessun Task
 				Free := True;
 			end if;
 		else
-			-- Caso analogo relativo alla direzione opposta
+			-- Caso analogo relativo per la direzione opposta
 			...
 		end if;
 	end if;
@@ -432,4 +576,171 @@ di ritentare l'accesso. Nel caso il Segmento sia vuoto ma non vi sia nessun Task
 \end{lstlisting}
 
 La soluzione presentata sfrutta gli strumenti offerti dal linguaggio Ada per garantire una semantica adeguata di accesso, percorrenza e uscita.
+
+	\subsection{Generic\_Station}
+	
+	Il package \ttt{Generic\_Station} contiene la definizione dell'interfaccia \ttt{Station\_Interface}, che dovrà essere implementata da tutti i tipi di Stazione. Essa espone i seguenti metodi di classe:
+	\begin{description}
+		\item \ttt{Enter(\\
+			Descriptor\_Index:Integer,\\
+			Platform\_Index:Integer,\\
+			Segment\_ID:Integer,\\
+			Action:Route.Action)} \\
+		Metodo invocato dai Task di tipo \ttt{Train\_Task} per poter effettuare l'accesso alla piattaforma \ttt{Platform\_Index} della Stazione.
+		
+		\item \ttt{Leave(\\
+			Descriptor\_Index:Integer,\\
+			Platform\_Index:Integer,\\
+			Action:Route.Action)} \\
+		Metodo invocato dai Task di tipo \ttt{Train\_Task} per poter effettuare la partenza dalla piattaforma \ttt{Platform\_Index} della Stazione.
+		
+		\item \ttt{Wait\_For\_Train\_To\_Go(\\
+			Outgoing\_Traveler:Integer,\\
+			Train\_ID:Integer,\\
+			Platform\_Index:Integer)} \\
+		Metodo utilizzato per posizionare il Viaggiatore di indice \ttt{Outgoing\_Traveler} in attesa del treno \ttt{Train\_ID} presso la Piattaforma \ttt{Platform} per poter partire.		
+			
+		\item \ttt{Wait\_For\_Train\_To\_Arrive(\\
+			Incoming\_Traveler:Integer,\\
+			Train\_ID:Integer,\\
+			Platform\_Index:Integer)} \\
+		Metodo utilizzato per posizionare il Viaggiatore di indice \ttt{Outgoing\_Traveler} in attesa del treno \ttt{Train\_ID} presso la Piattaforma \ttt{Platform} per simulare la percorrenza all'interno del Treno \ttt{Train\_ID}.
+			
+		\item \ttt{Add\_Train(\\
+			Train\_ID:Integer,\\
+			Segment\_ID:Integer)} \\
+		Metodo utilizzato per poter definire l'ordine di arrivo di un Treno \ttt{Train\_ID} proveniente dal Segmento \ttt{Segment\_ID}.	
+	
+		\item \ttt{Buy\_Ticket(\\
+			Traveler\_Index:Integer,\\
+			To:String)} \\
+		Metodo che permette ad un viaggiatore \ttt{Traveler} di poter effettuare una richiesta per ottenere un Ticket per la destinazione \ttt{To}.
+	\end{description}
+	
+	Il package contiene, oltre all'interfaccia descritta, anche la definizione del tipo protetto \ttt{Access\_Controller}. Questo tipo di risorsa protetta viene utilizzata dalle Stazioni per regolare l'ordine di richiesta d'accesso alle Piattaforme, in base all'ordine di uscita dal Segmento al quale tale risorsa fa riferimento. \ttt{Access\_Controller} mantiene una coda \ttt{Trains\_Order} di identificativi di Treni, di tipo \ttt{Unlimited\_Simple\_Queue}, alla quale è possibile aggiungere elementi mediante la procedura protetta esposta \ttt{Add\_Train}. Esso inoltre espone l'entry \ttt{Enter(Train\_Index:Integer)} con guardia sempre aperta (\ttt{True}) per permettere il primo tentativo di accesso, che avviene soltanto se il primo elemento della coda coincide con l'identificativo del Treno corrente. Nel caso il Treno non sia il prossimo secondo l'ordine definito da \ttt{Trains\_Order}, allora il task corrente viene posto in attesa su guardia presso l'entry privata \ttt{Wait}, mediante il costrutto \ttt{requeue}. La procedure \ttt{Free} rimuove dalla coda il primo elemento, e, nel caso in cui vi siano Task in coda sulla guardia presso l'entry \ttt{Wait}, apre tale guardia in modo tale da permettere ad essi di ritentare l'accesso.
+	
+	\subsection{Generic\_Platform}
+	
+	Il package \ttt{Generic\_Platform} definisce l'interfaccia di classe \ttt{Platform\_Interface} implementata da ciascun tipo rappresentante una Piattaforma.
+	
+	\subsection{Platform} 
+	
+	Il package \ttt{Platform} definisce il tipo protetto \ttt{Platform\_Type}, usato per regolare gli accessi alla Piattaforma. Esso mantiene i campi dato:
+	\begin{itemize}
+		\item \ttt{Free}: Variabile booleana usata per indicare lo stato di occupazione della Piattaforma.
+
+		\item \ttt{Can\_Retry}: Variabile booleana usata come guardia per regolare i tentativi di accesso alla Piattaforma.
+
+		\item \ttt{Retry\_Count}: Variabile a valori interi usata per la regolazione dei tentativi di accesso alla Piattaforma.
+		
+		\item \ttt{Trains\_Order}: Coda di interi FIFO, di tipo \ttt{Unlimited\_Simple\_Queue}, usata per memorizzare gli identificativi dei Treni che intendono accedere alla Piattaforma.
+	\end{itemize}
+	\ttt{Platform\_Type} si compoene delle seguenti procedure:
+	
+	\begin{description}
+		
+		\item \ttt{Add\_Train(Train\_ID:Integer)} \\
+		Aggiunge l'identificativo \ttt{Train\_ID} nella coda \ttt{Trains\_Order}.
+		
+		\item \ttt{Leave} \\
+		Imposta il campo \ttt{Free} a \ttt{False} liberando la risorsa, e, nel caso in cui ci fossero Task in attesa presso la \ii{entry} \ttt{Retry}, apre la guardia \ttt{Can\_Retry} memorizzando il numero di tali task nel campo \ttt{Retry\_Count}.
+		
+	\end{description}
+	e delle seguenti \ii{entries}:
+	\begin{description}
+		
+		\item \ttt{Enter(Train\_Descriptor\_Index:Integer)}\\
+		Ha guardia booleana sempre aperta (\ttt{True}). Essa verifica se il primo elemento della coda corrisponde al Treno corrente. In tal caso viene permesso l'accesso viene impostato lo stato della Piattaforma ad occupato (\ttt{Free = False}). Nel caso in cui invece tale condizione non si verifichi, il Task corrente viene riaccodato sulla \ii{entry} \ttt{Retry}.	
+		
+		\item \ttt{Retry(Train\_Descriptor\_Index:Integer)}\\
+		\'E regolata dalla guardia booleana \ttt{Can\_Retry}. Essa decrementa il valore di \ttt{Retry\_Count} e, nel caso in cui esso sia a 0, imposta il valore di \ttt{Can\_Retry} a \ttt{False}. Infine riaccoda il Task corrente presso la entry \ttt{Enter}.
+		
+	\end{description}
+	
+	Il package \ttt{Platform} definisce inoltre il tipo \ii{tagged} \ttt{Platform\_Handler}. Esso contiene un oggetto di tipo \ttt{Platform\_Type}, \ttt{The\_Platform}, e implementa i metodi dell'interfaccia \ttt{Platform\_Interface}:
+	\begin{description}
+		
+		\item \ttt{+ Enter(\\
+			Train\_Descriptor\_Index:Integer,\\
+			Action:Route.Action)}\\
+		Per prima cosa cerca di ottenere l'accesso alla Piattaforma mediante l'\ii{entry} \ttt{Enter} invocata sull'oggetto \ttt{The\_Platform}, poi notifica l'avvenuto accesso al Controller Centrale e invoca il metodo privato \ttt{Perform\_Entrance} per effettuare le operazioni necessarie all'arrivo del Treno.
+		
+		\item \ttt{+ Leave(\\
+			Train\_Descriptor\_Index:Integer,\\
+			Action:Route.Action)}\\
+		Invoca il metodo privato \ttt{Perform\_Exit} per effettuare le operazioni necessarie all'uscita del Treno dalla Piattaforma, e successivamente invoca la procedura protetta \ttt{Leave} sull'oggetto \ttt{The\_Platform}.
+		
+	\end{description}
+	
+	\subsection{Regional\_Station}
+	
+	Il package \ttt{Regional\_Station} contiene la definizione del tipo classe (\ttt{tagged} nel linguaggio Ada) \ttt{Regional\_Station\_Type} il quale implementa l'interfaccia \ttt{Station\_Interface}. Ciascuna istanza di classe \ttt{Regional\_Station} contiente una tabella di hash, \ttt{Segments\_Map\_Order}, la quale per ciascun Segmento entrante associa un'istanza di \ttt{Access\_Controller}; inoltre, essa contiene un array di oggetti di tipo \ttt{Platform\_Type} (ovvero Piattaforme), in numero definito da configurazione, e una istanza di oggetto \ttt{Notice\_Panel}. 
+	Ciascuna Stazione fornisce quindi da interfaccia all'esterno per l'accesso alle componenti interne.
+	
+	Le operazioni svolte del metodo \ttt{Enter} sono le seguenti:
+	\begin{itemize}
+	
+		\item Viene effettuato l'accesso alla Stazione, mantenendo l'ordine di uscita dal Segmento.
+
+\begin{lstlisting}
+...
+This.Segments_Map_Order.Element(Segment_ID).Enter(
+		Train_Index	=> Descriptor_Index);
+...
+\end{lstlisting}
+		\item Una volta ottenuto l'accesso, il Task corrente aggiunge l'identificativo del descrittore presso la coda interna alla piattaforma che regola l'ordine di ingresso in essa.
+		Si noti che questa invocazione di procedura viene eseguita in modo concorrente tra tutti i Treni provenienti da Segmenti diversi che vogliono accedere alla stessa piattaforma, ma in mutua esclusione tra tutti quelli che provengono dallo stesso Segmento.
+\begin{lstlisting}
+...
+This.Platforms(Platform_Index).Add_Train(
+		Trains.Trains(Descriptor_Index).ID);
+...
+\end{lstlisting}
+		\item Una volta che il descrittore è stato aggiunto alla coda interna alla piattaforma desiderate, il controller degli accessi alla Stazione può essere rilasciato, poiché l'ordine di accesso alla Stazione è garantito.
+\begin{lstlisting}
+...
+This.Segments_Map_Order.Element(Segment_ID).Free;
+...
+\end{lstlisting}
+		\item Viene richiesto l'accesso vero e proprio alla Piattaforma che avverrà secondo l'ordine definito dalla propria coda interna.
+\begin{lstlisting}
+...
+This.Platforms(Platform_Index).Enter(
+		Train_Descriptor_Index 	=> Descriptor_Index,
+		Action					=> Action);
+...
+\end{lstlisting}
+		\item Notifica al pannello informativo dell'avvenuto ingresso del Treno alla Piattaforma.
+\begin{lstlisting}
+...
+This.Panel.Set_Train_Accessed_Platform(
+		Train_ID	=> Trains.Trains(Descriptor_Index).ID,
+		Platform 	=> Platform_Index);
+...
+\end{lstlisting}
+	\end{itemize}
+	
+	Il metodo \ttt{Leave} si limita a liberare la Piattaforma desiderata mediante l'invocazione su di essa della procedura protetta \ttt{Leave}, e a notificare l'avvenuta dipartita del Treno al Pannello informativo della Stazione.
+	
+	I metodi ridefiniti \ttt{Wait\_For\_Train\_To\_Go} e \ttt{Wait\_For\_Train\_To\_Arrive} aggiungono l'indice del Viaggiatore passato come parametro nelle code interne alla Piattaforma riservate alla partenza e all'arrivo dei Viaggiatori rispettivamente. 
+	
+	La ridefinizione del metodo \ttt{Add\_Train} aggiunge l'identificativo del Treno passato come parametro alla coda interna al controllore di accessi creato per il Segmento di origine del Treno. Se tale controllore non esiste (la creazione avviene non per tutti i Segmenti in ingresso ma solo se essi sono effettivamente utilizzati) viene creato, e aggiunto quindi alla tabella \ttt{Segments\_Map\_Order}.
+	
+	Infine, la ridefinizione del metodo \ttt{Buy\_Ticket} effettua una invocazione della procedure \ttt{Get\_Ticket} del package \ttt{Regional\_Ticket\_Office}.
+	
+	\subsection{Gateway\_Station}
+	
+	Il package \ttt{Gateway\_Station} contiene la definizione del tipo \ii{tagged} \ttt{Gateway\_Station\_Type}, il quale implementa l'interfaccia \ttt{Station\_Interface}. Il tipo \ttt{Gateway\_Station\_Type} contiene, come \ttt{Regional\_Station\_Type}, un array di oggetti di tipo \ttt{Platform\_Type}, una mappa \ttt{Segments\_Map\_Order} contenente per ogni Segmento il controllore di accessi (\ttt{Access\_Controller}) relativo, e un oggetto di tipo \ttt{Notice\_Panel\_Type}, che rappresenta il pannello informativo della Stazione.
+	L'implementazione dei metodi astratti, è molto simile a quella fornita dal tipo \ttt{Regional\_Station}; di seguito verranno descritte le differenze principali:
+	\begin{itemize}
+		
+		\item Il metodo \ttt{Enter} esegue le operazioni descritte per l'equivalente metodo esposto da \ttt{Regional\_Station}. Vi è però la possibilità che il Treno corrente possa essere trasferito su un Nodo diverso, se previsto dal percorso. A tal proposito, dopo aver avuto accesso alla Piattaforma desiderata, vengono recuperati, se previsti dal percorso, la prossima stazione da raggiungere e il Nodo, ovvero la regione, sulla quale essa si trova. Per come un percorso è definito, la prossima stazione sarà la relativa Stazione di Gateway nel Nodo della tappa successiva a quella corrente. L'eventuale trasferimento del Treno viene effettuato mediante la procedura \ttt{Send\_Train}, esposta dal package \ttt{Remote\_Station\_Interface}.
+		
+		\item Il metodo \ttt{Leave} una volta liberata la Piattaforma indicata dal parametro \ttt{Platform\_Index}, controlla se il Treno proviene da un Nodo diverso da quello corrente. In questo caso, viene inviata un messaggio al Nodo di provenienza per comunicare l'avvenuta dipartite del Treno dalla Piattaforma con la procedura \ttt{Train\_Left\_Message} esposta da \ttt{Remote\_Station\_Interface}.
+		
+		\item Il metodo \ttt{Wait\_For\_Train\_To\_Go} controlla se la tappa successiva nel Ticket del Viaggiatore indicato da \ttt{Outgoing\_Traveler} porta in una Stazione appartenente ad un Nodo diverso da quello corrente. In tal caso viene invocata la procedura \ttt{Send\_Traveler\_To\_Leave} del package \ttt{Remote\_Station\_Interface} per far attendere il Viaggiatore presso la Piattaforma della Stazione di Gateway corrente appartenente a tale Nodo.
+		
+	\end{itemize}
+	
+	
 	

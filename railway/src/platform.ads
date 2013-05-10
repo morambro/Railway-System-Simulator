@@ -74,6 +74,7 @@ package Platform is
 
 
 private
+	package Trains_Queue_Package is new Queue (Element => Positive);
 
 	-- #
 	-- # Protected Resource used to Regulate the access to a platform.
@@ -85,18 +86,26 @@ private
 		-- #
 		-- #
 		-- #
-		procedure Leave(
+		procedure Leave;
+
+		entry Enter (
 			Train_Descriptor_Index 	: in 	Positive);
 
-		entry Enter_Regional (
-			Train_Descriptor_Index 	: in 	Positive);
-
-		entry Enter_FB (
-			Train_Descriptor_Index 	: in 	Positive);
+		procedure Add_Train(
+			Train_ID 	: in 	Positive);
 
 	private
 
+		entry Retry (
+			Train_Descriptor_Index 	: in 	Positive);
+
 		Free : Boolean := True;
+
+		Can_Retry : Boolean := False;
+
+		Retry_Count : Natural := 0;
+
+		Trains_Order : Trains_Queue_Package.Unlimited_Simple_Queue;
 
 	end Platform_Type;
 
@@ -131,5 +140,8 @@ private
 			This 					: access Platform_Handler;
 			Train_Descriptor_Index 	: in 	 Positive;
 			Action 					: in	 Route.Action);
+	procedure Add_Train(
+			This					: access Platform_Handler;
+			Train_ID 				: in 	 Positive);
 
 end Platform;

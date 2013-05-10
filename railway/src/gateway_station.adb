@@ -56,9 +56,16 @@ package body Gateway_Station is
 	is
 	begin
 
-		-- # Pass the controller that checks the right order
+		-- # First, pass the Access Controller, to maintain the same order
+		-- # as the exit order from the Segment <Segment_ID>
 		This.Segments_Map_Order.Element(Segment_ID).Enter(
-			Train_Index 	=> Descriptor_Index);
+			Train_Index	=> Descriptor_Index);
+
+		-- # Add The Train to Platform internal queue.
+		This.Platforms(Platform_Index).Add_Train(Trains.Trains(Descriptor_Index).ID);
+
+		-- # Now we can Free the Access controller, to let other Tasks to be awaked.
+		This.Segments_Map_Order.Element(Segment_ID).Free;
 
 		-- # Once the task passed the Access controller, it occupies the Platform and,
 		-- # if needed, performs Alighting of Passengers.
@@ -70,9 +77,6 @@ package body Gateway_Station is
 		This.Panel.Set_Train_Accessed_Platform(
 			Train_ID	=> Trains.Trains(Descriptor_Index).ID,
 			Platform 	=> Platform_Index);
-
-		-- # Frees the Access controller, to let other Tasks to be awaked.
-		This.Segments_Map_Order.Element(Segment_ID).Free;
 
 		-- # If we have to cross to other region, we are positioned a stage before the first stage on the next region.
 		-- # So, let's check for Trains.Trains(Descriptor_Index).Next_Stage + 1!
@@ -116,7 +120,7 @@ package body Gateway_Station is
 		-- # If the next Stage is in the same Region, proceed with a local Leave operation
 		This.Platforms(Platform_Index).Leave(
 			Train_Descriptor_Index 	=> Descriptor_Index,
-			Action						=> Action);
+			Action					=> Action);
 
 		-- # Notify the Notice Panel that the Train Left the Platform
 		This.Panel.Set_Train_Left_Platform(

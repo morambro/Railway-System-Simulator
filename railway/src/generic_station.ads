@@ -95,8 +95,7 @@ package Generic_Station is
 	-- will be deallocated by Free method.
  	procedure Free is new Unchecked_Deallocation (
       		Station_Interface'Class,
-			Station_Ref
-	);
+			Station_Ref);
 
 	pragma Controlled (Station_Ref);
 
@@ -131,7 +130,7 @@ package Generic_Station is
 	private
 
 		-- #
-		-- # Private Entry used to make unordered accesses avoided.
+		-- # Private Entry used to maintain ordered access.
 		-- #
 		entry Wait(
 			Train_Index	: in 	Positive);

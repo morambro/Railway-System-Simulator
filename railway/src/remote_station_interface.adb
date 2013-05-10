@@ -59,8 +59,7 @@ package body Remote_Station_Interface is
 						Logger.Log(
 							Sender 	=> "Remote_Station_Interface.Send_Train",
 							Message => "The destination is located at address " & Address,
-							L 		=> Logger.DEBUG
-						);
+							L 		=> Logger.DEBUG);
 
 						-- # Once the address is resolved, send the Train to the destination node, and interrupt
 						-- # the current task Train execution.
@@ -110,7 +109,7 @@ package body Remote_Station_Interface is
 		Train_Descriptor_Index 	: in	 Positive;
 		Station	 				: in	 Positive;
 		Platform				: in 	 Positive;
-		Node_Name				: in	 String )
+		Node_Name				: in	 String)
 	is
 		-- #
 		-- # Callback function, used to handle the response from the Name Server Interface

@@ -3,6 +3,7 @@
 		{
 			"id" 			: 5,
 			"max_speed" 	: 160,
+			"max"			: 5,
 			"queue_dim" 	: 10,
 			"length" 		: 400,
 			"first_end"		: 1,
@@ -11,6 +12,7 @@
 		{
 			"id" 			: 6,
 			"max_speed" 	: 160,
+			"max"			: 5,
 			"queue_dim" 	: 10,
 			"length" 		: 350,
 			"first_end"		: 2,
@@ -19,6 +21,7 @@
 		{
 			"id" 			: 7,
 			"max_speed" 	: 160,
+			"max"			: 5,
 			"queue_dim" 	: 10,
 			"length" 		: 500,
 			"first_end"		: 3,
@@ -27,6 +30,7 @@
 		{
 			"id" 			: 8,
 			"max_speed" 	: 160,
+			"max"			: 5,
 			"queue_dim" 	: 10,
 			"length" 		: 400,
 			"first_end"		: 3,

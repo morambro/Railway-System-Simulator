@@ -54,19 +54,23 @@ package body Regional_Station is
 			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action) is
 	begin
+
 		-- # First, pass the Access Controller, to maintain the same order
 		-- # as the exit order from the Segment <Segment_ID>
 		This.Segments_Map_Order.Element(Segment_ID).Enter(
 			Train_Index	=> Descriptor_Index);
+
+		-- # Add The Train to Platform internal queue.
+		This.Platforms(Platform_Index).Add_Train(Trains.Trains(Descriptor_Index).ID);
+
+		-- # Now we can Free the Access controller, to let other Tasks to be awaked.
+		This.Segments_Map_Order.Element(Segment_ID).Free;
 
 		-- # Once the task passed the Access controller, it occupies the Platform and,
 		-- # if needed, performs Alighting of Passengers.
 		This.Platforms(Platform_Index).Enter(
 			Train_Descriptor_Index 	=> Descriptor_Index,
 			Action					=> Action);
-
-		-- # Frees the Access controller, to let other Tasks to be awaked.
-		This.Segments_Map_Order.Element(Segment_ID).Free;
 
 		-- # Tell the Notice Panel to display the Train gained access
 		This.Panel.Set_Train_Accessed_Platform(
@@ -93,6 +97,7 @@ package body Regional_Station is
 		This.Panel.Set_Train_Left_Platform(
 			Train_ID 	=> Trains.Trains(Descriptor_Index).ID,
 			PLatform	=> Platform_Index);
+
 	end Leave;
 
 	-- #

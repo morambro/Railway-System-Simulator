@@ -125,9 +125,9 @@ package body Central_Office_Interface is
 		Route_Index 	: Positive;
 		Current_Run		: Positive;
 		Callback 		: access procedure(
-							Updated			: in 	 Boolean;
-							New_Time_Table 	: access Time_Table.Time_Table_Type;
-							Current_Run_Id	: in	 Natural))
+			Updated			: in 	 Boolean;
+			New_Time_Table 	: access Time_Table.Time_Table_Type;
+			Current_Run_Id	: in	 Natural))
 	is
 		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
 

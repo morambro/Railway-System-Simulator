@@ -163,9 +163,7 @@ private
 		Name 				: aliased  Unbounded_Strings.Unbounded_String;
 		Platforms 			: Platform.Platforms(1..Platforms_Number);
 		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
-
 		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;
-
 		Destinations 		: access String_Positive_Maps.Map := null;
 	end record;
 

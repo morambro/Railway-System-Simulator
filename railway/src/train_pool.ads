@@ -38,7 +38,7 @@ package Train_Pool is
 
 	type Priority is (LOW,HIGH);
 
-	-- # Low priority Task, which will be used by REGIONAL trains
+	-- # Task used to execute Trains
 	task type Train_Executor_Task(
 		-- # Tells from which queue read
 		Priority_Level 	:  	Priority)
@@ -77,12 +77,6 @@ private
 	-- #
 	Low_Priority_Trains_Queue 	: Trains_Queue_Package.Terminable_Queue;
 	High_Priority_Trains_Queue 	: Trains_Queue_Package.Terminable_Queue;
-
-	-- Random initializations
-	type Rand_Range is range 1..3;
-	package Rand_Int is new Ada.Numerics.Discrete_Random(Rand_Range);
-   	seed : Rand_Int.Generator;
-   	Num : Rand_Range;
 
 	-- #
 	-- # Private Definition of Train_Task_Pool type as a record with two pools of

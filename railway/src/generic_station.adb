@@ -110,10 +110,6 @@ package body Generic_Station is
 		begin
 			-- # Add a new element in the Queue.
 			Trains_Order.Enqueue(Train_ID);
-			Put_Line(integer'image(ID) & " QUEUE = " & Ada.Containers.Count_Type'image(Trains_Order.Queue.Length));
---  			for I in 1..Integer(Trains_Order.Queue.Length) loop
---  				Put_Line("Element " & integer'image(I) & " = " & integer'image(Trains_Order.Queue(i)));
---  			end loop;
 		end Add_Train;
 
 

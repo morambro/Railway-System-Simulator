@@ -187,7 +187,7 @@ package body Segment_2 is
 
 				-- # If there is at least one train in exit queue, open the guard to let it leave the segment
 				if(Retry_Leave'Count > 0) then
-					Retry_Num := Retry_Leave'Count;
+					Exit_Retry_Num := Retry_Leave'Count;
 					Can_Retry_Leave := True;
 				end if;
 
@@ -201,6 +201,7 @@ package body Segment_2 is
 
 
 				if Trains_Number = 0 then
+					Current_Max_Speed := Segment_Max_Speed;
 					-- # If there are no other Trains running...
 					if Current_Direction = First_End then
 						-- # If there is at least one train waiting to enter the Segment from the Second
@@ -256,9 +257,9 @@ package body Segment_2 is
 		entry Retry_Leave(Train_D : in Positive) when Can_Retry_Leave is
 		begin
 			-- # Decrease the number of tasks that can retry to exit
-			Retry_Num := Retry_Num - 1;
+			Exit_Retry_Num := Exit_Retry_Num - 1;
 			-- # If the number of retry-tasks is 0, close the guard
-			if(Retry_Num = 0) then
+			if(Exit_Retry_Num = 0) then
 				Can_Retry_Leave := False;
 			end if;
 			requeue Leave;
@@ -273,24 +274,23 @@ package body Segment_2 is
 		-- Retrieve all the needed fields
 		Segment_Id 		: Natural	:= Json_Segment.Get("id");
 		Max_Speed 		: Natural	:= Json_Segment.Get("max_speed");
-		Queue_Dim		: Natural	:= Json_Segment.Get("queue_dim");
 		Segment_Length	: Positive 	:= Json_Segment.Get("length");
 		First_End 		: Positive 	:= Json_Segment.Get("first_end");
 		Second_End 		: Positive 	:= Json_Segment.Get("second_end");
+		Max				: Natural 	:= Json_Segment.Get("max");
 		-- instantiate the new Segment
 		New_Segment 		: access Segment_Type := new Segment_Type(
-			Id => Segment_Id,
-			Segment_Max_Speed => Max_Speed,
-			Segment_Length => Segment_Length,
-			Queue_Dim => Queue_Dim,
-			First_End => First_End,
-			Second_End => Second_End
+			Id 					=> Segment_Id,
+			Segment_Max_Speed 	=> Max_Speed,
+			Segment_Length 		=> Segment_Length,
+			First_End 			=> First_End,
+			Second_End 			=> Second_End,
+			Max 				=> Max
 		);
 	begin
 		if
 			not Json_Segment.Has_Field(Field => "id") or
 			not Json_Segment.Has_Field(Field => "max_speed") or
-			not Json_Segment.Has_Field(Field => "queue_dim") or
 			not Json_Segment.Has_Field(Field => "length")
 		then
 			return null;

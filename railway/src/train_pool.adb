@@ -211,10 +211,6 @@ package body Train_Pool is
 				-- # Go to the next Stage!
 				Trains.Trains(Current_Descriptor_Index).Next_Stage := Trains.Trains(Current_Descriptor_Index).Next_Stage + 1;
 
-				Rand_Int.Reset(seed);
-
-				Num := Rand_Int.Random(seed);
-
 				-- # Re-enqueue the descriptor only if it has more stages to travel
 				if(Trains.Trains(Current_Descriptor_Index).Next_Stage > Routes.All_Routes(Route_Index)'Length) then
 

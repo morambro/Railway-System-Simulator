@@ -43,26 +43,52 @@ package body Platform is
 
 	protected body Platform_Type is
 
-		procedure Leave(
-			Train_Descriptor_Index 	: in 	Positive) is
+		procedure Leave
+		is
+			Leaving_Train : Integer;
 		begin
 			-- # It simply Frees the Platform to let other Trains access it
 			Free := True;
+
+			Trains_Order.Dequeue(Leaving_Train);
+
+			if Retry'Count > 0 then
+				Retry_Count := Retry'Count;
+				Can_Retry := True;
+			end if;
+
 		end Leave;
 
-		entry Enter_Regional (
-			Train_Descriptor_Index 	: in 	Positive) when Free and Enter_FB'Count = 0 is
+		entry Retry (
+			Train_Descriptor_Index 	: in 	Positive) when Can_Retry is
 		begin
-			-- # Occupy the platform. Here the requirement is that no FB Trains are still trying to access the Platform
-			Free := False;
-		end Enter_Regional;
+			Retry_Count := Retry_Count - 1;
 
-		entry Enter_FB (
-			Train_Descriptor_Index 	: in 	Positive) when Free is
+			if Retry_Count = 0 then
+				Can_Retry := False;
+			end if;
+
+			requeue Enter;
+
+		end Retry;
+
+		entry Enter (
+			Train_Descriptor_Index 	: in 	Positive) when True is
 		begin
-			-- # Occupy the platform. The requirement is Platform Free.
+
+			if Trains_Order.Get(1) /= Trains.Trains(Train_Descriptor_Index).ID then
+				requeue Retry;
+			end if;
+
 			Free := False;
-		end Enter_FB;
+		end Enter;
+
+
+		procedure Add_Train(
+			Train_ID 	: in 	Positive) is
+		begin
+			Trains_Order.Enqueue(Train_ID);
+		end Add_Train;
 
 	end Platform_Type;
 
@@ -70,10 +96,18 @@ package body Platform is
 	-- ################################## PLATFORM_HANDLER #########################################
 
 
+	procedure Add_Train(
+		This					: access Platform_Handler;
+		Train_ID 				: in 	 Positive) is
+	begin
+		This.The_Platform.Add_Train(Train_ID);
+    end Add_Train;
+
+
 	procedure Perform_Entrance(
-			This 					: access Platform_Handler;
-			Train_Descriptor_Index 	: in 	Positive;
-			Action 					: in	Route.Action)
+		This 					: access Platform_Handler;
+		Train_Descriptor_Index 	: in 	Positive;
+		Action 					: in	Route.Action)
 	is
 		Arrival_Number 			: Count_Type := This.Arrival_Queue.Current_Use;
 		Traveler_Manager_Index	: Positive;
@@ -317,19 +351,14 @@ package body Platform is
 
 	procedure Enter(
 		This 					: access Platform_Handler;
-		Train_Descriptor_Index 	: in 	Positive;
-		Action 					: in	Route.Action) is
+		Train_Descriptor_Index 	: in 	 Positive;
+		Action 					: in	 Route.Action) is
 	begin
-		if Trains.Trains(Train_Descriptor_Index).T_Type = Train.FB then
-			This.The_Platform.Enter_FB(
+		This.The_Platform.Enter(
 				Train_Descriptor_Index 	=> Train_Descriptor_Index);
-		else
-			This.The_Platform.Enter_Regional(
-				Train_Descriptor_Index 	=> Train_Descriptor_Index);
-		end if;
 
 		declare
-					-- # Get the Current Run index
+			-- # Get the Current Run index
 			Current_Run 	: Positive :=
 				Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run;
 
@@ -372,8 +401,7 @@ package body Platform is
 			Action					=> Action);
 
 		-- # Then set to Free the protected resource
-		This.The_Platform.Leave(
-			Train_Descriptor_Index 	=> Train_Descriptor_Index);
+		This.The_Platform.Leave;
     end Leave;
 
 	procedure Add_Incoming_Traveler(

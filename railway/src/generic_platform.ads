@@ -49,6 +49,10 @@ package Generic_Platform is
 			Train_D 	: in 		Positive;
 			Action 		: in		Route.Action) is abstract;
 
+		procedure Add_Train(
+			This		: 			access Platform_Interface;
+			Train_ID 	: in 		Positive) is abstract;
+
 		procedure Add_Incoming_Traveler(
 			This		:  			access Platform_Interface;
 			Traveler 	: in 		Positive) is abstract;

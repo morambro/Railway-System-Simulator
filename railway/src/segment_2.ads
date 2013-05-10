@@ -40,9 +40,10 @@ package Segment_2 is
 		Id 					: Integer;
 		Segment_Max_Speed 	: Positive;
 		Segment_Length		: Positive;
-		Queue_Dim 			: Positive;
 		First_End 			: Positive;
-		Second_End 			: Positive)
+		Second_End 			: Positive;
+		-- # Maximum number of entrance per side
+		Max 				: Natural)
 	is
 
 		-- #
@@ -87,29 +88,30 @@ package Segment_2 is
 		Current_Direction 	: Natural := 0;
 
 		-- # Queue of all the running trains
-		Running_Trains 		: access Limited_Simple_Queue := new Limited_Simple_Queue(Queue_Dim);
+		Running_Trains 		: access Unlimited_Simple_Queue := new Unlimited_Simple_Queue;
 
 		-- # Boolean guard telling if a train can retry to Leave the Segment
 		Can_Retry_Leave 	: Boolean := False;
-
-		-- # Boolean guard telling if a train can retry to Enter the Segment
-		Can_Retry_Enter 	: Boolean := False;
 
 		-- # Number of exit attempt
 		Enter_Retry_Num 	: Natural := 0;
 
 		-- # Number of exit attempt
-		Retry_Num 			: Natural := 0;
+		Exit_Retry_Num 			: Natural := 0;
 
 		-- # Number of trains currently running
 		Trains_Number 		: Natural := 0;
 
+		-- # Number of trains entered per direction
 		Train_Entered_Per_Direction	: Natural := 0;
 
+		-- # Guard which tells whether a Train can enter from
+		-- # first End or not.
 		Can_Enter_First_End : Boolean := False;
-		Can_Enter_Second_End : Boolean := False;
-		Max : Natural := 10;
 
+		-- # Guard which tells whether a Train can enter from
+		-- # first End or not.
+		Can_Enter_Second_End : Boolean := False;
 
 	end Segment_Type;
 
