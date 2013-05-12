@@ -66,14 +66,7 @@ package Environment Is
 	-- #
 	Destinations 	: access Destinations_Type := null;
 
-	-- #
-	-- # Simple function which loads all possible destinations.
-	-- #
-	D : Positive := 1;
-
 	function Load_Destinations return access Destinations_Type;
-
-	function Get_Random_Destination return Unbounded_String;
 
 	function Get_Node_Name return String;
 

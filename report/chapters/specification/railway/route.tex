@@ -1,0 +1,15 @@
+	\subsection{Route}
+	
+	Il package \ttt{Route} contiene la definizione del tipo \ttt{Route\_Type}, array di oggetti di tipo \ttt{Stage}. Quest'ultimo è un tipo \ii{record} che si compone dei seguenti campi dato:
+	\begin{itemize}
+		\item \ttt{Start\_Station}: Indice della Stazione di partenza.
+		\item \ttt{Next\_Station}: Indice della Prossima Stazione.
+		\item \ttt{Start\_Platform}: Indice della Piattaforma di partenza.
+		\item \ttt{Platform\_Index}: Indice della prossima Piattaforma.
+        \item \ttt{Node\_Name}: Identificativo del Nodo sul quale si trova la prossima Stazione.
+        \item \ttt{Next\_Segment}: Indice del prossimo Segmento da percorrere.
+		\item \ttt{Leave\_Action}: Azione da intraprendere alla partenza dalla Stazione.
+		\item \ttt{Enter\_Action}: Azione da intraprendere all'ingresso alla prossima Stazione.
+	\end{itemize}
+	
+	Esso fornisce inoltre le procedure necessarie alla conversione da \ttt{JSON} a oggetto \ttt{Route\_Type} e viceversa. Tutti gli oggetti Route sono mantenuti in un array nel package \ttt{Routes}.

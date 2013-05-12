@@ -58,11 +58,13 @@ package Ticket is
 
 	type Ticket_Type_Ref is access all Ticket_Type;
 
---  	type Tickets_Array is array (Positive range <>) of Ticket_Type_Ref;
-
 	procedure Print(
 		The_Ticket : Ticket_Type_Ref);
 
+	-- #
+	-- # Procedure which can be used to explicitly delete
+	-- # a ticket.
+	-- #
 	procedure Free_Ticket is new Ada.Unchecked_Deallocation
       (Object => Ticket_Type, Name => Ticket_Type_Ref);
 
@@ -73,9 +75,6 @@ package Ticket is
 
     function Get_Ticket (
     	Json_V 		: in JSON_Value) return Ticket_Type_Ref;
-
---      function Get_All_Tickets (
---      	Json_File 	: in String) return  Ticket_Type_Ref;
 
     function To_Json(
 		Ticket 		: in Ticket_Type_Ref) return String;

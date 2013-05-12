@@ -2,5 +2,34 @@
 \chapter{Istruzioni}
 	
 	\section{Requisiti}
+	
+	Per compilare ed eseguire il prototipo realizzato, è necessario disporre dei seguenti requisiti:
+	
+	\begin{itemize}
+		\item Sistema operativo Unix-Like.
+		\item compilatore Ada \ttt{gnatmake} versione 2012.
+		\item compilatore \ttt{gcc} versione 4.7.2.
+		\item distribuzione Scala, in particolare i compilatori \ttt{scalac} e \ttt{fsc} versione 2.10.1.
+		\item libreria \ttt{Gnatcoll 1.5w}.
+	\end{itemize}
+	
+	Per semplicità, sono state riportate le versioni delle librerie utilizzate per lo sviluppo, tuttavia non è escluso che possa essere utilizzato anche con versioni più recenti.
+	
+	\section{Installazione}
+	
+	Dalla directory principale, è sufficiente lanciare il comando \ttt{sh compile\_all.sh}, il quale effettuerà la compilazione di tutte le componenti.
+	
 	\section{Avvio}
+	
+	L'avvio avviene nel seguente modo
+	
+	\dots
+	
+	
+	La configurazione che verrà utilizzata, in termini di Stazioni, Treni, Viaggiatori, ecc... è definita da dei file in formato \ttt{JSON} presenti nella cartella \ttt{railway/res}. \'E quindi possibile utilizzare configurazioni diverse, rispettando le seguenti regole:
+	
+	\dots
+	
 	\section{Terminazione}
+	
+	La terminazione viene iniziata premendo il pulsante \ttt{Stop} disponibile nell'interfaccia grafica messa a disposizione dal Controller Centrale; al termine di tale procedura, esso può essere terminato semplicemente chiudendo la finestra grafica.

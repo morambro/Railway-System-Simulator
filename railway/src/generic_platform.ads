@@ -61,5 +61,8 @@ package Generic_Platform is
 			This		:  			access Platform_Interface;
 			Traveler 	: in 		Positive) is abstract;
 
+		procedure Terminate_Platform(
+			This 		: access Platform_Interface) is abstract;
+
 
 end Generic_Platform;

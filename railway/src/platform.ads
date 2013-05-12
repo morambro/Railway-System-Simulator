@@ -39,6 +39,9 @@ package Platform is
 
 	use Ada.Strings.Unbounded;
 
+ 	-- #
+ 	-- # Implementation of Platform_Interface, representing a Platform.
+ 	-- #
 	type Platform_Handler(
 		ID		: Integer;
 		S 		: access Unbounded_String;
@@ -62,6 +65,9 @@ package Platform is
 			This 					: access Platform_Handler;
 			Traveler 				: in 	Positive);
 
+		overriding procedure Terminate_Platform(
+			This 					: access Platform_Handler);
+
 
 	type Platforms is array (Positive range <>) of access Platform_Handler;
 
@@ -84,28 +90,51 @@ private
 		S 	: access Ada.Strings.Unbounded.Unbounded_String) is
 
 		-- #
-		-- #
+		-- # This protected Procedure is used to make a Train
+		-- # leave the Platform, removing it from Trains_Order.
 		-- #
 		procedure Leave;
 
+		-- #
+		-- # Procedure used to open Retry_Enter Guard,
+		-- # letting all the waiting threads to terminate
+		-- #
+		procedure Terminate_Platform;
+
+
+		-- #
+		-- # Entry used to allow the entrance of a Train if is the first of
+		-- # Trains_Order queue
+		-- #
 		entry Enter (
 			Train_Descriptor_Index 	: in 	Positive);
 
+
+		-- #
+		-- # Adds a Train to Trains_Order queue.
+		-- #
 		procedure Add_Train(
 			Train_ID 	: in 	Positive);
 
 	private
 
+		-- #
+		-- # Entry used to implement ordered access.
+		-- #
 		entry Retry (
 			Train_Descriptor_Index 	: in 	Positive);
 
-		Free : Boolean := True;
-
+		-- # Tells whether a thread can retry execute or not
 		Can_Retry : Boolean := False;
 
+		-- # Number of threads in Retry's queue
 		Retry_Count : Natural := 0;
 
+		-- # FIFO queue used to maintain Trains order
 		Trains_Order : Trains_Queue_Package.Unlimited_Simple_Queue;
+
+		-- # Boolean variable used as a guard to terminate waiting threads
+		Terminated : Boolean := False;
 
 	end Platform_Type;
 

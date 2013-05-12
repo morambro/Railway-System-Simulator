@@ -33,7 +33,6 @@ with JSON_Helper;use JSON_Helper;
 with Ada.Strings.Unbounded;
 
 with Ada.Finalization;
-with Unchecked_Deallocation;
 
 with Ada.Containers.Ordered_Maps;  use Ada.Containers;
 with Ada.Containers.Vectors;
@@ -100,6 +99,9 @@ package Regional_Station is
 			This				: in 		Regional_Station_Type;
 			Traveler_Index		: in		Positive;
 			To					: in 		String);
+
+		overriding procedure Terminate_Platforms(
+			This				: in 		Regional_Station_Type);
 
 	-- #
 	-- # Creates a new Station instance

@@ -159,17 +159,6 @@ package body Environment Is
 		return 0;
     end Get_Index_For_Name;
 
-
-	function Get_Random_Destination return Unbounded_String
-	is
-	begin
-		D := (D mod Destinations'Length) + 1;
-		return Destinations(D-1);
-
-    end Get_Random_Destination;
-
-
-
 	function Load_Destinations return access Destinations_Type
 	is
 		J_Value 	 : JSON_Value := Get_Json_Value(Json_File_Name => "res/destinations.json");

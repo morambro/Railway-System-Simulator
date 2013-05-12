@@ -23,6 +23,7 @@
 --  You should have received a copy of the GNU General Public License			--
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
+with Logger;
 with Ada.Text_IO;
 
 package body Traveler is
@@ -39,6 +40,17 @@ package body Traveler is
 		Ada.Text_IO.Put_Line("Surname : " & To_String(T.Traveler.Surname));
 		Ada.Text_IO.Put_Line("Destination : " & To_String(T.Destination));
     end Print;
+
+	procedure Finalize (This: in out Traveler_Manager) is
+	begin
+    	if This.The_Ticket /= null then
+    		Ticket.Free_Ticket(This.The_Ticket);
+    	end if;
+    	Logger.Log(
+    		Sender	=> "Traveler_Manager",
+    		Message => "Deallocation of Traveler",
+    		L 		=> Logger.INFO);
+    end Finalize;
 
 ---------------------------------------- JSON-Traveler Creation ----------------------------------------------
 
@@ -79,6 +91,7 @@ package body Traveler is
 			T.Destination 	:= To_Unbounded_String(Dest);
 			T.Start_Node	:= To_Unbounded_String(Start_Node);
 			T.Start_Station	:= To_Unbounded_String(Start_Stat);
+			T.Current_Start_Station := T.Start_Station;
 		end;
 
 		return T;

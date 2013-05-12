@@ -252,9 +252,16 @@ package body Gateway_Station is
 		To				: in 	 String)
 	is
 	begin
-		Put_Line("CREATE : " & This.Get_Name & " to " & To);
 		Regional_Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
     end Buy_Ticket;
+
+	procedure Terminate_Platforms(
+		This : in	 Gateway_Station_Type) is
+	begin
+		for I in 1 .. This.Platforms'Length loop
+			This.Platforms(I).Terminate_Platform;
+		end loop;
+    end Terminate_Platforms;
 
 
     procedure Occupy_Platform(

@@ -80,6 +80,9 @@ package Generic_Station is
 		function Get_Name(
 			This				: in 		Station_Interface) return String is abstract;
 
+		procedure Terminate_Platforms(
+			This				: in 		Station_Interface) is abstract;
+
 
 	-- End Of the Interface
 

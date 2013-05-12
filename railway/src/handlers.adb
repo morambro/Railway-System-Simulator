@@ -435,13 +435,17 @@ package body Handlers Is
 					Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
 				end;
 			else
-				Logger.Log(
-					Sender => "",
-					Message => "Ticket NOT created!",
-					L => Logger.ERROR);
+				declare
+					-- # If the result is OK, there will be for sure "traveler_index" field and "ticket" field.
+					Traveler_Index	: Integer 	:= Integer'Value(Content.Get_String("traveler_index"));
+				begin
+					Logger.Log(
+						Sender => "Ticket_Ready_Handler",
+						Message => "Ticket NOT created!",
+						L => Logger.ERROR);
 
-				-- # TODO: RETRY CON UN'ALTRA DESTINAZIONE ?
-
+					Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.BUY_TICKET));
+				end;
 			end if;
 
 			-- # In Any case, give a response back to the Central Ticket Office.
@@ -451,18 +455,10 @@ package body Handlers Is
 		exception
 			-- # If an error occurs, send an ERROR message
 			when E : others =>
-				declare
-					S : Unbounded_String := Environment.Get_Random_Destination;
-				begin
-					Logger.Log(
-						Sender => "",
-						Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
-						L => Logger.ERROR);
-
---  					while (S = Environment.Travelers(Traveler_Index).Destination) loop
---  						Environment.Travelers(Traveler_Index).Destination := S;
---  					end loop;
-				end;
+				Logger.Log(
+					Sender => "",
+					Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+					L => Logger.ERROR);
 
 		end Callback;
 

@@ -142,7 +142,7 @@ package body Move_Operation is
 
 
     procedure Do_Operation(This : in Buy_Ticket_Operation_Type) is
-   		Start_Station : Integer := Environment.Get_Index_For_Name(To_String(Environment.Travelers(This.Traveler_Manager_Index).Start_Station));
+   		Start_Station : Integer := Environment.Get_Index_For_Name(To_String(Environment.Travelers(This.Traveler_Manager_Index).Current_Start_Station));
     begin
 
 		Rand_Int.Reset(Seed);

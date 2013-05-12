@@ -196,7 +196,7 @@ package body Regional_Station is
 		To				: in 	 String)
 	is
 	begin
-		Put_Line("CREATE : " & This.Get_Name & " to " & To);
+		-- # Invokes Get_Ticket procedure
 		Regional_Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
 	end Buy_Ticket;
 
@@ -216,6 +216,13 @@ package body Regional_Station is
 	end;
 
 
+	procedure Terminate_Platforms(
+		This : in	 Regional_Station_Type) is
+	begin
+		for I in 1 .. This.Platforms'Length loop
+			This.Platforms(I).Terminate_Platform;
+		end loop;
+    end Terminate_Platforms;
 
 
 	overriding procedure Print(This : in Regional_Station_Type) is

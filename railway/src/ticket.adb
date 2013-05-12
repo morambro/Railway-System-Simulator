@@ -85,22 +85,6 @@ package body Ticket is
 		return Get_Ticket(Get_Json_Value(Json_String => Json_String));
     end Get_Ticket;
 
-
---      function Get_All_Tickets(Json_File : String) return access Tickets_Array is
---  		Json_v 			: JSON_Value := Get_Json_Value(Json_File_Name => Json_File);
---  		J_Array			: JSON_Array := Json_v.Get(Field => "tickets");
---  		Array_Length 	: constant Natural := Length (J_Array);
---  		To_Return 		: access Ticket.Tickets_Array := new Ticket.Tickets_Array(1..Array_Length);
---  	begin
---  		for I in 1..Array_Length loop
---  			To_Return(I) := Get_Ticket(Get(Arr => J_Array, Index => I));
---  		end loop;
---
---
---  		return To_Return;
---      end Get_All_Tickets;
-
-
     function To_Json(
 		Ticket 		: Ticket_Type_Ref) return String
 	is

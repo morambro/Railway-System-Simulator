@@ -29,7 +29,8 @@ with Generic_Operation_Interface;use Generic_Operation_Interface;
 with JSON_Helper;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with JSON_Helper;use JSON_Helper;
-with Ticket;
+with Ticket;use Ticket;
+with Ada.Finalization;
 
 package Traveler is
 
@@ -53,11 +54,12 @@ package Traveler is
 	end record;
 
 	-- # Traveler Manager
-	type Traveler_Manager is record
+	type Traveler_Manager is new Ada.Finalization.Controlled with record
 		Traveler 		: Traveler_Type;
 		Next_Operation 	: Traveler_Operations_Types := LEAVE;
 		Destination 	: Unbounded_String;
 		The_Ticket 		: Ticket.Ticket_Type_Ref := null;
+		Current_Start_Station : Unbounded_String;
 		Start_Station 	: Unbounded_String;
 		Start_Node 		: Unbounded_String;
 	end record;
@@ -68,6 +70,10 @@ package Traveler is
 
 	function Get_Name(Traveler : Traveler_Manager) return String;
 
+	overriding procedure Finalize (This: in out Traveler_Manager);
+
+
+
 	procedure Print(T : Traveler_Manager);
 
 	function Get_Traveler_Manager_Array(Json_Traveler : String) return Traveler_Manager_Array_Ref;
@@ -77,6 +83,13 @@ package Traveler is
 	function Get_Json(
 		Traveler : Traveler_Manager) return String;
 
+	-- #
+	-- # Creates a Traveler_Manager from JSON object
+	-- #
+	-- # @return : A Traveler_Manager object
+	-- #
+	function Get_Traveler_Manager(Json_Traveler : JSON_Value) return Traveler_Manager;
+
 private
 
 	-- #
@@ -85,12 +98,5 @@ private
 	-- # @return : A Traveler_Type object
 	-- #
 	function Get_Traveler(Json_Traveler : JSON_Value) return Traveler_Type;
-
-	-- #
-	-- # Creates a Traveler_Manager from JSON object
-	-- #
-	-- # @return : A Traveler_Manager object
-	-- #
-	function Get_Traveler_Manager(Json_Traveler : JSON_Value) return Traveler_Manager;
 
 end Traveler;

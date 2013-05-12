@@ -6,12 +6,13 @@ Di seguito verrà fornita una descrizione delle componenti principali che costit
 \section{Simulazione}
 
 	\begin{figure}[htbp]
-		\includegraphics[scale=0.39,trim= 100mm 0mm 0mm 0mm]{imgs/Simplified_Class_Diagram.pdf}
+		\includegraphics[scale=0.40,trim= 90mm 0mm 0mm 0mm]{imgs/Simplified_Class_Diagram.pdf}
 		\caption{\footnotesize{Diagramma delle classi che illustra le componenti e le relazioni più significative che coinvolgono la simulazione.}}
 		\label{img:class_diagram}
 	\end{figure}
 
-L'architettura di massima adottata per la realizzazione del core di simulazione, è visibile nel diagramma delle classi in figura \ref{img:class_diagram} nel quale, per brevità, sono stati riportati solo le informazioni più significative.
+L'architettura di massima adottata per la realizzazione del core di simulazione, è visibile nel diagramma delle classi in figura \ref{img:class_diagram} nel quale, per brevità, sono stati riportati solo le informazioni più significative, omettendo per esempio i package nei quali sono contenute gli oggetti creati duarante l'esecuzione.
+	
 	Viene ora fornita una breve descrizione delle varie componenti che sono state utilizzate, procedendo per Package. Nelle sezioni seguenti si utilizzeranno le nozioni di \ii{Task} e \ii{Tipo protetto} definite dal linguaggio \ii{Ada}, utilizzato per l'implementazione, e verrà mostrato come le soluzioni presentate nel capitolo \ref{chapter:solution} sono state tradotte con strumenti di linguaggio.
 
 	\subsection{Message\_Agent}
@@ -227,6 +228,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	Il package \ttt{Regional\_Ticket\_Office} contiene inoltre la procedura \ttt{Init\_Path\_Map} utilizzata per caricare la mappa contenente i percorsi più brevi, usata dall'algoritmo di creazione del Biglietto. 
 	
+	\input{chapters/specification/railway/route.tex}
 	
 	\input{chapters/specification/railway/time_table.tex}
 	

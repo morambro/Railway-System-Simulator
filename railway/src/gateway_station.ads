@@ -100,6 +100,9 @@ package Gateway_Station is
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 
+		overriding procedure Terminate_Platforms(
+			This 				: in	 	Gateway_Station_Type);
+
 		-- #
 		-- # Class method used by segments to add a Train to the proper order queue, to allow
 		-- # future ordered access.

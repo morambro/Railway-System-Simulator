@@ -57,17 +57,28 @@ package body Platform is
 
 		end Leave;
 
-		entry Retry (
-			Train_Descriptor_Index 	: in 	Positive) when Can_Retry is
+		procedure Terminate_Platform is
 		begin
-			Retry_Count := Retry_Count - 1;
+			Terminated := True;
+		end Terminate_Platform;
 
-			if Retry_Count = 0 then
-				Can_Retry := False;
+		entry Retry (
+			Train_Descriptor_Index 	: in 	Positive) when Can_Retry or Terminated is
+		begin
+			if Terminated then
+				Logger.Log(
+					Sender 	=> "Platform_Type",
+					Message => "Termination Requested",
+					L 		=> Logger.INFO);
+			else
+				Retry_Count := Retry_Count - 1;
+
+				if Retry_Count = 0 then
+					Can_Retry := False;
+				end if;
+
+				requeue Enter;
 			end if;
-
-			requeue Enter;
-
 		end Retry;
 
 		entry Enter (
@@ -181,7 +192,7 @@ package body Platform is
 							declare
 								To_Switch	: Unbounded_String := Environment.Travelers(Traveler_Manager_Index).Start_Station;
 							begin
-								Environment.Travelers(Traveler_Manager_Index).Start_Station := Environment.Travelers(Traveler_Manager_Index).Destination;
+								Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := Environment.Travelers(Traveler_Manager_Index).Destination;
 								Environment.Travelers(Traveler_Manager_Index).Destination := To_Switch;
 							end;
 
@@ -262,7 +273,7 @@ package body Platform is
 								Message => "Traveler " & Integer'Image(Traveler_Manager_Index) & " lost the booked Train; buy a new Ticket!",
 								L		=> Logger.ERROR);
 							-- # Set Current Station as Start Station
-							Environment.Travelers(Traveler_Manager_Index).Start_Station := This.S.all;
+							Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := This.S.all;
 							Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Traveler.BUY_TICKET));
 						else
 							-- # If the current Traveler was not waiting for this train, re-queue it
@@ -284,7 +295,7 @@ package body Platform is
 							L		=> Logger.ERROR);
 
 						-- # Set the current Station as the start station
-						Environment.Travelers(Traveler_Manager_Index).Start_Station := This.S.all;
+						Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := This.S.all;
 
 						-- # Set BUY_TICKET Operation to make him buy a new Ticket
 						Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Traveler.BUY_TICKET));
@@ -441,6 +452,13 @@ package body Platform is
 		-- # since the used queue is synchronized!)
 		This.Leaving_Queue.Enqueue(Traveler);
     end Add_Outgoing_Traveler;
+
+
+    procedure Terminate_Platform(
+			This 				: access Platform_Handler) is
+	begin
+		This.The_Platform.Terminate_Platform;
+	end Terminate_Platform;
 
 
 	function Get_Run_For_Train(
