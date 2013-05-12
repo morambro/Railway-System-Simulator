@@ -179,15 +179,15 @@ begin
 
 				-- # Perform initialization of the Environment
 				Environment.Init(Node_Name,Name_Server,Central_T,Central_C);
+
 				-- # Perform initialization of all the Segments
 				Segments.Init;
+
 				-- # Perform initialization of all the Routes
 				Routes.Init;
+
 				-- # Perform initialization of the Regional Ticket Office
 				Regional_Ticket_Office.Init("res/" & Node_Name & "-paths.json");
-
-				-- # Wait some seconds before starting
-				delay 5.0;
 
 				Start;
 

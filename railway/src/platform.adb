@@ -48,8 +48,6 @@ package body Platform is
 			Leaving_Train : Integer;
 		begin
 			-- # It simply Frees the Platform to let other Trains access it
-			Free := True;
-
 			Trains_Order.Dequeue(Leaving_Train);
 
 			if Retry'Count > 0 then
@@ -75,12 +73,9 @@ package body Platform is
 		entry Enter (
 			Train_Descriptor_Index 	: in 	Positive) when True is
 		begin
-
 			if Trains_Order.Get(1) /= Trains.Trains(Train_Descriptor_Index).ID then
 				requeue Retry;
 			end if;
-
-			Free := False;
 		end Enter;
 
 
@@ -136,11 +131,13 @@ package body Platform is
 
 					-- # Decrease the number of occupied sits
 					if Trains.Trains(Train_Descriptor_Index).Occupied_Sits > 0 then
-						Trains.Trains(Train_Descriptor_Index).Occupied_Sits := Trains.Trains(Train_Descriptor_Index).Occupied_Sits - 1;
+						Trains.Trains(Train_Descriptor_Index).Occupied_Sits :=
+							Trains.Trains(Train_Descriptor_Index).Occupied_Sits - 1;
 					else
 						Logger.Log(
 							Sender 	=> NAME,
-							Message => "ERROR : Traveler " & Integer'Image(Traveler_Manager_Index) & " arrived without traveling!",
+							Message => 	"ERROR : Traveler " & Integer'Image(Traveler_Manager_Index) &
+										" arrived without traveling!",
 							L		=> Logger.ERROR
 						);
 					end if;
@@ -154,7 +151,7 @@ package body Platform is
 						L       => Logger.DEBUG);
 
 
-					-- # Now let's check whether the travel is finished or not.
+					-- # Now let's check the status of the Travel for the Traveler
 					declare
 						-- # Next operation to execute.
 						Next_Operation : Traveler.Traveler_Operations_Types := Traveler.LEAVE;
@@ -229,13 +226,16 @@ package body Platform is
 		Next_Stage 				: Positive;
 	begin
 
-		if Action = Route.ENTER then
+		case Action is
+
+		when Route.ENTER =>
 			-- #
 			-- # Boarding of Travelers
 			-- #
 			Logger.Log(
 					Sender  => NAME,
-					Message => "Train " & Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) & " Performs Boarding of travelers",
+					Message => 	"Train " & Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) &
+								" Performs Boarding of travelers",
 					L       => Logger.DEBUG);
 			for I in 1..Leaving_Number loop
 
@@ -271,20 +271,22 @@ package body Platform is
 						null;
 					end;
 				else
-
+					-- # If the next ticket stage contains a booked train, and the current train's run is NOT the same
+					-- # ad the next stage's run, the Traveler lost the Train!
 					if 	Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Current_Run_Id > 0 and
 						This.Get_Run_For_Train(Trains.Trains(Train_Descriptor_Index).Id) >
 						Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Current_Run_Id then
 
-						Put_Line("" & integer'image(This.Get_Run_For_Train(Trains.Trains(Train_Descriptor_Index).Id)));
-						Put_Line("" & integer'image(Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Current_Run_Id));
-
 						Logger.log(
 							Sender 	=> "Platform",
-							Message => "Traveler " & Integer'Image(Traveler_Manager_Index) & " lost the booked Train; buy a new Ticket!",
+							Message => 	"Traveler " & Integer'Image(Traveler_Manager_Index) &
+										" lost the booked Train; buy a new Ticket!",
 							L		=> Logger.ERROR);
 
+						-- # Set the current Station as the start station
 						Environment.Travelers(Traveler_Manager_Index).Start_Station := This.S.all;
+
+						-- # Set BUY_TICKET Operation to make him buy a new Ticket
 						Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Traveler.BUY_TICKET));
 
 					else
@@ -345,7 +347,24 @@ package body Platform is
 						   " has" & Integer'Image(Trains.Trains(Train_Descriptor_Index).Occupied_Sits) & "/" &
 						   Integer'Image(Trains.Trains(Train_Descriptor_Index).Sits_Number) & " travelers",
 				L       => Logger.DEBUG);
-		end if;
+		when  Route.PASS =>
+				Put_Line("ACTION = PASS");
+				Logger.Log(
+					Sender  => NAME,
+					Message => "Train " &
+							   Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) &
+							   " passes away",
+					L       => Logger.DEBUG);
+
+		when  Route.FREE =>
+			Put_Line("ACTION = FREE");
+			Logger.Log(
+				Sender  => NAME,
+				Message => "Train " &
+						   Integer'Image(Trains.Trains(Train_Descriptor_Index).Id) &
+						   " freed the Platform",
+				L       => Logger.DEBUG);
+    	end case;
     end Perform_Exit;
 
 
@@ -354,6 +373,7 @@ package body Platform is
 		Train_Descriptor_Index 	: in 	 Positive;
 		Action 					: in	 Route.Action) is
 	begin
+
 		This.The_Platform.Enter(
 				Train_Descriptor_Index 	=> Train_Descriptor_Index);
 

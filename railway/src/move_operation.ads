@@ -69,9 +69,4 @@ package Move_Operation is
 
 	overriding procedure Do_Operation(This : in Ticket_Ready_Operation_Type);
 
-
-	type Terminate_Operation_Type is new Operation_Interface with null record;
-
-	overriding procedure Do_Operation(This : in Terminate_Operation_Type);
-
 end Move_Operation;

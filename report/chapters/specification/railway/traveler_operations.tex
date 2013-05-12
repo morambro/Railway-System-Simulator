@@ -1,0 +1,21 @@
+	\subsection{Traveler\_Operations}
+	
+	Il package \ttt{Traveler\_Operations} contiene la definizione di un insieme di tipi \ii{tagged} che implementano l'interfaccia \ttt{Operation\_Interface}, e quindi il suo metodo \ttt{Do\_Operation}. Ciascuno di essi, contiene l'indice del Viaggiatore \ttt{Traveler\_Manager\_Index} per il quale eseguono l'operazione. I tipi definiti sono i seguenti:
+	
+	\begin{description}
+		
+		\item \ttt{Leave\_Operation\_Type}\\
+		Corrisponde all'operazione \ttt{LEAVE} e permette al Viaggiatore di indice \ttt{Traveler\_Manager\_Index} di posizionarsi presso la coda di attesa della Piattaforma nella Stazione prevista dal percorso, per poter partire, invocando su quest'ultima il metodo \ttt{Wait\_For\_Train\_To\_Go}. 
+		
+		\item \ttt{Enter\_Operation\_Type}\\
+		Corrisponde all'operazione \ttt{ENTER} e permette al Viaggiatore di indice \ttt{Traveler\_Manager\_Index} di posizionarsi presso la coda di attesa della Piattaforma nella Stazione prevista dal percorso, per poter arrivare, invocando su quest'ultima il metodo \ttt{Wait\_For\_Train\_To\_Arrive}, se tale Stazione è locale al Nodo corrente, altrimenti invocando l'omonima procedura del package \ttt{Remote\_Station\_Interface}.
+		
+		\item \ttt{Buy\_Ticket\_Operation\_Type}\\
+		Corrisponde all'operazione \ttt{BUY\_TICKET} e permette al Viaggiatore di richiedere la creazione di un Ticket presso la Stazione di partenza, dopo aver atteso un tempo random.
+		
+		\item \ttt{Ticket\_Ready\_Operation\_Type}\\
+		Corrisponde all'operazione \ttt{TICKET\_READY} e permette al Viaggiatore, una volta ricevuto il Biglietto creato, di poter eseguire l'operazione \ttt{LEAVE}. 
+		 
+	\end{description}
+	
+	

@@ -115,7 +115,7 @@ package body Environment Is
     	-- # Creates regional stations array loading data from file
     	Stations 	:= Get_Station_Array("res/" & To_String(Node_Name) & "-stations.json");
 
-		-- # Load Time Table, making a Remote Request.
+		-- # Load Time Table.
     	Load_Time_Table;
 
 		-- # Creates travelers array loading data from file

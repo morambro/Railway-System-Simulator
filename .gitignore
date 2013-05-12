@@ -8,4 +8,4 @@ server
 .project
 *.class
 report/out/*
-
+*.bak

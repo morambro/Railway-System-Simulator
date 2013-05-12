@@ -4,13 +4,15 @@ import com.inspirel.yami._
 case class Event(description:String) 
 case class Stop()
 case class DistributedStop()
-case class Proceed()
+case class Continue()
 case class NodeTerminated(nodeName : String)
 
-class Publisher(val address : String) extends Actor {
+case class InitController(address:String)
+
+object Controller extends Actor {
 	
-	val publisherValue	= new ValuePublisher
-	val publisherAgent	= new Agent
+	val publisherValue = new ValuePublisher
+	val publisherAgent = new Agent
 	
 	/**
 	 * Nodes asked to terminate
@@ -23,13 +25,6 @@ class Publisher(val address : String) extends Actor {
 	var	terminatedNodes = List[String]()
 	
 	
-	// Set the Address from witch the publisher will be ready 
-	publisherAgent.addListener(address)
-	
-	// Pub-Sub service definition
-	publisherAgent.registerValuePublisher("events",publisherValue)
-	
-
 	/**
 	 * Loads the json file containg the location of regional ticket offices
 	 *
@@ -121,9 +116,8 @@ class Publisher(val address : String) extends Actor {
 				controllerLoop()
 			}
 			
-			case Proceed() => {
+			case Continue() => {
 			
-				println("PROCEED")
 				try {
 					getNodesList match {
 						case map : Map[_,_] => {
@@ -195,20 +189,27 @@ class Publisher(val address : String) extends Actor {
 	}
 
 	def act() {
-		controllerLoop
+		react{
+			case InitController(address) => {
+				// Set the Address from witch the publisher will be ready 
+				publisherAgent.addListener(address)
+
+				// Pub-Sub service definition
+				publisherAgent.registerValuePublisher("events",publisherValue)
+				
+				controllerLoop()
+			}
+		}
 	}
 	
 }
 
 case class Write(m:String)
-case class Init(c : Actor)
 case class DisableButtons()
 /**
  * Object used to wrap the View.
  **/
 object ViewAgent extends Actor {
-	
-	var controller : Actor = null
 	
 	val view = new CentralControllerView
 	
@@ -224,12 +225,9 @@ object ViewAgent extends Actor {
 		case Stop() => 
 	}
 	
-	def act() = react {
-		case Init(c:Actor) => {
-			controller = c
-			view.setStopOperation(_ => controller ! DistributedStop())
-			viewAgentLoop()	
-		}
+	def act() {
+		view.setStopOperation(_ => Controller ! DistributedStop())
+		viewAgentLoop()	
 	}
 }
 
@@ -238,7 +236,7 @@ object ViewAgent extends Actor {
  * Defines a Message Receiver agent
  *
  **/
-class Receiver(val controller : Publisher) extends IncomingMessageCallback {
+class Receiver extends IncomingMessageCallback {
 	
 	var serverAgent = new Agent
 	
@@ -251,7 +249,7 @@ class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 	def call(im : IncomingMessage) {
 		im.getMessageName match {
 			case "event" => {
-				controller ! Event(im.getParameters.getString("event"))
+				Controller ! Event(im.getParameters.getString("event"))
 			}
 			
 			case "central_office_ack" => {
@@ -260,13 +258,13 @@ class Receiver(val controller : Publisher) extends IncomingMessageCallback {
 				im.reply(new Parameters)
 				
 				// Now that we received the ack, we can proceed with the termiation of the nodes				
-				controller ! Proceed()
+				Controller ! Continue()
 				
 			}
 			
 			case "node_terminated" => {
 				
-				controller ! NodeTerminated(im.getParameters.getString("node_name"))
+				Controller ! NodeTerminated(im.getParameters.getString("node_name"))
 				
 				val replyPar = new Parameters
 				replyPar.setString("response","OK")
@@ -288,18 +286,17 @@ object ControllerMain extends App {
 	var NAME_SERVER_ADDRESS = ""
 	var CENTRAL_TICKET_OFFICE_ADDRESS = ""
 	
-	var controller 	: Publisher = null
 	var receiver 	: Receiver = null
 	
 	def waitExit {
 		readLine() match {
 			case "q" | "Q" => {
-				controller ! Stop()
+				Controller ! Stop()
 				receiver.close
 				println ("Bye!")
 			}
 			case a : String => {
-				controller ! Event(a)
+				Controller ! Event(a)
 				waitExit
 			}
 		}
@@ -321,16 +318,15 @@ ERROR: Following parameters MUST be specifed:
 		val centralTicketOfficeAddress = args(2)
 		
 		// Controller creation,
-		controller = new Publisher("tcp://localhost:2222")
-		controller.start		
+		Controller.start
+		Controller ! InitController("tcp://localhost:2222")
 		
 		// Receiver creation
-		receiver = new Receiver(controller)
+		receiver = new Receiver
 		receiver.addHandler(controllerAddress)
 		
 		// Initialization of the View Agent
 		ViewAgent.start
-		ViewAgent ! Init(controller)
 		
 		NAME_SERVER_ADDRESS = nameServerAddress
 		CENTRAL_TICKET_OFFICE_ADDRESS = centralTicketOfficeAddress

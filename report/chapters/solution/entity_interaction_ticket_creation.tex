@@ -22,12 +22,12 @@ Di seguito viene riportata una descrizione delle fasi previste dalla soluzione p
 		\item Se \ttt{To} appartiene alla Regione corrente, viene creato il \ttt{Ticket}, effettuando le seguenti operazioni:
 			\begin {itemize}
 					
-				\item Si considera il percorso più breve da \ttt{From} a \ttt{To}, che indicheremo con $Path = \{s_1,...,s_N\}$. Questo percorso è ottenuto applicando un semplice algoritmo di cammino minimo sul grafo avente come veritici le Stazioni, e come archi non direzionati i Segmenti che li collegano. Il cammino può minimizzare, ad esempio, la lunghezza totale del percorso.
+				\item Si considera il percorso più breve da \ttt{From} a \ttt{To}, che indicheremo con $Path = \{s_1,...,s_N\}$. Questo percorso è ottenuto applicando un semplice algoritmo di cammino minimo sul grafo avente come vertici le Stazioni, e come archi non direzionati i Segmenti che li collegano. Il cammino può minimizzare, ad esempio, la lunghezza totale del percorso.
 				
 				\item Il percorso $Path$ viene intersecato con i Percorsi dei Treni (\ttt{Route}), per poter definire le Tappe che compongono il Biglietto. Sia $i=1$, allora finché $i<=N$:
 					\begin{itemize}
 						\item Ottieni i percorsi dei Treni (\ttt{Route}s) $R={r_1,...,r_k}$ che contengono una Tappa $t$ tale per cui i campi \ttt{Start\_Station} e \ttt{Next\_Station} sono rispettivamente $s_i$ e $s_{i+1}$. Per ciascuno di questi percorsi, vengono ottenuti indice e posizione della tappa $t$ al suo interno.
-						A qusto punto si procede all'individuazione del percorso che meglio si adatta al cammino minimo da segire. Sia quindi $k = i$; per ciascuna route $r_j \in R$, a partire dalla posizione di $t$ in $r_j$, si procede ad estendere la corrispondenza. Viene quindi mantenuto il percorso con la corrispondenza di lunghezza massima $Max\_Length$, memorizzandone l'indice in $Max\_Match$.
+						A questo punto si procede all'individuazione del percorso che meglio si adatta al cammino minimo da seguire. Sia quindi $k = i$; per ciascuna route $r_j \in R$, a partire dalla posizione di $t$ in $r_j$, si procede ad estendere la corrispondenza. Viene quindi mantenuto il percorso con la corrispondenza di lunghezza massima $Max\_Length$, memorizzandone l'indice in $Max\_Match$.
 						\item Una volta stabilita la corrispondenza di lunghezza massima, viene creata una Tappa del \ttt{Ticket}:
 						\begin{verbatim}
 							- start_station        : indice della stazione 
@@ -82,7 +82,7 @@ Di seguito viene riportata una descrizione delle fasi previste dalla soluzione p
 		\item Nel caso in cui si abbia una risposta positiva da una Regione $R$ allora:
 			\begin{itemize}
 				\item Viene recuperata la lista $R_1,...,R_n$ di Regioni attraverso le quali costruire il percorso per raggiungere la destinazione (dalla mappa \ttt{Links}). 
-				\item Per ciascuna Regione $R_i$ viene inviata una richiesta remota \ii{sincrona} per ottenere un Ticket che collega le varie stazioni di Gateway interne: i Biglietti ottenuti una volta uniti, permettono di raggiungere \ttt{To} a partire da \ttt{From}. La lista di Ticket ottenuta viene \ii{Validata} in modo tale da penotare posti a sedere se necessario, per ciascun Biglietto.
+				\item Per ciascuna Regione $R_i$ viene inviata una richiesta remota \ii{sincrona} per ottenere un Ticket che collega le varie stazioni di Gateway interne: i Biglietti ottenuti una volta uniti, permettono di raggiungere \ttt{To} a partire da \ttt{From}. La lista di Ticket ottenuta viene \ii{Validata} in modo tale da prenotare posti a sedere se necessario, per ciascun Biglietto.
 				\item Il processo di unione dei vari \ttt{Ticket} raccolti, avviene fondendo Tappe che usufruiscono dello stesso Treno eliminando se necessario il passaggio per le stazioni di Gateway; il Biglietto risultante infine viene inviato come risposta al Nodo richiedente, presso il quale verrà assegnato al viaggiatore richiedente, per poi inserire l'operazione \ttt{TICKET\_READY} nella coda di \ttt{Traveler\_Pool}.
 			\end{itemize}
 	\end{itemize}

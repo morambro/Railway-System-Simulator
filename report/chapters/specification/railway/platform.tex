@@ -1,0 +1,77 @@
+	\subsection{Generic\_Platform}
+	
+	Il package \ttt{Generic\_Platform} definisce l'interfaccia di classe \ttt{Platform\_Interface} implementata da ciascun tipo rappresentante una Piattaforma.
+	
+	\subsection{Platform} 
+	
+	Il package \ttt{Platform} definisce il tipo protetto \ttt{Platform\_Type}, usato per regolare gli accessi alla Piattaforma. Esso mantiene i campi dato:
+	\begin{itemize}
+		\item \ttt{Free}: Variabile booleana usata per indicare lo stato di occupazione della Piattaforma.
+
+		\item \ttt{Can\_Retry}: Variabile booleana usata come guardia per regolare i tentativi di accesso alla Piattaforma.
+
+		\item \ttt{Retry\_Count}: Variabile a valori interi usata per la regolazione dei tentativi di accesso alla Piattaforma.
+		
+		\item \ttt{Trains\_Order}: Coda di interi FIFO, di tipo \ttt{Unlimited\_Simple\_Queue}, usata per memorizzare gli identificativi dei Treni che intendono accedere alla Piattaforma.
+	\end{itemize}
+	\ttt{Platform\_Type} si compone delle seguenti procedure:
+	
+	\begin{description}
+		
+		\item \ttt{Add\_Train(Train\_ID:Integer)} \\
+		Aggiunge l'identificativo \ttt{Train\_ID} nella coda \ttt{Trains\_Order}.
+		
+		\item \ttt{Leave} \\
+		Imposta il campo \ttt{Free} a \ttt{False} liberando la risorsa, e, nel caso in cui ci fossero Task in attesa presso la \ii{entry} \ttt{Retry}, apre la guardia \ttt{Can\_Retry} memorizzando il numero di tali task nel campo \ttt{Retry\_Count}.
+		
+	\end{description}
+	e delle seguenti \ii{entries}:
+	\begin{description}
+		
+		\item \ttt{Enter(Train\_Descriptor\_Index:Integer)}\\
+		Ha guardia booleana sempre aperta (\ttt{True}). Essa verifica se il primo elemento della coda corrisponde al Treno corrente. In tal caso viene permesso l'accesso viene impostato lo stato della Piattaforma ad occupato (\ttt{Free = False}). Nel caso in cui invece tale condizione non si verifichi, il Task corrente viene riaccodato sulla \ii{entry} \ttt{Retry}.	
+		
+		\item \ttt{Retry(Train\_Descriptor\_Index:Integer)}\\
+		\'E regolata dalla guardia booleana \ttt{Can\_Retry}. Essa decrementa il valore di \ttt{Retry\_Count} e, nel caso in cui esso sia a 0, imposta il valore di \ttt{Can\_Retry} a \ttt{False}. Infine riaccoda il Task corrente presso la entry \ttt{Enter}.
+		
+	\end{description}
+	
+	%
+	% ********************* PLATFORM_HANDLER **********************+
+	%
+	
+	Il package \ttt{Platform} definisce inoltre il tipo \ii{tagged} \ttt{Platform\_Handler}, che viene espone dei metodi alla Stazione per permettere di interagire con le Piattaforme. Esso contiene un oggetto di tipo \ttt{Platform\_Type}, \ttt{The\_Platform}, e implementa i metodi dell'interfaccia \ttt{Platform\_Interface}:
+	\begin{description}
+		
+		\item \ttt{+ Add\_Train(Train\_ID:Integer)} \\
+			Invoca la procedura \ttt{Add\_Train} sull'oggetto \ttt{The\_Platform}.
+		
+		\item \ttt{+ Enter(\\
+			Train\_Descriptor\_Index:Integer,\\
+			Action:Route.Action)}\\
+		Per prima cosa cerca di ottenere l'accesso alla Piattaforma mediante l'\ii{entry} \ttt{Enter} invocata sull'oggetto \ttt{The\_Platform}, poi notifica l'avvenuto accesso al Controller Centrale e invoca il metodo privato \ttt{Perform\_Entrance} per effettuare le operazioni necessarie all'arrivo del Treno.
+		
+		\item \ttt{+ Leave(\\
+			Train\_Descriptor\_Index:Integer,\\
+			Action:Route.Action)}\\
+		Invoca il metodo privato \ttt{Perform\_Exit} per effettuare le operazioni necessarie all'uscita del Treno dalla Piattaforma, e successivamente invoca la procedura protetta \ttt{Leave} sull'oggetto \ttt{The\_Platform}.
+		
+		\item \ttt{+ Add\_Outgoing\_Traveler(Traveler:Integer)}\\
+		Aggiunge l'indice del Viaggiatore \ttt{Traveler} alla coda \ttt{Leaving\_Queue}, che mantiene i Viaggiatori in attesa di partire dalla Piattaforma.
+		
+		\item \ttt{+ Add\_Incoming\_Traveler(Traveler:Integer)}\\
+		Aggiunge l'indice del Viaggiatore \ttt{Traveler} alla coda \ttt{Arrival\_Queue}, che mantiene i Viaggiatori in attesa di arrivare alla Piattaforma.
+		
+		\item \ttt{- Perform\_Entrance(\\
+			Train\_Descriptor\_Index:Integer,\\
+			Action:Route.Action)}\\
+		Effettua le operazioni necessarie all'ingresso di un Treno alla Piattaforma. In particolare, nel caso il cui il campo \ttt{Action} assuma il valore \ttt{Route.ENTER}, viene effettuata la discesa dei Viaggiatori. Tale operazione prevede che venga svuotata la coda \ttt{Arrival\_Queue}, un elemento alla volta; per ciascun passeggero estratto viene verificato se sia in attesa o meno del treno corrente: se non lo è allora viene accodato nuovamente, altrimenti viene decrementato il numero di posti occupati del Treno e viene aggiornata la prossima tappa del viaggio (rispetto al Ticket posseduto), se prevista, altrimenti viene richiesta l'esecuzione dell'operazione \ttt{BUY\_TICKET} a \ttt{Traveler\_Pool}. Nel caso in cui la tappa successiva sia definita, viene richiesta invece l'esecuzione dell'operazione \ttt{LEAVE} a \ttt{Traveler\_Pool}
+		
+		\item \ttt{- Perform\_Exit(\\
+			Train\_Descriptor\_Index:Integer,\\
+			Action:Route.Action)}\\
+		Effettua le operazioni necessarie alla partenza di un Treno dalla Piattaforma. In particolare, nel caso il cui il campo \ttt{Action} assuma il valore \ttt{Route.ENTER}, viene effettuata la salita a bordo dei Viaggiatori. Tale operazione prevede che venga rimosso un Viaggiatore alla volta dalla coda \ttt{Leaving\_Queue} e per ciascuno di essi verifica che sia in attesa o meno del Treno corrente. Nel caso in cui non lo sia, allora viene effettuato un controllo per verificare che il Treno atteso dal Viaggiatore in esame non sia già passato (se prenotato): in tal caso viene richiesta l'esecuzione dell'operazione \ttt{BUY\_TICKET} a \ttt{Traveler\_Pool}, altrimenti il Viaggiatore viene semplicemente riaccodato su \ttt{Leaving\_Queue}. \\
+		Nel caso in cui il Treno sia quello atteso dal Viaggiatore ma che la corsa corrente sia maggiore di quella prenotata, allora il  viene richiesta l'esecuzione dell'operazione \ttt{BUY\_TICKET} a \ttt{Traveler\_Pool}. Se nessuno degli altri casi si è verificato, viene incrementato il numero di posti occupati all'interno del Treno e viene aggiornata la prossima tappa del viaggio (rispetto al Ticket posseduto), se prevista, altrimenti viene richiesta l'esecuzione dell'operazione \ttt{BUY\_TICKET} a \ttt{Traveler\_Pool}. Nel caso in cui la tappa successiva sia definita, viene eseguita l'operazione \ttt{ENTER} per il Viaggiatore, in modo tale da garantire che esso si troverà in attesa presso la Stazione successiva prima che il Treno vi arrivi.
+		
+	\end{description}
+	

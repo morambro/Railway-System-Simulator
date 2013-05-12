@@ -18,7 +18,7 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	%  ################################################# VIAGGIATORE ######################################################
 	\subsection{Viaggiatore}\label{subsec:traveler_def}		
 	
-	In prima analisi, un Viaggiatore (\ttt{Traveler}) può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici. In presenza di un modello di distribuzione come quello presentato in sezione \ref{sec:distr_regioni} però, si presenta il problema di modellare il passaggio da una Regione (nodo) ad un'altra del Viaggiatore, nel caso in cui il viaggio da esso percorso lo preveda.
+	In prima analisi, un Viaggiatore (\ttt{Traveler}) può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici. In presenza tuttavia di un modello di distribuzione come quello presentato in sezione \ref{sec:distr_regioni}, si presenta il problema di modellare il passaggio da una Regione (nodo) ad un'altra del Viaggiatore, nel caso in cui il viaggio da esso percorso lo preveda.
 	
 	Nel caso in cui il Viaggiatore fosse messo in relazione univoca con un thread, si presenterebbero solo due possibili soluzioni:
 		\begin{itemize}
@@ -32,11 +32,12 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 			\item una \ii{coda di operazioni} che man mano vengono estratte ed eseguite dai thread nel pool.
 		\end{itemize}
 	In questo modo è sufficiente replicare per ciascun Viaggiatore, su tutti i nodi che compongono il sistema, una struttura dati che contiene i suoi dati e le operazioni che esso eseguirà, e cioè un Descrittore (\ttt{Traveler\_Descriptor}). 
-	Il cambio di Regione di un Viaggiatore potrà quindi essere ottenuto semplicemente inserendo la prossima operazione da eseguire per il Viaggiatore nella coda del pool di thread del nodo destinazione.
+	Il cambio di Regione di un Viaggiatore potrà quindi essere ottenuto semplicemente inserendo le operazioni successive da eseguire per esso, nella coda del pool di thread del nodo destinazione.
 	
 	%  ################################################# TRENO ######################################################
 	\subsection{Treno} \label{subsec:train_def}
-	Un Treno (\ttt{Train}) è una \ii{entità Attiva}, la quale esegue ciclicamente un numero finito di operazioni. Ciascuna entità Treno può appartenere a due categorie, FB a priorità più alta, e Regionale a priorità minore, ed è caratterizzata da:
+	Un Treno (\ttt{Train}) è una \ii{entità Attiva}, la quale esegue ciclicamente un numero finito di operazioni. Ciascuna entità Treno può appartenere a due categorie, \ttt{FB} a priorità più alta, e \ttt{Regionale} a priorità minore, ed è caratterizzata da:
+		
 		\begin{itemize}
 			\item un identificativo univoco;
 			\item una capienza massima;
@@ -48,9 +49,9 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	Ho optato invece nel progettare una struttura dati \ttt{Train\_Pool} che mantiene:
 		\begin{itemize}
 			\item una \ii{coda di Descrittori di Treno}, che contengono tutte le informazioni che distinguono una entità Treno;
-			\item un \ii{Pool di thread} dimensionato in maniera opportuna; ciascun thread sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni. Data la complessità delle interazioni tra le entità del sistema, e quindi la possibilità che i thread vengano posti in attesa su guardie booleane in attesa di eventi, è necessario che il Pool di Thread abbia una dimensione pari al massimo numero di Treni circolanti nella Regione alla quale esso appartiene, in modo tale da evitare deadlock dei Treni in attesa. 
+			\item un \ii{Pool di thread} dimensionato in maniera opportuna; ciascun thread sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni. Data la complessità delle interazioni tra le entità del sistema, e quindi la possibilità che i thread vengano posti in attesa su guardie booleane in attesa di eventi, è necessario che il Pool di Thread abbia una dimensione pari al massimo numero di Treni circolanti nella Regione alla quale esso appartiene, in modo tale da evitare situazioni di stallo dei thread in attesa. 
 		\end{itemize}
-	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta. 
+	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta, permettendo così un agevole trasferimento tra nodi diversi.
 				
 	%  ################################################# STAZIONE ###################################################
 	\subsection{Stazione} \label{subsec:station}
@@ -77,7 +78,7 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 			\item \ttt{Arrival\_Queue}, che conterrà i descrittori dei Viaggiatori in attesa di Treni per poter effettuare l'arrivo alla stazione.
 		\end{itemize}
 		Inoltre contiene un flag booleano \ttt{Free} che ne indica lo stato di occupazione.
-		Ciascuna Piattaforma, in base al tipo di Stazione avrà percorrenza bidirezionale o uniderezionale.
+		Ciascuna Piattaforma, in base al tipo di Stazione avrà percorrenza bidirezionale o unidirezionale.
 				
 		\subsubsection{Biglietteria}
 		
@@ -85,5 +86,5 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 		
 		\subsubsection{Pannello Informativo}
 		
-		Una Piattaforma è modellata come una \ii{entità reattiva con agente di controllo, a molteplicità 1}. Esso espone una interfaccia tale da permettere alla stazione di notificare lo stato delle entità Treno che stanno arrivando, quelle in sosta e quelle in partenza.
+		Un Pannello Informativo è modellato come una \ii{entità reattiva con agente di controllo, a molteplicità 1}. Esso espone una interfaccia tale da permettere alla stazione di notificare lo stato delle entità Treno che stanno arrivando, quelle in sosta e quelle in partenza.
 \newpage

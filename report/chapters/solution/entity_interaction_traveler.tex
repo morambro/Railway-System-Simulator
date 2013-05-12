@@ -12,7 +12,7 @@
 					- run_number
 					- next_region
 				\end{verbatim}
-			e da un indice della prossima tappa del Percorso (\ttt{Next\_Stage}). Nel caso in cui il Treno \ttt{train\_id} sia un Treno a prenotazione, il valore di \ttt{run\_number} sarà > 0.
+			e da un indice della prossima tappa del Percorso (\ttt{Next\_Stage}). Nel caso in cui il Treno \ttt{train\_id} sia un Treno a prenotazione, il valore di \ttt{run\_number} sarà $>$ 0.
 			
 			\item Una volta ottenuto un Ticket, vengono eseguite le seguenti operazioni per ciascuna Tappa del Biglietto:
 				\begin{itemize}
@@ -26,7 +26,7 @@
 	
 	\subsubsection{Acquisto di un Biglietto}\label{subsubsec:buy_ticket}
 	
-	L'acquisto di un Biglietto da parte di un Viaggiatore è effettuato tramite l'operazione \ttt{BUY\_TICKET}. Essa si limita a richiedere alla Biglietteria della Stazione di partenza (che viene definita da configurazione iniziale) un Biglietto per una specifica destinzaione. Al termine della richiesta, l'esecuzione dell'operazione termina, e il thread corrente ritorna nella coda di thread \ttt{Traveler\_Pool} (descritta in sezione \ref{subsec:traveler_def}) per poter eseguire una nuova operazione. Questo comporta la definizione di una nuova operazione, \ttt{TICKET\_READY}, la quale verrà inserita nella coda di operazioni di \ttt{Traveler\_Pool}, all'avvenuta ricezione del Biglietto richiesto, sia per assegnare il \ttt{Ticket} creato e caricare nella coda della struttura dati \ttt{Traveler\_Pool} l'operazione \ttt{LEAVE} del Viaggiatore corrente, sia per eseguire operazioni in caso la richiesta non fosse andata a buon fine.
+	L'acquisto di un Biglietto da parte di un Viaggiatore è effettuato tramite l'operazione \ttt{BUY\_TICKET}. Essa si limita a richiedere alla Biglietteria della Stazione di partenza (che viene definita da configurazione iniziale) un Biglietto per una specifica destinazione. Al termine della richiesta, l'esecuzione dell'operazione termina, e il thread corrente ritorna nella coda di thread \ttt{Traveler\_Pool} (descritta in sezione \ref{subsec:traveler_def}) per poter eseguire una nuova operazione. Questo comporta la definizione di una nuova operazione, \ttt{TICKET\_READY}, la quale verrà inserita nella coda di operazioni di \ttt{Traveler\_Pool}, all'avvenuta ricezione del Biglietto richiesto, sia per assegnare il \ttt{Ticket} creato e caricare nella coda della struttura dati \ttt{Traveler\_Pool} l'operazione \ttt{LEAVE} del Viaggiatore corrente, sia per eseguire operazioni in caso la richiesta non fosse andata a buon fine.
 	
 	\subsubsection{Partenza da una Stazione}
 	
@@ -44,7 +44,7 @@ Le azioni compiute dall'operazione \ttt{LEAVE} sono:
 	
 	Internamente alla Stazione, tale richiesta viene tradotta nell'inserimento del Viaggiatore, o meglio del suo Descrittore \ttt{Traveler\_Descriptor}, nella coda \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}. Tale operazione non utilizza una sezione critica presso la risorsa protetta a protezione della Piattaforma, ma possiamo pensare che la coda (FIFO) adottata sia ad accesso sincronizzato.
 	
-	Nel caso in cui la Stazione di partenza del Viaggiatore sia una Stazione di Gateway, allora la procedura di accodamento presso la Piattafroma designata diviene:
+	Nel caso in cui la Stazione di partenza del Viaggiatore sia una Stazione di Gateway, allora la procedura di accodamento presso la Piattaforma designata diviene:
 	\begin{itemize}
 		\item Se la Regione di Destinazione \ttt{next\_region} è diversa dalla Regione corrente, allora
 			\begin{itemize}

@@ -262,6 +262,7 @@ package body Gateway_Station is
 			Platform_Index			: in 	 Positive;
 			Train_Index				: in 	 Positive) is
 	begin
+		This.Platforms(Platform_Index).Add_Train(Trains.Trains(Train_Index).Id);
 		This.Platforms(Platform_Index).Enter(Train_Index,Route.FREE);
     end Occupy_Platform;
 

@@ -27,6 +27,7 @@ with JSON_Helper;
 with Ada.Text_IO;use Ada.Text_IO;
 with Ada.Calendar.Formatting;
 with Ada.Real_Time;
+with Logger;
 with Central_Office_Interface;
 
 package body Time_Table is
@@ -163,5 +164,38 @@ package body Time_Table is
 		end if;
     end Update_Time_Table;
 
+
+	function Time_Table_To_Json(T_Table : access Time_Table_Type) return String
+	is
+		Json_Time_Table : JSON_Value := Create_Object;
+		Json_Table : JSON_Array := Empty_Array;
+	begin
+		Json_Time_Table.Set_Field("route_index",T_Table.Route_Index);
+		Json_Time_Table.Set_Field("current_run",T_Table.Current_Run);
+		Json_Time_Table.Set_Field("current_run_id",T_Table.Current_Run_Id);
+
+		for I in 1 .. T_Table.Table'Length loop
+			declare
+				Run_Times : JSON_Array := Empty_Array;
+			begin
+				for J in 1 .. T_Table.Table(I)'Length loop
+					Append(Run_Times, Create(Ada.Calendar.Formatting.Image(T_Table.Table(I)(J))));
+				end loop;
+				Append(Json_Table,Create(Run_Times));
+			end;
+		end loop;
+
+		Json_Time_Table.Set_Field("time",Json_Table);
+
+		return Json_Time_Table.Write;
+	end Time_Table_To_Json;
+
+	overriding procedure Finalize(This: in out Time_Table_Type) is
+	begin
+		Logger.Log(
+			"Time_Table",
+			"Deleted Time Table for Route " & Integer'Image(This.Route_Index),
+			Logger.INFO);
+    end Finalize;
 
 end Time_Table;

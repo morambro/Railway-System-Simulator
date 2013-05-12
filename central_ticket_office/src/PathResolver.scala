@@ -3,14 +3,14 @@ import com.inspirel.yami._
 
 class NoRouteFoundException extends Exception
 
-object PathResolver {
+object TicketCreator {
 	
 	val SERVICE_NAME = "ticket_creation";
 	
 	var NAME_SERVER_ADDRESS = "";
 	
 	// Map containg for each region the list of regions to go through to reach it 
-	var regionsMap 		: Map[(String,String),List[(String,String)]] = PathResolver.loadLinks("../../railway/res/links.json")
+	var regionsMap 		: Map[(String,String),List[(String,String)]] = TicketCreator.loadLinks("../../railway/res/links.json")
 	
 	/**
 	 * Loads the json file containg the location of regional ticket offices
@@ -52,10 +52,10 @@ object PathResolver {
 }
 
 /**
- * Class PathResolver is an Actor type allowing to create a Ticket where source and destination stations are
+ * Class TicketCreator is an Actor type allowing to create a Ticket where source and destination stations are
  * on different Regions.
  **/ 
-class PathResolver(fileName : String,messagesReceiver:Actor) extends Actor {
+class TicketCreator(messagesReceiver:Actor) extends Actor {
 	
 	/** 
 	 * The list of couples (region,address)
@@ -79,7 +79,7 @@ class PathResolver(fileName : String,messagesReceiver:Actor) extends Actor {
 	 */
 	def getNodesAddressList : Map[String,String] =  {
 		val message : OutgoingMessage = agent.send(
-			PathResolver.NAME_SERVER_ADDRESS,
+			TicketCreator.NAME_SERVER_ADDRESS,
 		    "name_server", 
 		    "list", 
 		    new Parameters);
@@ -90,7 +90,7 @@ class PathResolver(fileName : String,messagesReceiver:Actor) extends Actor {
 		message.getState match {
 			case OutgoingMessage.MessageState.REPLIED => message.getReply.getString("response") match {
 	    		// Case "OK" return simply the conversion in Map of the received JSON
-    			case "OK" 	=> PathResolver.jsonNodesListToMap(message.getReply.getString("list"))
+    			case "OK" 	=> TicketCreator.jsonNodesListToMap(message.getReply.getString("list"))
 	    		case _ => {
 	    			PrintsSerializer ! Print("ERROR: Ivalid response to NameServer::LIST request")
 	    			null
@@ -274,7 +274,7 @@ class PathResolver(fileName : String,messagesReceiver:Actor) extends Actor {
 							// ****************** COLLECT PARTIAL TICEKTS FROM NODES *****************
 					
 							// Retrieve from regionsMap the path to go from [from] to [to]
-							PathResolver.regionsMap get (startNode,region) match {
+							TicketCreator.regionsMap get (startNode,region) match {
 								case Some(item) => {
 									var node 	= startNode
 									var f 		= from

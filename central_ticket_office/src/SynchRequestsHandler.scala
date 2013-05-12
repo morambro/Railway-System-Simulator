@@ -17,7 +17,7 @@ class SynchRequestsHandler extends Actor {
 					
 					// Validate request handling
 					case validateRequest : Validate => {
-						val result = BookingManager !? validateRequest//Validate(ticket::List(),requestTime)
+						val result = BookingManager !? validateRequest
 				
 						result match {
 							case (true,ticketList:List[_]) => {

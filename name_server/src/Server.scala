@@ -6,7 +6,7 @@ import java.util.Scanner
 case class Start(val param : String)
 case class Stop()
 
-class ServerAgent extends Actor with IncomingMessageCallback{
+object NameServer extends Actor with IncomingMessageCallback{
 
 	var serverAgent : Agent = null;
 	var addresses	: Map[String,String] = Map();
@@ -128,13 +128,12 @@ class ServerAgent extends Actor with IncomingMessageCallback{
 
 object Main extends App{
 
-	var agent : ServerAgent = null;
 
 	def readInput() {
 		readLine() match {
 			case "q" | "Q" | "Quit" | "quit" | "QUIT" => {
 				println("Quit");
-				agent ! Stop()
+				NameServer ! Stop()
 			}
 			case _ => readInput
 		}
@@ -145,10 +144,9 @@ object Main extends App{
 		    println("ERROR: expecting server destination as parameter")
 		    return
 		}
-		agent = new ServerAgent;
 		val serverAddress : String = args(0)
-		agent.start
-		agent ! Start(serverAddress);
+		NameServer.start
+		NameServer ! Start(serverAddress);
 
 		readInput		
 		

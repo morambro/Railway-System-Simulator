@@ -2,13 +2,13 @@
 
 	\begin{figure}[htbp]
 		\begin{center}
-			\includegraphics[width=\textwidth,keepaspectratio]{imgs/logic_distribution.pdf}
+			\includegraphics[scale=0.5,trim= 35mm 0mm 0mm 0mm,keepaspectratio]{imgs/logic_distribution.pdf}
 			\caption{\footnotesize{Diagramma informale che presenta una progettazione logica delle componenti distribuite.}}
 			\label{fig:logic_distribution}
 		\end{center}
 	\end{figure}
 
-Un diagramma infromale delle componenti distribuite che compongono il sistema è presentato in figura \ref{fig:logic_distribution}. Di seguito verranno descritte le principali.
+Un diagramma informale delle componenti distribuite che compongono il sistema è presentato in figura \ref{fig:logic_distribution}. Di seguito verranno descritte le principali.
 	
 	\subsection{Regioni}\label{sec:distr_regioni}
 	
@@ -39,7 +39,7 @@ Un diagramma infromale delle componenti distribuite che compongono il sistema è
 	Per ogni coppia $G$ e $G'$ di Stazioni di Gateway connesse (ovvero mutuamente raggiungibili in modo diretto) appartenenti a Regioni diverse rispettivamente $R_G$ ed $R_{G'}$, $\nexists$ altra Stazione di Gateway $G'' \in R_{G'}$ tale per cui $G''$ è connesso a $G$.
 	\end{consequence}
 
-	Per evitare sincronizzazioni tra thread distribuiti, sono posti dei vincoli nella struttura interna di questo tipo di stazoni. Ciascuna Stazione di Gateway $G$ sarà dotata di un numero $M$ di Piattaforme $\{P_1,...,P_M\}$, le quali permettono un \ii{unico senso di percorrenza}, ovvero:
+	Per evitare sincronizzazioni tra thread distribuiti, sono posti dei vincoli nella struttura interna di questo tipo di stazioni. Ciascuna Stazione di Gateway $G$ sarà dotata di un numero $M$ di Piattaforme $\{P_1,...,P_M\}$, le quali permettono un \ii{unico senso di percorrenza}, ovvero:
 		
 		\begin{itemize}
 			\item Le prime $\{P_1,...,P_K\}$ saranno disponibili all'accesso dalla Regione in cui $G$ risiede.
@@ -49,7 +49,7 @@ Un diagramma infromale delle componenti distribuite che compongono il sistema è
 	Questa scelta, vincola così il numero di Piattaforme per Stazione di Gateway: 
 	
 	\begin{consequence}
-	Date N Stazioni di Gateway connesse, sia K\_i il numero di Piattaforme che permettono ad un Treno di lasciare la Regione i-esima; allora ciascuna Stazione dovra complessivamente mantenere un numero di Piattaforme pari a $\sum_{i = 1}^{N}{K_i}$.
+	Date N Stazioni di Gateway connesse, sia K\_i il numero di Piattaforme che permettono ad un Treno di lasciare la Regione i-esima; allora ciascuna Stazione dovrà complessivamente mantenere un numero di Piattaforme pari a $\sum_{i = 1}^{N}{K_i}$.
 	\end{consequence}
 	
 	 Tali vincoli sono sufficienti a mantenere locale ai nodi la sincronizzazione tra i thread che permettono l'esecuzione dei Treni. Una descrizione dettagliata del protocollo di accesso alle Stazioni di Gateway e di migrazione dei Treni, e presentata in sezione \ref{subsubsec:gateway_stations_func}.
@@ -67,14 +67,14 @@ Un diagramma infromale delle componenti distribuite che compongono il sistema è
 			Forniscono un'interfaccia adeguata ai Viaggiatori per poter acquistare un biglietto.
 			\item {\bb{Biglietterie Regionali}}\\
 			Hanno conoscenza regionale della topologia del grafo composto da Stazioni e Segmenti.
-			\item {\bb{Biglietteria Cantrale}} \\ 
-			Ha conoscenza di più alto livello; in particolare, essa mantiene traccia delle connessioni tra le varie regioni ( ovvero i collegamenti tra Stazioni di Gateway di regioni diverse). Tale conoscenza si può immaginare sia memorizzata in una mappa chiave-valore \ttt{Links} dove per ciascuna coppia di Regioni, è mentenuta una lista di tappe successive Regione-Stazione di Gateway da percorrere per andare dalla prima alla seconda.
+			\item {\bb{Biglietteria Centrale}} \\ 
+			Ha conoscenza di più alto livello; in particolare, essa mantiene traccia delle connessioni tra le varie regioni ( ovvero i collegamenti tra Stazioni di Gateway di regioni diverse). Tale conoscenza si può immaginare sia memorizzata in una mappa chiave-valore \ttt{Links} dove per ciascuna coppia di Regioni, è mantenuta una lista di tappe successive Regione-Stazione di Gateway da percorrere per andare dalla prima alla seconda.
 		\end{description} 
 	
 	\subsection{Controller Centrale}
 		
-	Il Conterollo Centrale è una entità distribuita, alla quale tutti i nodi inviano Eventi per notificare lo stato di avanzamento globale della simulazione. Esso fornisce una interfaccia alle varie Regioni per ricevere gli Eventi di simulazione, ed un'interfaccia per permettere a client remoti di poter visualizzare gli effetti di tali Eventi. Quest'ultima possibilità è ottenuta mediante un meccanismo di tipo Publish/Subscribe, attraverso il quale client remoti possono registrarsi presso il Controller per ricevere, in modalità Push, gli Eventi.
+	Il Controllo Centrale è una entità distribuita, alla quale tutti i nodi inviano Eventi per notificare lo stato di avanzamento globale della simulazione. Esso fornisce una interfaccia alle varie Regioni per ricevere gli Eventi di simulazione, ed un'interfaccia per permettere a client remoti di poter visualizzare gli effetti di tali Eventi. Quest'ultima possibilità è ottenuta mediante un meccanismo di tipo Publish/Subscribe, attraverso il quale client remoti possono registrarsi presso il Controller per ricevere, in modalità Push, gli Eventi.
 	In questo modo è possibile per un qualsiasi client interfacciarsi al Controller e fornire, ad esempio, una rappresentazione grafica della simulazione.
 
-	Il Controller sarà anche responsabile dell'invio di un \ii{segnale di terminazione}, che verrà recapitato a tutti i nodi che componegono la simulazione, mediante la procedura descritta in sezione \ref{sec:distributed_termination}.
+	Il Controller sarà anche responsabile dell'invio di un \ii{segnale di terminazione}, che verrà recapitato a tutti i nodi che compongono la simulazione, mediante la procedura descritta in sezione \ref{sec:distributed_termination}.
 \newpage

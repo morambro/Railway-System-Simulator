@@ -33,6 +33,7 @@ with Ticket;
 with Train;
 with Traveler;
 with Name_Server_Interface;
+with Time_Table;
 
 package body Remote_Station_Interface is
 
@@ -67,9 +68,9 @@ package body Remote_Station_Interface is
 						Parameters.Set_String("station",Integer'Image(Station));
 						Parameters.Set_String("platform",Integer'Image(Platform));
 						Parameters.Set_String("train_index",Integer'Image(Train_Descriptor_Index));
-						-- # Pass also current time table index and position
-						Parameters.Set_String("current_run",
-							Integer'Image(Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run));
+						-- # Pass also the time table, that may have been updated
+						Parameters.Set_String("time_table",Time_Table.Time_Table_To_Json(Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index)));
+						-- # Pass also current run position
 						Parameters.Set_String("current_run_position",
 							Integer'Image(Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run_Cursor));
 						Parameters.Set_String("train",Train.Get_Json(Trains.Trains(Train_Descriptor_Index)));

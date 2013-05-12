@@ -1,0 +1,17 @@
+	\subsection{Time\_Table}
+	
+	Il package \ttt{Time\_Table} contiene la definizione del tipo \ttt{Time\_Table\_Type}, che rappresenta una tabella di orari per una specifica \ttt{Route}. Esso è un \ii{record} con i seguenti campi:
+	\begin{itemize}
+		\item \ttt{Route\_Index}: Indice del Percorso per il quale la Tabella è definita.
+		\item \ttt{Table}: Matrice di $NxM$ oggetti di tipo \ttt{Ada.Calendar.Time}, dove $N$ è il numero di Corse mantenute, e $M$ è la lunghezza della \ttt{Route} per la quale la tabella è definita.
+		\item \ttt{Current\_Run}: Indice della Corsa corrente (da $1$ a $N$).
+		\item \ttt{Current\_Run\_Cursor}: Indice utilizzato per scorrere gli orari memorizzati nella Corsa \ttt{Current\_Run}.
+		\item \ttt{Current\_Run\_Id}: Identificativo univoco della Corsa. 
+	\end{itemize}
+	
+	Il package oltre a definire le funzioni necessarie per effettuare la conversione da \ttt{JSON} a \ttt{Time\_Table\_Type} e viceversa, definisce la procedura 
+\begin{lstlisting}
+	Update_Time_Table(Table:access Time_Table_Type)} 
+\end{lstlisting}
+ la quale aggiorna il valore di \ttt{Current\_Run\_Cursor}. Nel caso in cui la corsa corrente \ttt{Current\_Run} sia esaurita (\ttt{Current\_Run\_Cursor + 1 > }$M$) allora \ttt{Current\_Run} viene incrementato e viene comunicato ciò alla Biglietteria Centrale mediante la procedura \ttt{Update\_Run} di \ttt{Central\_Office\_Interface}, la quale effettua una richiesta sincrona.
+	L'insieme di tutte le tabelle è mantenuto in un array nel package \ttt{Environment}.

@@ -2,9 +2,9 @@
 \section{Distribuzione}
 
 Le problematiche legate alla distribuzione sono molteplici. Nel progetto di un simulatore di un sistema ferroviario infatti, la presenza di entità distribuite è auspicabile, sia per suddividere logicamente le entità, sia per distribuire l'onere di calcolo su nodi differenti.
-Le caratteristiche desiderabili da un sistema dostribuito che simula una struttura ferroviaria sono:
+Le caratteristiche desiderabili da un sistema distribuito che simula una struttura ferroviaria sono:
 	\begin{itemize}
-		\item Il complesso deve apparire all'utente come un sistema unitario, la natura distibuita del sistema deve essere nascosta all'utilizzatore finale. 
+		\item Il complesso deve apparire all'utente come un sistema unitario, la natura distribuita del sistema deve essere nascosta all'utilizzatore finale. 
 		\item L'architettura distribuita non deve limitare le funzionalità desiderate.
 		\item \'E desiderabile che vi sia un buon grado di disaccoppiamento tra le componenti, e dalle tecnologie adottate per la comunicazione tra nodi della rete.
 		\item Il sistema dovrà essere il più possibile robusto agli errori.
@@ -25,7 +25,7 @@ Le caratteristiche desiderabili da un sistema dostribuito che simula una struttu
 			\item Relativo: Ciascun nodo di calcolo possiede un proprio riferimento temporale interno.
 		\end{itemize}
 		
-	\'E chiaro che la prima soluzione non si presta ad essere utilizzata per il problema presentato. Infatti esso, possedendo un flusso coninuo interno del tempo, non permetterebbe a entità indipendenti su nodi diversi di eseguire logicamente allo stasso istante (ad esempio due treni che in nodi diversi partono contemporaneamente da una stazione)
+	\'E chiaro che la prima soluzione non si presta ad essere utilizzata per il problema presentato. Infatti esso, possedendo un flusso continuo interno del tempo, non permetterebbe a entità indipendenti su nodi diversi di eseguire logicamente allo stesso istante (ad esempio due treni che in nodi diversi partono contemporaneamente da una stazione)
 
 	\subsection{Acquisto di un Biglietto}
 	

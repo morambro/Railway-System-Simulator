@@ -25,23 +25,24 @@
 \usepackage{ifthen}
 \usepackage{listings}
 
+
 \definecolor{darkGreen}{rgb}{0,0.6,0}
 
 \lstset{
-%	numbers=left,
-%	numberstyle=\ttfamily,
 	language=Ada,
 	extendedchars=true,
 	basicstyle=\ttfamily\small,
-	keywordstyle=\color{blue}\ttfamily,
+	keywordstyle=\color{blue}\ttfamily\bfseries,
 	stringstyle=\color{red}\ttfamily,
 	commentstyle=\color{darkGreen}\ttfamily,
 	tabsize=2,
+	morekeywords={wait,signal,signal_all,monitor},
 	captionpos=b,
 	extendedchars=true,  
 	keepspaces=true,
 	showstringspaces=false
 }
+
 
 \title{\Huge Railway Simulation}
 \author	{
@@ -93,6 +94,7 @@
 	\input{chapters/solution/solution.tex}
 	\input{chapters/tecnologies.tex}
 	\input{chapters/specification/specification.tex}
+	\input{chapters/instructions/instructions.tex}
 	
 %3 - Dimostrazione che la soluzione risolve il problema
  

@@ -1,5 +1,7 @@
 \section{Interazione tra le Entità}
 
+Viene ora presentata una descrizione delle interazioni tra le varie entità introdotte nella sezione precedente. La progettazione delle entità reattive viene descritta mediante il costrutto \ii{monitor} presentato a lezione, supponendo quindi di avere una struttura dati che incapsula la risorsa esponendo procedure accessibili in mutua esclusione dai thread; inoltre si suppone l'esistenza dei costrutti \ttt{wait(var\_condizione)} e \ttt{signal(var\_condizione)}, i quali rispettivamente forzano l'attesa del chiamante su coda FIFO, e risvegliano il primo processo in attesa.
+
 \input{chapters/solution/entity_interaction_traveler.tex}
 \input{chapters/solution/entity_interaction_train.tex}
 \input{chapters/solution/entity_interaction_ticket_creation.tex}

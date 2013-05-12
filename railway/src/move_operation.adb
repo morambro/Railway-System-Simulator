@@ -180,15 +180,5 @@ package body Move_Operation is
     	Traveler_Pool.Execute(Environment.Operations(This.Traveler_Manager_Index)(Traveler.LEAVE));
     end Do_Operation;
 
-
-	overriding procedure Do_Operation(This : in Terminate_Operation_Type) is
-	begin
-		-- # Ask to terminate to Pools
-		Train_Pool.Stop;
-		Traveler_Pool.Stop;
-		-- # Close the Message Agent.
-		Message_Agent.Instance.Close;
-	end;
-
 end Move_Operation;
 

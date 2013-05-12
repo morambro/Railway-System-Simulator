@@ -1,0 +1,51 @@
+	\subsection{Handlers}
+	
+	Il package \ttt{Handlers} contiene un insieme di procedure utilizzate per la gestione dei messaggi remoti ricevuti. Ciascuno di esse aderisce alla seguente firma
+\begin{lstlisting}
+	procedure *_Handler(Msg:Incoming_Message'Class)
+\end{lstlisting}
+	\begin{description}
+	
+		\item \ttt{Station\_Train\_Transfer\_Handler}\\
+		Viene utilizzata per la gestione del messaggio \ttt{train\_transfer}, che richiede il trasferimento di un Treno nel Nodo corrente, per poter poi proseguire il percorso. Tale procedure, estrae i dati dal messaggio ricevuto, ed esegue le seguenti operazioni:
+			\begin{itemize} 
+				\item Aggiorna i dati relativi al Treno passato;
+			 	\item aggiorna la Time Table per il percorso specificato;
+			 	\item occupa la Piattaforma nella Stazione di Gateway indicata;
+			 	\item inserisce l'indice del Treno passato nella coda di esecuzione di \ttt{Train\_Pool}. 
+			 \end{itemize}
+		Nel caso in cui le operazioni siano state svolte in modo corretto, viene inviata una risposta al messaggio comunicando l'esito positivo, altrimenti viene inviato un messaggio di errore.
+		
+		\item \ttt{Station\_Train\_Transfer\_Left\_Handler}\\
+		Viene utilizzata per la gestione del messaggio di richiesta del Servizio \ttt{train\_left\_platfrom}, utilizzato come notifica della partenza di un Treno dalla Stazione di Gateway corrispondente, posizionata in un altro Nodo; tale procedura quindi libera la Piattaforma indicata nel messaggio e, nel caso in cui tale operazione si sia svolta in modo corretto, invia una risposta al messaggio comunicando l'esito positivo, altrimenti invia un messaggio di errore.
+		
+		\item \ttt{Station\_Traveler\_Leave\_Transfer\_Handler}\\
+		Viene utilizzata per la gestione di messaggi relativi al Servizio \ttt{traveler\_leave\_transfer}, inviati per posizionare un Viaggiatore in attesa di un Treno per partire da una Piattaforma di una Stazione remota. Tale procedura estrae i dati passati dal messaggio, ed esegue le seguenti operazioni:
+		\begin{itemize}
+			\item Aggiorna i dati relativi al Viaggiatore e il suo Biglietto di Viaggio;
+			\item pone il Viaggiatore in attesa presso la Piattaforma della Stazione indicate, mediante il metodo \ttt{Wait\_For\_Train\_To\_Go}
+		\end{itemize} 
+		Infine, nel caso in cui le operazioni sopraelencate si siano svolte in modo corretto, invia una risposta al messaggio comunicando l'esito positivo, altrimenti invia un messaggio di errore.
+		
+		\item \ttt{Station\_Traveler\_Enter\_Transfer\_Handler}\\
+		Viene utilizzata per la gestione di messaggi relativi al Servizio \\\ttt{traveler\_enter\_transfer}, inviati per posizionare un Viaggiatore in attesa di arrivare ad una Piattaforma di una Stazione remota. Tale procedura estrae i dati passati dal messaggio, ed esegue le seguenti operazioni:
+		\begin{itemize}
+			\item Aggiorna i dati relativi al Viaggiatore e il suo Biglietto di Viaggio;
+			\item pone il Viaggiatore in attesa presso la Piattaforma della Stazione indicate, mediante il metodo \ttt{Wait\_For\_Train\_To\_Arrive}
+		\end{itemize} 
+		Infine, nel caso in cui le operazioni sopraelencate si siano svolte in modo corretto, invia una risposta al messaggio comunicando l'esito positivo, altrimenti invia un messaggio di errore.
+		
+		\item \ttt{Get\_Ticket\_Handler}\\
+		Viene utilizzata per la gestione di messaggi relativi al Servizio \ttt{ticket\_creation}, inviati dalla Biglietteria Centrale per ottenere un Ticket che collega due Stazioni interne alla Regione corrente. Tale procedura estrae gli identificativi delle due Stazioni dai parametri del messaggio ricevuto e crea un Ticket utilizzando la procedura \ttt{Create\_Ticket} fornita dal package \ttt{Regional\_Ticket\_Office}.
+		
+		\item \ttt{Is\_Station\_Present\_Handler}\\
+		Viene utilizzata per la gestione di messaggi relativi al Servizio \ttt{is\_present}, inviati dalla Biglietteria Centrale per richiedere se una data Stazione è presente all'interno della Regione o meno.
+		
+		
+		\item \ttt{Ticket\_Ready\_Handler}\\
+		Viene utilizzata per la gestione di messaggi relativi al Servizio \ttt{ticket\_ready}, inviati dalla Biglietteria Centrale per recapitare il Biglietto creato, conseguentemente ad una richiesta di creazione (il processo è asincrono). Tale procedura estrae dal messaggio il Biglietto e l'indice del Viaggiatore per il quale esso è stato creato, assegna al Viaggiatore il biglietto creato, ed infine richiede l'esecuzione dell'operazione \ttt{TICKET\_READY} per il Viaggiatore. Nel caso in cui nessun Biglietto fosse stato creato, viene atteso un tempo random dal Viaggiatore prima di inviare una nuova richiesta.
+		
+		\item \ttt{Termination\_Handler}\\
+		Viene utilizzata per la gestione di messaggi relativi al Servizio \ttt{terminate}, inviati dal Controller Centrale per richiedere la terminazione del Nodo. Tale procedura, una volta ricevuto il messaggio, richiede la terminazione dei pool definiti nei package Task \ttt{Train\_Pool} e \ttt{Traveler\_Pool}, invocando le procedure \ttt{Stop}.
+		
+	\end{description}

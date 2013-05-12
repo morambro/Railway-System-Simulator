@@ -34,6 +34,7 @@ with Regional_Ticket_Office;
 with Traveler_Pool;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Move_Operation;
+with Time_Table;
 
 package body Handlers Is
 
@@ -48,8 +49,9 @@ package body Handlers Is
 			Station_Index 			: Integer	:= Integer'Value(Content.Get_String("station"));
 			Platform_Index 			: Integer	:= Integer'Value(Content.Get_String("platform"));
 			Train_Index				: Integer	:= Integer'Value(Content.Get_String("train_index"));
-			Time_Table_Index		: Positive	:= Integer'Value(Content.Get_String("current_run"));
-			Time_Table_Position		: Positive	:= Integer'Value(Content.Get_String("current_run_position"));
+			New_Time_Table			: access Time_Table.Time_Table_Type :=
+				Time_Table.Get_Time_Table(Content.Get_String("time_table"));
+			Current_Run_Cursor		: Positive	:= Integer'Value(Content.Get_String("current_run_position"));
 			Train_Data				: String 	:= Content.Get_String("train");
 
 			Reply_Parameters 	: YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
@@ -70,13 +72,14 @@ package body Handlers Is
 					L 			=> Logger.DEBUG
 				);
 
-				Put_Line("Time_Table_Position = " & Integer'Image(Time_Table_Position));
-				Put_Line("Time_Table_Index = " & Integer'Image(Time_Table_Index));
+				Put_Line("PLatfrom Index = " & integer'image(Platform_Index) & " Station = " & integer'image(Station_Index));
 
 
-				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index).Current_Run_Cursor := Time_Table_Position;
+				-- # Assign the new Time Table
+				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index) := New_Time_Table;
 
-				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index).Current_Run := Time_Table_Index;
+				-- # Set the cursor for the current run.
+				Environment.Route_Time_Table(Trains.Trains(Train_Index).Route_Index).Current_Run_Cursor := Current_Run_Cursor;
 
 				-- # At this point the Stage Index will have been incremented by Leave, so we are
 				-- # sure that the fake stage is passed, and that at the index Next_Stage there will be
@@ -481,8 +484,6 @@ package body Handlers Is
 			-- # Reply Central Controller, to notify the message have been received.
 			Reply_Parameters.Set_String("response",OK);
 			Msg.Reply(Reply_Parameters);
-
-			--Traveler_Pool.Execute(new Move_Operation.Terminate_Operation_Type);
 
 			-- # Ask to terminate to Pools
 			Train_Pool.Stop;

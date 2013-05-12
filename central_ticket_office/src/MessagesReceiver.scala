@@ -10,17 +10,17 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 	/**
 	 * This boolean value tells if the first Marker message was received
 	 */
-	var markerReceived : Boolean = false
+	private var markerReceived : Boolean = false
 	
 	/**
 	 * Actors Pool used to execute Ticket Resolution requests. 
 	 */
-	val ticketResolutionHandlers 	: Array[Actor] = Array.fill(10) {new PathResolver("../railway/res/links.json",this)}
+	private val ticketResolutionHandlers : Array[Actor] = Array.fill(10) {new TicketCreator(this)}
 	
 	/**
 	 * Actors Pool used to Handle Synchronous requests
 	 */
-	val synchReqHandlers 			: Array[Actor] = Array.fill(5)(new SynchRequestsHandler)
+	private val synchReqHandlers : Array[Actor] = Array.fill(5)(new SynchRequestsHandler)
 	
 	// Resolvers initialization 
 	ticketResolutionHandlers.foreach(a => a.start)
@@ -30,20 +30,20 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 	/**
 	 * The index of the next Resolver to be used
 	 */
-	var ticketResolutionIndex = 0
+	private var ticketResolutionIndex = 0
 	
 	/**
 	 * The index of the next Resolver to be used
 	 */
-	var synchHandlersIndex = 0
+	private var synchHandlersIndex = 0
 	
 	/**
 	 * Yami Agent from which receive messages
 	 */
-	val serverAgent : Agent = new Agent;
+	private val serverAgent : Agent = new Agent;
 	
 	
-	var creationRequests : Int = 0;
+	private var creationRequests : Int = 0;
 	
 	
 	def sendControllerAck() {

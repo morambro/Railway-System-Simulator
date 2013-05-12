@@ -1,0 +1,113 @@
+\subsection{Generic\_Station}
+	
+	Il package \ttt{Generic\_Station} contiene la definizione dell'interfaccia \ttt{Station\_Interface}, che dovrà essere implementata da tutti i tipi di Stazione. Essa espone i seguenti metodi di classe:
+	\begin{description}
+		\item \ttt{Enter(\\
+			Descriptor\_Index:Integer,\\
+			Platform\_Index:Integer,\\
+			Segment\_ID:Integer,\\
+			Action:Route.Action)} \\
+		Metodo invocato dai Task di tipo \ttt{Train\_Task} per poter effettuare l'accesso alla piattaforma \ttt{Platform\_Index} della Stazione.
+		
+		\item \ttt{Leave(\\
+			Descriptor\_Index:Integer,\\
+			Platform\_Index:Integer,\\
+			Action:Route.Action)} \\
+		Metodo invocato dai Task di tipo \ttt{Train\_Task} per poter effettuare la partenza dalla piattaforma \ttt{Platform\_Index} della Stazione.
+		
+		\item \ttt{Wait\_For\_Train\_To\_Go(\\
+			Outgoing\_Traveler:Integer,\\
+			Train\_ID:Integer,\\
+			Platform\_Index:Integer)} \\
+		Metodo utilizzato per posizionare il Viaggiatore di indice \ttt{Outgoing\_Traveler} in attesa del treno \ttt{Train\_ID} presso la Piattaforma \ttt{Platform} per poter partire.		
+			
+		\item \ttt{Wait\_For\_Train\_To\_Arrive(\\
+			Incoming\_Traveler:Integer,\\
+			Train\_ID:Integer,\\
+			Platform\_Index:Integer)} \\
+		Metodo utilizzato per posizionare il Viaggiatore di indice \ttt{Outgoing\_Traveler} in attesa del treno \ttt{Train\_ID} presso la Piattaforma \ttt{Platform} per simulare la percorrenza all'interno del Treno \ttt{Train\_ID}.
+			
+		\item \ttt{Add\_Train(\\
+			Train\_ID:Integer,\\
+			Segment\_ID:Integer)} \\
+		Metodo utilizzato per poter definire l'ordine di arrivo di un Treno \ttt{Train\_ID} proveniente dal Segmento \ttt{Segment\_ID}.	
+	
+		\item \ttt{Buy\_Ticket(\\
+			Traveler\_Index:Integer,\\
+			To:String)} \\
+		Metodo che permette ad un viaggiatore \ttt{Traveler} di poter effettuare una richiesta per ottenere un Ticket per la destinazione \ttt{To}.
+	\end{description}
+	
+	Il package contiene, oltre all'interfaccia descritta, anche la definizione del tipo protetto \ttt{Access\_Controller}. Questo tipo di risorsa protetta viene utilizzata dalle Stazioni per regolare l'ordine di richiesta d'accesso alle Piattaforme, in base all'ordine di uscita dal Segmento al quale tale risorsa fa riferimento. \ttt{Access\_Controller} mantiene una coda \ttt{Trains\_Order} di identificativi di Treni, di tipo \ttt{Unlimited\_Simple\_Queue}, alla quale è possibile aggiungere elementi mediante la procedura protetta esposta \ttt{Add\_Train}. Esso inoltre espone l'entry \ttt{Enter(Train\_Index:Integer)} con guardia sempre aperta (\ttt{True}) per permettere il primo tentativo di accesso, che avviene soltanto se il primo elemento della coda coincide con l'identificativo del Treno corrente. Nel caso il Treno non sia il prossimo secondo l'ordine definito da \ttt{Trains\_Order}, allora il task corrente viene posto in attesa su guardia presso l'entry privata \ttt{Wait}, mediante il costrutto \ttt{requeue}. La procedure \ttt{Free} rimuove dalla coda il primo elemento, e, nel caso in cui vi siano Task in coda sulla guardia presso l'entry \ttt{Wait}, apre tale guardia in modo tale da permettere ad essi di ritentare l'accesso.
+
+\subsection{Regional\_Station}
+	
+	Il package \ttt{Regional\_Station} contiene la definizione del tipo classe (\ttt{tagged} nel linguaggio Ada) \ttt{Regional\_Station\_Type} il quale implementa l'interfaccia \ttt{Station\_Interface}. Ciascuna istanza di classe \ttt{Regional\_Station} contiene una tabella di hash, \ttt{Segments\_Map\_Order}, la quale per ciascun Segmento entrante associa un'istanza di \ttt{Access\_Controller}; inoltre, essa contiene un array di oggetti di tipo \ttt{Platform\_Type} (ovvero Piattaforme), in numero definito da configurazione, e una istanza di oggetto \ttt{Notice\_Panel}. 
+	Ciascuna Stazione fornisce quindi da interfaccia all'esterno per l'accesso alle componenti interne.
+	
+	Le operazioni svolte del metodo \ttt{Enter} sono le seguenti:
+	\begin{itemize}
+	
+		\item Viene effettuato l'accesso alla Stazione, mantenendo l'ordine di uscita dal Segmento.
+
+\begin{lstlisting}
+...
+This.Segments_Map_Order.Element(Segment_ID).Enter(
+		Train_Index	=> Descriptor_Index);
+...
+\end{lstlisting}
+		\item Una volta ottenuto l'accesso, il Task corrente aggiunge l'identificativo del descrittore presso la coda interna alla piattaforma che regola l'ordine di ingresso in essa.
+		Si noti che questa invocazione di procedura viene eseguita in modo concorrente tra tutti i Treni provenienti da Segmenti diversi che vogliono accedere alla stessa piattaforma, ma in mutua esclusione tra tutti quelli che provengono dallo stesso Segmento.
+\begin{lstlisting}
+...
+This.Platforms(Platform_Index).Add_Train(
+		Trains.Trains(Descriptor_Index).ID);
+...
+\end{lstlisting}
+		\item Una volta che il descrittore è stato aggiunto alla coda interna alla piattaforma desiderate, il controller degli accessi alla Stazione può essere rilasciato, poiché l'ordine di accesso alla Stazione è garantito.
+\begin{lstlisting}
+...
+This.Segments_Map_Order.Element(Segment_ID).Free;
+...
+\end{lstlisting}
+		\item Viene richiesto l'accesso vero e proprio alla Piattaforma che avverrà secondo l'ordine definito dalla propria coda interna.
+\begin{lstlisting}
+...
+This.Platforms(Platform_Index).Enter(
+		Train_Descriptor_Index 	=> Descriptor_Index,
+		Action					=> Action);
+...
+\end{lstlisting}
+		\item Notifica al pannello informativo dell'avvenuto ingresso del Treno alla Piattaforma.
+\begin{lstlisting}
+...
+This.Panel.Set_Train_Accessed_Platform(
+		Train_ID	=> Trains.Trains(Descriptor_Index).ID,
+		Platform 	=> Platform_Index);
+...
+\end{lstlisting}
+	\end{itemize}
+	
+	Il metodo \ttt{Leave} si limita a liberare la Piattaforma desiderata mediante l'invocazione su di essa della procedura protetta \ttt{Leave}, e a notificare l'avvenuta dipartita del Treno al Pannello informativo della Stazione.
+	
+	I metodi ridefiniti \ttt{Wait\_For\_Train\_To\_Go} e \ttt{Wait\_For\_Train\_To\_Arrive} aggiungono l'indice del Viaggiatore passato come parametro nelle code interne alla Piattaforma riservate alla partenza e all'arrivo dei Viaggiatori rispettivamente. 
+	
+	La ridefinizione del metodo \ttt{Add\_Train} aggiunge l'identificativo del Treno passato come parametro alla coda interna al controllore di accessi creato per il Segmento di origine del Treno. Se tale controllore non esiste (la creazione avviene non per tutti i Segmenti in ingresso ma solo se essi sono effettivamente utilizzati) viene creato, e aggiunto quindi alla tabella \ttt{Segments\_Map\_Order}.
+	
+	Infine, la ridefinizione del metodo \ttt{Buy\_Ticket} effettua una invocazione della procedure \ttt{Get\_Ticket} del package \ttt{Regional\_Ticket\_Office}.
+	
+	\subsection{Gateway\_Station}
+	
+	Il package \ttt{Gateway\_Station} contiene la definizione del tipo \ii{tagged} \ttt{Gateway\_Station\_Type}, il quale implementa l'interfaccia \ttt{Station\_Interface}. Il tipo \ttt{Gateway\_Station\_Type} contiene, come \ttt{Regional\_Station\_Type}, un array di oggetti di tipo \ttt{Platform\_Type}, una mappa \ttt{Segments\_Map\_Order} contenente per ogni Segmento il controllore di accessi (\ttt{Access\_Controller}) relativo, e un oggetto di tipo \ttt{Notice\_Panel\_Type}, che rappresenta il pannello informativo della Stazione.
+	L'implementazione dei metodi astratti, è molto simile a quella fornita dal tipo \ttt{Regional\_Station}; di seguito verranno descritte le differenze principali:
+	\begin{itemize}
+		
+		\item Il metodo \ttt{Enter} esegue le operazioni descritte per l'equivalente metodo esposto da \ttt{Regional\_Station}. Vi è però la possibilità che il Treno corrente possa essere trasferito su un Nodo diverso, se previsto dal percorso. A tal proposito, dopo aver avuto accesso alla Piattaforma desiderata, vengono recuperati, se previsti dal percorso, la prossima stazione da raggiungere e il Nodo, ovvero la regione, sulla quale essa si trova. Per come un percorso è definito, la prossima stazione sarà la relativa Stazione di Gateway nel Nodo della tappa successiva a quella corrente. L'eventuale trasferimento del Treno viene effettuato mediante la procedura \ttt{Send\_Train}, esposta dal package \ttt{Remote\_Station\_Interface}.
+		
+		\item Il metodo \ttt{Leave} una volta liberata la Piattaforma indicata dal parametro \ttt{Platform\_Index}, controlla se il Treno proviene da un Nodo diverso da quello corrente. In questo caso, viene inviata un messaggio al Nodo di provenienza per comunicare l'avvenuta dipartite del Treno dalla Piattaforma con la procedura \ttt{Train\_Left\_Message} esposta da \ttt{Remote\_Station\_Interface}.
+		
+		\item Il metodo \ttt{Wait\_For\_Train\_To\_Go} controlla se la tappa successiva nel Ticket del Viaggiatore indicato da \ttt{Outgoing\_Traveler} porta in una Stazione appartenente ad un Nodo diverso da quello corrente. In tal caso viene invocata la procedura \ttt{Send\_Traveler\_To\_Leave} del package \ttt{Remote\_Station\_Interface} per far attendere il Viaggiatore presso la Piattaforma della Stazione di Gateway corrente appartenente a tale Nodo.
+		
+		\item Viene aggiunto il metodo \ttt{Occupy\_Platform} che viene utilizzato per poter occupare una data Piattaforma, all'avvenuto trasferimento remoto di un Treno.  
+		
+	\end{itemize}
