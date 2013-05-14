@@ -42,8 +42,7 @@ package body Generic_Station is
 					Sender 	=> "Access_Controller",
 					Message	=> "Train " & Integer'Image(Trains.Trains(Train_Index).ID) & " cannot enter, it is not" &
 					  				Integer'Image(Trains_Order.Get(1)),
-					L 		=> Logger.DEBUG
-				);
+					L 		=> Logger.DEBUG);
 				requeue Wait;
 			end if;
 
@@ -88,8 +87,7 @@ package body Generic_Station is
 				Logger.Log(
 					Sender 	=> "Access_Controller",
 					Message	=> "Train " & Integer'Image(Train_ID) & " opened the guard Wait",
-					L 		=> Logger.DEBUG
-				);
+					L 		=> Logger.DEBUG);
 
 				if not Trains_Order.Is_Empty then
 					Logger.Log(

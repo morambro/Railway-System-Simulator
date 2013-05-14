@@ -124,10 +124,10 @@ monitor Segment_Monitor
 			Una volta che il Segmento si sarà liberato (\ttt{Free=True}) allora ciascun Treno in attesa nella coda relativa all'estremità opposta a quella di accesso dell'ultimo Treno uscito, potrà ritentare l'accesso al Segmento (la coda viene svuotata e ripopolata).
 			Si noti che la soluzione presentata non garantisce accesso preferenziale ai treni di tipo FB, requisito desiderabile. Per introdurre priorità senza poter fare assunzioni sulle politiche di scheduling che verranno utilizzate è possibile procedere nel seguente modo: viene introdotta una nuova risorsa protetta da monitor, \ttt{Priority\_Access\_Handler}, la quale mantiene due variabili intere \ttt{FB\_Count} e \ttt{Regional\_Count}, un flag booleano \ttt{Free} e due varibili di condizione \ttt{Can\_Access\_FB} e \ttt{Can\_Access\_Regional}. Tale risorsa avrà la seguente semantica in pseudo-codice:
 	
-\begin{lstlisting}
+\begin{lstlisting}[caption=Typo monitor utilizzato per garantire accesso preferenziale a Treni di tipo FB,label=priority_access_controller]
 monitor Priority_Access_Handler 
 	...
-	procedure Access(T:Train) 
+	procedure Gain_Access(T:Train) 
 	begin
 		if not Free then
 			if T.Type = FB then
@@ -168,7 +168,7 @@ begin
 	// il thread corrente si trovera' in attesa su  
 	// variabile di condizione Can_Access_FB o 
 	// Can_Access_Regional.
-	Segment.Priority_Controller.Access(Train);
+	Segment.Priority_Controller.Gain_Access(Train);
 	// A questo punto il thread corrente e' l'unico  
 	// in esecuzione e quindi puo' inserire il  
 	// descrittore nella coda interna a Segment_Monitor. 
@@ -307,7 +307,8 @@ end monitor;
 			\item La terza soluzione esaminata e scelta, è simile alla soluzione precedente, ma a differenza di essa opera una popolazione dinamica della struttura dati che andrà a contenere le risorse protette (\ttt{Access\_Controller}) che garantiscono l'ordinamento. Ciascun Treno nell'accedere alla Stazione, includerà anche un'identificativo univoco del Segmento di provenienza, e se per esso non esisterà una controllore degli accessi, allora esso verrà creato. Questa variante ha il vantaggio per il quale le stazioni non devono necessariamente essere a conoscenza della topologia del sistema ferroviario; inoltre l'allocazione di controllori sarà limitata al massimo al numero di Segmenti in ingresso.
 		\end{enumerate} 
 		
-		Il controllore di accessi (\ttt{Access\_Controller}) ha quindi il compito di fornire da barriera internamente alla Stazione; esso lascerà passare solamente il Treno (il thread che lo esegue) che effettivamente è primo nella coda di ordinamento. Siano \ttt{Enter} e \ttt{Leave} rispettivamente le due procedure protette del monitor, allora l'accesso alla Piattaforma verrà regolato nel seguente modo:
+		Il controllore di accessi (\ttt{Access\_Controller}) ha quindi il compito di fornire da barriera internamente alla Stazione; esso lascerà passare solamente il Treno (il thread che lo esegue) che effettivamente è primo nella coda di ordinamento.
+		Siano \ttt{Enter} e \ttt{Leave} rispettivamente le due procedure protette del monitor, allora l'accesso alla Piattaforma verrà regolato nel seguente modo:
 			\begin{itemize}
 				\item Il Treno $T$ usa \ttt{Enter} per poter accedere alla prossima Piattaforma.
 				\item Se $T$ è effettivamente il primo della Coda allora 
@@ -332,7 +333,18 @@ end monitor;
 		\end{itemize}
 		
 		Si rende quindi evidente la necessità di garantire l'ordine di esecuzione tra tutti i thread provenienti da uno stesso segmento, indipendentemente dalle scelte effettuate dello scheduler che verrà adottato.
-		Una Piattaforma può essere modellata come un'entità che espone una interfaccia semplice, con al suo interno una struttura dati \ttt{monitor} per la regolazione dell'ordine di ingresso. A tale scopo, quest'ultima mantiene al suo interno una coda FIFO \ttt{Trains\_Order} e fornisce una procedura protetta \ttt{Add\_Train} che permette di inserirvi l'identificativo di un Treno. Questa coda manterrà non solo l'ordine di accesso tra i Treni provenienti dallo Stesso segmento, ma più in generale tra tutti i Treni che intendono accedere alla Piattaforma (può essere vista come una sorta di "prenotazione" della risorsa prima di ottenervi l'accesso). 
+		Una Piattaforma può essere modellata come un'entità che espone una interfaccia semplice, con al suo interno una struttura dati \ttt{monitor} per la regolazione dell'ordine di ingresso. A tale scopo, quest'ultima mantiene al suo interno una coda FIFO \ttt{Trains\_Order} e fornisce una procedura protetta \ttt{Add\_Train} che permette di inserirvi l'identificativo di un Treno. Questa coda manterrà non solo l'ordine di accesso tra i Treni provenienti dallo Stesso segmento, ma più in generale tra tutti i Treni che intendono accedere alla Piattaforma (può essere vista come una sorta di "prenotazione" della risorsa prima di ottenervi l'accesso). Per garatire inoltre che l'ordine di ingresso dei Treni nella coda \ttt{Trains\_Order} sia tale da fornire accesso preferenziale ai Treni di tipo \ttt{FB}, è possibile utilizzare un oggetto \ttt{Priority\_Access\_Handler} come per l'accesso al Segmento (listato \ref{priority_access_controller}), e di conseguenza prevedere il seguente comportamento per la procedura protette \ttt{Add\_Train}:
+\begin{lstlisting}
+	...
+	procedure Add_Train(T:Train)
+	begin
+		Priority_Access.Gain_Access();
+		Trains_Order.Enqueue(T);
+		Priority_Access.Access_Gained();
+		
+	end;
+	
+\end{lstlisting}
 		Una volta aggiunto l'identificativo del Treno corrente in \ttt{Trains\_Order}, può essere liberata la risorsa di controllo (\ttt{Access\_Controller}) mediante la procedura \ttt{Free} ed è quindi libero di richiedere l'accesso alla Piattaforma successiva prevista dal percorso (l'ordine di ingresso sarà rispettato). La semantica di accesso su di una Piattaforma $P$, mediante procedura di monitor \ttt{Enter} è la seguente:
 		\begin{itemize}
 			\item Se il Treno corrente $T$ è il prossimo a poter entrare in $P$ allora 
@@ -346,15 +358,15 @@ end monitor;
 			\item Se invece $T$ non è il prossimo Treno che può entrare, il Treno viene posto in attesa su variabile di condizione \ttt{Retry\_Enter}.
 		\end{itemize}
 
-Supponendo di disporre del costrutto \ttt{signal\_all(var\_condizione)}, un esempio di struttura dati di controllo per una Piattaforma è visibile nel listato \ref{platform_access_controller}.
+Un esempio di struttura dati di controllo per una Piattaforma è visibile nel listato \ref{platform_access_controller}.
 
 \begin{lstlisting}[label=platform_access_controller]
 
 monitor Platform_Access_Controller 
 	...
-	procedure Add_Train(Train_ID:Integer) 
+	procedure Add_Train(T:Train)
 	begin
-		Trains_Order.Enqueue(Train_ID);
+		...
 	end;
 	
 	procedure Enter(T:Train) 

@@ -31,6 +31,7 @@ with Generic_Platform;
 with Route;use Route;
 with Notice_Panel;
 with Ada.Containers.Ordered_Maps;
+with Priority_Access;
 
 -- #
 -- # Contains the definition of a Platform.
@@ -69,7 +70,7 @@ package Platform is
 			This					: access Platform_Handler;
 			Train_Index				: in 	 Positive);
 
-			-- #
+		-- #
 		-- # This Method is added to perform initializations
 		-- #
 		procedure Init(
@@ -111,14 +112,12 @@ private
 		-- #
 		procedure Terminate_Platform;
 
-
 		-- #
 		-- # Entry used to allow the entrance of a Train if is the first of
 		-- # Trains_Order queue
 		-- #
 		entry Enter (
 			Train_Descriptor_Index 	: in 	Positive);
-
 
 		-- #
 		-- # Adds a Train to Trains_Order queue.
@@ -134,46 +133,36 @@ private
 		entry Retry (
 			Train_Descriptor_Index 	: in 	Positive);
 
+
 		-- # Tells whether a thread can retry execute or not
 		Can_Retry : Boolean := False;
-
 		-- # Number of threads in Retry's queue
 		Retry_Count : Natural := 0;
-
 		-- # FIFO queue used to maintain Trains order
 		Trains_Order : Trains_Queue_Package.Unlimited_Simple_Queue;
-
 		-- # Boolean variable used as a guard to terminate waiting threads
 		Terminated : Boolean := False;
-
 	end Platform_Type;
 
 	-- #
 	-- # Private part of the Platform_Handler.
 	-- #
 	type Platform_Handler is limited new Generic_Platform.Platform_Interface with record
-
 		-- # Platform ID.
-		ID		: Integer;
-
+		ID					: Integer;
 		-- # The access controller
-		The_Platform	: Platform_Type;
-
+		The_Platform		: Platform_Type;
+		Priority_Controller : Priority_Access.Priority_Access_Controller;
 		-- # Queue for Arriving Traveler
-		Arrival_Queue 	: Traveler_Queue_Package.Unbounded_Queue.Queue;
-
+		Arrival_Queue 		: Traveler_Queue_Package.Unbounded_Queue.Queue;
 		-- # Queue for Travelers waiting for the train to leave
-		Leaving_Queue 	: Traveler_Queue_Package.Unbounded_Queue.Queue;
-
+		Leaving_Queue 		: Traveler_Queue_Package.Unbounded_Queue.Queue;
 		-- # Table which stores for each Train the last Run ID
-		Train_Run		: Train_Run_Map.Map;
-
+		Train_Run			: Train_Run_Map.Map;
 		-- # The name of the Station
-		Station_Name 	: access Unbounded_String := null;
-
+		Station_Name 		: access Unbounded_String := null;
 		-- # A pointer to Station's Notice Panel.
-		Panel			: access Notice_Panel.Notice_Panel_Entity := null;
-
+		Panel				: access Notice_Panel.Notice_Panel_Entity := null;
 	end record;
 
 	function Get_Run_For_Train(

@@ -36,45 +36,12 @@ package body Segment is
 
 	NAME : constant String := "Segment.Segment_Type";
 
-
-	protected body Priority_Access_Controller is
-
-    	entry Gain_Access(
-    		Train_Index : in 	Positive) when True is
-    	begin
-    		if Trains.Trains(Train_Index).T_Type = Train.FB then
-    			requeue Gain_Access_FB;
-    		else
-    			requeue Gain_Access_Regional;
-    		end if;
-		end Gain_Access;
-
-    	entry Gain_Access_FB(
-    		Train_Index : in 	Positive) when Free is
-    	begin
-    		Free := False;
-		end Gain_Access_Fb;
-
-    	entry Gain_Access_Regional(
-    		Train_Index : in 	Positive) when Free and Gain_Access_FB'Count = 0 is
-    	begin
-    		Free := False;
-		end Gain_Access_Regional;
-
-	 	procedure Access_Gained is
-    	begin
-    		Free := True;
-		end Access_Gained;
-
-    end Priority_Access_Controller;
-
-
-
 	protected body Segment_Access_Controller is
 
 		procedure Add_Train(
 			Train_Index : in Positive) is
 		begin
+			-- # Add the given Train to the internal queue to maintain access order
 			Trains_Order.Enqueue(Train_Index);
 		end;
 
@@ -84,12 +51,16 @@ package body Segment is
 			Max_Speed 	: 	 out Positive;
 			Leg_Length 	:	 out Positive) when Can_Retry is
 		begin
+			-- # Decrease the number of retries
 			Retry_Num := Retry_Num - 1;
 
+			-- # Close the guard if all the waiting Trains re-tried
+			-- # to gain access.
 			if Retry_Num = 0 then
 				Can_Retry := False;
 			end if;
 
+			-- # Requeue to Enter entry
 			requeue Enter;
 
 		end Retry;
@@ -348,9 +319,14 @@ package body Segment is
 		Max_Speed 	: 	 out Positive;
 		Leg_Length 	:	 out Positive) is
 	begin
+		-- # First use Access_Controller to grant priority access
 		This.Access_Controller.Gain_Access(To_Add);
+		-- # Once the Access is gained, add the Train to Segment's queue,
+		-- # to fix an entrance order.
 		This.Segment.Add_Train(To_Add);
+		-- # then release the Access_Controller
 		This.Access_Controller.Access_Gained;
+		-- # and Enter into the Segment.
 		This.Segment.Enter(To_Add,Max_Speed,Leg_Length);
     end Enter;
 

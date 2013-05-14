@@ -88,9 +88,11 @@ package body Platform is
 		entry Enter (
 			Train_Descriptor_Index 	: in 	Positive) when True is
 		begin
+
 			if Trains_Order.Get(1) /= Trains.Trains(Train_Descriptor_Index).ID then
 				requeue Retry;
 			end if;
+
 		end Enter;
 
 		procedure Add_Train(
@@ -101,16 +103,18 @@ package body Platform is
 
 	end Platform_Type;
 
-
 	-- ################################## PLATFORM_HANDLER #########################################
-
 
 	procedure Add_Train(
 		This					: access Platform_Handler;
 		Train_Index				: in 	 Positive) is
 	begin
-		Put_Line(integer'image(Train_Index));
+		This.Priority_Controller.Gain_Access(Train_Index);
+		-- # Add the Train to internal queue.
 		This.The_Platform.Add_Train(Train_Index);
+
+		This.Priority_Controller.Access_Gained;
+
     end Add_Train;
 
 

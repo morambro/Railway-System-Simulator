@@ -28,6 +28,7 @@ with Train;use Train;
 with Gnatcoll.JSON;use Gnatcoll.JSON;
 with JSON_Helper;use JSON_Helper;
 with Queue;
+with Priority_Access;
 
 package Segment is
 
@@ -37,49 +38,6 @@ package Segment is
 	-- # Exception raised when a Train attempts to access a Segment
 	-- # from a Station different from First_End or Second_End.
 	Bad_Segment_Access_Request_Exception : exception;
-
-
-	-- #
-	-- # This protected type is used to perform Train's access priority.
-	-- # The main idea is to let tasks enqueue to the proper entry (Gain_Access_FB
-	-- # or Gain_Access_Regional) and to subordinate tasks waiting on Gain_Access_Regional
-	-- # execution to Gain_Access_FB queue status.
-	-- #
-	protected type Priority_Access_Controller is
-
-		-- #
-		-- # Main entry used to gain access.
-		-- #
-    	entry Gain_Access(
-    		Train_Index : in 	Positive);
-
-		-- #
-		-- # Procedure used to free the resource.
-		-- #
-    	procedure Access_Gained;
-
-    private
-
-		-- #
-		-- # Entry used to enqueue FB Trains
-		-- #
-    	entry Gain_Access_FB(
-    		Train_Index : in 	Positive);
-
-		-- #
-		-- # Entry used to enqueue Regional Trains.
-		-- # A task will access this entry only if the
-		-- # resource is Free and no tasks will be waiting on
-		-- # Gain_Access_FB entry.
-		-- #
-    	entry Gain_Access_Regional(
-    		Train_Index : in 	Positive);
-
-		-- # Status of the resource.
-		Free : Boolean := True;
-
-    end Priority_Access_Controller;
-
 	-- #
 	-- # This protected type allows to control the effective access
 	-- # of a Train into the Segment. A Train first needs to be
@@ -252,7 +210,7 @@ private
 
 	-- # Private fields definition for Segment_Type.
 	type Segment_Type is tagged limited record
-		Access_Controller 	: Priority_Access_Controller;
+		Access_Controller 	: Priority_Access.Priority_Access_Controller;
 		Segment 			: access Segment_Access_Controller;
 	end record;
 

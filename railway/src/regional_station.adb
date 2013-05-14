@@ -46,7 +46,6 @@ package body Regional_Station is
     end Get_Name;
 
 
-
 	procedure Enter(
 		This 				: in out	Regional_Station_Type;
 		Descriptor_Index	: in		Positive;
@@ -59,8 +58,6 @@ package body Regional_Station is
 		-- # as the exit order from the Segment <Segment_ID>
 		This.Segments_Map_Order.Element(Segment_ID).Enter(
 			Train_Index	=> Descriptor_Index);
-
-		Put_Line(integer'image(Descriptor_Index));
 
 		-- # Add The Train to Platform internal queue.
 		This.Platforms(Platform_Index).Add_Train(Descriptor_Index);
