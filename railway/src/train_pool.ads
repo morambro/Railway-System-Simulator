@@ -37,31 +37,6 @@ package Train_Pool is
 
 	type Priority is (LOW,HIGH);
 
-	protected type Priority_Handler_Type is
-
-    	procedure Get_Descriptor(
-			Train_Descriptor_Index 	: out Positive;
-			Terminated 				: out Boolean);
-
-
---      	entry Gain_Access(
---      		P : in 	Priority);
---
---      	procedure Release;
-
---      private
---
---      	entry Gain_Access_FB(
---      		P : in 	Priority);
---
---      	entry Gain_Access_Regional(
---      		P : in 	Priority);
---
---      	Free : Boolean := True;
-
-    end Priority_Handler_Type;
-
-
 	-- # Task used to execute Trains
 	task type Train_Executor_Task(
 		-- # Tells from which queue read
@@ -105,9 +80,6 @@ private
 	-- #
 	Low_Priority_Trains_Queue 	: Trains_Queue_Package.Terminable_Queue;
 	High_Priority_Trains_Queue 	: Trains_Queue_Package.Terminable_Queue;
-
-	-- # Protected Resource used to ensure priority execution.
-	Priority_Handler 	: Priority_Handler_Type;
 
 	-- #
 	-- # Private Definition of Train_Task_Pool type as a record with two pools of

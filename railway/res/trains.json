@@ -63,6 +63,22 @@
 			"occupied_sits"		: 0,
 			"type"				: "fb",
 			"start_node"		: "Node_1"
+		},
+		{
+			"id" 				: 5555,
+			"speed" 			: 50,
+			"max_speed" 		: 100,
+			
+			"current_station" 	: 5,
+			
+			"next_stage" 		: 1,
+			
+			"route_index" 		: 5,
+			
+			"sits_number"		: 5,
+			"occupied_sits"		: 0,
+			"type"				: "regionale",
+			"start_node"		: "Node_2"
 		}
 	]
 }

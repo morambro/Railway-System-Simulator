@@ -330,6 +330,63 @@
 					"enter_action"		: "ENTER"
 				}
 			]
+		},
+		{
+			"id"	:  5,
+			"route" : [
+				{
+					"start_station"		: 5,
+					"next_station" 		: 3,
+					
+					"start_platform"	: 3,
+					"platform_index"  	: 3,
+					
+					"next_segment" 		: 8,
+					
+					"node_name"			: "Node_2",				
+					"leave_action"		: "ENTER",
+					"enter_action"		: "ENTER"
+				},
+				{
+					"start_station"		: 3,
+					"next_station" 		: 4,
+					
+					"start_platform"	: 3,
+					"platform_index"  	: 1,
+					
+					"next_segment" 		: 7,
+					
+					"node_name"			: "Node_2",				
+					"leave_action"		: "ENTER",
+					"enter_action"		: "ENTER"
+				},
+				{
+					"start_station"		: 4,
+					"next_station" 		: 3,
+					
+					"start_platform"	: 1,
+					"platform_index"  	: 3,
+					
+					"next_segment" 		: 7,
+					
+					"node_name"			: "Node_2",				
+					"leave_action"		: "ENTER",
+					"enter_action"		: "ENTER"
+				},
+				{
+					"start_station"		: 3,
+					"next_station" 		: 5,
+					
+					"start_platform"	: 3,
+					"platform_index"  	: 3,
+					
+					"next_segment" 		: 8,
+					
+					"node_name"			: "Node_2",				
+					"leave_action"		: "ENTER",
+					"enter_action"		: "ENTER"
+				}
+			]
 		}
 	]
 }

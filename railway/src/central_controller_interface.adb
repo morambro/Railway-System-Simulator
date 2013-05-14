@@ -48,7 +48,9 @@ package body Central_Controller_Interface is
 		Station		: in	String;
 		Train_ID	: in 	Integer;
 		Platform	: in 	Integer;
-		Action		: in 	Train_Action)
+		Action		: in 	Train_Action;
+		Time		: in 	String;
+		Train_Delay	: in 	Integer)
 	is
 		J_Event : JSON_Value := Create_Object;
 	begin
@@ -57,6 +59,8 @@ package body Central_Controller_Interface is
 		J_Event.Set_Field("station",Station);
 		J_Event.Set_Field("platform",Platform);
 		J_Event.Set_Field("action",(if (Action = ENTER) then "enter" else "leave"));
+		J_Event.Set_Field("time",Time);
+		J_Event.Set_Field("delay",Train_Delay);
 
 		Send_Event(J_Event.Write);
 

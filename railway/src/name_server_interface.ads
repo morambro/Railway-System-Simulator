@@ -66,4 +66,9 @@ package Name_Server_Interface is
 		Callback	: access procedure(Response : String));
 
 
+	procedure Remove(
+		Name_Server : access String;
+		Node_Name 	: access String);
+
+
 end Name_Server_Interface;

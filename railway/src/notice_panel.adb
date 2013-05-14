@@ -44,12 +44,6 @@ package body Notice_Panel is
 			Platform	: in 	Integer) is
 		begin
 			Set_Status("Train " & Integer'Image(Train_ID) & " arriving at Platform " & Integer'Image(Platform));
-
-			Central_Controller_Interface.Set_Train_Arriving_Status(
-				Station		=> Station_ID.all,
-				Train_ID	=> Train_ID,
-				Platform	=> Platform,
-				Action		=> Central_Controller_Interface.ARRIVING);
 		end Set_Train_Arriving;
 
 		procedure Set_Train_Accessed_Platform(

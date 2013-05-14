@@ -38,7 +38,7 @@ var Animations = {
 				along : to
 			}, 
 			time,
-			"ease-out"
+			"ease-in-out"
 		);
 	},
 	

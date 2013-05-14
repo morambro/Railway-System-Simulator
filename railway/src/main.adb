@@ -206,6 +206,11 @@ begin
 			-- # Notify termination to the Central Controller.
 			Central_Controller_Interface.Notify_Termination;
 
+			-- # Remove to Name Server.
+			Name_Server_Interface.Remove(
+				Name_Server  => Name_Server'Access,
+				Node_Name 	 => Node_Name'Access);
+
 			-- # Finally close Message Agent
 			Message_Agent.Instance.Close;
 

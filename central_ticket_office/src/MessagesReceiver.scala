@@ -85,6 +85,7 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				if (markerReceived && creationRequests == 0) {
 					sendControllerAck()
 				}
+				receiverLoop()
 			}
 			
 			case ("resolve",im:IncomingMessage) => {
@@ -114,6 +115,7 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				replyPar.setString("response","OK");
 				
 				im.reply(replyPar)
+				receiverLoop()
 			}
 			
 		}
@@ -202,15 +204,15 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 					// Terminate!
 					// Save to file (?)
 					// Tear down all Actors!
-					println("Marker received twice")
+					PrintsSerializer ! Print("Marker received twice")
 					this ! Stop()
 				}else{
-					println("Setting markerReceived = TRUE")
+					PrintsSerializer ! Print("Setting markerReceived = TRUE")
 					markerReceived = true
 					// If when the marker first arrived, there are no 
 					// pending creation requests, send the ack immefiately 
 					if (creationRequests == 0) {
-						println("Send Ack to the controller")
+						PrintsSerializer ! Print("Send Ack to the controller")
 						sendControllerAck()
 					}
 				}

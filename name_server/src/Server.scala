@@ -117,6 +117,10 @@ object NameServer extends Actor with IncomingMessageCallback{
 				replyParams.setString("response","OK")
 				im.reply(replyParams)
 				
+				if (addresses.keys.size == 0) {
+					this ! Stop()
+				}
+				
 			}
 			case _ => println("Invalid operation " + im.getMessageName)
 		

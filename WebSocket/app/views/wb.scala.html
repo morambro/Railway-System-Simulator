@@ -51,7 +51,7 @@
 			obj = JSON.parse(jsonData,null);
 			switch (obj.type) {
 				case "train_arriving" :
-					addArrivalRow(obj.train_id,obj.station,obj.platform);
+					addArrivalRow(obj.train_id,obj.station,obj.platform,obj.time,obj.delay);
 					break;
 				case "train_arrived" :
 					// Move train to platform
@@ -559,6 +559,11 @@
 		moveToPlatform(4444,"B",4);
 		
 		
+		trains[5555] = r.rect(0,0,trainLength,trainHeigth,trainRadiux);//r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
+		trains[5555].attr('fill',regionalColor);
+		// Second Position
+		moveToPlatform(5555,"I",5);
+		
 		function moveToPlatform(trainId,stationId,platformId) {
 			
 			platform = stations[stationId].platforms[platformId].getBBox();
@@ -671,19 +676,25 @@
     		div.appendChild(title);
     		
     		div.setAttribute('class','noticePanel');
-    		
-    		var arrivalTable = document.createElement('table');
+    		arrivalTable = document.createElement('table');
     		arrivalTable.setAttribute('id',station + '-arrival');
-    		var th1 = document.createElement('th');
+    		th1 = document.createElement('th');
     		th1.innerHTML = "Treno";
-    		var th2 = document.createElement('th');
+    		th2 = document.createElement('th');
     		th2.innerHTML = "Piattaforma";
-    		var th3 = document.createElement('th');
+    		th3 = document.createElement('th');
     		th3.innerHTML = "Ferma";
+    		th4 = document.createElement('th');
+    		th4.innerHTML = "Orario";
+    		th5 = document.createElement('th');
+    		th5.innerHTML = "Ritardo";
+    		tr = document.createElement('tr');
     		var tr = document.createElement('tr');
     		tr.appendChild(th1);
     		tr.appendChild(th2);
     		tr.appendChild(th3);
+    		tr.appendChild(th4);
+    		tr.appendChild(th5);
     		
     		arrivalTable.appendChild(tr);
     		
@@ -708,13 +719,21 @@
     		
     		leavingTable.appendChild(tr);
     		
+    		
+    		title = document.createElement('h4')
+    		title.innerHTML = "Treni in Arrivo "
+    		div.appendChild(title);
     		div.appendChild(arrivalTable);
+    		title = document.createElement('h4')
+    		title.innerHTML = "Treni in Partenza "
+    		div.appendChild(title);
+    		
     		div.appendChild(leavingTable);
     		
     		panelsDiv.appendChild(div);
     	}
     
-    	function addArrivalRow(trainid,station,platform) {
+    	function addArrivalRow(trainid,station,platform,time,delay) {
     		var table = document.getElementById(station + '-arrival');
     		var tr = null;
      		if (table.children.length == max+1) {
@@ -725,9 +744,19 @@
     		var td1 = document.createElement('td');td1.innerHTML = trainid;
     		var td2 = document.createElement('td');td2.innerHTML = platform;
     		var td3 = document.createElement('td');td3.innerHTML = false;
+    		var td4 = document.createElement('td');td4.innerHTML = time;
+    		var td5 = td5 = document.createElement('td');
+    		if (delay < 0) {
+    			td5.innerHTML = "-";
+    		}else{
+    			td5.innerHTML = delay;
+  				td5.style.color='red';
+    		}
     		tr.appendChild(td1);
     		tr.appendChild(td2);
     		tr.appendChild(td3);
+			tr.appendChild(td4);
+    		tr.appendChild(td5);
     		table.insertBefore(tr,table.children[1]);
     	}
 		
@@ -743,11 +772,12 @@
     		var td2 = document.createElement('td');td2.innerHTML = platform;
     		var td3 = document.createElement('td');td3.innerHTML = false;
     		var td4 = document.createElement('td');td4.innerHTML = time;
-    		var td5 = null
+    		var td5 = document.createElement('td');
     		if (delay < 0) {
-    			td5 = document.createElement('td');td5.innerHTML = "-";
+    			td5.innerHTML = "-";
     		}else{
-    			td5 = document.createElement('td');td5.innerHTML = delay;
+    			td5.innerHTML = delay;
+    			td5.style.color='red';
     		}
     		tr.appendChild(td1);
     		tr.appendChild(td2);

@@ -29,15 +29,21 @@ case class CannotConnect(msg: String)
 class Subscriber(ID : Int, default : ActorRef) extends Actor with IncomingMessageCallback{
 	
 	val subscriberAgent = new Agent
-
-
+	
 	def receive = {
 		case Init() => {
-			println ("init!")
-			subscriberAgent.registerObject("update_handler", this);
-			val params : Parameters = new Parameters
-			params.setString("destination_object", "update_handler");
-			subscriberAgent.sendOneWay("tcp://localhost:2222","events", "subscribe", params);
+			println ("Actor Initialization")
+			try {
+				subscriberAgent.registerObject("update_handler", this);
+				val params : Parameters = new Parameters
+				params.setString("destination_object", "update_handler");
+				subscriberAgent.sendOneWay("tcp://localhost:2222","events", "subscribe", params);
+			} catch {
+				case e : Exception => {
+					e.printStackTrace;
+					ChatHandler.errorState = true;
+				}
+			}
 		}
 		case _ => println("Invalid parameter")
 	}
@@ -61,6 +67,8 @@ class Subscriber(ID : Int, default : ActorRef) extends Actor with IncomingMessag
 
 
 object ChatHandler {
+	// Tells wether there have been an Error subscribing to the Central Controller.
+	var errorState = false;
 	
 	// Implicit Timeout for the request
 	implicit val timeout = Timeout(1 second)
@@ -71,7 +79,7 @@ object ChatHandler {
 	
   	// Creation and initialization of the Actor used to listen for incoming 
   	// events from the central controller
-  	val subscriber = {
+  	var subscriber = {
   		val a = Akka.system.actorOf(Props(new Subscriber(1,default)))
   		a ! Init()
   		println("Actor created")
@@ -80,6 +88,13 @@ object ChatHandler {
 	
 	
 	def join(username:String):scala.concurrent.Future[(Iteratee[String,_],Enumerator[String])] = {
+		
+		if (errorState) {
+			val a = Akka.system.actorOf(Props(new Subscriber(1,default)))
+	  		a ! Init()
+	  		println("Actor created")
+	  		a
+		}
 		
 		(default ? Join(username)).map {
       
@@ -102,8 +117,7 @@ object ChatHandler {
 				val iteratee = Done[String,Unit]((),Input.EOF)
 
 				// Send an error and close the socket
-				val enumerator =  Enumerator[String](error)
-				.andThen(Enumerator.enumInput(Input.EOF))
+				val enumerator =  Enumerator[String](error).andThen(Enumerator.enumInput(Input.EOF))
 				
 				(iteratee,enumerator)
     	}

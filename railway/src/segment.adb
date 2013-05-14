@@ -49,11 +49,6 @@ package body Segment is
     		end if;
 		end Gain_Access;
 
-    	procedure Access_Gained is
-    	begin
-    		Free := True;
-		end Access_Gained;
-
     	entry Gain_Access_FB(
     		Train_Index : in 	Positive) when Free is
     	begin
@@ -65,6 +60,11 @@ package body Segment is
     	begin
     		Free := False;
 		end Gain_Access_Regional;
+
+	 	procedure Access_Gained is
+    	begin
+    		Free := True;
+		end Access_Gained;
 
     end Priority_Access_Controller;
 
@@ -160,6 +160,7 @@ package body Segment is
 							-- # If the maximum have not been reached, simply add 1 to the number of
 							-- # entered trains per direction.
 							Train_Entered_Per_Direction := Train_Entered_Per_Direction + 1;
+							delay 0.2;
 						end if;
 					else
 						-- # The current Train is going to the opposite direction, so it will wait.
@@ -180,6 +181,7 @@ package body Segment is
 							end if;
 						else
 							Train_Entered_Per_Direction := Train_Entered_Per_Direction + 1;
+							delay 0.2;
 						end if;
 					else
 						-- # The current Train is going to the opposite direction, so it will wait.
@@ -225,7 +227,7 @@ package body Segment is
 				Can_Enter_First_End := False;
 			end if;
 
-			requeue Enter;
+			requeue Perform_Enter;
 
 		end Retry_First_End;
 
@@ -244,7 +246,7 @@ package body Segment is
 				Can_Enter_Second_End := False;
 			end if;
 
-			requeue Enter;
+			requeue Perform_Enter;
 
 		end Retry_Second_End;
 

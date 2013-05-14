@@ -59,7 +59,9 @@ package Central_Controller_Interface is
 		Station		: in	String;
 		Train_ID	: in 	Integer;
 		Platform	: in 	Integer;
-		Action		: in 	Train_Action);
+		Action		: in 	Train_Action;
+		Time		: in 	String;
+		Train_Delay	: in 	Integer);
 
 
 	-- #

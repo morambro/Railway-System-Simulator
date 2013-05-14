@@ -34,9 +34,13 @@ with Helper;
 with Ada.Exceptions;  use Ada.Exceptions;
 with Train;
 with Remote_Station_Interface;
-with Ada.Calendar;
 with Time_Table;
 with Central_Controller_Interface;
+
+with Ada.Calendar;
+with Ada.Calendar.Formatting;use Ada.Calendar.Formatting;
+with Ada.Calendar.Time_Zones;use Ada.Calendar.Time_Zones;
+
 
 with Ada.Text_IO;
 
@@ -60,8 +64,14 @@ package body Train_Pool is
 
 			Logger.Log(NAME,"Train waits for a Descriptor",Logger.DEBUG);
 
-			-- # Gain a new Train Descriptor Index.
-			Priority_Handler.Get_Descriptor(Current_Descriptor_Index,Terminated);
+
+			-- # Extract the Descriptor from the correct Queue.
+			if Priority_Level = LOW then
+				Low_Priority_Trains_Queue.Dequeue(Current_Descriptor_Index,Terminated);
+			else
+				High_Priority_Trains_Queue.Dequeue(Current_Descriptor_Index,Terminated);
+			end if;
+
 
 			exit MAIN_LOOP when Terminated;
 
@@ -69,26 +79,20 @@ package body Train_Pool is
 
 			declare
 				Max_Speed 			: Integer  := Trains.Trains(Current_Descriptor_Index).Speed;
-					-- # Retrieve Next station
+				-- # Retrieve Next station
 				Route_Index 		: Positive := Trains.Trains(Current_Descriptor_Index).Route_Index;
-
 				Next_Stage 			: Positive := Trains.Trains(Current_Descriptor_Index).Next_Stage;
-
 				-- # Retrieve start Station from which start
 				Start_Station 	    : Positive := Routes.All_Routes(Route_Index)(Next_Stage).Start_Station;
-
 				-- # Retrieve start Platform from which start
 				Start_Platform 	    : Positive := Routes.All_Routes(Route_Index)(Next_Stage).Start_Platform;
-
 				-- # Retrieve next Segment to travel
 				Next_Station 	    : Positive := Routes.All_Routes(Route_Index)(Next_Stage).Next_Station;
 				-- # Retrieve next platform number
 		    	Next_Platform 		: Positive := Routes.All_Routes(Route_Index)(Next_Stage).Platform_Index;
-
 				Next_Segment		: Positive := Routes.All_Routes(Route_Index)(Next_Stage).Next_Segment;
-
 				Leg_Length 			: Positive;
-
+				-- # Time which will be waited to Travel the Segment
 				Time_In_Segment 	: Float;
 
 			-- # ######################## NEXT Segment ACCESS ############################
@@ -110,6 +114,8 @@ package body Train_Pool is
 					-- # Time to wait before leaving
 					Time_To_Wait : Ada.Calendar.Time := Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Table
 						(Current_Run)(Current_Run_Cursor);
+
+					Train_Delay : Duration := Ada.Calendar."-"(Ada.Calendar.Clock, Time_To_Wait);
 				begin
 
 					Logger.Log(
@@ -124,50 +130,70 @@ package body Train_Pool is
 					-- # Update Time Table!
 					Time_Table.Update_Time_Table(Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index));
 
+					Logger.Log(
+						NAME,
+						"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
+						" tries to leave Station " & Integer'Image(Start_Station) & ", platform " & Integer'Image(Start_Platform),
+						Logger.DEBUG);
+
+					-- # Train Leaves the station
+			    	Environment.Stations(Start_Station).Leave(
+			    		Descriptor_Index 	=> Current_Descriptor_Index,
+			    		Platform_Index		=> Start_Platform,
+			    		Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Leave_Action);
+
+
+
+
+					-- # Ask to Enter to the next Segment.
+					Segments.Segments(Next_Segment).Enter(Current_Descriptor_Index,Max_Speed,Leg_Length);
+
+
+
+					Logger.Log(
+						NAME,
+						"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
+						" entered Segment " & Integer'Image(Next_Segment),
+						Logger.DEBUG
+					);
+
+					-- # Calculate Time to Travel the current Segment
+					if(Trains.Trains(Current_Descriptor_Index).Max_Speed < Max_Speed) then
+						Trains.Trains(Current_Descriptor_Index).Speed := Trains.Trains(Current_Descriptor_Index).Max_Speed;
+					else
+						Trains.Trains(Current_Descriptor_Index).Speed := Max_Speed;
+					end if;
+
+					-- # The time to spent running inside the segment is simply calculated by the quotient
+					-- # between the length of the Segment and the Speed of the train; the first is
+					-- # expressed in [unit], the second in [unit]/[sec]
+					Time_In_Segment := Float(Leg_Length)/Float(Trains.Trains(Current_Descriptor_Index).Speed);
+
+					-- # Notify the Central controller that the Train is running on the segment
+					Central_Controller_Interface.Set_Train_Left_Status(
+						Train		=> Trains.Trains(Current_Descriptor_Index).ID,
+						Station		=> Environment.Stations(Next_Station).Get_Name,
+						Time		=> Integer(Time_In_Segment),
+						Segment		=> Segments.Segments(Next_Segment).Id);
+
+
+					-- # Notify the Controller that the Train is arriving
+					Central_Controller_Interface.Set_Train_Arriving_Status(
+						Station		=> Environment.Stations(Next_Station).Get_Name,
+						Train_ID	=> Trains.Trains(Current_Descriptor_Index).ID,
+						Platform	=> Next_Platform,
+						Action		=> Central_Controller_Interface.ARRIVING,
+						-- # Time at witch the Train will approximately arrive to the next Platform.
+						Time 		=> Ada.Calendar.Formatting.Image(
+										Date					=> Ada.Calendar."+"(Time_To_Wait,Duration(Time_In_Segment)),
+										Include_Time_Fraction 	=> False,
+										-- # We are 2 hours later that UTC Time Zone.
+										Time_Zone				=> 2*60),
+						-- # Duration rounded to Integer, representing seconds
+						-- # of delay.
+						Train_Delay	=> Integer(Train_Delay));
+
 				end;
-
-				Logger.Log(
-					NAME,
-					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
-					" tries to leave Station " & Integer'Image(Start_Station) & ", platform " & Integer'Image(Start_Platform),
-					Logger.DEBUG);
-
-				-- # Train Leaves the station
-		    	Environment.Stations(Start_Station).Leave(
-		    		Descriptor_Index 	=> Current_Descriptor_Index,
-		    		Platform_Index		=> Start_Platform,
-		    		Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Leave_Action);
-
-				-- # Ask to Enter to the next Segment.
-				Segments.Segments(Next_Segment).Enter(Current_Descriptor_Index,Max_Speed,Leg_Length);
-
-				Logger.Log(
-					NAME,
-					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
-					" entered Segment " & Integer'Image(Next_Segment),
-					Logger.DEBUG
-				);
-
-				-- # Calculate Time to Travel the current Segment
-				if(Trains.Trains(Current_Descriptor_Index).Max_Speed < Max_Speed) then
-					Trains.Trains(Current_Descriptor_Index).Speed := Trains.Trains(Current_Descriptor_Index).Max_Speed;
-				else
-					Trains.Trains(Current_Descriptor_Index).Speed := Max_Speed;
-				end if;
-
-				-- # The time to spent running inside the segment is simply calculated by the quotient
-				-- # between the length of the Segment and the Speed of the train; the first is
-				-- # expressed in [unit], the second in [unit]/[sec]
-				Time_In_Segment := Float(Leg_Length)/Float(Trains.Trains(Current_Descriptor_Index).Speed);
-
-				-- # Notify the Central controller that the Train is running on the segment
-				Central_Controller_Interface.Set_Train_Left_Status(
-					Train		=> Trains.Trains(Current_Descriptor_Index).ID,
-					Station		=> Environment.Stations(Next_Station).Get_Name,
-					Time		=> Integer(Time_In_Segment),
-					Segment		=> Segments.Segments(Next_Segment).Id);
-
-
 
 				Logger.Log(NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) & " running at speed "
@@ -191,8 +217,7 @@ package body Train_Pool is
 					Descriptor_Index	=> Current_Descriptor_Index,
 					Platform_Index		=> Next_Platform,
 					Segment_ID 			=> Segments.Segments(Next_Segment).Id,
-					Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Enter_Action
-				);
+					Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Enter_Action);
 
 				-- # Slow down factor
 				delay 3.0;
@@ -263,53 +288,5 @@ package body Train_Pool is
 		Low_Priority_Trains_Queue.Stop;
 		High_Priority_Trains_Queue.Stop;
 	end Stop;
-
-
-
-
-
-	protected body Priority_Handler_Type is
-
-		procedure Get_Descriptor(
-			Train_Descriptor_Index 	: out Positive;
-			Terminated 				: out Boolean) is
-		begin
-			if High_Priority_Trains_Queue.Is_Empty then
-				Low_Priority_Trains_Queue.Dequeue(Train_Descriptor_Index,Terminated);
-			else
-				High_Priority_Trains_Queue.Dequeue(Train_Descriptor_Index,Terminated);
-			end if;
-		end Get_Descriptor;
-
-
---      	entry Gain_Access(
---      		P : in 	Priority) when True is
---      	begin
---      		case P is
---      			when LOW 	=> requeue Gain_Access_Regional;
---      			when HIGH 	=> requeue Gain_Access_FB;
---      		end case;
---      	end Gain_Access;
---
---      	procedure Release is
---      	begin
---      		Free := True;
---  		end Release;
---
---      	entry Gain_Access_FB(
---      		P : in 	Priority) when Free is
---      	begin
---      		Free := False;
---  	    end Gain_Access_Fb;
---
---      	entry Gain_Access_Regional(
---      		P : in 	Priority) when Free and Gain_Access_FB'Count=0 is
---      	begin
---      		Free := False;
---  		end Gain_Access_Regional;
-
-    end Priority_Handler_Type;
-
-
 
 end Train_Pool;

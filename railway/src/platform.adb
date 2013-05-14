@@ -34,8 +34,12 @@ with Trains;
 with Traveler;
 with Routes;
 with Central_Controller_Interface;
+
+
 with Ada.Calendar;
 with Ada.Calendar.Formatting;use Ada.Calendar.Formatting;
+with Ada.Calendar.Time_Zones;use Ada.Calendar.Time_Zones;
+
 
 package body Platform is
 
@@ -193,9 +197,9 @@ package body Platform is
 							begin
 								-- # First switch fixed Start and Destination
 								Environment.Travelers(Traveler_Manager_Index).Destination :=
-										Environment.Travelers(Traveler_Manager_Index).Current_Start_Station;
+										Environment.Travelers(Traveler_Manager_Index).Start_Station;
 
-								Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := To_Switch;
+								Environment.Travelers(Traveler_Manager_Index).Start_Station := To_Switch;
 
 								-- #.. Then update Current_Start_Stations and Current_Dest_Station
 								Environment.Travelers(Traveler_Manager_Index).Current_Start_Station :=
@@ -402,13 +406,20 @@ package body Platform is
 			Train_Delay : Duration := Ada.Calendar."-"(Ada.Calendar.Clock, Time_To_Wait);
 		begin
 
-			-- # At this point the Task Train has access to the platform!
+			-- # At this point the Task Train has access to the platform,
+			-- # So notify the Central Controller.
 			Central_Controller_Interface.Set_Train_Arrived_Status(
 				Train_ID	=> Trains.Trains(Train_Descriptor_Index).ID,
 				Station		=> To_String(This.Station_Name.all),
-				Platform	=> Routes.All_Routes(Trains.Trains(Train_Descriptor_Index).Route_Index)
-												(Trains.Trains(Train_Descriptor_Index).Next_Stage).Platform_Index,
-				Time 		=> Ada.Calendar.Formatting.Image(Time_To_Wait),
+				Platform	=> This.ID,
+				-- # Time at witch the Train will leave the Platform.
+				Time 		=> Ada.Calendar.Formatting.Image(
+								Date					=> Time_To_Wait,
+								Include_Time_Fraction 	=> False,
+								-- # We are 2 hours later that UTC Time Zone.
+								Time_Zone				=> 2*60),
+				-- # Duration rounded to Integer, representing seconds
+				-- # of delay.
 				Train_Delay	=> Integer(Train_Delay));
 		end;
 

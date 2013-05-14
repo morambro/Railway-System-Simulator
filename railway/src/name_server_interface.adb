@@ -45,8 +45,8 @@ package body Name_Server_Interface is
 			Object 				=> "name_server",
 			Service 			=> "bind",
 			Params 				=> Params,
-			Callback			=> null
-		);
+			Callback			=> null);
+
 	exception
 		when E : YAMI.Runtime_Error => raise Name_Server_Exception with Ada.Exceptions.Exception_Message(E);
     end Bind;
@@ -90,10 +90,30 @@ package body Name_Server_Interface is
 				Object 				=> "name_server",
 				Service 			=> "resolve",
 				Params 				=> Parameters,
-				Callback			=> Process_Result'Access
-			);
+				Callback			=> Process_Result'Access);
+
 		end if;
     end Resolve;
 
+
+	procedure Remove(
+		Name_Server : access String;
+		Node_Name 	: access String)
+	is
+		Params : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
+	begin
+		Params.Set_String("node_name",Node_Name.all);
+
+		Message_Agent.Instance.Send(
+			Destination_Address => Name_Server.all,
+			Object 				=> "name_server",
+			Service 			=> "remove",
+			Params 				=> Params,
+			Callback			=> null);
+
+	exception
+		when E : YAMI.Runtime_Error => raise Name_Server_Exception with Ada.Exceptions.Exception_Message(E);
+
+    end Remove;
 
 end Name_Server_Interface;
