@@ -35,8 +35,32 @@ with System;use System;
 -- #
 package Train_Pool is
 
-
 	type Priority is (LOW,HIGH);
+
+	protected type Priority_Handler_Type is
+
+    	procedure Get_Descriptor(
+			Train_Descriptor_Index 	: out Positive;
+			Terminated 				: out Boolean);
+
+
+--      	entry Gain_Access(
+--      		P : in 	Priority);
+--
+--      	procedure Release;
+
+--      private
+--
+--      	entry Gain_Access_FB(
+--      		P : in 	Priority);
+--
+--      	entry Gain_Access_Regional(
+--      		P : in 	Priority);
+--
+--      	Free : Boolean := True;
+
+    end Priority_Handler_Type;
+
 
 	-- # Task used to execute Trains
 	task type Train_Executor_Task(
@@ -53,7 +77,7 @@ package Train_Pool is
 
 
 	type Train_Task_Pool(
-		Low_Priority_Pool_Size : Positive;
+		Low_Priority_Pool_Size 	: Positive;
 		High_Priority_Pool_Size : Positive) is limited private;
 
 	-- #
@@ -62,6 +86,10 @@ package Train_Pool is
 	-- #
 	procedure Associate(Train_D : Positive);
 
+	-- #
+	-- # Procedure used to send a Stop request to terminate
+	-- # all the Tasks of the Pool.
+	-- #
 	procedure Stop;
 
 private
@@ -78,6 +106,9 @@ private
 	Low_Priority_Trains_Queue 	: Trains_Queue_Package.Terminable_Queue;
 	High_Priority_Trains_Queue 	: Trains_Queue_Package.Terminable_Queue;
 
+	-- # Protected Resource used to ensure priority execution.
+	Priority_Handler 	: Priority_Handler_Type;
+
 	-- #
 	-- # Private Definition of Train_Task_Pool type as a record with two pools of
 	-- # tasks, one low priority queue, and one at higher priority
@@ -86,8 +117,10 @@ private
 		Low_Priority_Pool_Size 	: Positive;
 		High_Priority_Pool_Size : Positive) is record
 
-		Low_Tasks 	: Low_Priority_Vector(1 .. Low_Priority_Pool_Size);
-		High_Tasks 	: High_Priority_Vector(1 .. High_Priority_Pool_Size);
+		-- # Pool of low priority Tasks.
+		Low_Tasks 			: Low_Priority_Vector(1 .. Low_Priority_Pool_Size);
+		-- # Pool of high priority Tasks.
+		High_Tasks 			: High_Priority_Vector(1 .. High_Priority_Pool_Size);
 
 	end record;
 

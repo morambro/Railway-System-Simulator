@@ -67,7 +67,10 @@
 					break;
 				
 				case "traveler_event" : 
-					moveTravelerToPlatform(obj.traveler_id,obj.station,obj.platform,obj.action);
+					if (obj.action == "buy")
+						moveTravelerToPlatform(obj.traveler_id,obj.station,1,obj.action);
+					else 
+						moveTravelerToPlatform(obj.traveler_id,obj.station,obj.platform,obj.action);
 					break;
 					
 				default : alert("undefined event type \""+obj.type+"\"!");
@@ -556,9 +559,6 @@
 		moveToPlatform(4444,"B",4);
 		
 		
-		startTravel(3333,4,"G1",4000)
-		
-		
 		function moveToPlatform(trainId,stationId,platformId) {
 			
 			platform = stations[stationId].platforms[platformId].getBBox();
@@ -585,20 +585,18 @@
 		}
 		
 		var travelersRadius = 6;
-		var ENTER = "0-#B0C4DE:20-#fff:95";
-		var LEAVE = "0-#4169E1:20-#fff:95";
-		var FINISHED = "0-#008800:20-#fff:95";
+		ENTER = "#A9A9A9";
+		LEAVE = "#0000FF";
+		FINISHED = "#7FFF00";
+		BUYING = "#FFD700";
 		
 		travelers = {};
 		
-		travelers[1] = new traveler("T_1",travelersRadius); 
-		travelers[1].image.attr('fill',ENTER);
+		for ( var i = 1 ; i <= 11 ; i++ ){
+			travelers[i] = new traveler("T_"+i,travelersRadius);
+			travelers[i].image.attr('fill',ENTER);
+		}
 		
-		travelers[2] = new traveler("T_2",travelersRadius); 
-		travelers[2].image.attr('fill',ENTER);
-		
-		moveTravelerToPlatform(1,"A",2,"finished")
-	
 		/**
 		 * Function used to Move a Traveler to <stationId,platformId>, to 
 		 * show him on the correct platform.
@@ -615,8 +613,19 @@
 				}
 			}
 			
+			platform = stations[stationId].platforms[platformId].getBBox();
+			travelerBox = travelers[travelerId].image.getBBox();
 			
-			//travelers[travelerId].image.remove();
+			padding = usersPerPlatform[stationId][platformId] * 2*travelersRadius;
+			
+			usersPerPlatform[stationId][platformId] ++;
+			
+			travelers[travelerId].image.transform('t'+(platform.x+padding)+','+(platform.y-5));
+			travelers[travelerId].text.transform('t'+(platform.x+padding)+','+(platform.y-5/2))
+			
+			travelers[travelerId].currentStation = stationId;
+			travelers[travelerId].currentPlatform = platformId;
+			
 			switch(action) {
 				case "enter" :
 					travelers[travelerId].image.attr('fill',ENTER);
@@ -627,23 +636,14 @@
 				case "finished" : 
 					travelers[travelerId].image.attr('fill',FINISHED);
 					break;
+				case "buy" :
+					travelers[travelerId].image.attr('fill',BUYING);
+					break;
 				default :  
 					console.log("Invalid option " + action + "!");
 					return;
 			}
-			
-			platform = stations[stationId].platforms[platformId].getBBox();
-			travelerBox = travelers[travelerId].image.getBBox();
-			
-			padding = usersPerPlatform[stationId][platformId] * 5;
-			
-			usersPerPlatform[stationId][platformId] ++;
-			
-			travelers[travelerId].image.transform('t'+(platform.x+padding)+','+(platform.y-5));
-			travelers[travelerId].text.transform('t'+(platform.x+padding)+','+(platform.y-5/2))
-			
-			travelers[travelerId].currentStation = stationId;
-			travelers[travelerId].currentPlatform = platformId;
+		
 		}
 		
 		function animate(train, path, time, to) {

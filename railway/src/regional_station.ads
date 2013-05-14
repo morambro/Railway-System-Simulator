@@ -57,51 +57,51 @@ package Regional_Station is
 	-- #
 	-- # Definition of Regional Station Type implementing Station_Interface --
 	-- #
-	type Regional_Station_Type(Platforms_Number : Positive) is
-		new Ada.Finalization.Controlled
+	type Regional_Station_Type(Platforms_Number : Positive) is limited
+		new Ada.Finalization.Limited_Controlled
 		and Station_Interface
 	with private;
 
 		overriding procedure Enter(
-			This 				: in		Regional_Station_Type;
+			This 				: in out	Regional_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action);
 
 		overriding procedure Leave(
-			This 				: in 		Regional_Station_Type;
+			This 				: in out	Regional_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Action				: in 		Route.Action);
 
 		overriding procedure Wait_For_Train_To_Go(
-			This 				: in		Regional_Station_Type;
+			This 				: in out	Regional_Station_Type;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 
 		overriding procedure Wait_For_Train_To_Arrive(
-			This 				: in		Regional_Station_Type;
+			This 				: in out	Regional_Station_Type;
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 
 		overriding procedure Add_Train(
-			This				: in 		Regional_Station_Type;
+			This				: in out	Regional_Station_Type;
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive);
 
 		overriding function Get_Name(
-			This				: in 		Regional_Station_Type) return String;
+			This				: in out	Regional_Station_Type) return String;
 
 		overriding procedure Buy_Ticket(
-			This				: in 		Regional_Station_Type;
+			This				: in out	Regional_Station_Type;
 			Traveler_Index		: in		Positive;
 			To					: in 		String);
 
 		overriding procedure Terminate_Platforms(
-			This				: in 		Regional_Station_Type);
+			This				: in out	Regional_Station_Type);
 
 	-- #
 	-- # Creates a new Station instance
@@ -142,14 +142,14 @@ package Regional_Station is
 
 private
 
-	type Regional_Station_Type(Platforms_Number : Positive) is
-		new Ada.Finalization.Controlled and
+	type Regional_Station_Type(Platforms_Number : Positive) is limited
+		new Ada.Finalization.Limited_Controlled and
 		Station_Interface
 	with record
 		Name 				: aliased Unbounded_Strings.Unbounded_String;
 		Platforms 			: Platform.Platforms(1..Platforms_Number);
 		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
-		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;
+		Segments_Map_Order	: Segments_Map.Map;
 	end record;
 
 end Regional_Station;

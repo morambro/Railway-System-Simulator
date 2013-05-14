@@ -32,7 +32,6 @@ with YAMI.Parameters;
 -- #
 package Central_Controller_Interface is
 
-	type Traveler_Action is (ENTER,LEAVE,FINISHED);
 
 	type Train_Action is (ENTER,LEAVE,ARRIVING);
 
@@ -78,12 +77,37 @@ package Central_Controller_Interface is
 	-- #
 	-- # Updates the status of the given traveler.
 	-- #
-	procedure Set_Traveler_Status(
+	procedure Set_Traveler_Entering_Status(
 		Traveler	: Positive;
 		Train		: Positive;
 		Station		: String;
-		Platform	: Positive;
-		Action 		: Traveler_Action);
+		Platform	: Positive);
+
+	-- #
+	-- # Updates the status of the given traveler.
+	-- #
+	procedure Set_Traveler_Left_Status(
+		Traveler	: Positive;
+		Train		: Positive;
+		Station		: String;
+		Platform	: Positive);
+
+	-- #
+	-- # Updates the status of the given traveler.
+	-- #
+	procedure Set_Traveler_Finished_Status(
+		Traveler	: Positive;
+		Train		: Positive;
+		Station		: String;
+		Platform	: Positive);
+
+
+	-- #
+	-- # Updates the status of the given traveler.
+	-- #
+	procedure Set_Traveler_Buying_Status(
+		Traveler	: Positive;
+		Station		: String);
 
 	-- #
 	-- # This procedure is used to notify the termination of the current Node

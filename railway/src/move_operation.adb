@@ -71,12 +71,11 @@ package body Move_Operation is
 
 		-- # Notify the Central Controller that the current Traveler is waiting by the
 		-- # platform Start_Platform_Index, station Start_Station, to catch train Train_ID
-		Central_Controller_Interface.Set_Traveler_Status(
+		Central_Controller_Interface.Set_Traveler_Left_Status(
 			Traveler	=> This.Traveler_Manager_Index,
 			Train		=> Train_ID,
 			Station		=> Environment.Stations(Start_Station).Get_Name,
-			Platform	=> Start_Platform_Index,
-			Action 		=> Central_Controller_Interface.LEAVE);
+			Platform	=> Start_Platform_Index);
 
 
 	exception
@@ -115,12 +114,11 @@ package body Move_Operation is
 
 			-- # Notify the Central Controller that the current Traveler is waiting by the
 			-- # platform Start_Platform_Index, station Start_Station, to leave the Train Train_ID.
-			Central_Controller_Interface.Set_Traveler_Status(
+			Central_Controller_Interface.Set_Traveler_Entering_Status(
 				Traveler	=> This.Traveler_Manager_Index,
 				Train		=> Train_ID,
 				Station		=> Environment.Stations(Next_Station).Get_Name,
-				Platform	=> Destination_Platform_Index,
-				Action 		=> Central_Controller_Interface.ENTER);
+				Platform	=> Destination_Platform_Index);
 		else
 			-- # If the Next Station to access is on another station, let's make a remote call
 			Remote_Station_Interface.Wait_For_Train_To_Arrive(
@@ -152,8 +150,14 @@ package body Move_Operation is
 		Logger.Log(
 			Sender	=> 	"Move_Operation.Buy_Ticket_Operation_Type",
 			Message => 	"Traveler" & Integer'Image(This.Traveler_Manager_Index) & " will wait for" & Random_Range'image(Num) &
-						" seconds before asking for a new Ticket",
-			L 		=> 	Logger.DEBUG);
+						" seconds before asking for a new Ticket from " & Environment.Stations(Start_Station).Get_Name &
+						" to " & To_String(Environment.Travelers(This.Traveler_Manager_Index).Current_Dest_Station),
+			L 		=> 	Logger.INFO);
+
+		-- # Update the Status of the Traveler
+		Central_Controller_Interface.Set_Traveler_Buying_Status(
+			Traveler	=> This.Traveler_Manager_Index,
+			Station		=> Environment.Stations(Start_Station).Get_Name);
 
 		-- # Wait a random amount of time between 3 and 10 seconds
 		delay Duration(Num);
@@ -161,7 +165,7 @@ package body Move_Operation is
     	-- # Buy a Ticket at the Station Ticket Office.
 		Environment.Stations(Start_Station).Buy_Ticket(
 			Traveler_Index	=> This.Traveler_Manager_Index,
-			To 				=> To_String(Environment.Travelers(This.Traveler_Manager_Index).Destination));
+			To 				=> To_String(Environment.Travelers(This.Traveler_Manager_Index).Current_Dest_Station));
 
 	exception
 		when Error : others =>

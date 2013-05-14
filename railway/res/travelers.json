@@ -6,7 +6,6 @@
                 "name"		: "Giacomo",
                 "surname"	: "Rossi"
             },
-            "next_operation"	: 1,
             "destination"		: "D",
             "start_station" 	: "A",
             "start_node"		: "Node_1"
@@ -14,13 +13,102 @@
         {
             "traveler"	: {
                 "id"		: 2,
+                "name"		: "Luca",
+                "surname"	: "Verdi"
+            },
+            "destination"		: "D",
+            "start_station" 	: "C",
+            "start_node"		: "Node_1"
+        },
+        {
+            "traveler"	: {
+                "id"		: 3,
+                "name"		: "Roberto",
+                "surname"	: "Bianchi"
+            },
+            "destination"		: "G1",
+            "start_station" 	: "I",
+            "start_node"		: "Node_2"
+        },
+        {
+            "traveler"	: {
+                "id"		: 4,
                 "name"		: "Verdi",
                 "surname"	: "Giuseppe"
             },
-            "next_operation"	: 1,
             "destination"		: "G1",
             "start_station" 	: "M",
             "start_node"		: "Node_3"
+        },
+        {
+            "traveler"	: {
+                "id"		: 5,
+                "name"		: "Roberto",
+                "surname"	: "Franchi"
+            },
+            "destination"		: "H",
+            "start_station" 	: "L",
+            "start_node"		: "Node_3"
+        },
+        
+        
+        {
+            "traveler"	: {
+                "id"		: 6,
+                "name"		: "Roberto",
+                "surname"	: "Franchi"
+            },
+            "destination"		: "G1",
+            "start_station" 	: "H",
+            "start_node"		: "Node_2"
+        },
+        {
+            "traveler"	: {
+                "id"		: 7,
+                "name"		: "Roberto",
+                "surname"	: "Franchi"
+            },
+            "destination"		: "G1",
+            "start_station" 	: "H",
+            "start_node"		: "Node_2"
+        },{
+            "traveler"	: {
+                "id"		: 8,
+                "name"		: "Roberto",
+                "surname"	: "Franchi"
+            },
+            "destination"		: "G1",
+            "start_station" 	: "H",
+            "start_node"		: "Node_2"
+        },{
+            "traveler"	: {
+                "id"		: 9,
+                "name"		: "Roberto",
+                "surname"	: "Franchi"
+            },
+            "destination"		: "G1",
+            "start_station" 	: "H",
+            "start_node"		: "Node_2"
+        },
+        {
+            "traveler"	: {
+                "id"		: 10,
+                "name"		: "Roberto",
+                "surname"	: "Franchi"
+            },
+            "destination"		: "G1",
+            "start_station" 	: "H",
+            "start_node"		: "Node_2"
+        },
+        {
+            "traveler"	: {
+                "id"		: 11,
+                "name"		: "Roberto",
+                "surname"	: "Franchi"
+            },
+            "destination"		: "G1",
+            "start_station" 	: "H",
+            "start_node"		: "Node_2"
         }
     ]
 }

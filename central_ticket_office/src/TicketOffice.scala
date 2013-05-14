@@ -18,7 +18,7 @@ object Main extends App {
 		MessagesReceiver ! Init(argv(0))
 		
 		// Set Name Server Address
-		PathResolver.NAME_SERVER_ADDRESS = argv(1)
+		TicketCreator.NAME_SERVER_ADDRESS = argv(1)
 		
 		// Start BookingManager and PrintsSerializer actors
 		BookingManager.start

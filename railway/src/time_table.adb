@@ -77,7 +77,7 @@ package body Time_Table is
 						Date : String := Get(Get(Arr => T_Array,Index => J));
 					begin
 						-- # Create a Time object from String value.
-						T_Table.Table(I)(J) := Ada.Calendar.Formatting.Value(Date);--Ref_Clock + Duration(Span);
+						T_Table.Table(I)(J) := Ada.Calendar.Formatting.Value(Date);
 					end;
 				end loop;
 			end;

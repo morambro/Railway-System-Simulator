@@ -37,30 +37,30 @@ package Generic_Station is
 
 
 	---------------------------------- STATION INTERFACE --------------------------------------
-	type Station_Interface is interface;
+	type Station_Interface is limited interface;
 
 		-- Station_Interface Methods
 		procedure Enter(
-			This 				: in		Station_Interface;
+			This 				: in out	Station_Interface;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action) is abstract;
 
 		procedure Leave(
-			This 				: in 		Station_Interface;
+			This 				: in out	Station_Interface;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Action				: in 		Route.Action) is abstract;
 
 		procedure Wait_For_Train_To_Go(
-			This 				: in 		Station_Interface;
+			This 				: in out	Station_Interface;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive) is abstract;
 
 		procedure Wait_For_Train_To_Arrive(
-			This 				: in 		Station_Interface;
+			This 				: in out	Station_Interface;
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive) is abstract;
@@ -68,20 +68,20 @@ package Generic_Station is
 		procedure Print(This : in Station_Interface) is abstract;
 
 		procedure Add_Train(
-			This				: in 		Station_Interface;
+			This				: in out	Station_Interface;
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive) is abstract;
 
 		procedure Buy_Ticket(
-			This				: in 		Station_Interface;
+			This				: in out	Station_Interface;
 			Traveler_Index		: in		Positive;
 			To					: in 		String ) is abstract;
 
 		function Get_Name(
-			This				: in 		Station_Interface) return String is abstract;
+			This				: in out	Station_Interface) return String is abstract;
 
 		procedure Terminate_Platforms(
-			This				: in 		Station_Interface) is abstract;
+			This				: in out	Station_Interface) is abstract;
 
 
 	-- End Of the Interface

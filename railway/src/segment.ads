@@ -34,15 +34,66 @@ package Segment is
 	package Train_Queue_Package is new Queue(Element => Positive);
 	use Train_Queue_Package;
 
+	-- # Exception raised when a Train attempts to access a Segment
+	-- # from a Station different from First_End or Second_End.
 	Bad_Segment_Access_Request_Exception : exception;
 
-	protected type Segment_Type(
+
+	-- #
+	-- # This protected type is used to perform Train's access priority.
+	-- # The main idea is to let tasks enqueue to the proper entry (Gain_Access_FB
+	-- # or Gain_Access_Regional) and to subordinate tasks waiting on Gain_Access_Regional
+	-- # execution to Gain_Access_FB queue status.
+	-- #
+	protected type Priority_Access_Controller is
+
+		-- #
+		-- # Main entry used to gain access.
+		-- #
+    	entry Gain_Access(
+    		Train_Index : in 	Positive);
+
+		-- #
+		-- # Procedure used to free the resource.
+		-- #
+    	procedure Access_Gained;
+
+    private
+
+		-- #
+		-- # Entry used to enqueue FB Trains
+		-- #
+    	entry Gain_Access_FB(
+    		Train_Index : in 	Positive);
+
+		-- #
+		-- # Entry used to enqueue Regional Trains.
+		-- # A task will access this entry only if the
+		-- # resource is Free and no tasks will be waiting on
+		-- # Gain_Access_FB entry.
+		-- #
+    	entry Gain_Access_Regional(
+    		Train_Index : in 	Positive);
+
+		-- # Status of the resource.
+		Free : Boolean := True;
+
+    end Priority_Access_Controller;
+
+	-- #
+	-- # This protected type allows to control the effective access
+	-- # of a Train into the Segment. A Train first needs to be
+	-- # added to the internal Trains_Order queue, because Enter attempts
+	-- # will be ordered following the queue's order.
+	-- #
+	protected type Segment_Access_Controller(
 		Id 					: Integer;
 		Segment_Max_Speed 	: Positive;
 		Segment_Length		: Positive;
-		Queue_Dim 			: Positive;
 		First_End 			: Positive;
-		Second_End 			: Positive)
+		Second_End 			: Positive;
+		-- # Maximum number of entrance per side
+		Max 				: Natural)
 	is
 
 		-- #
@@ -58,13 +109,46 @@ package Segment is
 			Max_Speed 	: 	 out Positive;
 			Leg_Length 	:	 out Positive);
 
+		-- #
+		-- # Procedure used to add a Train into Trains_Order queue.
+		-- # The queue will maintain the access order of the Trains.
+		-- #
+		procedure Add_Train(
+			Train_Index : in Positive);
+
 	private
 
 		-- #
-		-- # Private Entry used to enqueue trains whose direction are not the same
-		-- # as the direction of already running trains.
+		-- # Trains ask to Enter the Segment
 		-- #
-		entry Retry_Enter(
+		entry Perform_Enter(
+			To_Add 		: in	 Positive;
+			Max_Speed 	: 	 out Positive;
+			Leg_Length 	:	 out Positive);
+
+		-- #
+		-- # Entry used to enqueue Trains trying to enter
+		-- # without being at the beginning of Trains_Queue.
+		-- #
+		entry Retry(
+			To_Add 		: in	 Positive;
+			Max_Speed 	: 	 out Positive;
+			Leg_Length 	:	 out Positive);
+
+		-- #
+		-- # Entry used to make Train threads wait
+		-- # at First End.
+		-- #
+		entry Retry_First_End(
+			To_Add 		:	in 		Positive;
+			Max_Speed 	: 	 	out Positive;
+			Leg_Length 	:		out	Positive);
+
+		-- #
+		-- # Entry used to make Train threads wait
+		-- # at Second End.
+		-- #
+		entry Retry_Second_End(
 			To_Add 		:	in 		Positive;
 			Max_Speed 	: 	 	out Positive;
 			Leg_Length 	:		out	Positive);
@@ -85,49 +169,92 @@ package Segment is
 		Current_Direction 	: Natural := 0;
 
 		-- # Queue of all the running trains
-		Running_Trains 		: access Limited_Simple_Queue := new Limited_Simple_Queue(Queue_Dim);
-
-
-		-- # Queue for first End
-		First_End_In_Queue 	: Natural := 0;
-
-		-- # Queue for second End
-		Second_End_In_Queue : Natural := 0;
+		Running_Trains 		: Unlimited_Simple_Queue;
 
 		-- # Boolean guard telling if a train can retry to Leave the Segment
 		Can_Retry_Leave 	: Boolean := False;
-
-		-- # Boolean guard telling if a train can retry to Enter the Segment
-		Can_Retry_Enter 	: Boolean := False;
 
 		-- # Number of exit attempt
 		Enter_Retry_Num 	: Natural := 0;
 
 		-- # Number of exit attempt
-		Retry_Num 			: Natural := 0;
+		Exit_Retry_Num 			: Natural := 0;
 
 		-- # Number of trains currently running
 		Trains_Number 		: Natural := 0;
 
+		-- # Number of trains entered per direction
 		Train_Entered_Per_Direction	: Natural := 0;
 
-	end Segment_Type;
+		-- # Guard which tells whether a Train can enter from
+		-- # first End or not.
+		Can_Enter_First_End : Boolean := False;
 
+		-- # Guard which tells whether a Train can enter from
+		-- # first End or not.
+		Can_Enter_Second_End : Boolean := False;
+
+		-- # Queue used to maintain the access order of the Trains.
+		Trains_Order : Unlimited_Simple_Queue;
+
+		-- # Number of tasks re-trying to enter (in order!)
+		Retry_Num 	: Natural := 0;
+
+		-- # Boolean guard used to regulate entrance.
+		Can_Retry 	: Boolean := False;
+
+	end Segment_Access_Controller;
+
+	-- #
+	-- # Tagged type used to encapsulate the entire access protocol.
+	-- # it maintains a Priority_Access_Controller object and a Segment_Access_Controller
+	-- # object, and uses them to perform multiple controlled access.
+	-- #
+	type Segment_Type is tagged limited private;
+
+	-- #
+	-- # This method allows a Train task to try to Enter into the
+	-- # Segment.
+	-- #
+	procedure Enter(
+		This		: access Segment_Type;
+		To_Add 		: in	 Positive;
+		Max_Speed 	: 	 out Positive;
+		Leg_Length 	:	 out Positive);
+
+	-- #
+	-- # Method used to perform Leaving operation from the Segment.
+	-- #
+	procedure Leave(
+		This		: access Segment_Type;
+		Train_D 	: in 	 Positive);
+
+	-- #
+	-- # Simple function which returns the ID of the Segment.
+	-- #
+	function Id (
+		This		: access Segment_Type) return Natural;
+
+
+	-- # Array of Segments.
 	type Segments_Array is array (Positive range <>) of access Segment_Type;
 
-	------------------------------------ Json -> Segment functions ----------------------
-	-- Methods used to load Segment data from a json configuration file
+	------------------ Json -> Segment functions ----------------------
 
+	-- #
+	-- # Methods used to load Segment data from a json configuration file
+	-- #
 	function Get_Segment_Array(File_Name : String) return access Segments_Array;
 
-	-- #
-	-- # A Simple Print procedure, used for debugging purposes
-	-- #
-	procedure Print(Segment : access Segment_Type);
+	function Get_Segment(Json_Segment : Json_Value) return access Segment_Type;
 
 private
 
-	function Get_Segment(Json_Segment : Json_Value) return access Segment_Type;
+	-- # Private fields definition for Segment_Type.
+	type Segment_Type is tagged limited record
+		Access_Controller 	: Priority_Access_Controller;
+		Segment 			: access Segment_Access_Controller;
+	end record;
 
 	function Get_Segment_Array(Json_v : Json_Value) return access Segments_Array;
 

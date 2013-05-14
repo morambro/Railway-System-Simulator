@@ -29,7 +29,7 @@ package body Segments is
 
 	procedure Init is
 	begin
-		Segments := Segment_2.Get_Segment_Array("res/" & Environment.Get_Node_Name & "-segments.json");
+		Segments := Segment.Get_Segment_Array("res/" & Environment.Get_Node_Name & "-segments.json");
     end Init;
 
 end Segments;

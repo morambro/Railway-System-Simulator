@@ -70,61 +70,61 @@ package Gateway_Station is
 	-- #
 	-- # Definition of Regional Station Type implementing Station_Interface --
 	-- #
-	type Gateway_Station_Type(Platforms_Number : Positive) is
-		new Ada.Finalization.Controlled
+	type Gateway_Station_Type(Platforms_Number : Positive) is limited
+		new Ada.Finalization.Limited_Controlled
 		and Station_Interface
 	with private;
 
 		overriding procedure Enter(
-			This 				: in		Gateway_Station_Type;
+			This 				: in out	Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Segment_ID			: in 		Positive;
 			Action				: in 		Route.Action);
 
 		overriding procedure Leave(
-			This 				: in 		Gateway_Station_Type;
+			This 				: in out	Gateway_Station_Type;
 			Descriptor_Index	: in		Positive;
 			Platform_Index		: in		Positive;
 			Action				: in 		Route.Action);
 
 		overriding procedure Wait_For_Train_To_Go(
-			This 				: in		Gateway_Station_Type;
+			This 				: in out	Gateway_Station_Type;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 
 		overriding procedure Wait_For_Train_To_Arrive(
-			This 				: in		Gateway_Station_Type;
+			This 				: in out	Gateway_Station_Type;
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive);
 
 		overriding procedure Terminate_Platforms(
-			This 				: in	 	Gateway_Station_Type);
+			This 				: in out 	Gateway_Station_Type);
 
 		-- #
 		-- # Class method used by segments to add a Train to the proper order queue, to allow
 		-- # future ordered access.
 		-- #
 		overriding procedure Add_Train(
-			This				: in 		Gateway_Station_Type;
+			This				: in out	Gateway_Station_Type;
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive);
 
 		overriding procedure Buy_Ticket(
-			This				: in 		Gateway_Station_Type;
+			This				: in out	Gateway_Station_Type;
 			Traveler_Index		: in		Positive;
 			To					: in 		String);
 
 		overriding function Get_Name(
-			This				: in 		Gateway_Station_Type) return String;
+			This				: in out	Gateway_Station_Type) return String;
 
 
 		procedure Occupy_Platform(
-			This					: in 	 Gateway_Station_Type;
-			Platform_Index			: in 	 Positive;
-			Train_Index				: in 	 Positive);
+			This				: in out Gateway_Station_Type;
+			Platform_Index		: in 	 Positive;
+			Train_Index			: in 	 Positive);
 
 
 	-- #
@@ -159,14 +159,14 @@ package Gateway_Station is
 
 private
 
-	type Gateway_Station_Type(Platforms_Number : Positive) is
-		new Ada.Finalization.Controlled and
+	type Gateway_Station_Type(Platforms_Number : Positive) is limited
+		new Ada.Finalization.Limited_Controlled and
 		Station_Interface
 	with record
 		Name 				: aliased  Unbounded_Strings.Unbounded_String;
 		Platforms 			: Platform.Platforms(1..Platforms_Number);
 		Panel 				: access Notice_Panel.Notice_Panel_Entity := null;
-		Segments_Map_Order	: access Segments_Map.Map := new Segments_Map.Map;
+		Segments_Map_Order	: Segments_Map.Map;
 		Destinations 		: access String_Positive_Maps.Map := null;
 	end record;
 

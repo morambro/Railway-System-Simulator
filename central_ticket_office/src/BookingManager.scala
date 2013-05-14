@@ -152,13 +152,17 @@ object BookingManager extends Actor {
 	
 	// Debug print  
 	def printBookingSits {
-		bookingSits.keys.foreach(k => {
-			bookingSits(k).foreach(array => {
-				array.foreach(el => print(el+ " , "))
-				PrintsSerializer ! Print("")
-			})
 		
+		var str = "booking tables : \n"
+		bookingSits.keys.foreach(k => {
+			str += "Route " + k + "\n"
+			bookingSits(k).foreach(array => {
+				array.foreach(el => str += "|"+el)
+				str += "\n"
+			})
+			str += "\n"
 		})
+		PrintsSerializer ! Print(str)
 	}
 	
 	
@@ -250,19 +254,21 @@ object BookingManager extends Actor {
 						PrintsSerializer ! Print("Current run = " + timeTables(routeIndex-1).current_run + 
 								", run id = " + timeTables(routeIndex-1).current_run_id)
 						
-						PrintsSerializer ! Print("booking table :")
+						var str = "booking table : \n"
 						bookingSits get (routeIndex-1) match {
 							case Some(t) => t match {
 								case table : Array[_] => {
 									table.foreach ( el => {
-										el.foreach(i => print(" | "+i))
-										PrintsSerializer ! Print("")
+										el.foreach(i => str += "| "+i)
+										str += "\n"
 									})
 								}
 							}
 							case None => 
 						}		
-												
+						PrintsSerializer ! Print(str)
+						
+						
 						// Give it back to Sender
 						reply(("new_time_table",timeTables(routeIndex-1).toJSON))
 						 

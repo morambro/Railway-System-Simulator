@@ -37,6 +37,11 @@ package body Queue is
 			Q.Enqueue(To_Add);
 		end Enqueue;
 
+		function Is_Empty return Boolean is
+		begin
+			return Q.Current_Use > 0;
+		end Is_Empty;
+
 		entry Dequeue(
 			To_Get		: 	 out Element;
 			Terminated 	: 	 out Boolean) when Termination or Q.Current_Use > 0 is

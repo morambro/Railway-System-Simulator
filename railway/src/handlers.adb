@@ -1,4 +1,4 @@
-----------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
 --  Copyright 2013                                								--
 --  Moreno Ambrosin                         									--
 --  Railway_Simulation 1.0                                       				--
@@ -428,8 +428,8 @@ package body Handlers Is
 					-- # Retrieve the Ticket
 					Environment.Travelers(Traveler_Index).The_Ticket := Ticket.Get_Ticket(Ticket_Data);
 
-					Put_Line("***** ARRIVED TICKET : ");
-					Ticket.Print(Environment.Travelers(Traveler_Index).The_Ticket);
+--  					Put_Line("***** ARRIVED TICKET : ");
+--  					Ticket.Print(Environment.Travelers(Traveler_Index).The_Ticket);
 
 					-- # Put TICKET_READY operation on the Pool queue
 					Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));

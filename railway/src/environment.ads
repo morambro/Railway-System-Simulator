@@ -57,17 +57,6 @@ package Environment Is
 	-- #
 	Route_Time_Table 	: Time_Table.Time_Table_Array_Ref 		:= null;
 
-
-	type Destinations_Type is array (Positive range <>) of Unbounded_String;
-
-	-- #
-	-- # Array of possible destinations, useful for Travelers if the ticket for the default
-	-- # destination can not be created
-	-- #
-	Destinations 	: access Destinations_Type := null;
-
-	function Load_Destinations return access Destinations_Type;
-
 	function Get_Node_Name return String;
 
 	function Get_Name_Server return String;

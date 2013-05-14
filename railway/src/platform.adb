@@ -89,11 +89,10 @@ package body Platform is
 			end if;
 		end Enter;
 
-
 		procedure Add_Train(
-			Train_ID 	: in 	Positive) is
+			Train_Index : in 	Positive)is
 		begin
-			Trains_Order.Enqueue(Train_ID);
+			Trains_Order.Enqueue(Trains.Trains(Train_Index).ID);
 		end Add_Train;
 
 	end Platform_Type;
@@ -104,9 +103,10 @@ package body Platform is
 
 	procedure Add_Train(
 		This					: access Platform_Handler;
-		Train_ID 				: in 	 Positive) is
+		Train_Index				: in 	 Positive) is
 	begin
-		This.The_Platform.Add_Train(Train_ID);
+		Put_Line(integer'image(Train_Index));
+		This.The_Platform.Add_Train(Train_Index);
     end Add_Train;
 
 
@@ -181,37 +181,40 @@ package body Platform is
 								L       => Logger.DEBUG);
 
 							-- # Notify Central Controller the Traveler Arrived!
-							Central_Controller_Interface.Set_Traveler_Status(
+							Central_Controller_Interface.Set_Traveler_Finished_Status(
 								Traveler	=> Traveler_Manager_Index,
 								Train		=> Trains.Trains(Train_Descriptor_Index).Id,
 								Station		=> Environment.Stations(Environment.Travelers(Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Next_Station).Get_Name,
-								Platform	=> This.ID,
-								Action 		=> Central_Controller_Interface.FINISHED);
+								Platform	=> This.ID);
 
 							-- # Time to come back, switch start and destination stations!
 							declare
-								To_Switch	: Unbounded_String := Environment.Travelers(Traveler_Manager_Index).Start_Station;
+								To_Switch : Unbounded_String := Environment.Travelers(Traveler_Manager_Index).Destination;
 							begin
-								Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := Environment.Travelers(Traveler_Manager_Index).Destination;
-								Environment.Travelers(Traveler_Manager_Index).Destination := To_Switch;
+								-- # First switch fixed Start and Destination
+								Environment.Travelers(Traveler_Manager_Index).Destination :=
+										Environment.Travelers(Traveler_Manager_Index).Current_Start_Station;
+
+								Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := To_Switch;
+
+								-- #.. Then update Current_Start_Stations and Current_Dest_Station
+								Environment.Travelers(Traveler_Manager_Index).Current_Start_Station :=
+										Environment.Travelers(Traveler_Manager_Index).Destination;
+								Environment.Travelers(Traveler_Manager_Index).Current_Dest_Station 	:=
+										Environment.Travelers(Traveler_Manager_Index).Start_Station;
 							end;
 
 							-- # Next operation tells Traveler to buy a ticket!
 							Next_Operation := Traveler.BUY_TICKET;
 
 						else
-
 							-- # Go to the next stage (there will be at least another one for sure!)
 							Environment.Travelers(Traveler_Manager_Index).The_Ticket.Next_Stage :=
 								Environment.Travelers(Traveler_Manager_Index).The_Ticket.Next_Stage + 1;
-
-
 						end if;
 
 						-- # Execute the operation Next_Operation
 						Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
-						-- # Set the new Operation Index
-						Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
 
 					exception
 						when Error : others =>
@@ -221,7 +224,6 @@ package body Platform is
 							    			Ada.Exceptions.Exception_Message(Error),
 							    L       => Logger.ERROR);
 					end;
-
 				end if;
 			end loop;
 		end if;
@@ -273,7 +275,7 @@ package body Platform is
 								Message => "Traveler " & Integer'Image(Traveler_Manager_Index) & " lost the booked Train; buy a new Ticket!",
 								L		=> Logger.ERROR);
 							-- # Set Current Station as Start Station
-							Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := This.S.all;
+							Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := This.Station_Name.all;
 							Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Traveler.BUY_TICKET));
 						else
 							-- # If the current Traveler was not waiting for this train, re-queue it
@@ -295,7 +297,7 @@ package body Platform is
 							L		=> Logger.ERROR);
 
 						-- # Set the current Station as the start station
-						Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := This.S.all;
+						Environment.Travelers(Traveler_Manager_Index).Current_Start_Station := This.Station_Name.all;
 
 						-- # Set BUY_TICKET Operation to make him buy a new Ticket
 						Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Traveler.BUY_TICKET));
@@ -320,9 +322,6 @@ package body Platform is
 						begin
 							-- # Execute the operation ENTER (Traveler waits to leave the train).
 							Environment.Operations(Traveler_Manager_Index)(Next_Operation).Do_Operation;
-							--Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
-							-- # Set the new Operation Index
-							Environment.Travelers(Traveler_Manager_Index).Next_Operation := Next_Operation;
 
 						exception
 							when Error : others =>
@@ -406,7 +405,7 @@ package body Platform is
 			-- # At this point the Task Train has access to the platform!
 			Central_Controller_Interface.Set_Train_Arrived_Status(
 				Train_ID	=> Trains.Trains(Train_Descriptor_Index).ID,
-				Station		=> To_String(This.S.all),
+				Station		=> To_String(This.Station_Name.all),
 				Platform	=> Routes.All_Routes(Trains.Trains(Train_Descriptor_Index).Route_Index)
 												(Trains.Trains(Train_Descriptor_Index).Next_Stage).Platform_Index,
 				Time 		=> Ada.Calendar.Formatting.Image(Time_To_Wait),
@@ -455,15 +454,26 @@ package body Platform is
 
 
     procedure Terminate_Platform(
-			This 				: access Platform_Handler) is
+		This 				: access Platform_Handler) is
 	begin
 		This.The_Platform.Terminate_Platform;
 	end Terminate_Platform;
 
 
+	procedure Init(
+		This					: access Platform_Handler;
+		Station_Name			: access Unbounded_String;
+		Notice_Panel_Ref		: access Notice_Panel.Notice_Panel_Entity;
+		ID						: in	 Positive) is
+	begin
+		This.Station_Name 	:= Station_Name;
+		This.Panel			:= Notice_Panel_Ref;
+		This.ID				:= ID;
+    end Init;
+
 	function Get_Run_For_Train(
-			This 					: access Platform_Handler;
-			Train_ID				: in	 Integer) return Integer is
+		This 					: access Platform_Handler;
+		Train_ID				: in	 Integer) return Integer is
 	begin
 		if This.Train_Run.Contains(Train_ID) then
 			return This.Train_Run.Element(Train_ID);

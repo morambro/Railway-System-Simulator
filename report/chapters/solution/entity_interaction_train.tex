@@ -65,8 +65,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 				\item Ingresso.
 				\item Uscita.
 			\end{itemize}
-		Per mantenere l'ordine di accesso, ciascun Segmento è dotato di una Coda FIFO (\ttt{Train\_Queue}) che conterrà i Descrittori dei Treni correntemente in transito. Tale coda avrà una capienza massima per limitare il numero di accessi consecutivi da una singola direzione. 
-		
+		Per mantenere l'ordine di accesso, ciascun Segmento \ttt{Segment} è dotato di una Coda FIFO (\ttt{Train\_Queue}) che conterrà i Descrittori dei Treni correntemente in transito.		
 		\begin{description}
 			
 			\item {\ii{Ingresso}}
@@ -100,16 +99,16 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 				\end{itemize}
 			\item Se $T$ non può accedere, allora a seconda della direzione con la quale intende percorrere il Segmento, viene posto in attesa su condizione \ttt{Can\_Enter\_First\_End} oppure \ttt{Can\_Enter\_Second\_End} con una \ttt{wait}. Una possibile realizzazione in pseudo-codice del controllo può essere:
 \begin{lstlisting}
-monitor Segment
+monitor Segment_Monitor
 	...
-	procedure enter(train:Train,access_end:integer) 
+	procedure Enter(T:Train,Access_End:integer) 
 	begin
 		...
-		while(can_not_access) loop
-			if access_end=first_end then
-				wait(can_enter_first_edge);
+		while(Can_Not_Access) loop
+			if Access_End = First_End then
+				wait(Can_Enter_First_Edge);
 			else
-				wait(can_enter_second_edge);
+				wait(Can_Enter_Second_Edge);
 			end if;
 		end loop;
 	...
@@ -123,6 +122,108 @@ monitor Segment
 		\end{itemize}
 			
 			Una volta che il Segmento si sarà liberato (\ttt{Free=True}) allora ciascun Treno in attesa nella coda relativa all'estremità opposta a quella di accesso dell'ultimo Treno uscito, potrà ritentare l'accesso al Segmento (la coda viene svuotata e ripopolata).
+			Si noti che la soluzione presentata non garantisce accesso preferenziale ai treni di tipo FB, requisito desiderabile. Per introdurre priorità senza poter fare assunzioni sulle politiche di scheduling che verranno utilizzate è possibile procedere nel seguente modo: viene introdotta una nuova risorsa protetta da monitor, \ttt{Priority\_Access\_Handler}, la quale mantiene due variabili intere \ttt{FB\_Count} e \ttt{Regional\_Count}, un flag booleano \ttt{Free} e due varibili di condizione \ttt{Can\_Access\_FB} e \ttt{Can\_Access\_Regional}. Tale risorsa avrà la seguente semantica in pseudo-codice:
+	
+\begin{lstlisting}
+monitor Priority_Access_Handler 
+	...
+	procedure Access(T:Train) 
+	begin
+		if not Free then
+			if T.Type = FB then
+				FB_Count := FB_Count + 1;
+				wait(Can_Access_FB);
+				FB_Count := FB_Count - 1;
+			else
+				Regional_Count := Regional_Count + 1;
+				wait(Can_Access_Regional);
+				Regional_Count := Regional_Count - 1;
+			end if;
+		end if;
+		Free := False;
+	end;
+	
+	procedure Access_Gained()
+	begin
+		Free := True;
+		if FB_Count > 0 then
+			signal(Can_Access_FB);
+		else
+			signal(Can_Access_Regional);
+		end if;
+	end;
+end monitor;
+\end{lstlisting}
+			
+			Questa struttura può essere utilizzata nel modo seguente: supponiamo di avere una struttura dati contenente un oggetto \ttt{Priority\_Access\_Handler} e un oggetto \ttt{Segment}, la quale espone una interfaccia composta da \ttt{Add\_Train}, procedura che aggiunge un dato Descrittore di Treno in una coda interna \ttt{Trains\_Order} che specifica l'ordine di accesso, e da \ttt{Enter} e \ttt{Leave} rispettivamente per entrare ed uscire dal Segmento. \ttt{Enter} può avere il seguente comportamento:
+			
+\begin{lstlisting}
+	
+...
+// procedura non thread safe
+procedure Enter(Train:Train,Segment:Segment) is
+begin
+	// Se l'oggetto Priority_Controller e' libero, 
+	// viene occupato e si procede oltre, altrimenti 
+	// il thread corrente si trovera' in attesa su  
+	// variabile di condizione Can_Access_FB o 
+	// Can_Access_Regional.
+	Segment.Priority_Controller.Access(Train);
+	// A questo punto il thread corrente e' l'unico  
+	// in esecuzione e quindi puo' inserire il  
+	// descrittore nella coda interna a Segment_Monitor. 
+	// Nel frattempo altri thread possono attendere
+	// nelle code di attesa di Priority_Controller.
+	Segment.Segment_Monitor.Add_Train(Train);
+	// Una volta eseguito l'operazione Add_Train si 
+	// puo' liberare l'Access_Controller
+	Segment.Priority_Controller.Access_Gained();
+	// A questo punto viene fatta la richiesta 
+	// di Accesso. Anche in caso di prerilascio, 
+	// esso verra' attuato secondo l'ordine 
+	// descritto nella coda interna Trains_Order.
+	Segment.Segment_Monitor.Enter(Train);
+end;
+	
+\end{lstlisting}
+
+	mentre \ttt{Leave} semplicemente invoca \ttt{Leave} su \ttt{Segment}. La semantica di accesso ordinato in base al contenuto della coda \ttt{Trains\_Order} è il seguente:
+	
+\begin{lstlisting}
+
+monitor Segment_Monitor
+	...
+	procedure Enter(T : Train) 
+	begin
+		
+		// Se il Treno corrente T non e' il
+		// prossimo designato, attende.
+		while(Trains_Order.First_Element() /= T) loop
+			wait(Not_First);
+		end loop;
+		
+		Trains_Order.Dequeue(T1);
+		
+		// Invoca una signal su variabile di 
+		// condizione, risvegliando in maniera
+		// ordinata i thread in attesa.
+		// Fino a quando il thread corrente non
+		// abbandonera' la risorsa (ovvero 
+		// terminera' l'esecuzione della procedura
+		// corrente) essi non potranno eseguire.
+		signal_all(Not_First);
+		
+		// Procedi con l'accesso secondo la 
+		// semantica desctitta
+		...
+	end;
+
+end monitor;	
+	
+\end{lstlisting}
+			
+			Sebbene questo meccanismo introduca una maggiore complessità anche in termini computazionali, esso garantisce un certo livello di priorità nell'accedere al Segmento per i Treni di tipo \ttt{FB}.
+			
 			Per semplicità, si può assumere che vi sia uno spazio apposito dove i Treni possano attendere affinché si liberi il Segmento.
 			  
 			\item {\ii{Uscita}}
@@ -227,7 +328,7 @@ end monitor;
 		
 		\begin{itemize}
 			\item In maniera sequenziale tra tutti i Treni provenienti dallo stesso segmento.
-			\item In maniera concorrente tra tutti i Treni provenienti da Segmenti diversi.
+			\item In maniera concorrente tra tutti i Treni provenienti da Segmenti diversi, fornendo precedenza di accesso ai Treni di tipo \ttt{FB}.
 		\end{itemize}
 		
 		Si rende quindi evidente la necessità di garantire l'ordine di esecuzione tra tutti i thread provenienti da uno stesso segmento, indipendentemente dalle scelte effettuate dello scheduler che verrà adottato.

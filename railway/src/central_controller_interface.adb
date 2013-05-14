@@ -102,29 +102,6 @@ package body Central_Controller_Interface is
 
 	end Set_Train_Left_Status;
 
-	procedure Set_Traveler_Status(
-		Traveler	: Positive;
-		Train		: Positive;
-		Station		: String;
-		Platform	: Positive;
-		Action 		: Traveler_Action)
-	is
-		J_Event : JSON_Value := Create_Object;
-	begin
-		J_Event.Set_Field("type","traveler_event");
-		J_Event.Set_Field("traveler_id",Traveler);
-		J_Event.Set_Field("train_id",Train);
-		J_Event.Set_Field("station",Station);
-		J_Event.Set_Field("platform",Platform);
-		case Action is
-			when ENTER => J_Event.Set_Field("action","enter");
-			when LEAVE => J_Event.Set_Field("action","leave");
-			when FINISHED => J_Event.Set_Field("action","finished");
-		end case;
-		Central_Controller_Interface.Send_Event(J_Event.Write);
-	end Set_Traveler_Status;
-
-
 	procedure Notify_Termination is
 		Parameters : YAMI.Parameters.Parameters_Collection := YAMI.Parameters.Make_Parameters;
 	begin
@@ -138,5 +115,75 @@ package body Central_Controller_Interface is
 			Callback 			=> null);
 
     end Notify_Termination;
+
+    -- # ####################################### TRAVELER ###############################
+
+	procedure Set_Traveler_Entering_Status(
+		Traveler	: Positive;
+		Train		: Positive;
+		Station		: String;
+		Platform	: Positive)
+	is
+		J_Event : JSON_Value := Create_Object;
+	begin
+		J_Event.Set_Field("type","traveler_event");
+		J_Event.Set_Field("traveler_id",Traveler);
+		J_Event.Set_Field("train_id",Train);
+		J_Event.Set_Field("station",Station);
+		J_Event.Set_Field("platform",Platform);
+		J_Event.Set_Field("action","enter");
+		Central_Controller_Interface.Send_Event(J_Event.Write);
+    end Set_Traveler_Entering_Status;
+
+	procedure Set_Traveler_Left_Status(
+		Traveler	: Positive;
+		Train		: Positive;
+		Station		: String;
+		Platform	: Positive)
+	is
+		J_Event : JSON_Value := Create_Object;
+	begin
+		J_Event.Set_Field("type","traveler_event");
+		J_Event.Set_Field("traveler_id",Traveler);
+		J_Event.Set_Field("train_id",Train);
+		J_Event.Set_Field("station",Station);
+		J_Event.Set_Field("platform",Platform);
+		J_Event.Set_Field("action","leave");
+
+		Central_Controller_Interface.Send_Event(J_Event.Write);
+    end Set_Traveler_Left_Status;
+
+	procedure Set_Traveler_Finished_Status(
+		Traveler	: Positive;
+		Train		: Positive;
+		Station		: String;
+		Platform	: Positive)
+	is
+		J_Event : JSON_Value := Create_Object;
+	begin
+		J_Event.Set_Field("type","traveler_event");
+		J_Event.Set_Field("traveler_id",Traveler);
+		J_Event.Set_Field("train_id",Train);
+		J_Event.Set_Field("station",Station);
+		J_Event.Set_Field("platform",Platform);
+		J_Event.Set_Field("action","finished");
+
+		Central_Controller_Interface.Send_Event(J_Event.Write);
+    end Set_Traveler_Finished_Status;
+
+
+	procedure Set_Traveler_Buying_Status(
+		Traveler	: Positive;
+		Station		: String)
+	is
+		J_Event : JSON_Value := Create_Object;
+	begin
+		J_Event.Set_Field("type","traveler_event");
+		J_Event.Set_Field("traveler_id",Traveler);
+		J_Event.Set_Field("station",Station);
+		J_Event.Set_Field("action","buy");
+
+		Central_Controller_Interface.Send_Event(J_Event.Write);
+	end Set_Traveler_Buying_Status;
 
 end Central_Controller_Interface;

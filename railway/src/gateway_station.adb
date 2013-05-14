@@ -42,13 +42,13 @@ package body Gateway_Station is
 	-- ###################################################################################################
 
 	function Get_Name(
-		This : in	 Gateway_Station_Type) return String is
+		This 				: in out 	Gateway_Station_Type) return String is
 	begin
 		return To_String(This.Name);
     end Get_Name;
 
 	procedure Enter(
-		This 				: in		Gateway_Station_Type;
+		This 				: in out	Gateway_Station_Type;
 		Descriptor_Index	: in		Positive;
 		Platform_Index		: in		Positive;
 		Segment_ID			: in 		Positive;
@@ -62,7 +62,7 @@ package body Gateway_Station is
 			Train_Index	=> Descriptor_Index);
 
 		-- # Add The Train to Platform internal queue.
-		This.Platforms(Platform_Index).Add_Train(Trains.Trains(Descriptor_Index).ID);
+		This.Platforms(Platform_Index).Add_Train(Descriptor_Index);
 
 		-- # Now we can Free the Access controller, to let other Tasks to be awaked.
 		This.Segments_Map_Order.Element(Segment_ID).Free;
@@ -110,7 +110,7 @@ package body Gateway_Station is
 
 
 	procedure Leave(
-		This 				: in 		Gateway_Station_Type;
+		This 				: in out	Gateway_Station_Type;
 		Descriptor_Index	: in		Positive;
 		Platform_Index		: in		Positive;
 		Action				: in 		Route.Action)
@@ -153,7 +153,7 @@ package body Gateway_Station is
 
 
 	overriding procedure Add_Train(
-		This				: in 		Gateway_Station_Type;
+		This				: in out	Gateway_Station_Type;
 		Train_ID			: in 		Positive;
 		Segment_ID			: in 		Positive) is
 	begin
@@ -192,7 +192,7 @@ package body Gateway_Station is
 	-- # waiting for a specific Train
 	-- #
 	procedure Wait_For_Train_To_Go(
-			This 				: in		Gateway_Station_Type;
+			This 				: in out	Gateway_Station_Type;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive)
@@ -231,7 +231,7 @@ package body Gateway_Station is
 
 
 	overriding procedure Wait_For_Train_To_Arrive(
-			This 				: in		Gateway_Station_Type;
+			This 				: in out	Gateway_Station_Type;
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive) is
@@ -247,16 +247,16 @@ package body Gateway_Station is
 
 
 	procedure Buy_Ticket(
-		This 			: in	 Gateway_Station_Type;
-		Traveler_Index	: in	 Positive;
-		To				: in 	 String)
+		This 					: in out 	Gateway_Station_Type;
+		Traveler_Index			: in	 	Positive;
+		To						: in 	 	String)
 	is
 	begin
 		Regional_Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
     end Buy_Ticket;
 
 	procedure Terminate_Platforms(
-		This : in	 Gateway_Station_Type) is
+		This 					: in out	 Gateway_Station_Type) is
 	begin
 		for I in 1 .. This.Platforms'Length loop
 			This.Platforms(I).Terminate_Platform;
@@ -265,11 +265,11 @@ package body Gateway_Station is
 
 
     procedure Occupy_Platform(
-			This					: in 	 Gateway_Station_Type;
-			Platform_Index			: in 	 Positive;
-			Train_Index				: in 	 Positive) is
+			This				: in out 	Gateway_Station_Type;
+			Platform_Index		: in 		Positive;
+			Train_Index			: in 	 	Positive) is
 	begin
-		This.Platforms(Platform_Index).Add_Train(Trains.Trains(Train_Index).Id);
+		This.Platforms(Platform_Index).Add_Train(Train_Index);
 		This.Platforms(Platform_Index).Enter(Train_Index,Route.FREE);
     end Occupy_Platform;
 
@@ -286,9 +286,8 @@ package body Gateway_Station is
 		Station.Name := Unbounded_Strings.To_Unbounded_String(Name);
 		Station.Panel := new Notice_Panel.Notice_Panel_Entity(new String'(To_String(Station.Name)));
 		for I in Positive range 1..Platforms_Number loop
-			Station.Platforms(I) := new Platform.Platform_Handler(I,Station.Name'Access,Station.Panel);
+			Station.Platforms(I).Init(Station.Name'Access,Station.Panel,I);
 		end loop;
-
 		Station.Destinations := Destinations;
 		return Station;
 	end;
@@ -311,18 +310,14 @@ package body Gateway_Station is
 
 -- ########################################### JSON - Gateway Station ##########################################
 
-	function Load_Destinations(J_Array : in JSON_Array) return access String_Positive_Maps.Map
-	is
+	function Load_Destinations(J_Array : in JSON_Array) return access String_Positive_Maps.Map is
 		Array_Length : constant Natural := Length (J_Array);
 		Map_To_Return : access String_Positive_Maps.Map := new String_Positive_Maps.Map;
 	begin
-
 		for I in 1 .. Array_Length loop
 			Map_To_Return.Insert(
 				Get(Arr => J_Array, Index => I).Get("region"),
-				Get(Arr => J_Array, Index => I).Get("station")
-			);
-
+				Get(Arr => J_Array, Index => I).Get("station"));
 		end loop;
 
 		return Map_To_Return;

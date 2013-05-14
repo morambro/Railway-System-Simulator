@@ -55,13 +55,13 @@ package Traveler is
 
 	-- # Traveler Manager
 	type Traveler_Manager is new Ada.Finalization.Controlled with record
-		Traveler 		: Traveler_Type;
-		Next_Operation 	: Traveler_Operations_Types := LEAVE;
-		Destination 	: Unbounded_String;
-		The_Ticket 		: Ticket.Ticket_Type_Ref := null;
-		Current_Start_Station : Unbounded_String;
-		Start_Station 	: Unbounded_String;
-		Start_Node 		: Unbounded_String;
+		Traveler 				: Traveler_Type;
+		The_Ticket 				: Ticket.Ticket_Type_Ref := null;
+		Current_Start_Station 	: Unbounded_String;
+		Current_Dest_Station 	: Unbounded_String;
+		Start_Station 			: Unbounded_String;
+		Destination 			: Unbounded_String;
+		Start_Node 				: Unbounded_String;
 	end record;
 
 	type Traveler_Manager_Array is Array(Positive range <>) of aliased Traveler_Manager;

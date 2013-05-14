@@ -60,19 +60,8 @@ package body Train_Pool is
 
 			Logger.Log(NAME,"Train waits for a Descriptor",Logger.DEBUG);
 
-			if Priority_Level = HIGH then
-
-				High_Priority_Trains_Queue.Dequeue(
-					To_Get 		=> Current_Descriptor_Index,
-					Terminated 	=> Terminated
-				);
-			else
-				Low_Priority_Trains_Queue.Dequeue(
-					To_Get 		=> Current_Descriptor_Index,
-					Terminated 	=> Terminated
-				);
-			end if;
-
+			-- # Gain a new Train Descriptor Index.
+			Priority_Handler.Get_Descriptor(Current_Descriptor_Index,Terminated);
 
 			exit MAIN_LOOP when Terminated;
 
@@ -88,7 +77,7 @@ package body Train_Pool is
 				-- # Retrieve start Station from which start
 				Start_Station 	    : Positive := Routes.All_Routes(Route_Index)(Next_Stage).Start_Station;
 
-				-- # Retrieve start Platfrom from which start
+				-- # Retrieve start Platform from which start
 				Start_Platform 	    : Positive := Routes.All_Routes(Route_Index)(Next_Stage).Start_Platform;
 
 				-- # Retrieve next Segment to travel
@@ -122,12 +111,12 @@ package body Train_Pool is
 					Time_To_Wait : Ada.Calendar.Time := Environment.Route_Time_Table(Trains.Trains(Current_Descriptor_Index).Route_Index).Table
 						(Current_Run)(Current_Run_Cursor);
 				begin
+
 					Logger.Log(
 						NAME,
 						"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
 						" wait until " & Time_Table.Get_Time_Representation(Time_To_Wait),
-						Logger.DEBUG
-					);
+						Logger.DEBUG);
 
 					-- # Wait until time to go!
 					delay until Time_To_Wait;
@@ -141,8 +130,7 @@ package body Train_Pool is
 					NAME,
 					"Train" & Integer'Image(Trains.Trains(Current_Descriptor_Index).ID) &
 					" tries to leave Station " & Integer'Image(Start_Station) & ", platform " & Integer'Image(Start_Platform),
-					Logger.DEBUG
-				);
+					Logger.DEBUG);
 
 				-- # Train Leaves the station
 		    	Environment.Stations(Start_Station).Leave(
@@ -150,6 +138,7 @@ package body Train_Pool is
 		    		Platform_Index		=> Start_Platform,
 		    		Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Leave_Action);
 
+				-- # Ask to Enter to the next Segment.
 				Segments.Segments(Next_Segment).Enter(Current_Descriptor_Index,Max_Speed,Leg_Length);
 
 				Logger.Log(
@@ -274,5 +263,53 @@ package body Train_Pool is
 		Low_Priority_Trains_Queue.Stop;
 		High_Priority_Trains_Queue.Stop;
 	end Stop;
+
+
+
+
+
+	protected body Priority_Handler_Type is
+
+		procedure Get_Descriptor(
+			Train_Descriptor_Index 	: out Positive;
+			Terminated 				: out Boolean) is
+		begin
+			if High_Priority_Trains_Queue.Is_Empty then
+				Low_Priority_Trains_Queue.Dequeue(Train_Descriptor_Index,Terminated);
+			else
+				High_Priority_Trains_Queue.Dequeue(Train_Descriptor_Index,Terminated);
+			end if;
+		end Get_Descriptor;
+
+
+--      	entry Gain_Access(
+--      		P : in 	Priority) when True is
+--      	begin
+--      		case P is
+--      			when LOW 	=> requeue Gain_Access_Regional;
+--      			when HIGH 	=> requeue Gain_Access_FB;
+--      		end case;
+--      	end Gain_Access;
+--
+--      	procedure Release is
+--      	begin
+--      		Free := True;
+--  		end Release;
+--
+--      	entry Gain_Access_FB(
+--      		P : in 	Priority) when Free is
+--      	begin
+--      		Free := False;
+--  	    end Gain_Access_Fb;
+--
+--      	entry Gain_Access_Regional(
+--      		P : in 	Priority) when Free and Gain_Access_FB'Count=0 is
+--      	begin
+--      		Free := False;
+--  		end Gain_Access_Regional;
+
+    end Priority_Handler_Type;
+
+
 
 end Train_Pool;

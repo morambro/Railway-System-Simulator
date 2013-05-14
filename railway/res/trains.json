@@ -27,7 +27,7 @@
 			
 			"route_index" 		: 2,
 			
-			"sits_number"		: 10,
+			"sits_number"		: 5,
 			"occupied_sits"		: 0,
 			"type"				: "fb",
 			"start_node"		: "Node_1"
@@ -43,7 +43,7 @@
 			
 			"route_index" 		: 3,
 			
-			"sits_number"		: 10,
+			"sits_number"		: 5,
 			"occupied_sits"		: 0,
 			"type"				: "regionale",
 			"start_node"		: "Node_3"
@@ -59,7 +59,7 @@
 			
 			"route_index" 		: 4,
 			
-			"sits_number"		: 10,
+			"sits_number"		: 5,
 			"occupied_sits"		: 0,
 			"type"				: "fb",
 			"start_node"		: "Node_1"

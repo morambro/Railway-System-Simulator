@@ -54,11 +54,4 @@ package Routes is
 		From		: in 	Positive;
 		To			: in 	Positive) return Routes_Indexes;
 
-
-	-- #
-	-- # Returns an array of indexes of Routes traveled by FB trains
-	-- #
---  	function Get_FB_Routes return access Route.Routes;
-
-
 end Routes;

@@ -11,6 +11,7 @@
 		\item compilatore \ttt{gcc} versione 4.7.2.
 		\item distribuzione Scala, in particolare i compilatori \ttt{scalac} e \ttt{fsc} versione 2.10.1.
 		\item libreria \ttt{Gnatcoll 1.5w}.
+		\item server MVC \ii{Play} per Scala, versione 2.1.0 o superiore.
 	\end{itemize}
 	
 	Per semplicità, sono state riportate le versioni delle librerie utilizzate per lo sviluppo, tuttavia non è escluso che possa essere utilizzato anche con versioni più recenti.
@@ -21,14 +22,77 @@
 	
 	\section{Avvio}
 	
-	L'avvio avviene nel seguente modo
+	L'avvio del sistema si effettua eseguendo i seguenti script presenti nella cartella principale:
 	
-	\dots
+		\begin{itemize}
+			\item \ttt{run\_play.sh} : Avvia il server \ii{Play}, necessario per la rappresentazione grafica della simulazione. Il suo avvio può richiedere alcuni secondi.
+			\item \ttt{run\_all.sh} : Avvia le entità \ttt{Name\_Server}, \ttt{Central\_Controller} e \ttt{Central\_Ticket\_Office}.
+			\item \ttt{run\_simulation.sh} : Avvia i nodi di simulazione.
+		\end{itemize}
+	Viene fornita una configurazione di base composta da 3 Regioni; tuttavia è possibile utilizzare configurazioni diverse, modificando opportunamente i file \ttt{JSON} presenti nella cartella \ttt{railway/res}. Vengono fornite le seguenti regole:
+	\begin{itemize}
+		\item \ttt{routes.json}: deve contenere un array di percorsi, identificato con chiave \ttt{routes}. Ciascun percorso dovrà essere dotato di:
+			\begin{itemize}
+				\item un campo \ttt{id} contenente l'identificativo univoco.
+				\item un array con chiave \ttt{route} composto da tappe, ciascuna con i seguenti campi:
+					\begin{itemize}
+						\item \ttt{start\_station}: Indice della Stazione di partenza;
+						\item \ttt{next\_station}: Indice della Stazione di destinazione della tappa;
+						\item \ttt{start\_platform}: Indice della Piattaforma di partenza;
+						\item \ttt{platform\_index}: Indice della Piattaforma di destinazione;
+						\item \ttt{next\_segment}: Indice del Segmento da utilizzare per raggiungere \ttt{next\_station};
+						\item \ttt{node\_name}: Nome del Nodo (Regione) sul quale si trova \ttt{next\_station};
+						\item \ttt{leave\_action}: Azione da intraprendere alla partenza (\ttt{ENTER} o \ttt{PASS});
+						\item \ttt{enter\_action}: Azione da intraprendere all'arrivo (\ttt{ENTER} o \ttt{PASS}).
+					\end{itemize}
+			\end{itemize}
+		\item \ttt{time\_table.json}: deve contenere per ciascun percorso definito in \ttt{routes.json} una tabella degli orari, in un array identificato con \ttt{time\_table}. Per ciascuna tabella devono essere specificati \ttt{route}, indice del percorso di riferimento, e una matrice di orari di partenza \ttt{time}, di dimensione $N$ x $M$, dove $N$ è il numero di corse, che dev'essere $\ge 2$, ed $M$ è il numero di Tappe del percorso.
+		\item \ttt{trains.json}: deve contenere un array di treni, identificato da \ttt{trains}. Per ciascun Treno si devono specificare i seguenti campi:
+			\begin{itemize}
+				\item \ttt{id} : Identificativo univoco, di valore intero positivo;
+				\item \ttt{speed}: Velocità $> 0$ del Treno;
+				\item \ttt{max\_speed}: Velocità massima $> 0$ del Treno;
+				\item \ttt{current\_station}: Indice della stazione di partenza;
+				\item \ttt{next\_stage}: Deve valere sempre 1;
+				\item \ttt{route\_index}: Indice dell'array di percorsi definito in \ttt{routes.json} che rappresenta il percorso assegnato;
+				\item \ttt{sits\_number}: Numero di posti a sedere $> 1$;
+				\item \ttt{occupied\_sits}: Deve valere 0;
+				\item \ttt{type}: Tipo del Treno, tra \ttt{regionale} o \ttt{fb};
+				\item \ttt{start\_node}: Nome del nodo di partenza.
+			\end{itemize}
+		\item \ttt{travelers.json}: deve contenere un array di Viaggiatori, identificato con \ttt{travelers}. Ciascun Viaggiatore conterrà un sotto-oggetto \ttt{traveler} per il quale vanno specificati \ttt{id}, \ttt{name} e \ttt{surname}, e i seguenti altri campi:
+			\begin{itemize}
+				\item \ttt{next\_operation}: inizialmente sempre 1;
+				\item \ttt{destination}: Stazione di destinazione;
+				\item \ttt{start\_station}: Stazione di partenza;
+				\item \ttt{start\_node}: Nome del nodo di partenza.
+			\end{itemize}
+		\item \ttt{[Node\_Name]-stations.json}: deve contenere un array di stazioni \ttt{station}, e per ciascuna di esse va specificato \ttt{name}, nome univoco, \ttt{platform\_number}, numero di piattaforme, e \ttt{type}, che può essere \ttt{R} o \ttt{G}. 
+		\item \ttt{[Node\_Name]-segments.json}: deve contenere un array \ttt{segments} di Segmenti, e per ciascuno di essi va specificato:
+			\begin{itemize}
+				\item \ttt{id}: Identificativo univoco intero positivo;
+				\item \ttt{max\_speed}: Velocità massima di percorrenza;
+				\item \ttt{max}: Valore intero positivo, massimo numero di accessi per estremo;
+				\item \ttt{length}: Lunghezza del Segmento (si consiglia una misura tra 0 e 1000);
+				\item \ttt{first\_end}: Indice della prima Stazione collegata;
+				\item \ttt{second\_end}: Indice della seconda Stazione collegata.
+			\end{itemize}
+		\item \ttt{[Node\_Name]-topology.json}: deve contenere un array \ttt{topology} di elementi, e indica per ciascuna Stazione, le stazioni raggiungibili e la lunghezza del Segmento per raggiungerle. Ciascun elemento dell'array deve contenere i campi:
+			\begin{itemize}
+				\item \ttt{station}: Indice della stazione di riferimento;
+				\item \ttt{neighbours}: Array di indici delle Stazioni limitrofe;
+				\item \ttt{distance}: Array di distanze, per raggiungere ciascuna Stazione in \ttt{neighbours}.
+			\end{itemize}
+	\end{itemize}
 	
-	
-	La configurazione che verrà utilizzata, in termini di Stazioni, Treni, Viaggiatori, ecc... è definita da dei file in formato \ttt{JSON} presenti nella cartella \ttt{railway/res}. \'E quindi possibile utilizzare configurazioni diverse, rispettando le seguenti regole:
-	
-	\dots
+	Una volta definita la configurazione, è necessario lanciare lo script \ttt{run.sh} nella cartella \ttt{railway/res/shortest\_path}, specificando il file \ttt{[Node\_Name]-topology.json} e il nome del nodo (ad esempio, \ttt{sh run.sh Node\_1-topology.json Node\_1}), per ciascun nodo di simulazione. Questo genererà i file \ttt{[Node\_Name]-paths.json} contenenti i cammini minimi utilizzati per la creazione dei Tiket.
+	Infine, è necessario modificare lo script \ttt{run\_simulation.sh} aggiungendo i comandi per inizializzare i nodi di simulazione: per ciascun nodo dovrà essere aggiunta un comando nella forma:
+	\begin{verbatim}
+echo "Loading [Node_Name]..."
+gnome-terminal --title="[Node_Name]"
+    --command="sh railway/run.sh [Node_Name] [Node tcp address]"
+echo "done"
+	\end{verbatim}
 	
 	\section{Terminazione}
 	

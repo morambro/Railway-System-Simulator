@@ -132,8 +132,6 @@ package body Environment Is
 			Operations(I)(Traveler.TICKET_READY) := new Move_Operation.Ticket_Ready_Operation_Type'(Traveler_Manager_Index => I);
 		end loop;
 
-		Destinations := Load_Destinations;
-
     end Init;
 
     procedure Update_Traveler(
@@ -159,22 +157,5 @@ package body Environment Is
 		return 0;
     end Get_Index_For_Name;
 
-	function Load_Destinations return access Destinations_Type
-	is
-		J_Value 	 : JSON_Value := Get_Json_Value(Json_File_Name => "res/destinations.json");
-		A_JSON_Array : constant JSON_Array := Get (Val => J_Value,Field => "destinations");
-		Array_Length : constant Natural := Length (A_JSON_Array);
-
-		Destinations : access Destinations_Type := new Destinations_Type(1..Array_Length);
-	begin
-		for I in 1..Array_Length loop
-			declare
-				Dest : String := Get (Arr => A_JSON_Array,Index => I).Get;
-			begin
-	    		Destinations(I) := To_Unbounded_String(Dest);
-	    	end;
-		end loop;
-		return Destinations;
-    end Load_Destinations;
 
 end Environment;

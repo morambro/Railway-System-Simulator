@@ -24,11 +24,11 @@
 --  along with Railway_Simulation.  If not, see <http://www.gnu.org/licenses/>. --
 ----------------------------------------------------------------------------------
 with Environment;
-with Segment_2;
+with Segment;
 
 package Segments is
 
-	Segments : access Segment_2.Segments_Array := null;
+	Segments : access Segment.Segments_Array := null;
 
 	procedure Init;
 

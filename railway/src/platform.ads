@@ -33,7 +33,7 @@ with Notice_Panel;
 with Ada.Containers.Ordered_Maps;
 
 -- #
--- # Represents a Platform for a generic Station, both for Trains and Travelers.
+-- # Contains the definition of a Platform.
 -- #
 package Platform is
 
@@ -42,10 +42,7 @@ package Platform is
  	-- #
  	-- # Implementation of Platform_Interface, representing a Platform.
  	-- #
-	type Platform_Handler(
-		ID		: Integer;
-		S 		: access Unbounded_String;
-		Panel	: access Notice_Panel.Notice_Panel_Entity) is limited new Generic_Platform.Platform_Interface with private;
+	type Platform_Handler is limited new Generic_Platform.Platform_Interface with private;
 
 		overriding procedure Enter(
 			This 					: access Platform_Handler;
@@ -68,8 +65,20 @@ package Platform is
 		overriding procedure Terminate_Platform(
 			This 					: access Platform_Handler);
 
+		overriding 	procedure Add_Train(
+			This					: access Platform_Handler;
+			Train_Index				: in 	 Positive);
 
-	type Platforms is array (Positive range <>) of access Platform_Handler;
+			-- #
+		-- # This Method is added to perform initializations
+		-- #
+		procedure Init(
+			This					: access Platform_Handler;
+			Station_Name			: access Unbounded_String;
+			Notice_Panel_Ref		: access Notice_Panel.Notice_Panel_Entity;
+			ID						: in	 Positive);
+
+	type Platforms is array (Positive range <>) of aliased Platform_Handler;
 
 	-- # Create a queue for Traveler type
 	package Traveler_Queue_Package is new Queue(Element => Positive);
@@ -80,14 +89,15 @@ package Platform is
 
 
 private
+	-- #
+	-- # Package containing queues of Positive.
+	-- #
 	package Trains_Queue_Package is new Queue (Element => Positive);
 
 	-- #
 	-- # Protected Resource used to Regulate the access to a platform.
 	-- #
-	protected type Platform_Type(
-		ID	: Integer;
-		S 	: access Ada.Strings.Unbounded.Unbounded_String) is
+	protected type Platform_Type is
 
 		-- #
 		-- # This protected Procedure is used to make a Train
@@ -114,7 +124,7 @@ private
 		-- # Adds a Train to Trains_Order queue.
 		-- #
 		procedure Add_Train(
-			Train_ID 	: in 	Positive);
+			Train_Index	: in 	Positive);
 
 	private
 
@@ -138,21 +148,31 @@ private
 
 	end Platform_Type;
 
+	-- #
+	-- # Private part of the Platform_Handler.
+	-- #
+	type Platform_Handler is limited new Generic_Platform.Platform_Interface with record
 
-	type Platform_Handler(
+		-- # Platform ID.
 		ID		: Integer;
-		S 		: access Unbounded_String;
-		Panel	: access Notice_Panel.Notice_Panel_Entity) is limited new Generic_Platform.Platform_Interface with record
 
-		The_Platform	: Platform_Type(ID,S);
+		-- # The access controller
+		The_Platform	: Platform_Type;
 
 		-- # Queue for Arriving Traveler
-		Arrival_Queue 	: access Traveler_Queue_Package.Unbounded_Queue.Queue := new Traveler_Queue_Package.Unbounded_Queue.Queue;
+		Arrival_Queue 	: Traveler_Queue_Package.Unbounded_Queue.Queue;
 
 		-- # Queue for Travelers waiting for the train to leave
-		Leaving_Queue 	: access Traveler_Queue_Package.Unbounded_Queue.Queue := new Traveler_Queue_Package.Unbounded_Queue.Queue;
+		Leaving_Queue 	: Traveler_Queue_Package.Unbounded_Queue.Queue;
 
+		-- # Table which stores for each Train the last Run ID
 		Train_Run		: Train_Run_Map.Map;
+
+		-- # The name of the Station
+		Station_Name 	: access Unbounded_String := null;
+
+		-- # A pointer to Station's Notice Panel.
+		Panel			: access Notice_Panel.Notice_Panel_Entity := null;
 
 	end record;
 
@@ -169,8 +189,5 @@ private
 			This 					: access Platform_Handler;
 			Train_Descriptor_Index 	: in 	 Positive;
 			Action 					: in	 Route.Action);
-	procedure Add_Train(
-			This					: access Platform_Handler;
-			Train_ID 				: in 	 Positive);
 
 end Platform;

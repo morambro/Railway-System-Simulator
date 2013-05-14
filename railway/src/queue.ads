@@ -52,6 +52,8 @@ package Queue is
 
 		procedure Stop;
 
+		function Is_Empty return Boolean;
+
 	private
 		Termination : Boolean := False;
 		Q 			: Unbounded_Queue.Queue;

@@ -40,7 +40,7 @@ package body Regional_Station is
 	-- ------------------------ Definition of the inherited abstract methods ------------------------
 
 	function Get_Name(
-			This : in	Regional_Station_Type) return String is
+			This 			: in out	Regional_Station_Type) return String is
 	begin
 		return To_String(This.Name);
     end Get_Name;
@@ -48,11 +48,11 @@ package body Regional_Station is
 
 
 	procedure Enter(
-			This 				: in		Regional_Station_Type;
-			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive;
-			Segment_ID			: in 		Positive;
-			Action				: in 		Route.Action) is
+		This 				: in out	Regional_Station_Type;
+		Descriptor_Index	: in		Positive;
+		Platform_Index		: in		Positive;
+		Segment_ID			: in 		Positive;
+		Action				: in 		Route.Action) is
 	begin
 
 		-- # First, pass the Access Controller, to maintain the same order
@@ -60,8 +60,10 @@ package body Regional_Station is
 		This.Segments_Map_Order.Element(Segment_ID).Enter(
 			Train_Index	=> Descriptor_Index);
 
+		Put_Line(integer'image(Descriptor_Index));
+
 		-- # Add The Train to Platform internal queue.
-		This.Platforms(Platform_Index).Add_Train(Trains.Trains(Descriptor_Index).ID);
+		This.Platforms(Platform_Index).Add_Train(Descriptor_Index);
 
 		-- # Now we can Free the Access controller, to let other Tasks to be awaked.
 		This.Segments_Map_Order.Element(Segment_ID).Free;
@@ -82,10 +84,10 @@ package body Regional_Station is
 
 
 	procedure Leave(
-			This 				: in 		Regional_Station_Type;
-			Descriptor_Index	: in		Positive;
-			Platform_Index		: in		Positive;
-			Action				: in 		Route.Action) is
+		This 				: in out	Regional_Station_Type;
+		Descriptor_Index	: in		Positive;
+		Platform_Index		: in		Positive;
+		Action				: in 		Route.Action) is
 	begin
 
 		-- # Free the Current Platform and perform boarding of the Travelers.
@@ -105,7 +107,7 @@ package body Regional_Station is
 	-- # waiting for a specific Train
 	-- #
 	procedure Wait_For_Train_To_Go(
-			This 				: in		Regional_Station_Type;
+			This 				: in out	Regional_Station_Type;
 			Outgoing_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive) is
@@ -117,19 +119,12 @@ package body Regional_Station is
 			Message => "Traveler " & Traveler.Get_Name(Environment.Travelers(Outgoing_Traveler)) & " waits to GO",
 			L		=> Logger.NOTICE);
 
-		Central_Controller_Interface.Set_Traveler_Status(
-			Traveler	=> Outgoing_Traveler,
-			Train	 	=> Train_ID,
-			Station		=> To_String(This.Name),
-			Platform	=> Platform_Index,
-			Action		=> Central_Controller_Interface.LEAVE);
-
 	end Wait_For_Train_To_Go;
 
 
 
-	overriding procedure Wait_For_Train_To_Arrive(
-			This 				: in		Regional_Station_Type;
+	procedure Wait_For_Train_To_Arrive(
+			This 				: in out	Regional_Station_Type;
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
 			Platform_Index		: in		Positive) is
@@ -141,18 +136,11 @@ package body Regional_Station is
 			Message => "Traveler " & Traveler.Get_Name(Environment.Travelers(Incoming_Traveler)) & " waits to ARRIVE",
 			L		=> Logger.NOTICE);
 
-		Central_Controller_Interface.Set_Traveler_Status(
-			Traveler	=> Incoming_Traveler,
-			Train	 	=> Train_ID,
-			Station		=> To_String(This.Name),
-			Platform	=> Platform_Index,
-			Action		=> Central_Controller_Interface.ENTER);
-
     end Wait_For_Train_To_Arrive;
 
 
-	overriding procedure Add_Train(
-			This				: in 		Regional_Station_Type;
+	procedure Add_Train(
+			This				: in out	Regional_Station_Type;
 			Train_ID			: in 		Positive;
 			Segment_ID			: in 		Positive) is
 	begin
@@ -191,14 +179,23 @@ package body Regional_Station is
 
 
 	procedure Buy_Ticket(
-		This 			: in	 Regional_Station_Type;
-		Traveler_Index	: in	 Positive;
-		To				: in 	 String)
+		This 			: in out	Regional_Station_Type;
+		Traveler_Index	: in	 	Positive;
+		To				: in 	 	String)
 	is
 	begin
 		-- # Invokes Get_Ticket procedure
 		Regional_Ticket_Office.Get_Ticket(Traveler_Index,This.Get_Name,To);
 	end Buy_Ticket;
+
+
+	procedure Terminate_Platforms(
+		This 			: in out	 Regional_Station_Type) is
+	begin
+		for I in 1 .. This.Platforms'Length loop
+			This.Platforms(I).Terminate_Platform;
+		end loop;
+    end Terminate_Platforms;
 
 
 	function New_Regional_Station(
@@ -210,19 +207,10 @@ package body Regional_Station is
 		Station.Name 	:= Unbounded_Strings.To_Unbounded_String(Name);
 		Station.Panel 	:= new Notice_Panel.Notice_Panel_Entity(new String'(To_String(Station.Name)));
 		for I in Positive range 1..Platforms_Number loop
-			Station.Platforms(I) := new Platform.Platform_Handler(I,Station.Name'Access,Station.Panel);
+			Station.Platforms(I).Init(Station.Name'Access,Station.Panel,I);
 		end loop;
 		return Station;
 	end;
-
-
-	procedure Terminate_Platforms(
-		This : in	 Regional_Station_Type) is
-	begin
-		for I in 1 .. This.Platforms'Length loop
-			This.Platforms(I).Terminate_Platform;
-		end loop;
-    end Terminate_Platforms;
 
 
 	overriding procedure Print(This : in Regional_Station_Type) is

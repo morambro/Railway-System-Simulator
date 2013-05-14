@@ -44,12 +44,12 @@ package body Traveler is
 	procedure Finalize (This: in out Traveler_Manager) is
 	begin
     	if This.The_Ticket /= null then
+    		Logger.Log(
+	    		Sender	=> "Traveler_Manager",
+	    		Message => "Deallocation of Traveler " & Integer'Image(This.Traveler.ID) & " Ticket",
+	    		L 		=> Logger.INFO);
     		Ticket.Free_Ticket(This.The_Ticket);
     	end if;
-    	Logger.Log(
-    		Sender	=> "Traveler_Manager",
-    		Message => "Deallocation of Traveler",
-    		L 		=> Logger.INFO);
     end Finalize;
 
 ---------------------------------------- JSON-Traveler Creation ----------------------------------------------
@@ -62,27 +62,16 @@ package body Traveler is
     function Get_Traveler(Json_Traveler : JSON_Value) return Traveler_Type is
     	T : Traveler_Type;
     begin
-		T.ID 			:= Json_Traveler.Get("id");
-		T.Name 			:= Json_Traveler.Get("name");
-		T.Surname 		:= Json_Traveler.Get("surname");
+		T.ID 		:= Json_Traveler.Get("id");
+		T.Name 		:= Json_Traveler.Get("name");
+		T.Surname 	:= Json_Traveler.Get("surname");
 		return T;
     end;
 
     function Get_Traveler_Manager(Json_Traveler : JSON_Value) return Traveler_Manager is
     	T : Traveler_Manager;
     begin
-    	T.Traveler		 := Get_Traveler(Json_Traveler.Get("traveler"));
-
-		declare
-			OP : Integer := Json_Traveler.Get("next_operation");
-		begin
-			case OP is
-				when 1 => T.Next_Operation := LEAVE;
-				when 2 => T.Next_Operation := ENTER;
-				-- TODO: TO FIX!!!!
-				when others => T.Next_Operation := LEAVE;
-			end case;
-		end;
+    	T.Traveler	:= Get_Traveler(Json_Traveler.Get("traveler"));
 		declare
 			Dest 		: String := Json_Traveler.Get("destination");
 			Start_Stat	: String := Json_Traveler.Get("start_station");
@@ -92,6 +81,7 @@ package body Traveler is
 			T.Start_Node	:= To_Unbounded_String(Start_Node);
 			T.Start_Station	:= To_Unbounded_String(Start_Stat);
 			T.Current_Start_Station := T.Start_Station;
+			T.Current_Dest_Station 	:= T.Destination;
 		end;
 
 		return T;
@@ -123,20 +113,10 @@ package body Traveler is
 		Json_Traveler.Set_Field("id",Traveler.Traveler.ID);
 		Json_Traveler.Set_Field("name",Traveler.Traveler.Name);
 		Json_Traveler.Set_Field("surname",Traveler.Traveler.Surname);
-
 		Json_Traveler_M.Set_Field("traveler",Json_Traveler);
 		Json_Traveler_M.Set_Field("destination",Traveler.Destination);
 		Json_Traveler_M.Set_Field("start_station",Traveler.Start_Station);
 		Json_Traveler_M.Set_Field("start_node",To_String(Traveler.Start_Node));
-
-		case Traveler.Next_Operation is
-			when BUY_TICKET 	=> Json_Traveler_M.Set_Field("next_operation","buy_ticket");
-			when LEAVE			=> Json_Traveler_M.Set_Field("next_operation","leave");
-			when ENTER			=> Json_Traveler_M.Set_Field("next_operation","enter");
-			when TICKET_READY 	=> Json_Traveler_M.Set_Field("next_operation","ticket_ready");
-		end case;
-
-
 
 		return Json_Traveler_M.Write;
     end Get_Json;
