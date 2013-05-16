@@ -68,7 +68,7 @@
 				
 				case "traveler_event" : 
 					if (obj.action == "buy")
-						moveTravelerToPlatform(obj.traveler_id,obj.station,1,obj.action);
+						moveTravelerToPlatform(obj.traveler_id,obj.station,0,obj.action);
 					else 
 						moveTravelerToPlatform(obj.traveler_id,obj.station,obj.platform,obj.action);
 					break;
@@ -111,27 +111,21 @@
 			}
 		}
 		
-		function station(id,shape) {
-			this.id = id;
-			this.shape = shape;
-			
-			this.platforms = new Array();
-			
-		}
 		
 		r = Animations.createRaphael(true,{
 			container_id	: "canvas",
-			width			: 1800,
+			width			: 1670,
 			height			: 800
 		});
 		
-		var paddingLeft 		= 50;
+		var paddingLeft 		= 15;
 		var paddingTop 			= 50;
 		var stationDim 			= 150;
 		var segmentLength 		= 150;
 		var platformPaddingLeft = 25;
 		var platformPaddingTop 	= 15;
 		var platformHeigth		= 10;
+		
 		
 		segments = new Array();
 		
@@ -214,237 +208,333 @@
         /***************************************************************************************************************/
         /**************************************** STATIONS_DEFINITIONS *************************************************/
         /***************************************************************************************************************/
+        
+        function platform(rect) {
+        	this.rect = rect;
+        	this.travelersQueue = [];
+        	
+        	this.removeTraveler = function(traveler) {
+    			toRemove = -1;
+				for (i = 0 ; i<this.travelersQueue.length; i++) {
+					if (this.travelersQueue[i].text == traveler.text) {
+						toRemove = i;
+					}
+				}
+				if (toRemove > -1) {
+					this.travelersQueue.splice(toRemove,1);
+				}
+			
+				for(i = 0; i<this.travelersQueue.length; i++) {
+				
+					padding = i*2*(travelersRadius+4);
+	
+					this.travelersQueue[i].image.transform('t'+(this.rect.getBBox().x+padding)+','+(this.rect.getBBox().y-5));
+					this.travelersQueue[i].text.transform('t'+(this.rect.getBBox().x+padding)+','+(this.rect.getBBox().y-5/2));
+				}
+        	}
+        	
+        	this.addTraveler = function(traveler) {
+        		this.travelersQueue.push(traveler);
+					
+				for(i = 0; i<this.travelersQueue.length; i++) {
+					padding = i*2*(travelersRadius+4);
+		
+					this.travelersQueue[i].image.transform('t'+(this.rect.getBBox().x+padding)+','+(this.rect.getBBox().y-5));
+					this.travelersQueue[i].text.transform('t'+(this.rect.getBBox().x+padding)+','+(this.rect.getBBox().y-5/2));
+				}
+        	}
+        	
+        }
+        
+		function station(id,shape) {
+			this.id = id;
+			this.shape = shape;
+			
+			this.platforms = [];
+			
+			this.travelersQueue = [];
+			
+			this.removeTraveler = function(platformID,traveler) {
+				if (platformID == 0) {
+					toRemove = -1;
+					for ( i = 0 ; i<this.travelersQueue.length; i++) {
+						if (this.travelersQueue[i].text == traveler.text) {
+							toRemove = i;
+						}
+					}
+					if (toRemove > -1) {
+						this.travelersQueue.splice(toRemove,1);
+					}
+				
+					console.log("YO = " + toRemove);
+				
+				
+					for(i = 0; i<this.travelersQueue.length; i++) {
+					
+						padding = i*2*(travelersRadius+4);
+		
+						this.travelersQueue[i].image.transform('t'+(this.shape.getBBox().x+padding)+','+(this.shape.getBBox().y-5));
+						this.travelersQueue[i].text.transform('t'+(this.shape.getBBox().x+padding)+','+(this.shape.getBBox().y-5/2));
+					}
+				} else {
+					this.platforms[platformID].removeTraveler(traveler);
+				}
+				
+			}
+			
+			
+			this.addTraveler = function(platformID,traveler){
+				if (platformID == 0) {
+					this.travelersQueue.push(traveler);
+					
+					for(i = 0; i<this.travelersQueue.length; i++) {
+						padding = i*2*(travelersRadius+4);
+			
+						this.travelersQueue[i].image.transform('t'+(this.shape.getBBox().x+padding)+','+(this.shape.getBBox().y-5));
+						this.travelersQueue[i].text.transform('t'+(this.shape.getBBox().x+padding)+','+(this.shape.getBBox().y-5/2));
+					}
+				}else{
+					this.platforms[platformID].addTraveler(traveler);
+				}
+				
+				traveler.currentStation  = this.id;
+				traveler.currentPlatform = platformID;	
+				
+			}
+			
+		}
+        
         stations = {};
    		
-   		r.text(paddingLeft+stationDim/2,paddingTop-10,"Station A");
+   		r.text(paddingLeft+stationDim/2,paddingTop-10,"Station A").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["A"] = new station("A", r.rect(paddingLeft,paddingTop,stationDim,stationDim));
-   		stations["A"].platforms[1] = r.rect(
+   		stations["A"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft,
    			paddingTop+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["A"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["A"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft,
    			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["A"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["A"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft,
    			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["A"].platforms[4] = r.rect(
+   			platformHeigth));
+   		stations["A"].platforms[4] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft,
    			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
    		
-   		r.text(segments[1].to_x+stationDim/2,segments[1].to_y-(stationDim/2)-10,"Station B");
+   		r.text(segments[1].to_x+stationDim/2,segments[1].to_y-(stationDim/2)-10,"Station B").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["B"] = new station("B", r.rect(segments[1].to_x,segments[1].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["B"].platforms[1] = r.rect(
+   		stations["B"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			paddingTop+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["B"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["B"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["B"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["B"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["B"].platforms[4] = r.rect(
+   			platformHeigth));
+   		stations["B"].platforms[4] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
    		
-   		r.text(segments[2].to_x+stationDim/2,segments[2].to_y-(stationDim/2)-10,"Station C");
+   		r.text(segments[2].to_x+stationDim/2,segments[2].to_y-(stationDim/2)-10,"Station C").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["C"] = new station("C", r.rect(segments[2].to_x,segments[2].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["C"].platforms[1] = r.rect(
+   		stations["C"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			paddingTop+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["C"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["C"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			paddingTop+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["C"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["C"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			paddingTop+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["C"].platforms[4] = r.rect(
+   			platformHeigth));
+   		stations["C"].platforms[4] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			paddingTop+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
    		
-   		r.text(segments[3].to_x+stationDim/2,segments[3].to_y-(stationDim/2)-10,"Station D");
+   		r.text(segments[3].to_x+stationDim/2,segments[3].to_y-(stationDim/2)-10,"Station D").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["D"] = new station("D", r.rect(segments[3].to_x,segments[3].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["D"].platforms[1] = r.rect(
+   		stations["D"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			paddingTop+2*platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["D"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["D"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			paddingTop+4*platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
 
-   		r.text(segments[4].to_x+stationDim/2,segments[4].to_y-(stationDim/2)-10,"Station G1");
+   		r.text(segments[4].to_x+stationDim/2,segments[4].to_y-(stationDim/2)-10,"Station G1").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["G1"] = new station("G1", r.rect(segments[4].to_x,segments[4].to_y-(stationDim/2),stationDim,1.5*stationDim));
-   		stations["G1"].platforms[1] = r.rect(
+   		stations["G1"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			segments[5].to_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["G1"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["G1"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			segments[5].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["G1"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["G1"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			segments[5].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["G1"].platforms[4] = r.rect(
+   			platformHeigth));
+   		stations["G1"].platforms[4] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			segments[5].to_y-(stationDim/2)+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["G1"].platforms[5] = r.rect(
+   			platformHeigth));
+   		stations["G1"].platforms[5] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+4*platformHeigth+4*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["G1"].platforms[6] = r.rect(
+   			platformHeigth));
+   		stations["G1"].platforms[6] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+2*stationDim+2*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+5*platformHeigth+5*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
    		
-   		r.text(segments[5].to_x+stationDim/2,segments[5].to_y-(stationDim/2)-10,"Station E");
+   		r.text(segments[5].to_x+stationDim/2,segments[5].to_y-(stationDim/2)-10,"Station E").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["E"] = new station("E", r.rect(segments[5].to_x,segments[5].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["E"].platforms[1] = r.rect(
+   		stations["E"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["E"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["E"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["E"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["E"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["E"].platforms[4] = r.rect(
+   			platformHeigth));
+   		stations["E"].platforms[4] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+3*stationDim+3*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+3*platformHeigth+3*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
    		
-   		r.text(segments[6].to_x+stationDim/2,segments[6].to_y-(stationDim/2)-10,"Station F");
+   		r.text(segments[6].to_x+stationDim/2,segments[6].to_y-(stationDim/2)-10,"Station F").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["F"] = new station("F", r.rect(segments[6].to_x,segments[6].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["F"].platforms[1] = r.rect(
+   		stations["F"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+4*stationDim+4*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["F"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["F"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+4*stationDim+4*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["F"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["F"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+4*stationDim+4*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
    			
-   		r.text(segments[7].to_x+stationDim/2,segments[7].to_y-(stationDim/2)-10,"Station H");
+   		r.text(segments[7].to_x+stationDim/2,segments[7].to_y-(stationDim/2)-10,"Station H").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["H"] = new station("H", r.rect(segments[7].to_x,segments[7].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["H"].platforms[1] = r.rect(
+   		stations["H"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["H"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["H"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["H"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["H"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[4].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
    			
-   		r.text(segments[8].to_x+stationDim/2,segments[8].to_y-(stationDim/2)-10,"Station I");
+   		r.text(segments[8].to_x+stationDim/2,segments[8].to_y-(stationDim/2)-10,"Station I").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["I"] = new station("I", r.rect(segments[8].to_x,segments[8].to_y-(stationDim/2),stationDim,stationDim));
-   		stations["I"].platforms[1] = r.rect(
+   		stations["I"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[8].to_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["I"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["I"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[8].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["I"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["I"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+5*stationDim+5*segmentLength,
    			segments[8].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
    		
    		/******************************************* REGION 3 ***********************************************************/	
    			
-   		r.text(segments[9].from_x-stationDim/2,segments[9].from_y-(stationDim/2)-10,"Station L");
+   		r.text(segments[9].from_x-stationDim/2,segments[9].from_y-(stationDim/2)-10,"Station L").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["L"] = new station("L", r.rect(segments[9].from_x-stationDim,segments[9].from_y-(stationDim/2),stationDim,stationDim));
-   		stations["L"].platforms[1] = r.rect(
+   		stations["L"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			segments[10].from_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["L"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["L"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			segments[10].from_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["L"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["L"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft+stationDim+segmentLength,
    			segments[10].from_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
 		
-   		r.text(segments[10].from_x-stationDim/2,segments[10].from_y-(stationDim/2)-10,"Station M");
+   		r.text(segments[10].from_x-stationDim/2,segments[10].from_y-(stationDim/2)-10,"Station M").attr({ "font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
    		stations["M"] = new station("M", r.rect(segments[10].from_x-stationDim,segments[10].from_y-(stationDim/2),stationDim,stationDim));
-   		stations["M"].platforms[1] = r.rect(
+   		stations["M"].platforms[1] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft,
    			segments[10].to_y-(stationDim/2)+platformPaddingTop,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["M"].platforms[2] = r.rect(
+   			platformHeigth));
+   		stations["M"].platforms[2] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft,
    			segments[10].to_y-(stationDim/2)+platformPaddingTop+platformHeigth+platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
-   		stations["M"].platforms[3] = r.rect(
+   			platformHeigth));
+   		stations["M"].platforms[3] = new platform(r.rect(
    			paddingLeft+platformPaddingLeft,
    			segments[10].to_y-(stationDim/2)+platformPaddingTop+2*platformHeigth+2*platformPaddingLeft,
    			stationDim-2*platformPaddingLeft,
-   			platformHeigth);
+   			platformHeigth));
 
 		for (var station in stations) {
 			stations[station].shape.attr("fill","#F4F5C5")
@@ -453,75 +543,11 @@
 
 		for (station in stations) {
 			for (platform in stations[station].platforms) {
-				stations[station].platforms[platform].attr('fill',"#C0C0C0");
+				stations[station].platforms[platform].rect.attr('fill',"#C0C0C0");
 			}
 		}
 		
-		
-   		usersPerPlatform = {};
-   		
-   		usersPerPlatform["A"] = [];
-   		usersPerPlatform["A"][1] = 0; 
-   		usersPerPlatform["A"][2] = 0;
-   		usersPerPlatform["A"][3] = 0;
-   		
-   		usersPerPlatform["B"] = [];
-   		usersPerPlatform["B"][1] = 0; 
-   		usersPerPlatform["B"][2] = 0;
-   		usersPerPlatform["B"][3] = 0;
-   		usersPerPlatform["B"][4] = 0;
-   		
-   		usersPerPlatform["C"] = [];
-   		usersPerPlatform["C"][1] = 0; 
-   		usersPerPlatform["C"][2] = 0;
-   		usersPerPlatform["C"][3] = 0;
-   		usersPerPlatform["C"][4] = 0;
-   		
-   		usersPerPlatform["D"] = [];
-   		usersPerPlatform["D"][1] = 0; 
-   		usersPerPlatform["D"][2] = 0;
-   		
-   		usersPerPlatform["G1"] = [];
-   		usersPerPlatform["G1"][1] = 0; 
-   		usersPerPlatform["G1"][2] = 0;
-   		usersPerPlatform["G1"][3] = 0;
-   		usersPerPlatform["G1"][4] = 0;
-   		usersPerPlatform["G1"][5] = 0;
-   		usersPerPlatform["G1"][6] = 0;
-
-   		usersPerPlatform["E"] = [];
-   		usersPerPlatform["E"][1] = 0; 
-   		usersPerPlatform["E"][2] = 0;
-   		usersPerPlatform["E"][3] = 0;
-   		usersPerPlatform["E"][4] = 0;
-   		
-   		usersPerPlatform["F"] = [];
-   		usersPerPlatform["F"][1] = 0; 
-   		usersPerPlatform["F"][2] = 0;
-   		usersPerPlatform["F"][3] = 0;
-   		usersPerPlatform["F"][4] = 0;
-   		
-   		usersPerPlatform["H"] = [];
-   		usersPerPlatform["H"][1] = 0; 
-   		usersPerPlatform["H"][2] = 0;
-   		usersPerPlatform["H"][3] = 0;
-   		
-   		usersPerPlatform["I"] = [];
-   		usersPerPlatform["I"][1] = 0; 
-   		usersPerPlatform["I"][2] = 0;
-   		usersPerPlatform["I"][3] = 0;
-   		
-   		
-   		usersPerPlatform["L"] = [];
-   		usersPerPlatform["L"][1] = 0; 
-   		usersPerPlatform["L"][2] = 0;
-   		usersPerPlatform["L"][3] = 0;
-   		
-   		usersPerPlatform["M"] = [];
-   		usersPerPlatform["M"][1] = 0; 
-   		usersPerPlatform["M"][2] = 0;
-   		usersPerPlatform["M"][3] = 0;
-   		
+  		
         /***************************************************************************************************************/
         /****************************************** TRAINS_DEFINITIONS *************************************************/
         /***************************************************************************************************************/
@@ -533,7 +559,41 @@
 		var fbColor = "90-#f00:20-#fff:95"
 		var regionalColor = "90-#A0CE00:20-#fff:95"
 				
+		var travelersRadius = 6;
+		ENTER = "#A9A9A9";
+		LEAVE = "#0000FF";
+		FINISHED = "#7FFF00";
+		BUYING = "#FFD700";		
+		
+				
+		// legend
+		
+		legendStart = 1350;
+		
+		r.rect(legendStart,15,trainLength,trainHeigth,trainRadiux).attr('fill',fbColor);
+		r.text(legendStart+trainLength+5,22.5,"Treno FB").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		// legend
+		r.rect(legendStart,40,trainLength,trainHeigth,trainRadiux).attr('fill',regionalColor);
+		r.text(legendStart+trainLength+5,47.5,"Treno Regionale").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		
+		r.circle(legendStart+6,70,6).attr('fill',BUYING);
+		r.text(legendStart+trainLength+5,70,"Passeggero - In Acquisto").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		
+		r.circle(legendStart+6,90,6).attr('fill',ENTER);
+		r.text(legendStart+trainLength+5,90,"Passeggero - In Arrivo").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		
+		r.circle(legendStart+6,110,6).attr('fill',FINISHED);
+		r.text(legendStart+trainLength+5,110,"Passeggero - Arrivato").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		
+		r.circle(legendStart+6,130,6).attr('fill',LEAVE);
+		r.text(legendStart+trainLength+5,130,"Passeggero - In Attesa del Treno").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		
+		r.rect(legendStart-20,0,300,160);
+		
+		
 		trains = {};
+		
+		
 		
 		trains[1111] = r.rect(0,0,trainLength,trainHeigth,trainRadiux);//r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
 		trains[1111].attr("fill",regionalColor)
@@ -562,11 +622,11 @@
 		trains[5555] = r.rect(0,0,trainLength,trainHeigth,trainRadiux);//r.image("@routes.Assets.at("images/fb.png")",0,0,90,15);
 		trains[5555].attr('fill',regionalColor);
 		// Second Position
-		moveToPlatform(5555,"I",5);
+		moveToPlatform(5555,"I",3);
 		
 		function moveToPlatform(trainId,stationId,platformId) {
 			
-			platform = stations[stationId].platforms[platformId].getBBox();
+			platform = stations[stationId].platforms[platformId].rect.getBBox();
 			trainBox = trains[trainId].getBBox();
 			// Stop any animation on this train and apply the transformation to move to the correct platform.
 			trains[trainId].stop();
@@ -585,22 +645,18 @@
 			this.dim 	= dim;
 			this.image 	= r.circle(10,12,dim);
 			this.text	= r.text(10,-3,text);
-			this.currentStation = startStation;
+			this.currentStation  = startStation;
 			this.currentPlatform = startPlatform;
+			
 		}
-		
-		var travelersRadius = 6;
-		ENTER = "#A9A9A9";
-		LEAVE = "#0000FF";
-		FINISHED = "#7FFF00";
-		BUYING = "#FFD700";
 		
 		travelers = {};
 		
-		for ( var i = 1 ; i <= 11 ; i++ ){
+		for ( var i = 1 ; i <= 8 ; i++ ){
 			travelers[i] = new traveler("T_"+i,travelersRadius);
 			travelers[i].image.attr('fill',ENTER);
 		}
+		
 		
 		/**
 		 * Function used to Move a Traveler to <stationId,platformId>, to 
@@ -608,28 +664,15 @@
 		 **/
 		function moveTravelerToPlatform(travelerId,stationId,platformId,action) {
 			
-			
-			// Decrease the number of travelers in the origin platform. 
-			if (travelers[travelerId].currentStation != null && travelers[travelerId].currentPlatform != null) {
-				fromStationId = travelers[travelerId].currentStation;
-				fromPlatformId = travelers[travelerId].currentPlatform;
-				if (usersPerPlatform[fromStationId][fromPlatformId] > 0) {
-					usersPerPlatform[fromStationId][fromPlatformId] --;
-				}
+			if (travelers[travelerId].currentStation != null && travelers[travelerId].currentPlatform >= 0) {
+				stations[travelers[travelerId].currentStation].removeTraveler(
+					travelers[travelerId].currentPlatform,
+					travelers[travelerId]);
 			}
 			
-			platform = stations[stationId].platforms[platformId].getBBox();
-			travelerBox = travelers[travelerId].image.getBBox();
-			
-			padding = usersPerPlatform[stationId][platformId] * 2*travelersRadius;
-			
-			usersPerPlatform[stationId][platformId] ++;
-			
-			travelers[travelerId].image.transform('t'+(platform.x+padding)+','+(platform.y-5));
-			travelers[travelerId].text.transform('t'+(platform.x+padding)+','+(platform.y-5/2))
-			
-			travelers[travelerId].currentStation = stationId;
-			travelers[travelerId].currentPlatform = platformId;
+			stations[stationId].addTraveler(
+					platformId,
+					travelers[travelerId]);
 			
 			switch(action) {
 				case "enter" :

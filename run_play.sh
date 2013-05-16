@@ -1,5 +1,5 @@
 echo "Load Http Server..."
 cd WebSocket/
-play run
+play start
 cd ..
 echo "done"

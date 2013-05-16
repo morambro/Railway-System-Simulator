@@ -65,8 +65,8 @@
         {
             "traveler"	: {
                 "id"		: 7,
-                "name"		: "Roberto",
-                "surname"	: "Franchi"
+                "name"		: "Francesca",
+                "surname"	: "Salvi"
             },
             "destination"		: "G1",
             "start_station" 	: "H",
@@ -74,39 +74,10 @@
         },{
             "traveler"	: {
                 "id"		: 8,
-                "name"		: "Roberto",
-                "surname"	: "Franchi"
+                "name"		: "Giancarlo",
+                "surname"	: "Verdi"
             },
-            "destination"		: "G1",
-            "start_station" 	: "H",
-            "start_node"		: "Node_2"
-        },{
-            "traveler"	: {
-                "id"		: 9,
-                "name"		: "Roberto",
-                "surname"	: "Franchi"
-            },
-            "destination"		: "G1",
-            "start_station" 	: "H",
-            "start_node"		: "Node_2"
-        },
-        {
-            "traveler"	: {
-                "id"		: 10,
-                "name"		: "Roberto",
-                "surname"	: "Franchi"
-            },
-            "destination"		: "G1",
-            "start_station" 	: "H",
-            "start_node"		: "Node_2"
-        },
-        {
-            "traveler"	: {
-                "id"		: 11,
-                "name"		: "Roberto",
-                "surname"	: "Franchi"
-            },
-            "destination"		: "G1",
+            "destination"		: "I",
             "start_station" 	: "H",
             "start_node"		: "Node_2"
         }
