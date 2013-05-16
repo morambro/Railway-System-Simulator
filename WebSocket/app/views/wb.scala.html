@@ -652,10 +652,21 @@
 		
 		travelers = {};
 		
+		// Travelers creation.
 		for ( var i = 1 ; i <= 8 ; i++ ){
-			travelers[i] = new traveler("T_"+i,travelersRadius);
+			travelers[i] = new traveler("T"+i,travelersRadius);
 			travelers[i].image.attr('fill',ENTER);
 		}
+		
+		// Initially put alla the passengers on the correct place
+		moveTravelerToPlatform(1,"A",0,"buy");
+		moveTravelerToPlatform(2,"C",0,"buy");
+		moveTravelerToPlatform(3,"I",0,"buy");
+		moveTravelerToPlatform(4,"M",0,"buy");
+		moveTravelerToPlatform(5,"L",0,"buy");
+		moveTravelerToPlatform(6,"H",0,"buy");
+		moveTravelerToPlatform(7,"H",0,"buy");
+		moveTravelerToPlatform(8,"H",0,"buy");
 		
 		
 		/**
