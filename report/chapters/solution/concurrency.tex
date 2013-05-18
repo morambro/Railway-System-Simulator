@@ -6,24 +6,24 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	%  ################################################ SEGMENTO ######################################################
 	\subsection{Segmento}\label{subsec:segment_def}
 	
-	Un Segmento (\ttt{Segment}) è modellato come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità N}, dove \ttt{N} è il numero massimo di utilizzatori, la quale fornisce un'interfaccia utilizzabile da entità attive di tipo Treno per accedere ed uscire in maniera ordinata. Esso è caratterizzato da:
+	Un \ii{Segmento} (\ttt{Segment}) è modellato come una \ii{entità reattiva con agente di controllo, a molteplicità} $N\ge1$, la quale fornisce un'interfaccia utilizzabile da entità attive di tipo Treno per accedere ed uscire in maniera ordinata. Esso è caratterizzato da:
 			\begin{itemize}
 				\item le due stazioni che esso collega;
 				\item una lunghezza;
 				\item una velocità massima di percorrenza.
-				\item un flag booleano \ttt{Free} che indica lo stato della risorsa, occupata o no.
+				\item un flag booleano \ttt{Free} che indica lo stato di occupazione.
 			\end{itemize}
 
 
 	%  ################################################# VIAGGIATORE ######################################################
 	\subsection{Viaggiatore}\label{subsec:traveler_def}		
 	
-	In prima analisi, un Viaggiatore (\ttt{Traveler}) può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici. In presenza tuttavia di un modello di distribuzione come quello presentato in sezione \ref{sec:distr_regioni}, si presenta il problema di modellare il passaggio da una Regione (nodo) ad un'altra del Viaggiatore, nel caso in cui il viaggio da esso percorso lo preveda.
+	In prima analisi, un Viaggiatore (\ttt{Traveler}) può essere modellato come una \ii{entità Attiva} che esegue una sequenza di operazioni semplici. Adottando tuttavia di un modello di distribuzione come quello presentato in sezione \ref{sec:distr_regioni}, si presenta il problema di modellare il passaggio del Viaggiatore da una Regione (Nodo) ad un'altra, nel caso in cui il suo percorso lo preveda.
 	
-	Nel caso in cui il Viaggiatore fosse messo in relazione univoca con un thread, si presenterebbero solo due possibili soluzioni:
+	Nel caso in cui il Viaggiatore fosse messo in relazione con un thread, si presenterebbero solo due possibili soluzioni:
 		\begin{itemize}
-			\item La migrazione del processo che rappresenta il Viaggiatore sul nodo (Regioni) di destinazione, come distruzione del processo sul nodo di partenza e creazione dinamica dello stesso sul nodo destinazione. Questa operazione è in generale computazionalmente molto costosa. 
-			\item La replicazione del thread che rappresenta il Viaggiatore su tutti i nodi, e l'attivazione, intesa come cambio di stato del processo in modo tale che possa competere per la CPU; tale soluzione è molto costosa in termini di memoria utilizzata, e non scalabile all'aumentare del numero di passeggeri.
+			\item La migrazione del processo che rappresenta il Viaggiatore sul nodo (Regioni) di destinazione, come distruzione del processo sul nodo di partenza e creazione dinamica dello stesso sul nodo destinazione. Questa operazione è in generale computazionalmente molto costosa e quindi non desiderabile.
+			\item La replicazione del thread che rappresenta il Viaggiatore su tutti i Nodi di Simulazione, attivato (reso competitivo nell'ottenimento della CPU) o meno a seconda della presenza del Viaggiatore sulla Regione. Tale soluzione è molto costosa in termini di memoria utilizzata, e non scalabile all'aumentare del numero di passeggeri.
 		\end{itemize}
 		
 	La soluzione che ho adottato, consiste nel disaccoppiare le operazioni svolte da ciascun Viaggiatore dal processo che le esegue, prevedendo una struttura dati (\ttt{Traveler\_Pool}) costituita da:
@@ -31,8 +31,8 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 			\item un \ii{pool di M thread} dimensionato in maniera opportuna;
 			\item una \ii{coda di operazioni} che man mano vengono estratte ed eseguite dai thread nel pool.
 		\end{itemize}
-	In questo modo è sufficiente replicare per ciascun Viaggiatore, su tutti i nodi che compongono il sistema, una struttura dati che contiene i suoi dati e le operazioni che esso eseguirà, e cioè un Descrittore (\ttt{Traveler\_Descriptor}). 
-	Il cambio di Regione di un Viaggiatore potrà quindi essere ottenuto semplicemente inserendo le operazioni successive da eseguire per esso, nella coda del pool di thread del nodo destinazione.
+	In questo modo è sufficiente replicare per ciascun Viaggiatore, su tutti i nodi che compongono il sistema, una struttura dati che contiene le informazioni che lo contraddisinguono e le operazioni che esso eseguirà (\ttt{Traveler\_Descriptor}). 
+	Il cambio di Regione di un Viaggiatore potrà quindi essere ottenuto semplicemente aggiornando le informazioni relative al Viaggiatore da trasferire, sul Nodo di destinazione, e inserendo la prossima operazione da eseguire per esso nella coda di \ttt{Traveler\_Pool} del Nodo destinazione.
 	
 	%  ################################################# TRENO ######################################################
 	\subsection{Treno} \label{subsec:train_def}
@@ -45,11 +45,11 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 			\item una velocità corrente;
 		\end{itemize}
 	
-	Anche in questo caso come per le entità di tipo Viaggiatore, ciascuna entità non viene mappata su un singolo processo. Infatti anche per le entità di tipo Treno ciò comporterebbe una complessa e costosa gestione del passaggio da un nodo (Regione) ad un altro, in termini computazionali e di memoria. 
+	Anche in questo caso come per le entità di tipo Viaggiatore, ciascuna entità Treno non viene mappata su un singolo processo. Infatti anche per le entità di tipo Treno ciò comporterebbe una complessa e costosa gestione del passaggio da una Regione (Nodo) ad un'altra, in termini computazionali e di memoria. 
 	Ho optato invece nel progettare una struttura dati \ttt{Train\_Pool} che mantiene:
 		\begin{itemize}
 			\item una \ii{coda di Descrittori di Treno}, che contengono tutte le informazioni che distinguono una entità Treno;
-			\item un \ii{Pool di thread} dimensionato in maniera opportuna; ciascun thread sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni. Data la complessità delle interazioni tra le entità del sistema, e quindi la possibilità che i thread vengano posti in attesa su guardie booleane in attesa di eventi, è necessario che il Pool di Thread abbia una dimensione pari al massimo numero di Treni circolanti nella Regione alla quale esso appartiene, in modo tale da evitare situazioni di stallo dei thread in attesa. 
+			\item un \ii{Pool di thread} dimensionato in maniera opportuna; ciascun thread sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni. Le interazioni tra le entità del sistema, prevedono la possibilità che i thread del pool vengano posti in attesa su variabili di condizione, in attesa di eventi: è quindi necessario che la dimensione del pool di thread sia pari al massimo numero di Treni circolanti nella Regione alla quale esso appartiene, in modo tale da evitare situazioni di stallo dei thread in attesa. Infine, per fornire una garanzia di esecuzione più elevata a Treni di tipo \ttt{FB}, è possibile introdurre una coda per tipologia di Treno, ciascuna servita da un pool dedicato a dimensione fissata.
 		\end{itemize}
 	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta, permettendo così un agevole trasferimento tra nodi diversi.
 				
@@ -58,7 +58,7 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	
 	Una Stazione (\ttt{Station}) è modellata come una struttura dati contenete:
 		\begin{itemize}
-			\item un certo numero $ n > 2$ di Piattaforme (\ttt{Platform});
+			\item un certo numero $ n \ge 2$ di Piattaforme (\ttt{Platform});
 			\item una Biglietteria (\ttt{Ticket\_Office});
 			\item un Pannello Informativo (\ttt{Notice\_Panel}).
 		\end{itemize}
@@ -66,7 +66,7 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 		
 		\subsubsection{Piattaforma}
 	
-		Una Piattaforma è modellata come una \ii{entità reattiva ad accesso mutuamente esclusivo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di
+		Una Piattaforma è modellata come una \ii{entità reattiva con agente di controllo, a molteplicità 1}. Essa espone un'interfaccia che permette alle entità Treno di:
 		\begin{itemize}
 			\item poter sostare ed effettuare discesa e salita dei Viaggiatori;
 			\item poter superare la stazione.
@@ -82,7 +82,7 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 				
 		\subsubsection{Biglietteria}
 		
-		Una Piattaforma è modellata come una interfaccia che permette al Viaggiatore di acquisire un Biglietto di viaggio. 
+		Una Piattaforma è modellata come una interfaccia che permette al Viaggiatore di acquisire un Biglietto di viaggio. Per i dettagli sulla creazione di un biglietto, si rimanda alla sezione \ref{subsec:ticket_creation}. 
 		
 		\subsubsection{Pannello Informativo}
 		

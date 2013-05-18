@@ -24,11 +24,14 @@
 \usepackage{changepage}
 \usepackage{ifthen}
 \usepackage{listings}
+\usepackage{xcolor}
+\usepackage{listings}
 
 
 \definecolor{darkGreen}{rgb}{0,0.6,0}
 
 \lstset{
+	frame=lines,
 	language=Ada,
 	extendedchars=true,
 	basicstyle=\ttfamily\small,
@@ -37,12 +40,13 @@
 	commentstyle=\color{darkGreen}\ttfamily,
 	tabsize=2,
 	morekeywords={wait,signal,signal_all,monitor},
-	captionpos=b,
 	extendedchars=true,  
 	keepspaces=true,
 	showstringspaces=false,
 	morecomment=[l]{//}
 }
+
+\usepackage{caption}
 
 
 \title{\Huge Railway Simulation}
@@ -89,6 +93,8 @@
 \begin{document}
 	\maketitle
 	\tableofcontents
+	\newpage
+	\listoffigures
 	\pagestyle{content}
 	\input{chapters/problem.tex}
 	\input{chapters/problem_analisis/problem_analisis.tex}

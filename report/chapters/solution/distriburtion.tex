@@ -12,14 +12,14 @@ Un diagramma informale delle componenti distribuite che compongono il sistema è
 	
 	\subsection{Regioni}\label{sec:distr_regioni}
 	
-	La simulazione è stata suddivisa in \ii{Regioni}, le quali risiederanno su nodi di calcolo diversi. Questa scelta aggiunge i seguenti requisiti minimi alla specifica iniziale:
+	La simulazione è stata suddivisa in \ii{Regioni}, le quali potranno risiedere su Nodi di calcolo diversi. Questa scelta aggiunge i seguenti requisiti minimi alla specifica iniziale:
 	\begin{itemize}
 		\item I Treni, se previsto dal percorso, possono viaggiare da una Regione all'altra.
 		\item I Passeggeri possono raggiungere destinazioni in Regioni diverse.
 		\item Esisteranno punti di collegamento che permettono a Treni e Passeggeri di raggiungere Regioni diverse. 
 		\item Deve essere garantita consistenza temporale nel passaggio da una Regione ad un'altra.
 	\end{itemize}
-	Da questa scelta consegue inoltre l'introduzione di un semplice \ii{Server dei Nomi} che mantiene traccia di ciascuna Regione (mantiene cioè le coppie \ttt{<Regione,indirizzo>}), in modo tale da rendere agevole la risoluzione della locazione alla quale l'entità si trova. 
+	Questa scelta comporta l'introduzione di un semplice \ii{Server dei Nomi} che mantiene traccia di ciascuna Regione (mantiene cioè le coppie \ttt{<Regione,Indirizzo>}), in modo tale da rendere agevole la risoluzione della locazione alla quale l'entità si trova. 
 	
 	
 	\subsubsection{Stazioni di Gateway}\label{sec:gateway_stations}
@@ -32,7 +32,7 @@ Un diagramma informale delle componenti distribuite che compongono il sistema è
 		\end{center}
 	\end{figure}
 
-	Nella progettazione di un simulatore distribuito su più Regioni, è necessario prevedere uno o più punti di collegamento tre di esse. A tal proposito, il progetto prevede \ii{Stazioni di Gateway} (\ttt{Gateway\_Station}), che permettono di raggiungere determinate Regioni remote. Le Stazioni di Gateway che collegano $N$ Regioni in modo diretto, sono da considerare come un'unica Stazione logica, e ciascuna delle $N$ Stazioni può essere vista come una porzione della Stazione globale accessibile dalla Regione corrente. Una rappresentazione dell'idea generale è visibile in figura \ref{fig:gateway_stations}.
+	Nella progettazione di un simulatore distribuito su più Regioni, è necessario prevedere uno o più punti di collegamento tre di esse. A tal proposito, il progetto prevede \ii{Stazioni di Gateway} (\ttt{Gateway\_Station}), che permettono di raggiungere determinate Regioni remote. Le Stazioni di Gateway che collegano $N$ Regioni in modo diretto, sono da considerare logicamente come un'unica Stazione, e ciascuna delle $N$ Stazioni di Gateway può essere vista come una porzione della Stazione globale accessibile dalla Regione corrente. Una rappresentazione dell'idea generale è visibile in figura \ref{fig:gateway_stations}.
 	
 	Da tale assunzione, ricaviamo la seguente conseguenza:
 	\begin{consequence}\label{cons:gateway_unique}
@@ -61,20 +61,20 @@ Un diagramma informale delle componenti distribuite che compongono il sistema è
 
 	\subsection{Biglietterie}\label{subsec:ticket_offices}
 	
-	Per poter gestire meglio la definizione di un percorso e l'erogazione di un Biglietto per un Viaggiatore, ho pensato di introdurre una gerarchia su due livelli, di Biglietterie. Ci saranno dunque tre categorie di Biglietterie:
+	Per poter gestire meglio la definizione di un percorso e l'erogazione di un Biglietto per un Viaggiatore, ho pensato di introdurre una gerarchia su due livelli, di \ii{Biglietterie}. Ci saranno dunque tre categorie di Biglietterie:
 		\begin{description}
 			\item {\bb{Biglietterie di Stazione}} \\
 			Forniscono un'interfaccia adeguata ai Viaggiatori per poter acquistare un biglietto.
 			\item {\bb{Biglietterie Regionali}}\\
 			Hanno conoscenza regionale della topologia del grafo composto da Stazioni e Segmenti.
 			\item {\bb{Biglietteria Centrale}} \\ 
-			Ha conoscenza di più alto livello; in particolare, essa mantiene traccia delle connessioni tra le varie regioni ( ovvero i collegamenti tra Stazioni di Gateway di regioni diverse). Tale conoscenza si può immaginare sia memorizzata in una mappa chiave-valore \ttt{Links} dove per ciascuna coppia di Regioni, è mantenuta una lista di tappe successive Regione-Stazione di Gateway da percorrere per andare dalla prima alla seconda.
+			Ha conoscenza di più alto livello; in particolare, essa mantiene traccia delle connessioni tra le varie regioni ( ovvero i collegamenti tra Stazioni di Gateway di regioni diverse). Tale conoscenza si può immaginare sia memorizzata in una mappa chiave-valore \ttt{Links} dove per ciascuna coppia di Regioni di Gateway, è mantenuta una lista di tappe successive \ttt{<Regione,Stazione di Gateway>} da percorrere per andare dalla prima alla seconda.
 		\end{description} 
 	
 	\subsection{Controller Centrale}
 		
-	Il Controllo Centrale è una entità distribuita, alla quale tutti i nodi inviano Eventi per notificare lo stato di avanzamento globale della simulazione. Esso fornisce una interfaccia alle varie Regioni per ricevere gli Eventi di simulazione, ed un'interfaccia per permettere a client remoti di poter visualizzare gli effetti di tali Eventi. Quest'ultima possibilità è ottenuta mediante un meccanismo di tipo Publish/Subscribe, attraverso il quale client remoti possono registrarsi presso il Controller per ricevere, in modalità Push, gli Eventi.
+	Il \ii{Controllo Centrale} è una entità distribuita, alla quale tutti i nodi inviano Eventi per notificare lo stato di avanzamento globale della simulazione, che viene memorizzato in strutture dati opportune. Esso fornisce una interfaccia alle varie Regioni per ricevere gli Eventi di simulazione, ed un'interfaccia per permettere a client remoti di poter visualizzare gli effetti di tali Eventi. Quest'ultima possibilità è ottenuta mediante un meccanismo di tipo Publish/Subscribe, attraverso il quale client remoti possono registrarsi presso il Controller per ricevere, in modalità Push, gli Eventi.
 	In questo modo è possibile per un qualsiasi client interfacciarsi al Controller e fornire, ad esempio, una rappresentazione grafica della simulazione.
 
-	Il Controller sarà anche responsabile dell'invio di un \ii{segnale di terminazione}, che verrà recapitato a tutti i nodi che compongono la simulazione, mediante la procedura descritta in sezione \ref{sec:distributed_termination}.
+	Il Controller Centrale sarà anche responsabile dell'invio di un \ii{segnale di terminazione}, che verrà recapitato a tutti i nodi che compongono la simulazione, mediante la procedura descritta in sezione \ref{sec:distributed_termination}.
 \newpage

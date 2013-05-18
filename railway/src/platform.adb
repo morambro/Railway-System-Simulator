@@ -36,11 +36,6 @@ with Routes;
 with Central_Controller_Interface;
 
 
-with Ada.Calendar;
-with Ada.Calendar.Formatting;use Ada.Calendar.Formatting;
-with Ada.Calendar.Time_Zones;use Ada.Calendar.Time_Zones;
-
-
 package body Platform is
 
 	NAME : constant String := "Platfrom.Platform_Type";
@@ -394,38 +389,6 @@ package body Platform is
 
 		This.The_Platform.Enter(
 				Train_Descriptor_Index 	=> Train_Descriptor_Index);
-
-		declare
-			-- # Get the Current Run index
-			Current_Run 	: Positive :=
-				Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run;
-
-			-- # Get the index of the next time to leave the station
-			Current_Run_Cursor	: Positive :=
-				Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Current_Run_Cursor;
-			-- # Time to wait before leaving
-			Time_To_Wait : Ada.Calendar.Time := Environment.Route_Time_Table(Trains.Trains(Train_Descriptor_Index).Route_Index).Table
-				(Current_Run)(Current_Run_Cursor);
-
-			Train_Delay : Duration := Ada.Calendar."-"(Ada.Calendar.Clock, Time_To_Wait);
-		begin
-
-			-- # At this point the Task Train has access to the platform,
-			-- # So notify the Central Controller.
-			Central_Controller_Interface.Set_Train_Arrived_Status(
-				Train_ID	=> Trains.Trains(Train_Descriptor_Index).ID,
-				Station		=> To_String(This.Station_Name.all),
-				Platform	=> This.ID,
-				-- # Time at witch the Train will leave the Platform.
-				Time 		=> Ada.Calendar.Formatting.Image(
-								Date					=> Time_To_Wait,
-								Include_Time_Fraction 	=> False,
-								-- # We are 2 hours later that UTC Time Zone.
-								Time_Zone				=> 2*60),
-				-- # Duration rounded to Integer, representing seconds
-				-- # of delay.
-				Train_Delay	=> Integer(Train_Delay));
-		end;
 
 		-- # CODE FOR ENTRANCE
 		This.Perform_Entrance(

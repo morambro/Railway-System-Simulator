@@ -71,6 +71,7 @@ package Central_Controller_Interface is
 	procedure Set_Train_Arrived_Status(
 		Train_ID 	: in 	Integer;
 		Station		: in 	String;
+		Segment 	: in 	Integer;
 		Platform 	: in 	Integer;
 		Time		: in 	String;
 		Train_Delay	: in 	Integer);

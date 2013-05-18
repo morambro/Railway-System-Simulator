@@ -1,5 +1,5 @@
 \newpage
-\subsection{Creazione di un Biglietto}
+\subsection{Creazione di un Biglietto}\label{subsec:ticket_creation}
 
 Per la creazione di un Biglietto, necessario per permettere ai Viaggiatori di poter raggiungere una destinazione, ho utilizzato un algoritmo che coinvolge le componenti (distribuite) introdotte in sezione \ref{subsec:ticket_offices}.
 
@@ -7,7 +7,7 @@ Di seguito viene riportata una descrizione delle fasi previste dalla soluzione p
 
 	\subsubsection {Richiesta di Creazione}\label{subsubsec:ticket_creation_request}
 	
-	La richiesta di creazione di un \ttt{Ticket} da parte di un Viaggiatore, viene operata da un thread appartenente al pool di \ttt{Traveler\_Pool} che esegue l'operazione \ttt{CREATE\_TICKET} (come descritto precedentemente in sezione \ref{subsubsec:buy_ticket}). Tale operazione, effettua una richiesta di creazione alla biglietteria interna alla stazione di partenza $S$, la quale richiederà la creazione effettiva alla Biglietteria Regionale, se lo stesso \ttt{Ticket} non è presente in una cache locale.  
+	La richiesta di creazione di un \ttt{Ticket} da parte di un Viaggiatore, viene operata da un thread appartenente al pool di \ttt{Traveler\_Pool} che esegue l'operazione \ttt{CREATE\_TICKET} (come descritto precedentemente in sezione \ref{subsubsec:buy_ticket}). Tale operazione, effettua una richiesta di creazione alla biglietteria interna alla stazione di partenza $S$, la quale richiederà la creazione effettiva alla Biglietteria Regionale.% se lo stesso \ttt{Ticket} non è presente in una cache locale.  
 	
 	\subsubsection {Creazione del Ticket} \label{subsubsec:ticket_creation}
 	
@@ -90,7 +90,7 @@ Di seguito viene riportata una descrizione delle fasi previste dalla soluzione p
 	\subsubsection {Validazione di un Ticket}\label{subsubsec:validation}
 	
 	La Validazione di un Biglietto è necessaria qualora esso preveda l'utilizzo di Treni a prenotazione (ovvero di tipo \ttt{FB}). Se infatti anche solo una delle Tappe del percorso di un Treno appartenente a questa categoria che il Biglietto prevede di percorrere, non ha un numero sufficiente di posti a sedere, esso non potrà essere erogato. 
-	La Biglietteria Centrale, per ciascun Treno a prenotazione $T$, mantiene $N>1$ array di numeri interi, uno per ciascuna Corsa $c$, rappresentanti il numero di posti liberi a sedere per ciascuna Tappa del Percorso (\ttt{Route}) di $T$, per la Corsa $C$. Essa mantiene inoltre l'indice della Corsa correntemente percorsa da $T$, \ttt{Current\_Run}, e un identificativo per essa, \ttt{Current\_Run\_Id}. Con questi dati è quindi possibile verificare la possibilità di prenotare un posto a sedere per un insieme di Tratte, e quindi prenotarli. Per semplicità, ho assunto che la prenotazione avvenga in mutua esclusione e per un'intera lista di Biglietti (caso in cui il percorso sia unione di Ticket raccolti da Regioni diverse, \ref{subsubsec:remote_ticket_creation}). 
+	La Biglietteria Centrale, per ciascun Treno a prenotazione $T$, mantiene $N>1$ array di numeri interi, uno per ciascuna Corsa $c$, rappresentanti il numero di posti liberi a sedere per ciascuna Tappa del Percorso (\ttt{Route}) di $T$. Essa mantiene inoltre l'indice della Corsa correntemente percorsa da $T$, \ttt{Current\_Run}, e un identificativo per essa, \ttt{Current\_Run\_Id}. Con questi dati è quindi possibile verificare la possibilità di prenotare un posto a sedere per un insieme di Tratte, e quindi prenotarli. Per semplicità, ho assunto che la prenotazione avvenga in mutua esclusione e per un'intera lista di Biglietti (caso in cui il percorso sia unione di Ticket raccolti da Regioni diverse dall'algoritmo di creazione introdotto in sezione \ref{subsubsec:remote_ticket_creation}). 
 	Per ciascuna Tappa del Biglietto da validare, vengono quindi effettuate le seguenti operazioni:
 	\begin{itemize}
 		\item Vengono individuate le Tappe del Percorso del Treno $T$ che verranno percorse secondo lo \ttt{Stage} corrente del Ticket in esame, siano esse $r._j,...,r._k$. 

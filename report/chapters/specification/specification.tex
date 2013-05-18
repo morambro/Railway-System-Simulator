@@ -6,7 +6,7 @@ Di seguito verrà fornita una descrizione delle componenti principali che costit
 \section{Simulazione}
 
 	\begin{figure}[htbp]
-		\includegraphics[scale=0.40,trim= 90mm 0mm 0mm 0mm]{imgs/Simplified_Class_Diagram.pdf}
+		\includegraphics[scale=0.42,trim= 90mm 0mm 0mm 0mm]{imgs/Simplified_Class_Diagram.pdf}
 		\caption{\footnotesize{Diagramma delle classi che illustra le componenti e le relazioni più significative che coinvolgono la simulazione.}}
 		\label{img:class_diagram}
 	\end{figure}
@@ -19,16 +19,17 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	Il package \ttt{Message\_Agent} fornisce un'interfaccia per l'invio di messaggi remoti. Esso contiene una classe singleton \ttt{Message\_Agent\_Type}, la quale possiede i seguenti campi dato:
 	\begin{description}
-		\item \ttt{- Client\_Agent : YAMI.Agents.Agent\_Access} \\
+		\item \ttt{- Client\_Agent:YAMI.Agents.Agent\_Access} \\
 		Campo dati privato di tipo \ttt{YAMI.Agents.Agent\_Access} che contiene una istanza di Agente fornito dalla libreria \ii{Yami4}, e che viene utilizzato per l'invio e la ricezione di messaggi remoti.
-		\item \ttt{- Handlers\_Map : Map} \\
+		\item \ttt{- Handlers\_Map:Map} \\
 		Hash-map privata, la quale associa a chiavi di tipo \ttt{String}, valori di tipo \ii{riferimento a procedura}; essa viene utilizzata per associare a ciascun servizio offerto dall'oggetto \ttt{Client\_Agent} un handler per la sua gestione.
 	\end{description}
 	
 	Essa offre inoltre i seguenti metodi:
 	
 	\begin{description}
-		\item \ttt{+ Listen\_To(Server\_Address)} \\
+		\item \ttt{+ Listen\_To(\\
+			Server\_Address:String)} \\
 		Indica all'oggetto \ttt{Client\_Agent} di rimanere in ascolto presso l'indirizzo \ttt{Server\_Address}, attraverso il quale riceverà tutti i messaggi destinati al nodo. Nella fase di registrazione dell'oggetto remoto, viene definito un handler per la ricezione dei messaggi, il quale effettua il dispatching di ciascun messaggio ricevuto invocando la procedura corrispondente al servizio richiesto, definita nella mappa \ttt{Handlers\_Map}.
 		
 		\item \ttt{+ Close()} \\
@@ -47,14 +48,14 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 			Object 				: String,\\
 			Service 			: String,\\
 			Params 				: YAMI.Parameters.Parameters\_Collection)}\\
-		Metodo simile a \ttt{Send\_Message}, solo che non rimane in attesa della risposta al messaggio inviato.
+		Metodo simile a \ttt{Send\_Message}, che non rimane in attesa della risposta al messaggio inviato.
 	\end{description}
 	
 	Nessun meccanismo di serializzazione delle richieste è stato adottato, in quanto esso è già operato dagli oggetti della libreria \ii{Yami4}.
 	
 	\subsection{Central\_Controller\_Interface}
 	
-	Il package \ttt{Central\_Controller\_Interface} fornisce un'interfaccia per permettere alle entità della simulazione di inviare un evento di notifica all'oggetto remoto \ttt{central\_controller}. A tal proposito sono messi a disposizione le procedure \ttt{Set\_Train\_Status} e \ttt{Set\_Traveler\_Status}, le quali effettuano il marshalling dei dati in ingresso (in formato \ttt{JSON}) e inviano un messaggio remoto mediante il metodo \ttt{Send\_One\_Way} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}.
+	Il package \ttt{Central\_Controller\_Interface} fornisce un'interfaccia per permettere alle entità della simulazione di inviare un evento di notifica all'oggetto remoto \ttt{central\_controller}. A tal proposito sono messi a disposizione procedure che le quali effettuano il marshalling dei dati in ingresso (in formato \ttt{JSON}) e inviano un messaggio remoto mediante il metodo \ttt{Send\_One\_Way} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}.
 	
 	\subsection{Central\_Office\_Interface}
 	
@@ -65,17 +66,20 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 				From : String,\\
 				To	 : String,\\
 				Traveler\_Index: Integer)} \\
+				
 			Richiede la creazione di un Biglietto inviando un messaggio remoto mediante il metodo \ttt{Send\_Message} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}. Non viene specificata una procedura di callback, in quanto il risultato verrà inviato dalla Biglietteria Centrale una volta calcolato il Biglietto.
 			
 			\item \ttt{+ Validate(\\
 				The\_Ticket:Ticket,\\
 				Callback:access procedure(The\_Ticket:Ticket,Response:Boolean))}\\
+				
 			Richiede la validazione di un Biglietto inviando un messaggio remoto mediante il metodo \ttt{Send\_Message} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}. La richiesta è sincrona, e la risposta viene quindi elaborata e viene invocata la procedura \ttt{Callback} passando come parametri i risultati estratti.
 			
 			\item \ttt{+ Update\_Run(\\
 				Route\_Index:Integer,\\
 				Current\_Run:Integer,\\
 				Callback:access procedure(...))}\\ 
+				
 			Invia un messaggio remoto per comunicare l'aggiornamento della corsa corrente \ttt{Current\_Run} per il percorso \ttt{Route\_Index}. Nel caso in cui la corsa sia l'ultima delle $N$ mantenute, viene creata una nuova Time Table per il percorso \ttt{Route\_Index} dalla Biglietteria Centrale che viene restituito al chiamante. Nel caso in cui essa venga ricevuta (in formato \ttt{JSON}), viene effettuato l'unmarshalling e creata l'istanza corrispondente di \ttt{Time\_Table\_Type} da sostituire a quella corrente.
 			
 			\item \ttt{+ Load\_Time\_Tables(\\
@@ -99,12 +103,18 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 		Name\_Server : String,\\
 		Node\_Name 	: String),\\
 		Callback : access procedure(Result:String)} \\
-		
+
 		Permette di richiedere al Server dei Nomi la risoluzione della locazione alla quale si trova l'entità \ttt{Node\_Name}. Una volta che la risposta è disponibile, viene invocata la procedura di callback \ttt{Callback}. 
-				
+	
+	\item \ttt{+  Remove(\\
+		Name\_Server:String,\\
+		Node\_Name:String)}\\	
+		
+		Effettua una richiesta di cancellazione del Nodo identificato da \ttt{Node\_Name} al Server dei Nomi.
+					
 	\end{description}
 	
-	Per entrambe le procedure, viene inviato un messaggio all'oggetto remoto identificato da \ttt{name\_server}, mediante il metodo \ttt{Send\_Message} di \ttt{Message\_Agent\_Type}, al quale viene passato una procedura di callback che estrae il campo \ttt{address} dal messaggio di ritorno e lo passa all'invocazione di \ttt{Callback}. Presso il package viene mantenuta una hash-map, la quale permette di memorizzare le destinazioni risolte, in modo da limitare l'invio di messaggi remoti.
+	Per tutte le procedure elencate, viene inviato un messaggio all'oggetto remoto identificato da \ttt{name\_server}, mediante il metodo \ttt{Send\_Message} di \ttt{Message\_Agent\_Type}. Alla procedura \ttt{Resolve} inoltre, viene passata una procedura di callback che estrae il campo \ttt{address} dal messaggio di ritorno e lo passa all'invocazione di \ttt{Callback}. Presso il package viene mantenuta una hash-map, la quale permette di memorizzare le destinazioni risolte, in modo da limitare l'invio di messaggi remoti.
 	
 	\subsection{Remote\_Station\_Interface}
 	
@@ -116,6 +126,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 			Station:Integer,\\
 			Platform:Integer,\\
 			Next\_Node\_Name:String)}\\ 
+			
 		Tale procedura permette l'invio di un messaggio remoto al Nodo identificato da \ttt{Next\_Node\_Name} per effettuare il trasferimento del Treno indicato da \ttt{Train\_Descriptor\_Index} presso la Stazione \ttt{Station}, Piattaforma \ttt{Platform}. 
 		
 		\item \ttt{+ Train\_Left\_Message(\\
@@ -123,6 +134,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 			Station:Integer,\\
 			Platform:Integer,\\
 			Next\_Node\_Name:String)}\\ 
+			
 		Questa procedura permette l'invio di un messaggio remoto al Nodo identificato da \ttt{Next\_Node\_Name} per indicare la partenza del Treno \ttt{Train\_Descriptor\_Index} dalla Piattaforma \ttt{Platform} della Stazione \ttt{Station}.
 		
 		\item \ttt{+ Send\_Traveler\_To\_Leave(\\
@@ -131,6 +143,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 			Station:Integer,\\
 			Platform:Integer,\\
 			Node\_Name:String)}\\
+			
 		Permette l'invio di un messaggio remoto al Nodo identificato da \ttt{Node\_Name} per aggiungere il Viaggiatore \ttt{Traveler\_Index} in attesa presso la Piattaforma \ttt{Platform} della Stazione \ttt{Station} dell'arrivo del Treno \ttt{Train\_ID} per poter lasciare tale Stazione.
 		
 		\item \ttt{+ Wait\_For\_Train\_To\_Arrive(\\
@@ -139,6 +152,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 			Train\_ID:Integer,\\
 			Destination\_Platform\_Index:Integer,\\
 			Next\_Region:String)}\\
+			
 		Permette l'invio di un messaggio remoto al Nodo identificato da \ttt{Node\_Name} per aggiungere il Viaggiatore \ttt{Traveler\_Index} in attesa presso la Piattaforma \ttt{Platform} della Stazione \ttt{Station} dell'arrivo del Treno \ttt{Train\_ID} per poter arrivare presso tale Stazione.
 		
 	\end{description}
@@ -148,8 +162,8 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	Il package \ttt{Queue} contiene la definizione di alcuni tipi di code utilizzati nell'intera simulazione:
 		\begin{description}
 			\item {\ttt{Terminable\_Queue}} \\
-			Tipo \ii{protetto} costruito come \ii{wrapper} della coda standard offerta dal package \ttt{Ada.Containers.Unbounded\_Synchronized\_Queues}, e che permette di interrompere l'attesa sulla guardia Booleana definita per l'entry \ttt{Dequeue}, la quale rimane chiusa nel caso in cui non vi siano più elementi al suo interno.
-			Esso e definisce l'entry
+			Tipo \ii{protetto} costruito come \ii{wrapper} della coda standard offerta dal package \ttt{Ada.Containers.Unbounded\_Synchronized\_Queues}, e che permette di interrompere l'attesa sulla guardia Booleana definita per l'\ii{entry} \ttt{Dequeue}, la quale rimane chiusa nel caso in cui non vi siano più elementi al suo interno.
+			Esso e definisce l'\ii{entry}
 			\begin{center}
 				\ttt{Dequeue(Element:out  Element\_Type,Terminated:out  Boolean)}
 			\end{center}
@@ -159,7 +173,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 		Per poter attribuire al campo dati \ttt{Termination} il valore \ttt{True}, viene fornita la procedura protetta \ttt{Stop}.
 			
 			\item {\ttt{Limited\_Simple\_Queue}} \\
-			Tipo di coda non thread-safe, di dimensione limitata, realizzato mediante un array di elementi, e che fornisce un'interfaccia composta dai metodi:
+			Tipo di coda ad accesso non sincronizzato di dimensione limitata, realizzato mediante un array di elementi, e che fornisce un'interfaccia composta dai metodi:
 			\begin{itemize}
 				\item \ttt{Enqueue(Element:Element\_Type)} per accodare un nuovo elemento;
 				\item \ttt{Dequeue(Element:out Element\_Type)} per rimuovere l'elemento dalla testa della coda;
@@ -167,7 +181,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 			\end{itemize}
 			
 			\item {\ttt{Unlimited\_Simple\_Queue}} \\
-			Tipo di coda non thread-safe di dimensione illimitata, realizzato mediante un oggetto di tipo \ttt{Vector} definito dalle librerie standard \ttt{Ada.Containers.Vectors}. Esso presenta un'interfaccia del tutto simile a quella offerta dal tipo \ttt{Limited\_Simple\_Queue}, alla quale aggiunge il metodo \ttt{Is\_Empty : Boolean} che indica se la coda è vuota. 
+			Tipo di coda ad accesso non sincronizzato di dimensione illimitata, realizzato mediante un oggetto di tipo \ttt{Vector} definito dalle librerie standard \ttt{Ada.Containers.Vectors}. Esso presenta un'interfaccia del tutto simile a quella offerta dal tipo \ttt{Limited\_Simple\_Queue}, alla quale aggiunge il metodo \ttt{Is\_Empty : Boolean} che indica se la coda è vuota. 
 			
 		\end{description}
 	
@@ -253,9 +267,9 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	\subsection{Train\_Pool}
 	
-	Il package \ttt{Train\_Pool} definisce il pool di Task, che serve ad eseguire le operazioni previste per i Treni. Esso mantiene due code (di tipo \ttt{Terminable\_Queue}) di valori interi, una per ciascuna categoria di Treno, nelle quali verranno inseriti gli indici dell'array di descrittori \ttt{Trains.Trains}, e definisce il tipo Task \ttt{Train\_Executor\_Task}, il quale effettua le seguenti operazioni ciclicamente:
+	Il package \ttt{Train\_Pool} definisce il pool di Task, che serve ad eseguire le operazioni previste per i Treni. Esso mantiene due code (di tipo \ttt{Terminable\_Queue}) di valori interi, una per ciascuna categoria di Treno, nelle quali verranno inseriti gli indici dell'array di descrittori \ttt{Trains} contenuto nel package \ttt{Trains}, e definisce il tipo Task \ttt{Train\_Executor\_Task}, il quale effettua le seguenti operazioni ciclicamente:
 	\begin{itemize}
-		\item Preleva da una delle due code il prossimo indice dell'array di descrittori. 
+		\item Preleva da una delle due code il prossimo indice dell'array di descrittori, a seconda del discriminante \ttt{Type} assegnato al Task in fase di creazione. 
 
 \begin{lstlisting}
 ...
@@ -268,7 +282,10 @@ Trains.Queue.Dequeue(
 		\item Effettua la partenza dalla stazione corrente all'orario previsto dalla Time Table per il percorso assegnato al Treno.
 \begin{lstlisting}
 ...
+-- recupera l'orario di partenza dalla Tabella
+-- degli orari memorizzata nel package Environment.
 delay until Time_To_Wait;
+-- Richiesta di uscita alla stazione
 Environment.Stations(Start_Station).Leave(
 	Descriptor_Index => Current_Descriptor_Index,
 	Platform_Index   => Start_Platform,
@@ -289,7 +306,7 @@ Segments.Segments(Next_Segment).Enter(
 	Leg_Length);
 ...
 \end{lstlisting}		
-		\item Una volta ottenuto l'accesso, notifica la partenza del Treno al Controller Centrale mediante la procedura \ttt{Set\_Train\_Left\_Status} di \\\ttt{Central\_Controller\_Interface} e simula la percorrenza nel Segmento con il costrutto:
+		\item Una volta ottenuto l'accesso, notifica la partenza dalla stazione corrente del Treno al Controller Centrale mediante la procedura \ttt{Set\_Train\_Left\_Status} di \\\ttt{Central\_Controller\_Interface} e simula la percorrenza nel Segmento con il costrutto:
 
 \begin{lstlisting}
 ...
@@ -325,8 +342,9 @@ Trains.Trains(Current_Descriptor_Index).Next_Stage :=
 
 	\end{itemize}
 	
-	L'esecuzione dei Task viene interrotta quando l'operazione di Dequeue nelle code di indici di Descrittori di Treni restituisce \ttt{Terminated=True}. Per permettere invece l'interruzione delle operazioni in corso nel caso in cui l'accesso alla prossima Stazione comporti il trasferimento remoto del Treno indicato da \ttt{Current\_Train\_Descriptor}, viene utilizzata l'eccezione \ttt{Stop\_Train\_Execution} definita nel package \ttt{Remote\_Station\_Interface}.
+	L'esecuzione dei Task viene interrotta quando l'operazione \ttt{Dequeue} invocata sulle code di indici di Descrittori di Treni restituisce \ttt{Terminated=True}. Per permettere invece l'interruzione delle operazioni in corso nel caso in cui l'accesso alla prossima Stazione comporti il trasferimento remoto del Treno indicato da \ttt{Current\_Train\_Descriptor}, viene utilizzata l'eccezione \ttt{Stop\_Train\_Execution} definita nel package \ttt{Remote\_Station\_Interface}.
 	
+	\input{chapters/specification/railway/priority_access_controller.tex}
 	
 	\input{chapters/specification/railway/segment.tex}
 
@@ -406,9 +424,17 @@ Trains.Trains(Current_Descriptor_Index).Next_Stage :=
 		\item \ttt{central\_office\_ack}: Rappresenta il messaggio inviato dalla Biglietteria Centrale per comunicare l'avvenuta terminazione delle richieste pendenti; alla ricezione di questo messaggio viene inviato un messaggio \ttt{Continue} all'oggetto \ttt{Controller} per portare a termine la procedura di Terminazione.
 		\item \ttt{node\_terminated}: Messaggio inviato da un Nodo per notificare l'avvenuta terminazione. Alla ricezione di tale messaggio, viene inviato un messaggio \ttt{NodeTerminated} all'oggetto \ttt{Controller}.
 	\end{itemize}
-	L'oggetto \ttt{Controller} gestisce i seguenti messaggi:
+	L'oggetto \ttt{Controller}, mantiene tre tabelle, nelle quali memorizza lo stato della simulazione:
+		\begin{itemize}
+			\item \ttt{trainsOccupation}: per ciascun Treno, mantiene la lista dei Viaggiatori in transito;
+			\item \ttt{segmentsTrain}: per ciascun Segmento, mantiene la lista dei Treni in percorrenza;
+			\item \ttt{stationsTrains}: per ciascuna Stazione, mantiene una lista di coppie \ttt{(Treno,Piattaforma)}.
+		\end{itemize}
+	Lo stato viene semplicemente stampato su output standard.
+	Esso gestisce inoltre i seguenti messaggi:
+	
 	\begin{itemize}
-		\item \ttt{Event}, che rappresenta un evento di simulazione, il quale viene pubblicato tramite l'istanza di agente mantenuta.
+		\item \ttt{Event}, che rappresenta un evento di simulazione, il quale viene pubblicato tramite l'istanza di Agente remoto mantenuta. Vengono inoltre estratti i dati contenuti per poter aggiornare le tabelle descritte.
 		\item \ttt{DistributedStop}, inviato da \ttt{ControllerView} a seguito dell'interazione dell'utente con la componente grafica. Alla ricezione viene inviato un messaggio remoto \ttt{marker} alla Biglietteria Centrale.
 		\item \ttt{Continue}, alla cui ricezione viene completata la procedura di terminazione, inviando a ciascun Nodo di simulazione una richiesta di terminazione. 
 		\item \ttt{NodeTerminated}, che indica la terminazione di uno specifico Nodo. Una volta che tutti i Nodi sono terminati, viene inviato un secondo \ttt{marker} alla Biglietteria Centrale. 

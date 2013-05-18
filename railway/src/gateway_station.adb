@@ -34,6 +34,11 @@ with Ada.Exceptions;
 with Ticket;
 with Remote_Station_Interface;
 with Regional_Ticket_Office;
+with Central_Controller_Interface;
+
+with Ada.Calendar;
+with Ada.Calendar.Formatting;use Ada.Calendar.Formatting;
+with Ada.Calendar.Time_Zones;use Ada.Calendar.Time_Zones;
 
 package body Gateway_Station is
 
@@ -77,6 +82,40 @@ package body Gateway_Station is
 		This.Panel.Set_Train_Accessed_Platform(
 			Train_ID	=> Trains.Trains(Descriptor_Index).ID,
 			Platform 	=> Platform_Index);
+
+		-- # Notify the Entrance to Central Ticket Office
+		declare
+			-- # Get the Current Run index
+			Current_Run 	: Positive :=
+				Environment.Route_Time_Table(Trains.Trains(Descriptor_Index).Route_Index).Current_Run;
+
+			-- # Get the index of the next time to leave the station
+			Current_Run_Cursor	: Positive :=
+				Environment.Route_Time_Table(Trains.Trains(Descriptor_Index).Route_Index).Current_Run_Cursor;
+			-- # Time to wait before leaving
+			Time_To_Wait : Ada.Calendar.Time := Environment.Route_Time_Table(Trains.Trains(Descriptor_Index).Route_Index).Table
+				(Current_Run)(Current_Run_Cursor);
+
+			Train_Delay : Duration := Ada.Calendar."-"(Ada.Calendar.Clock, Time_To_Wait);
+		begin
+
+			-- # At this point the Task Train has access to the platform,
+			-- # So notify the Central Controller.
+			Central_Controller_Interface.Set_Train_Arrived_Status(
+				Train_ID	=> Trains.Trains(Descriptor_Index).ID,
+				Station		=> This.Get_Name,
+				Platform	=> Platform_Index,
+				Segment		=> Segment_ID,
+				-- # Time at witch the Train will leave the Platform.
+				Time 		=> Ada.Calendar.Formatting.Image(
+								Date					=> Time_To_Wait,
+								Include_Time_Fraction 	=> False,
+								-- # We are 2 hours later that UTC Time Zone.
+								Time_Zone				=> 2*60),
+				-- # Duration rounded to Integer, representing seconds
+				-- # of delay.
+				Train_Delay	=> Integer(Train_Delay));
+		end;
 
 		-- # If we have to cross to other region, we are positioned a stage before the first stage on the next region.
 		-- # So, let's check for Trains.Trains(Descriptor_Index).Next_Stage + 1!

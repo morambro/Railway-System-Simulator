@@ -14,21 +14,22 @@
 			\item Piattaforma
 		\end{itemize}
 	
-	\subsection{Ingresso in un Segmento da parte di un Treno}\label{ingresso_segmento}
+	\subsection{Ingresso di un Treno in un Segmento}\label{ingresso_segmento}
 
 	\begin{figure}[htbp]
 		\includegraphics[width=\textwidth,keepaspectratio]{imgs/ingresso_segmento.pdf}
 		\caption{\footnotesize{Accesso ad un Segmento da Parte di uno o più Treni.}}
 	\end{figure}
 
-	L'accesso ad un segmento di collegamento tra due stazioni da parte di un Treno, è inerentemente concorrente. Tale azione presenta infatti i seguenti requisiti:
+	L'accesso ad un Segmento di collegamento tra due Stazioni da parte di un Treno, avviene in maniera concorrente. Tale azione presenta infatti i seguenti requisiti:
 		\begin{itemize}
-			\item L'ingresso presso un Segmento deve avvenire in \ii{mutua esclusione}; è infatti impossibile che due o più entità Treno accedano ad uno stesso Segmento contemporaneamente.
+			\item L'ingresso presso un Segmento deve avvenire in \ii{mutua esclusione} tra i Treni; è infatti impossibile che due o più entità Treno accedano ad uno stesso Segmento contemporaneamente.
 			\item Più Treni possono circolare su un Segmento contemporaneamente. Questo comporta:
 				\begin{itemize}
 					\item il mantenimento di un ordine di ingresso al Segmento;
 					\item la regolazione della velocità di transito di ciascun Treno in base alla velocità di quelli che lo precedono;
-					\item l'impossibilità di un Treno di accedere ad un Segmento qualora vi siano altri Treni che lo percorrono in senso opposto.
+					\item l'impossibilità di un Treno di accedere ad un Segmento qualora vi siano altri Treni che lo percorrono in senso opposto;
+					\item la necessità di adottare un meccanismo che garantisca a tutti i Treni di poter accedere al Segmento (nessun Treno in attesa infinita).
 				\end{itemize}
 			\item Dev'essere data precedenza d'accesso al Segmento, ai Treni di tipo \ttt{FB}.
 		\end{itemize}

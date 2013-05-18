@@ -70,6 +70,7 @@ package body Central_Controller_Interface is
 	procedure Set_Train_Arrived_Status(
 		Train_ID 	: in 	Integer;
 		Station		: in 	String;
+		Segment 	: in 	Integer;
 		Platform 	: in 	Integer;
 		Time		: in 	String;
 		Train_Delay	: in 	Integer)
@@ -79,6 +80,7 @@ package body Central_Controller_Interface is
 		J_Event.Set_Field("type","train_arrived");
 		J_Event.Set_Field("train_id",Train_ID);
 		J_Event.Set_Field("station",Station);
+		J_Event.Set_Field("segment",Segment);
 		J_Event.Set_Field("platform",Platform);
 		J_Event.Set_Field("time",Time);
 		J_Event.Set_Field("delay",Train_Delay);
@@ -131,7 +133,7 @@ package body Central_Controller_Interface is
 		J_Event : JSON_Value := Create_Object;
 	begin
 		J_Event.Set_Field("type","traveler_event");
-		J_Event.Set_Field("traveler_id",Traveler);
+		J_Event.Set_Field("traveler_id",Environment.Travelers(Traveler).Traveler.Id);
 		J_Event.Set_Field("train_id",Train);
 		J_Event.Set_Field("station",Station);
 		J_Event.Set_Field("platform",Platform);
@@ -148,7 +150,9 @@ package body Central_Controller_Interface is
 		J_Event : JSON_Value := Create_Object;
 	begin
 		J_Event.Set_Field("type","traveler_event");
-		J_Event.Set_Field("traveler_id",Traveler);
+		J_Event.Set_Field("traveler_id",Environment.Travelers(Traveler).Traveler.Id);
+		J_Event.Set_Field("name",Environment.Travelers(Traveler).Traveler.Name);
+		J_Event.Set_Field("surname",Environment.Travelers(Traveler).Traveler.Surname);
 		J_Event.Set_Field("train_id",Train);
 		J_Event.Set_Field("station",Station);
 		J_Event.Set_Field("platform",Platform);

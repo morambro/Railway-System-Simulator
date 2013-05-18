@@ -1,7 +1,7 @@
 % ########################################### DISTRIBUZIONE ##################################################
 \section{Distribuzione}
 
-Le problematiche legate alla distribuzione sono molteplici. Nel progetto di un simulatore di un sistema ferroviario infatti, la presenza di entità distribuite è auspicabile, sia per suddividere logicamente le entità, sia per distribuire l'onere di calcolo su nodi differenti.
+Nel progetto di un simulatore di un sistema ferroviario, la presenza di entità distribuite è auspicabile, sia per suddividere logicamente le entità, sia per distribuire l'onere di calcolo su nodi differenti.
 Le caratteristiche desiderabili da un sistema distribuito che simula una struttura ferroviaria sono:
 	\begin{itemize}
 		\item Il complesso deve apparire all'utente come un sistema unitario, la natura distribuita del sistema deve essere nascosta all'utilizzatore finale. 
@@ -29,11 +29,11 @@ Le caratteristiche desiderabili da un sistema distribuito che simula una struttu
 
 	\subsection{Acquisto di un Biglietto}
 	
-	In base al grado di distribuzione della modellazione realizzata, è necessario prevedere una struttura distribuita di biglietterie, in quanto la natura del problema prevede un livello di conoscenza globale soprattutto per l'acquisto di biglietti di treni a prenotazione.
+	In base al grado di distribuzione della modellazione realizzata, è necessario prevedere una struttura distribuita di biglietterie. La natura del problema infatti, prevede che ci sia un certo grado di conoscenza globale soprattutto per l'acquisto di biglietti di treni a prenotazione.
 
 	\subsection{Terminazione del Sistema}
 	
-	La durata di una simulazione di un sistema ferroviario è per sua natura indefinita. \'E quindi necessario un intervento esterno che ne decreti la terminazione.	La \ii{Terminazione del sistema} globale deve essere coordinata tra tutte le componenti distribuite, ed effettuata in modo tale da non far terminare l'esecuzione in uno stato inconsistente. Dovrà inoltre garantire che nessun nodo di calcolo rimarrà attivo (ad esempio, nessun thread in esecuzione o in attesa).
+	La durata di una simulazione di un sistema ferroviario è per sua natura indefinita. \'E quindi necessario un intervento esterno che ne decreti la terminazione.	La \ii{Terminazione del sistema} globale deve essere coordinata tra tutte le componenti distribuite, ed effettuata in modo tale da non far terminare l'esecuzione in uno stato inconsistente. Dovrà inoltre garantire che nessun nodo di calcolo rimarrà attivo (ad esempio, nessun thread dovrà rimanere in esecuzione o in attesa).
 
 	\subsection{Avvio del Sistema}
 	

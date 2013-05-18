@@ -323,25 +323,25 @@ package body Segment is
 		This.Access_Controller.Gain_Access(To_Add);
 		-- # Once the Access is gained, add the Train to Segment's queue,
 		-- # to fix an entrance order.
-		This.Segment.Add_Train(To_Add);
+		This.Segment_Monitor.Add_Train(To_Add);
 		-- # then release the Access_Controller
 		This.Access_Controller.Access_Gained;
 		-- # and Enter into the Segment.
-		This.Segment.Enter(To_Add,Max_Speed,Leg_Length);
+		This.Segment_Monitor.Enter(To_Add,Max_Speed,Leg_Length);
     end Enter;
 
 	procedure Leave(
 		This		: access Segment_Type;
 		Train_D 	: in 	 Positive) is
 	begin
-		This.Segment.Leave(Train_D);
+		This.Segment_Monitor.Leave(Train_D);
 	end Leave;
 
 
 	function Id (
 		This		: access Segment_Type) return Natural is
 	begin
-		return This.Segment.Id;
+		return This.Segment_Monitor.Id;
 	end Id;
 
 
@@ -359,7 +359,7 @@ package body Segment is
 		Max				: Natural 	:= Json_Segment.Get("max");
 		New_Segment 	: access Segment_Type := new Segment_Type;
 	begin
-		New_Segment.Segment := new Segment_Access_Controller(
+		New_Segment.Segment_Monitor := new Segment_Access_Controller(
 			Id 					=> Segment_Id,
 			Segment_Max_Speed 	=> Max_Speed,
 			Segment_Length 		=> Segment_Length,

@@ -10,8 +10,8 @@
 	\end{itemize}
 	
 	Il package oltre a definire le funzioni necessarie per effettuare la conversione da \ttt{JSON} a \ttt{Time\_Table\_Type} e viceversa, definisce la procedura 
-\begin{lstlisting}
-	Update_Time_Table(Table:access Time_Table_Type)} 
-\end{lstlisting}
+\begin{center}
+	\ttt{Update\_Time\_Table(Table:access Time\_Table\_Type)} 
+\end{center}
  la quale aggiorna il valore di \ttt{Current\_Run\_Cursor}. Nel caso in cui la corsa corrente \ttt{Current\_Run} sia esaurita (\ttt{Current\_Run\_Cursor + 1 > }$M$) allora \ttt{Current\_Run} viene incrementato e viene comunicato ciò alla Biglietteria Centrale mediante la procedura \ttt{Update\_Run} di \ttt{Central\_Office\_Interface}, la quale effettua una richiesta sincrona.
 	L'insieme di tutte le tabelle è mantenuto in un array nel package \ttt{Environment}.

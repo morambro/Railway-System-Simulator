@@ -151,8 +151,5 @@ object Main extends App{
 		val serverAddress : String = args(0)
 		NameServer.start
 		NameServer ! Start(serverAddress);
-
-		readInput		
-		
 	}
 }

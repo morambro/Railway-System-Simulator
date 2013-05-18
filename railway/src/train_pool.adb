@@ -164,7 +164,7 @@ package body Train_Pool is
 						Trains.Trains(Current_Descriptor_Index).Speed := Max_Speed;
 					end if;
 
-					-- # The time to spent running inside the segment is simply calculated by the quotient
+					-- # The time to spend running inside the segment is simply calculated by the quotient
 					-- # between the length of the Segment and the Speed of the train; the first is
 					-- # expressed in [unit], the second in [unit]/[sec]
 					Time_In_Segment := Float(Leg_Length)/Float(Trains.Trains(Current_Descriptor_Index).Speed);
@@ -172,7 +172,7 @@ package body Train_Pool is
 					-- # Notify the Central controller that the Train is running on the segment
 					Central_Controller_Interface.Set_Train_Left_Status(
 						Train		=> Trains.Trains(Current_Descriptor_Index).ID,
-						Station		=> Environment.Stations(Next_Station).Get_Name,
+						Station		=> Environment.Stations(Trains.Trains(Current_Descriptor_Index).Current_Station).Get_Name,
 						Time		=> Integer(Time_In_Segment),
 						Segment		=> Segments.Segments(Next_Segment).Id);
 

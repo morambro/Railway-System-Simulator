@@ -211,7 +211,7 @@ private
 	-- # Private fields definition for Segment_Type.
 	type Segment_Type is tagged limited record
 		Access_Controller 	: Priority_Access.Priority_Access_Controller;
-		Segment 			: access Segment_Access_Controller;
+		Segment_Monitor		: access Segment_Access_Controller;
 	end record;
 
 	function Get_Segment_Array(Json_v : Json_Value) return access Segments_Array;

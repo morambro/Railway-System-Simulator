@@ -26,7 +26,7 @@
 	
 	\subsubsection{Acquisto di un Biglietto}\label{subsubsec:buy_ticket}
 	
-	L'acquisto di un Biglietto da parte di un Viaggiatore è effettuato tramite l'operazione \ttt{BUY\_TICKET}. Essa si limita a richiedere alla Biglietteria della Stazione di partenza (che viene definita da configurazione iniziale) un Biglietto per una specifica destinazione. Al termine della richiesta, l'esecuzione dell'operazione termina, e il thread corrente ritorna nella coda di thread \ttt{Traveler\_Pool} (descritta in sezione \ref{subsec:traveler_def}) per poter eseguire una nuova operazione. Questo comporta la definizione di una nuova operazione, \ttt{TICKET\_READY}, la quale verrà inserita nella coda di operazioni di \ttt{Traveler\_Pool}, all'avvenuta ricezione del Biglietto richiesto, sia per assegnare il \ttt{Ticket} creato e caricare nella coda della struttura dati \ttt{Traveler\_Pool} l'operazione \ttt{LEAVE} del Viaggiatore corrente, sia per eseguire operazioni in caso la richiesta non fosse andata a buon fine.
+	L'acquisto di un Biglietto da parte di un Viaggiatore è effettuato tramite l'operazione \ttt{BUY\_TICKET}. Essa si limita a richiedere alla Biglietteria della Stazione di partenza (che viene definita da configurazione iniziale) un Biglietto per una specifica destinazione. Al termine della richiesta, l'esecuzione dell'operazione termina, e il thread corrente ritorna nella coda di thread \ttt{Traveler\_Pool} (descritta in sezione \ref{subsec:traveler_def}) per poter eseguire una nuova operazione. Questo comporta la definizione di una nuova operazione, \ttt{TICKET\_READY}, la quale verrà inserita nella coda di operazioni di \ttt{Traveler\_Pool} all'avvenuta ricezione del Biglietto richiesto, sia per assegnare il \ttt{Ticket} creato e caricare nella coda della struttura dati \ttt{Traveler\_Pool} l'operazione \ttt{LEAVE} del Viaggiatore corrente, sia per eseguire operazioni in caso la richiesta non fosse andata a buon fine.
 	
 	\subsubsection{Partenza da una Stazione}
 	
@@ -42,24 +42,21 @@ Le azioni compiute dall'operazione \ttt{LEAVE} sono:
 		\item Tramite l'interfaccia esposta dalla Stazione \ttt{start\_station} (una procedura che identifichiamo con \ttt{Wait\_For\_Train\_To\_Go}), viene richiesto di attendere presso la Piattaforma \ttt{start\_platform}.
 	\end{itemize} 
 	
-	Internamente alla Stazione, tale richiesta viene tradotta nell'inserimento del Viaggiatore, o meglio del suo Descrittore \ttt{Traveler\_Descriptor}, nella coda \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}. Tale operazione non utilizza una sezione critica presso la risorsa protetta a protezione della Piattaforma, ma possiamo pensare che la coda (FIFO) adottata sia ad accesso sincronizzato.
+	Internamente alla Stazione, tale richiesta viene tradotta nell'inserimento del Viaggiatore, o meglio del suo Descrittore \ttt{Traveler\_Descriptor}, nella coda FIFO \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}, che sarà ad accesso sincronizzato.
 	
 	Nel caso in cui la Stazione di partenza del Viaggiatore sia una Stazione di Gateway, allora la procedura di accodamento presso la Piattaforma designata diviene:
 	\begin{itemize}
 		\item Se la Regione di Destinazione \ttt{next\_region} è diversa dalla Regione corrente, allora
 			\begin{itemize}
 				\item I dati relativi al Viaggiatore (Descrittore e Biglietto) vengono serializzati (\ii{marshalling}).
-				\item Viene inviato un messaggio alla prossima Regione (ovvero \ttt{next\_region}, il cui indirizzo viene recuperato dal Server dei Nomi) contente i dati serializzati, destinato alla Stazione di Gateway corrispondente in tale Regione (nodo).
+				\item Viene inviato un messaggio alla prossima Regione (ovvero \ttt{next\_region}, il cui indirizzo viene recuperato dal Server dei Nomi) contente i dati serializzati, destinato alla Stazione di Gateway corrispondente in tale Regione (Nodo).
 				\item A destinazione, vengono aggiornati i dati relativi al Viaggiatore locale alla Regione e eseguito un accodamento presso la coda \ttt{Leaving\_Queue} della Piattaforma indicata da \ttt{start\_platform}.
 			\end{itemize}
 	\end{itemize}
 	
-	Il comportamento descritto non è proprio della operazione \ttt{LEAVE}, ma è contenuto nell'operazione della Piattaforma per l'accodamento del Viaggiatore presso la coda \ttt{Leaving\_Queue}. 
-	
-	
 	\subsubsection{Arrivo alla Destinazione successiva}
 		
-	Similmente a quanto descritto per la partenza, l'arrivo a destinazione prevede che l'operazione \ttt{ARRIVE} sia già stata inserita all'interno della coda di operazioni in \ttt{Traveler\_Pool}, e che un thread del pool la esegua (rimuovendola dalla coda). A differenza della partenza, questa operazione può comportare l'accodamento del Viaggiatore presso una Stazione che non appartiene alla Regione (al nodo) corrente, anche se non di Gateway. 
+	Similmente a quanto descritto per la partenza, l'arrivo a destinazione prevede che l'operazione \ttt{ARRIVE} sia già stata inserita all'interno della coda di operazioni in \ttt{Traveler\_Pool}, e che un thread del pool la esegua (rimuovendola dalla coda). Questa operazione può comportare l'accodamento del Viaggiatore presso una Stazione che non appartiene alla Regione (al Nodo) corrente, anche se non di Gateway. 
 	
 	Vengono eseguite le seguenti azioni:
 		\begin{itemize}
@@ -77,7 +74,7 @@ Le azioni compiute dall'operazione \ttt{LEAVE} sono:
 		
 	Internamente alla Stazione, la richiesta si traduce nell'inserimento del Descrittore del Viaggiatore corrente all'interno della coda \ttt{Arrival\_Queue} interna alla Piattaforma \ttt{destination\_platform} selezionata.
 	
-	Si noti che l'eventuale azione di trasferimento del Viaggiatore al nuovo nodo viene effettuata dall'operazione \ttt{ARRIVE} e non dalla stazione all'arrivo del Treno (descritto nella sottosezione \ref{subsubsec:regional_station_access}). Questa scelta è stata fatta per limitare il più possibile l'occupazione da parte di un Treno della Piattaforma (risorsa protetta), ed evitare quindi l'esecuzione di operazioni potenzialmente lunghe come l'invio di un messaggio remoto.
+	Si noti che l'eventuale azione di trasferimento del Viaggiatore al nuovo Nodo viene effettuata dall'operazione \ttt{ARRIVE} e non dalla stazione all'arrivo del Treno (descritto nella sottosezione \ref{subsubsec:regional_station_access}). Questa scelta è stata fatta per limitare il più possibile l'occupazione da parte di un Treno della Piattaforma (risorsa protetta), ed evitare quindi l'esecuzione di operazioni potenzialmente lunghe come l'invio di un messaggio remoto.
 
 \newpage
 	

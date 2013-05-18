@@ -5,11 +5,10 @@ La progettazione di un simulatore di un sistema ferroviario presenta diverse pro
 	\item il problema prevede l'interazione tra una popolazione di entità in maniera concorrente;
 	\item vi sono dei punti di sincronizzazione tra le entità, che devono essere identificati e modellati opportunamente;
 	\item non è ragionevole fare assunzioni a priori sulle tecnologie che risolveranno il problema, ne sull'ambiente di esecuzione;
-	\item è ragionevole prevedere un certo livello di distribuzione delle componenti del sistema;
-	\item si possono presentare difficoltà dovute ai ritardi nella trasmissioni di rete tra le componenti.
+	\item è opportuno prevedere un certo livello di distribuzione delle componenti del sistema;
+	\item si possono presentare difficoltà nella trasmissione di dati tra le componenti dovute all'inaffidabilità della rete.
 \end{itemize} 
-
-Di seguito andrò ad analizzare quelle che sono le principali. 
+Di seguito andrò ad analizzare gli aspetti più problematici, in termini di Concorrenza e Distribuzione.
 
 \input{chapters/problem_analisis/distribution.tex}
 \input{chapters/problem_analisis/concurrency.tex}

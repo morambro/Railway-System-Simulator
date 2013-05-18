@@ -1,5 +1,6 @@
 import scala.actors._
 import com.inspirel.yami._
+import scala.collection.mutable.ListBuffer
 
 case class Event(description:String) 
 case class Stop()
@@ -9,7 +10,28 @@ case class NodeTerminated(nodeName : String)
 
 case class InitController(address:String)
 
+class Traveler(val id:String,val name:String,val surname:String) {
+	
+	def print {
+		println("  id      = " + id)
+		println("  name    = " + name)
+		println("  surname = " + surname)
+		println("--------------------")
+	}
+}
+
 object Controller extends Actor {
+	
+	/**
+	 * For each Train, contains the list of Travelers.
+	 */
+	var trainsOccupation : Map[String,ListBuffer[Traveler]] = Map()
+	
+	
+	var segmentsTrain : Map[String,ListBuffer[String]] = Map()
+	
+	
+	var stationsTrains : Map[String,ListBuffer[(String,String)]] = Map()
 	
 	val publisherValue = new ValuePublisher
 	val publisherAgent = new Agent
@@ -94,14 +116,101 @@ object Controller extends Actor {
 		received
 	}
 
+	
+	def printSegments() {
+		println("** Segments Status ")
+		segmentsTrain.keys.foreach(segment => {
+			print("    Segment  [" + segment+"] :  | ")
+			segmentsTrain(segment).foreach(train => print(train + " | "))
+			println
+		})
+	}
+
+	def printTrainsOccupation() {
+		println("** Trains ")	
+		trainsOccupation.keys.foreach(tr => {
+			print("    Train ["+tr+"] :  | ")
+			trainsOccupation(tr).foreach(traveler => print(traveler.id+" | "))
+			println
+		})
+	}
+	
+	def printStationsTrains() {
+		println("** Stations")
+		stationsTrains.keys.foreach(station => {
+			print("    Station [" + station + "] :  | ") 
+			stationsTrains(station).foreach(c => print("(" + c._1 + "," + c._2 + ") | "))
+			println
+		})
+	}
 
 	def controllerLoop() {
 		react {
 			case Event(d) => {
+				
+				// Publish the Event
 				val content = new Parameters
 				//println ("Publishing event " + d)
 				content.setString("event",d)
 				publisherValue.publish(content)
+				
+				// Parse and memorize the Event data
+				val event = JSON.parseJSON(d)
+				event.apply("type").toString match {
+					case "traveler_event" => {
+						if (event.action.toString == "leave") {
+							
+							if (!trainsOccupation.contains(event.train_id.toString)) {
+								trainsOccupation += event.train_id.toString -> ListBuffer[Traveler]()
+							}
+							trainsOccupation(event.train_id.toString) += 
+								new Traveler(event.traveler_id.toString,event.name.toString,event.surname.toString)
+							printTrainsOccupation()
+						}
+						if (event.action.toString == "enter") {
+							
+							if (trainsOccupation.contains(event.train_id.toString)) {
+								var toRemove : Traveler = null;
+								trainsOccupation(event.train_id.toString).foreach(el => {
+									if (el.id == event.traveler_id.toString) toRemove = el
+								})
+								trainsOccupation(event.train_id.toString) -= toRemove
+								printTrainsOccupation()
+							}
+						}
+					}
+					case "train_left" => {
+						
+						if (!segmentsTrain.contains(event.segment.toString)) {
+							segmentsTrain += event.segment.toString -> ListBuffer()
+						}
+						segmentsTrain(event.segment.toString) += event.train_id.toString
+						printSegments()
+						if (stationsTrains.contains(event.station.toString)) {
+							var toRemove : (String,String) = null
+							stationsTrains(event.station.toString).foreach(train => {
+								if (train._1 == event.train_id.toString) {
+									toRemove = train
+								}
+							})
+							stationsTrains(event.station.toString) -= toRemove
+							printStationsTrains()
+						}
+					}
+					case "train_arrived" => {
+						if (segmentsTrain.contains(event.segment.toString)) {
+							segmentsTrain(event.segment.toString) -= event.train_id.toString
+							printSegments()							
+						}
+						if (!stationsTrains.contains(event.station.toString)) {
+							stationsTrains += event.station.toString -> ListBuffer()
+						}
+						stationsTrains(event.station.toString) += ((event.train_id.toString,event.platform.toString))
+						printStationsTrains()
+					}
+					case _ => 
+				}
+				
 				controllerLoop
 			}
 			
@@ -295,10 +404,6 @@ object ControllerMain extends App {
 				receiver.close
 				println ("Bye!")
 			}
-			case a : String => {
-				Controller ! Event(a)
-				waitExit
-			}
 		}
 	}
 	
@@ -330,6 +435,7 @@ ERROR: Following parameters MUST be specifed:
 		
 		NAME_SERVER_ADDRESS = nameServerAddress
 		CENTRAL_TICKET_OFFICE_ADDRESS = centralTicketOfficeAddress
+	
 		
 		waitExit
 		

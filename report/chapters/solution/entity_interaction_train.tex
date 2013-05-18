@@ -14,9 +14,9 @@
 \end{verbatim}
 				\end{center}
 dove \ttt{leave\_action} e \ttt{enter\_action} indicano rispettivamente quello che un Treno dovrà compiere alla partenza dalla stazione \ttt{start\_station} e all'arrivo presso la prossima stazione \ttt{next\_station}, a scelta tra \ttt{ENTER}, per entrare ed effettuare discesa e salita passeggeri o \ttt{PASS} per non fermarsi e oltrepassare la Stazione; il campo \ttt{node\_name} invece, indica la regione di destinazione, e viene utilizzato nel caso di transito su stazione di Gateway.
-	Il percorso di ciascun Treno è scandito da una Tabella degli Orari (\ttt{Time\_Table}), la quale definisce per $N>1$ Corse (\ttt{Runs}) successive del Percorso, gli \ii{orari di partenza} dalle Stazioni da rispettare per ciascuna Tappa. 
+	Il percorso di ciascun Treno è scandito da una \ii{Tabella degli Orari} (\ttt{Time\_Table}), la quale definisce per $N>1$ \ii{Corse} (\ttt{Runs}) successive del Percorso, gli \ii{orari di partenza} dalle Stazioni da rispettare per ciascuna Tappa. 
 	 
-Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un Descrittore, effettua le seguenti  operazioni, per ciascuna Tappa del Percorso corrente (di andata o di ritorno):
+Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un Descrittore, effettua le seguenti  operazioni, per ciascuna Tappa del Percorso:
 				\begin{itemize} 
 					\item Partenza dalla Stazione \ttt{start\_station}, Piattaforma \ttt{start\_platfom} all'orario indicato da \ttt{Time\_Table} per la Tappa corrente; se previsto (\ttt{action = ENTER}) allora effettua la salita dei Viaggiatori.
 					\item Accesso al prossimo Segmento \ttt{next\_segment}.
@@ -33,7 +33,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 
 		\subsubsection{Gestione della Tabella degli Orari}
 		
-		Per limitare la dimensione della Tabella degli Orari per ciascun percorso, esso mantiene un numero $N$ di corse. Essa viene fornita dalla Biglietteria Centrale, la quale dovrà essere sempre aggiornata relativamente alla corsa correntemente percorsa da un Treno per poter permettere la prenotazione dei Biglietti per Treni di tipo \ttt{FB} (si veda il paragrafo \ref{subsubsec:validation}). Per poter consultare la \ttt{Time\_Table}, vengono quindi utilizzati due indici:
+		Per limitare la dimensione della Tabella degli Orari per ciascun percorso, viene mantenuto un numero $N$ di corse. La Tabella viene fornita dalla Biglietteria Centrale, la quale dovrà essere sempre aggiornata relativamente alla corsa correntemente percorsa da un Treno per poter permettere la prenotazione dei Biglietti per Treni di tipo \ttt{FB} (si veda il paragrafo \ref{subsubsec:validation}). Per poter consultare la \ttt{Time\_Table}, vengono quindi utilizzati due indici:
 		
 		\begin{itemize}
 			\item \ttt{Current\_Run} che mantiene l'indice della Corsa corrente.
@@ -42,7 +42,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 		
 	Tali indici vengono aggiornati dal Treno al momento della partenza da una Stazione per raggiungere la Tappa successiva. Nel caso in cui il Treno ultimi una corsa, esso incrementa l'indice \ttt{Current\_Run}, ed invia un messaggio remoto \ii{sincrono} alla Biglietteria Centrale comunicando il passaggio alla Corsa successiva. Ci sono due possibili risultati alla richiesta di aggiornamento:
 	\begin{itemize}
-		\item Si è raggiunta l'ultima Corsa ($N-esima$), e quindi viene restituita una nuova \ttt{Time\_Table} contenente gli orari per $N$ corse, composta dalla corsa $N-esima$ della Tabella precedente in prima posizione, e da $N-1$ Corse calcolate. L'indice \ttt{Current\_Run} viene posto ad 1, e viene memorizzato l'identificativo della Corsa corrente \ttt{Current\_Run\_Id}, il quale può essere ad esempio, un numero progressivo che la identifica.
+		\item Si è raggiunta l'ultima Corsa ($N-esima$), e quindi viene restituita una nuova \ttt{Time\_Table} contenente gli orari per $N$ corse, composta dalla corsa $N-esima$ della Tabella precedente in prima posizione, e da $N-1$ corse calcolate. L'indice \ttt{Current\_Run} viene posto ad 1, e viene memorizzato l'identificativo della Corsa corrente \ttt{Current\_Run\_Id}, il quale può essere ad esempio un numero progressivo, che la identifica.
 		\item Non si è raggiunta l'ultima corsa, e quindi viene aggiornata la corsa corrente presso la Biglietteria Centrale e restituito l'identificativo della stessa.
 	\end{itemize}
 	
@@ -60,36 +60,38 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 	
 		\subsubsection{Accesso ad un Segmento}\label{subsubsec:segment_access}
 		
-		L'accesso alla risorsa protetta Segmento è regolato da una interfaccia ben definita, che permette:
+		Un Segmento può essere rappresentato da una struttura dati \ttt{Segment} che espone una interfaccia semplice, che permette di effettuare:
 			\begin{itemize}
-				\item Ingresso.
-				\item Uscita.
+				\item Ingresso (\ttt{Enter}).
+				\item Uscita (\ttt{Leave}).
 			\end{itemize}
-		Per mantenere l'ordine di accesso, ciascun Segmento \ttt{Segment} è dotato di una Coda FIFO (\ttt{Train\_Queue}) che conterrà i Descrittori dei Treni correntemente in transito.		
 		\begin{description}
 			
 			\item {\ii{Ingresso}}
 			
-			La richiesta di accesso (\ttt{Enter}) al segmento avviene in mutua esclusione tra tutti le entità Treno. In ogni momento quindi solo una entità eseguirà all'interno della risorsa protetta. Supponendo la presenza di un flag booleano \ttt{Free} che permette di indicare lo stato occupato della risorsa, una volta ottenuta la risorsa ciascun Treno compie le seguenti operazioni:
+			La richiesta di accesso (\ttt{Enter}) al segmento avviene in mutua esclusione tra tutti le entità Treno. A protezione dell'accesso ad un Segmento, viene utilizzata una struttura dati di tipo \ii{monitor}, che chiameremo \ttt{Segment\_Monitor}, che sarà contenuta nella struttura dati \ttt{Segment}. Essa possiede un flag booleano \ttt{Free} che permette di indicare lo stato occupato della risorsa monitor; una prima definizione della procedura protetta \ttt{Enter\_Monitor} a gestione dell'ingresso prevede l'esecuzione delle seguenti operazioni:
+			 
 			 \begin{itemize}
-			 	\item Se \ttt{Free=False} e la direzione di percorrenza corrente è opposto a quella del Treno che vuole accedere, allora il thread corrente si pone in attesa sulla condizione \ttt{wait(Not\_Free)}
-			 	\item Inserimento del Descrittore nella coda \ttt{Train\_Queue};
-			 	\item Aggiornamento della velocità di percorrenza del Treno entrato, in base a quella dei Treni che lo precedono.
-			 	\item Nel caso in cui la risorsa risulti vuota (\ttt{Free=True}), allora viene modificato il valore di \ttt{Free} a \ttt{False} , e memorizzata la stazione di provenienza del Treno.
+			 	\item Se \ttt{Free=False} e la direzione di percorrenza corrente è opposta a quella del Treno che vuole accedere, allora il thread corrente si pone in attesa su condizione, \ttt{wait(Not\_Free)}. I thread in attesa verranno risvegliati dalla procedura \ttt{Leave\_Monitor}.
+			 	\item Altrimenti, 
+			 		\begin{itemize}
+			 			\item il Descrittore corrente viene inserito nella coda \ttt{Train\_Queue};
+					 	\item Viene aggiornata la velocità di percorrenza del Treno entrato, in base a quella dei Treni che lo precedono.
+					 	\item Nel caso in cui la risorsa risulti vuota (\ttt{Free=True}), allora viene modificato il valore di \ttt{Free} a \ttt{False} , e memorizzata la stazione di provenienza del Treno.
+					 \end{itemize}
 			\end{itemize}
 			
 			Una volta terminate queste operazioni, il thread rappresentante il Treno rilascia la risorsa e, basandosi sulla lunghezza del Segmento e sulla velocità da mantenere, simula la percorrenza rendendosi inattivo (non competitivo per l'ottenimento della CPU) per un tempo dato dalla semplice equazione: $ Time = Segment\_Length / Actual\_Speed $.
 			
-			Data la possibilità di percorrenza multipla del Segmento, si presentano diverse problematiche: per la semantica descritta,  nel caso in cui una volta ottenuta la possibilità di eseguire all'interno della procedura protetta per l'accesso al Segmento, un Treno richieda l'accesso nella direzione opposta a quella dei Treni che percorrono il Segmento (ovvero abbiamo la situazione in cui il flag booleano \ttt{Free = False}, e la stazione di provenienza memorizzata presso il Segmento è diversa da quella del Treno richiedente) allora questo dovrà attendere  fino a che il Segmento non si sarà liberato dai Treni in transito. Questa attesa dev'essere tale da evitare starvation del Treno in attesa.
+			La semantica di base descritta per \ttt{Enter\_Monitor} non è completa: essa infatti non garantisce che tutti i thread che rimarranno in attesa sulla condizione \ttt{Not\_Free} potranno eseguire, e può quindi portare a \ii{starvation}. 			
+			Una prima estensione possibile per evitare questo problema è garantire ai thread in attesa su condizione una \ii{priorità maggiore nell'accedere} al Segmento appena esso diviene libero rispetto a quelli che sopraggiungono successivamente. Sono inoltre introdotte due variabili di condizione, \ttt{Can\_Enter\_First\_End} e \ttt{Can\_Enter\_Second\_End}, a sostituzione di \ttt{Not\_Free}, per poter porre i thread in attesa sull'estremo di Segmento dal quale hanno tentato l'ingresso.
 			
-			Una primo approccio possibile per evitare questo problema è garantire ai Treni in attesa su condizione una priorità maggiore nell'accedere al Segmento appena esso diviene libero rispetto ad altri Treni che sopraggiungono successivamente. Per questo possiamo utilizzare due variabili di condizione distinte per porre i thread in attesa, una per ciascuno dei due estremi del Segmento : \ttt{Can\_Enter\_First\_End} e \ttt{Can\_Enter\_Second\_End}.
+			Questa accorgimenti non risultano però sufficiente a garantire che i Treni in attesa avranno accesso al Segmento in qualche momento: si consideri, ad esempio, la presenza di un percorso circolare composto da $N$ Segmenti, e di $M$ Treni che viaggiano lungo tale percorso in senso orario in modo tale che in ogni istante ci sia almeno un treno all'interno di ciascun Segmento. Se ora aggiungiamo al sistema un Treno che viaggia in direzione opposta, allora esso, adottando la semantica di accesso descritta, non riuscirà mai a percorrere uno dei Segmenti.			
 			
-			Questi accorgimenti non risultano però sufficiente a garantire che i Treni in attesa avranno accesso al Segmento in qualche momento: si consideri, ad esempio, la presenza di un percorso circolare composto da $N$ Segmenti, e di $M$ Treni che viaggiano lungo tale percorso in senso orario in modo tale che in ogni istante ci sia almeno un treno all'interno di ciascun Segmento. Se ora aggiungiamo al sistema un Treno che viaggia in direzione opposta, allora esso, adottando la semantica di accesso descritta, non riuscirà mai a percorrere uno dei Segmenti.			
-			
-			Una possibile soluzione a questo problema, è prevedere un \ii{numero massimo di accessi consecutivi per direzione}. Un thread viene posto in attesa sulla variabile di condizione presso la quale si vuole effettuare l'accesso, se il numero massimo di accessi da una direzione è stato raggiunto. 
+			Una possibile soluzione a questo problema, è prevedere un \ii{numero massimo di accessi consecutivi per direzione}, raggiunto il quale, un thread viene posto in attesa sulla variabile di condizione relativa all'estremo dal quale si vuole effettuare l'accesso. 
 		Sia \ttt{Access\_Number} il numero di accessi nella direzione corrente, e sia \ttt{Current\_Direction} la direzione di percorrenza corrente, che indica l'accesso da uno dei due estremi del Segmento.
 		
-		La semantica adottata per la regolazione dell'accesso è la seguente:
+		La semantica completa adottata per la regolazione dell'accesso (\ttt{Enter\_Monitor}) è la seguente:
 		\begin{itemize}
 			\item Sia $T$ il thread Treno che esegue correntemente. Esso potrà accedere al segmento se e soltanto se una delle seguenti condizioni è verificata:
 				\begin{itemize}
@@ -97,34 +99,38 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 					\item \ttt{Free = False}, \ttt{Current\_Direction} coincide con l'estremo dal quale accede $T$ ma il numero massimo di accessi per direzione non è stato raggiunto.
 					\item \ttt{Free = False}, \ttt{Current\_Direction} coincide con l'estremo dal quale accede $T$, e il numero massimo di accessi per direzione è stato raggiunto ma il numero di Treni in attesa di accedere in direzione opposta è 0.
 				\end{itemize}
-			\item Se $T$ non può accedere, allora a seconda della direzione con la quale intende percorrere il Segmento, viene posto in attesa su condizione \ttt{Can\_Enter\_First\_End} oppure \ttt{Can\_Enter\_Second\_End} con una \ttt{wait}. Una possibile realizzazione in pseudo-codice del controllo può essere:
-\begin{lstlisting}
+			\item Se $T$ non può accedere, allora a seconda della direzione con la quale intende percorrere il Segmento, viene posto in attesa su condizione \ttt{Can\_Enter\_First\_End} oppure \ttt{Can\_Enter\_Second\_End} mediante il costrutto \ttt{wait}. Una possibile realizzazione in pseudo-codice della procedura \ttt{Enter} della risorsa \ii{monitor} a protezione del Segmento è presentata nel listato \ref{code:segment_monitor_enter}.
+\begin{lstlisting}[caption=\small{Procedura protetta \ttt{Enter\_Monitor} per l'accesso al Segmento.},label=code:segment_monitor_enter]
 monitor Segment_Monitor
 	...
-	procedure Enter(T:Train,Access_End:integer) 
+	procedure Enter_Monitor(T:Train,Access_End:integer) 
 	begin
 		...
 		while(Can_Not_Access) loop
 			if Access_End = First_End then
-				wait(Can_Enter_First_Edge);
+				wait(Can_Enter_First_End);
 			else
-				wait(Can_Enter_Second_Edge);
+				wait(Can_Enter_Second_End);
 			end if;
 		end loop;
 	...
+	end;
+...	
+end monitor;
 \end{lstlisting}
 			\item Una volta che $T$ ha ottenuto l'accesso:
 				\begin{itemize}
 					\item Se \ttt{Free = True} allora occupa il Segmento (imposta \ttt{Free} a \ttt{False}) e assegna a \ttt{Access\_Number} il valore $1$, se la direzione di $T$ è diversa da quella corrente memorizzata nel Segmento;
 					\item Altrimenti, incrementa di $1$ il valore di \ttt{Access\_Number} se esso è inferiore al limite massimo consentito.
-					\item In ciascuno dei due casi infine, inserisce il Descrittore del Treno nella coda \ttt{Train\_Queue} e aggiorna la Velocità di percorrenza.
+					\item In ciascuno dei due casi infine, inserisce il Descrittore del Treno nella coda \ttt{Train\_Queue} e aggiorna la velocità di percorrenza.
 				\end{itemize}
 		\end{itemize}
 			
-			Una volta che il Segmento si sarà liberato (\ttt{Free=True}) allora ciascun Treno in attesa nella coda relativa all'estremità opposta a quella di accesso dell'ultimo Treno uscito, potrà ritentare l'accesso al Segmento (la coda viene svuotata e ripopolata).
-			Si noti che la soluzione presentata non garantisce accesso preferenziale ai treni di tipo FB, requisito desiderabile. Per introdurre priorità senza poter fare assunzioni sulle politiche di scheduling che verranno utilizzate è possibile procedere nel seguente modo: viene introdotta una nuova risorsa protetta da monitor, \ttt{Priority\_Access\_Handler}, la quale mantiene due variabili intere \ttt{FB\_Count} e \ttt{Regional\_Count}, un flag booleano \ttt{Free} e due varibili di condizione \ttt{Can\_Access\_FB} e \ttt{Can\_Access\_Regional}. Tale risorsa avrà la seguente semantica in pseudo-codice:
+			Una volta che il Segmento si sarà liberato (\ttt{Free=True} dopo l'invocazione di \ttt{Leave\_Monitor} da parte di tutti i thread che rappresentano i Treni in transito) allora ciascun Treno in attesa nella coda relativa all'estremità opposta a quella di accesso dell'ultimo Treno uscito, potrà ritentare l'accesso al Segmento (la coda viene svuotata e ripopolata).
+			
+			Vi è infine un ultima estensione al protocollo di accesso al Segmento, per poter garantisce accesso preferenziale ai treni di tipo \ttt{FB}. Per introdurre priorità senza poter fare assunzioni sulle politiche di scheduling che verranno utilizzate è possibile procedere nel seguente modo: viene introdotta una nuova risorsa protetta da \ii{monitor}, \ttt{Priority\_Access\_Handler}, la quale contiene due variabili intere \ttt{FB\_Count} e \ttt{Regional\_Count}, un flag booleano \ttt{Free} e due varibili di condizione \ttt{Can\_Access\_FB} e \ttt{Can\_Access\_Regional}. Tale risorsa avrà il comportamento descritto nel listato \ref{priority_access_controller},
 	
-\begin{lstlisting}[caption=Typo monitor utilizzato per garantire accesso preferenziale a Treni di tipo FB,label=priority_access_controller]
+\begin{lstlisting}[caption=\small{monitor utilizzato per garantire accesso preferenziale a Treni di tipo \ttt{FB}.}, label=priority_access_controller]
 monitor Priority_Access_Handler 
 	...
 	procedure Gain_Access(T:Train) 
@@ -155,55 +161,55 @@ monitor Priority_Access_Handler
 end monitor;
 \end{lstlisting}
 			
-			Questa struttura può essere utilizzata nel modo seguente: supponiamo di avere una struttura dati contenente un oggetto \ttt{Priority\_Access\_Handler} e un oggetto \ttt{Segment}, la quale espone una interfaccia composta da \ttt{Add\_Train}, procedura che aggiunge un dato Descrittore di Treno in una coda interna \ttt{Trains\_Order} che specifica l'ordine di accesso, e da \ttt{Enter} e \ttt{Leave} rispettivamente per entrare ed uscire dal Segmento. \ttt{Enter} può avere il seguente comportamento:
+			e può essere utilizzata nel modo seguente: supponiamo che la struttura dati \ttt{Segment} contenga un oggetto \ttt{Priority\_Access\_Handler}, e che esponga una procedura \ttt{Add\_Train}, la quale aggiunge un dato Descrittore di Treno ad una coda, \ttt{Trains\_Order}, interna all'oggetto \ttt{Segment\_Monitor}. La procedure \ttt{Enter} sarà quindi composta dalle seguenti azioni:
+			\begin{itemize}
+				\item Viene richiesto l'accesso con la procedura protetta \ttt{Gain\_Access} sull'oggetto di tipo \ttt{Priority\_Access\_Handler} mantenuto.
+				\item Viene aggiunto il Descrittore del Treno corrente alla coda che regola l'ordine di esecuzione, con \ttt{Add\_Train}.
+				\item Viene liberata la risorsa \ttt{Priority\_Access\_Handler} con la procedura \ttt{Access\_Gained}.
+				\item Viene richiesto l'accesso al Segmento con la procedura \ttt{Enter} della risorsa protetta di tipo \ttt{Segment\_Monitor} utilizzata.
+			\end{itemize}
+		Un esempio di realizzazione della procedura \ttt{Enter} è riportato nel listato \ref{code:segment_enter_procedure}. 
 			
-\begin{lstlisting}
-	
-...
-// procedura non thread safe
-procedure Enter(Train:Train,Segment:Segment) is
-begin
-	// Se l'oggetto Priority_Controller e' libero, 
-	// viene occupato e si procede oltre, altrimenti 
-	// il thread corrente si trovera' in attesa su  
-	// variabile di condizione Can_Access_FB o 
-	// Can_Access_Regional.
-	Segment.Priority_Controller.Gain_Access(Train);
-	// A questo punto il thread corrente e' l'unico  
-	// in esecuzione e quindi puo' inserire il  
-	// descrittore nella coda interna a Segment_Monitor. 
-	// Nel frattempo altri thread possono attendere
-	// nelle code di attesa di Priority_Controller.
-	Segment.Segment_Monitor.Add_Train(Train);
-	// Una volta eseguito l'operazione Add_Train si 
-	// puo' liberare l'Access_Controller
-	Segment.Priority_Controller.Access_Gained();
-	// A questo punto viene fatta la richiesta 
-	// di Accesso. Anche in caso di prerilascio, 
-	// esso verra' attuato secondo l'ordine 
-	// descritto nella coda interna Trains_Order.
-	Segment.Segment_Monitor.Enter(Train);
-end;
-	
+\begin{lstlisting}[label=code:segment_enter_procedure,caption=\small{Esempio di procedura \ttt{Enter} che realizza il protocollo di accesso.}]
+	...
+	procedure Enter(Train:Train,Segment:Segment) is
+	begin
+		// Se l'oggetto Priority_Controller e' libero, 
+		// viene occupato e si procede oltre, altrimenti 
+		// il thread corrente si trovera' in attesa su  
+		// variabile di condizione Can_Access_FB o 
+		// Can_Access_Regional.
+		Segment.Priority_Controller.Gain_Access(Train);
+		// A questo punto il thread corrente e' l'unico  
+		// in esecuzione e quindi puo' inserire il  
+		// descrittore nella coda interna a Segment_Monitor. 
+		// Nel frattempo altri thread possono attendere
+		// nelle code di attesa di Priority_Controller.
+		Segment.Segment_Monitor.Add_Train(Train);
+		// Una volta eseguito l'operazione Add_Train si 
+		// puo' liberare l'Access_Controller
+		Segment.Priority_Controller.Access_Gained();
+		// A questo punto viene fatta la richiesta 
+		// di Accesso. Anche in caso di prerilascio, 
+		// esso verra' attuato secondo l'ordine 
+		// descritto nella coda interna Trains_Order.
+		Segment.Segment_Monitor.Enter(Train);
+	end;
 \end{lstlisting}
 
-	mentre \ttt{Leave} semplicemente invoca \ttt{Leave} su \ttt{Segment}. La semantica di accesso ordinato in base al contenuto della coda \ttt{Trains\_Order} è il seguente:
+	La procedure protetta \ttt{Enter\_Monitor} di \ttt{Segmen\_Monitor}, introdotta nel listato \ref{code:segment_monitor_enter}, per garantire l'accesso secondo l'ordine riportato nella coda \ttt{Trains\_Order}, deve essere quindi modificata. Il listato \ref{code:segment_monitor_all} riporta le modifiche necessarie.
 	
-\begin{lstlisting}
-
+\begin{lstlisting}[label=code:segment_monitor_all,caption=\small{Struttura della risorsa \ii{monitor} che regola l'accesso al Segmento.}]
 monitor Segment_Monitor
 	...
 	procedure Enter(T : Train) 
 	begin
-		
 		// Se il Treno corrente T non e' il
 		// prossimo designato, attende.
 		while(Trains_Order.First_Element() /= T) loop
 			wait(Not_First);
 		end loop;
-		
 		Trains_Order.Dequeue(T1);
-		
 		// Invoca una signal su variabile di 
 		// condizione, risvegliando in maniera
 		// ordinata i thread in attesa.
@@ -212,23 +218,18 @@ monitor Segment_Monitor
 		// terminera' l'esecuzione della procedura
 		// corrente) essi non potranno eseguire.
 		signal_all(Not_First);
-		
 		// Procedi con l'accesso secondo la 
-		// semantica desctitta
+		// semantica descritta
 		...
 	end;
-
 end monitor;	
-	
 \end{lstlisting}
 			
-			Sebbene questo meccanismo introduca una maggiore complessità anche in termini computazionali, esso garantisce un certo livello di priorità nell'accedere al Segmento per i Treni di tipo \ttt{FB}.
-			
-			Per semplicità, si può assumere che vi sia uno spazio apposito dove i Treni possano attendere affinché si liberi il Segmento.
+		Per semplicità di simulazione, si può assumere che vi sia uno spazio apposito dove i Treni possano attendere affinché si liberi il Segmento.
 			  
 			\item {\ii{Uscita}}
 			
-			L'uscita (\ttt{Leave}) da una Segmento da parte di una entità Treno, ha come prerequisito l'aver avuto accesso al Segmento. \'E quindi possibile assumere che il descrittore del Treno che intende uscire dal Segmento sia presente all'interno della coda \ttt{Train\_Queue}, e che inoltre al momento di tale richiesta abbia già terminato il tempo previsto di attesa che simula la percorrenza.
+			L'uscita da una Segmento da parte di una entità Treno, è possibile mediante la procedura \ttt{Leave} disponibile nell'interfaccia di \ttt{Segment}, la quale invocherà la procedura protetta di \ttt{Segment\_Monitor}, \ttt{Leave\_Monitor}. Essa ha come prerequisito l'aver avuto accesso al Segmento, ed è quindi possibile assumere che il descrittore del Treno che intende uscire dal Segmento sia presente all'interno della coda \ttt{Train\_Queue}, e che inoltre al momento di tale richiesta abbia già terminato il tempo previsto di attesa che simula la percorrenza.
 			
 			Il requisito principale richiesto dall'azione di uscita è che essa avvenga in \ii{maniera ordinata}, in base all'ordine con cui i Treni hanno avuto accesso al Segmento. La soluzione apportata mira a garantire tale ordine di uscita, senza fare alcuna assunzione sull'ordine con il quale i Treni verranno scelti per l'esecuzione dallo scheduler. La semantica adottata è quindi la seguente:
 			\begin{itemize}
@@ -236,13 +237,13 @@ end monitor;
 				 \item Se è il prossimo (vengono confrontati i Descrittori), allora il Treno può abbandonare la risorsa protetta, e di conseguenza viene rimosso dalla coda \ttt{Train\_Queue}. 
 				 \begin{itemize}
 				 	\item Nel caso in cui il Treno corrente fosse l'ultimo in transito, allora viene posto \ttt{Free=True} e, nel caso vi siano thread in attesa presso la variabile di condizione relativa alla direzione opposta a quella del Treno uscito, allora viene effettuata una \ttt{signal} su di essa per ciascun thread in attesa. 
-				 	\item Se il Treno corrente non era l'ultimo, allora invoca una \ttt{signal} sulla guardia booleana \ttt{Can\_Retry\_Exit} per ciascun thread in attesa.
+				 	\item Se il Treno corrente non era l'ultimo, allora invoca una \ttt{signal} sulla veriabile di condizione \ttt{Can\_Retry\_Exit} per ciascun thread in attesa.
 				 \end{itemize}
 				 \item Altrimenti il thread relativo al Treno corrente viene posto in attesa sulla condizione di uscita \ttt{Can\_Retry\_Exit}. Una volta risvegliato da una \ttt{signal}, se il Treno con thread correntemente in esecuzione non è il prossimo Treno destinato ad uscire, esso verrà posto nuovamente in attesa su \ttt{Can\_Retry\_Exit}. 
 			\end{itemize}
 		\end {description}
 	
-	La semantica descritta, garantisce ingresso sequenziale a molteplicità limitata, e uscita ordinata secondo l'ordine di ingresso. Il passo successivo consiste nel garantire l'accesso alla Stazione con lo stesso ordine di uscita per tutti i Treni provenienti dallo stesso Segmento.
+	La semantica descritta, garantisce ingresso sequenziale a molteplicità $N\ge1$, e uscita ordinata secondo l'ordine di ingresso. Il passo successivo consiste nel garantire l'accesso alla Stazione con lo stesso ordine di uscita per tutti i Treni provenienti dallo stesso Segmento.
 
 % ############################################################################################################
 % ####################################### ACCESSO_STAZIONE_REGIONALE #########################################
@@ -251,8 +252,8 @@ end monitor;
 		\subsubsection{Accesso ad una Stazione Regionale}\label{subsubsec:regional_station_access}
 		
 		\begin{figure}[htbp]
-			\includegraphics[trim = 45mm 0mm 0mm 0mm,scale=0.53]{imgs/platform_access_Sequence_Diagram.pdf}
-			\caption{\footnotesize{Diagramma di Sequenza, operazioni necessarie per l'ingresso ad una Piattaforma.}}
+			\includegraphics[trim = 55mm 0mm 0mm 0mm,scale=0.53]{imgs/platform_access_Sequence_Diagram.pdf}
+			\caption{\footnotesize{Diagramma di Sequenza, operazioni necessarie per l'ingresso in una Piattaforma.}}
 			\label{fig:platform_access}
 		\end{figure}
 		
@@ -275,31 +276,43 @@ end monitor;
 		\begin{enumerate}
 			\item Rappresentazione della Stazione come entità passiva ad accesso mutuamente esclusivo. Essa mantiene al suo interno una coda per Segmento, del tutto simile alla coda \ttt{Train\_Queue} interna ai Segmenti, e popolata parallelamente a \ttt{Train\_Queue}. In questo modo è semplice garantire (con un meccanismo simile a quello utilizzato per l'uscita da un Segmento) un accesso ordinato. Questa soluzione ha però uno svantaggio evidente: la richiesta di accesso avviene in mutua esclusione anche tra i Treni provenienti da Segmenti diversi, e che quindi si ritroveranno a dover superare un punto di sincronizzazione inutile, se diretti a Piattaforme diverse della Stazione.
 			
-			\item Una seconda possibilità prevede la presenza, all'interno di ciascuna Stazione, di una risorsa \ttt{monitor} per ciascun Segmento entrante, la quale si occuperà di garantire l'ordine di accesso (tale ordine sarà dato da una coda interna aggiornata in modo analogo alla soluzione precedentemente illustrata). Una volta che il Treno ha guadagnato il permesso di accedere in mutua esclusione alla risorsa protetta di controllo, esso avrà il permesso di interagire con la prossima Piattaforma, in modo concorrente con i Treni provenienti da altri Segmenti entranti. La coda con politica di ordinamento FIFO che indicherà l'ordine di accesso, sarà aggiornata dal Segmento mediante un'invocazione ad una procedura fornita dall'interfaccia della Stazione (ad esempio \ttt{Add\_Train}).
+			\item Una seconda possibilità prevede la presenza, all'interno di ciascuna Stazione, di una risorsa \ii{monitor} \ttt{Access\_Controller} per ciascun Segmento entrante, la quale si occuperà di garantire l'ordine di accesso mantenendo a tale scopo una coda FIFO interna \ttt{Trains\_Order}. Una volta che il Treno ha guadagnato il permesso di accedere in mutua esclusione alla risorsa protetta di controllo, esso avrà il permesso di interagire con la prossima Piattaforma, in modo concorrente con i Treni provenienti da altri Segmenti entranti. La coda \ttt{Trains\_Order} sarà aggiornata dal Segmento mediante un'invocazione ad una procedura fornita dall'interfaccia della Stazione (ad esempio \ttt{Add\_Train}).
 			In questo modo la Stazione diventerà solo un'interfaccia utilizzabile per l'accesso alle piattaforme, e inoltre i vincoli di ordinamento e accesso concorrente alle Piattaforme da Treni provenienti da Segmenti diversi saranno garantiti.
-			Un esempio di pseudo-codice per il controllore di accessi è il seguente:
+			Un esempio di pseudo-codice per il Controllore di Accessi è riportata nel listato \ref{code:station_access_controller}.
 			
-\begin{lstlisting}[label=station_access_controller]	
+\begin{lstlisting}[label=code:station_access_controller,caption=\small{Controllore di Accessi che garantisce accesso ordinato.}]	
 monitor Access_Controller
 	...
 	procedure Add_Train(T:Train)
 	begin
+		// Accoda il Treno in ingresso nella coda
+		// FIFO Trains_Order.
 		Trains_Order.Enqueue(T);
 	end;
 
 	procedure Enter(T:Train) 
 	begin
-		while(T.Id/=Trains_Order.First_Element()) loop
+		// Controlla il primo elemento della coda. 
+		// Se coincide con il Treno corrente, il 
+		// thread puo' proseguire la propria
+		// esecuzione.
+		while(T.Id/=Trains_Order.First_Element()) 
+		loop
+			// Attesa su variabile di condizione, 
+			// in attesa di poter ritentare 
+			// l'accesso.
 			wait(Retry_Enter);
 		end loop;
 	end;
 
 	procedure Leave()
 	begin
+		// Risveglia tutti i thread in attesa
+		// sulla variabile di condizione
+		// Retry_Enter, in modo ordianto. 
 		signal_all(Retry_Enter);
 	end;
 end monitor;
-
 \end{lstlisting}
 			
 			Lo svantaggio di utilizzare questa soluzione risiede nella creazione delle entità protette, una per ciascun Segmento entrante, che regolano l'accesso ordinato, e quindi spostano parte della conoscenza della topologia della rete ferroviaria anche sulle Stazioni, rendendone più complessa la configurazione iniziale.
@@ -307,19 +320,17 @@ end monitor;
 			\item La terza soluzione esaminata e scelta, è simile alla soluzione precedente, ma a differenza di essa opera una popolazione dinamica della struttura dati che andrà a contenere le risorse protette (\ttt{Access\_Controller}) che garantiscono l'ordinamento. Ciascun Treno nell'accedere alla Stazione, includerà anche un'identificativo univoco del Segmento di provenienza, e se per esso non esisterà una controllore degli accessi, allora esso verrà creato. Questa variante ha il vantaggio per il quale le stazioni non devono necessariamente essere a conoscenza della topologia del sistema ferroviario; inoltre l'allocazione di controllori sarà limitata al massimo al numero di Segmenti in ingresso.
 		\end{enumerate} 
 		
-		Il controllore di accessi (\ttt{Access\_Controller}) ha quindi il compito di fornire da barriera internamente alla Stazione; esso lascerà passare solamente il Treno (il thread che lo esegue) che effettivamente è primo nella coda di ordinamento.
-		Siano \ttt{Enter} e \ttt{Leave} rispettivamente le due procedure protette del monitor, allora l'accesso alla Piattaforma verrà regolato nel seguente modo:
+		Il controllore di accessi (\ttt{Access\_Controller}) ha quindi il compito di far passare solamente il Treno (il thread che lo esegue) che effettivamente è primo nella coda di ordinamento.
+		Siano \ttt{Access} e \ttt{Free} rispettivamente le due procedure protette di \ttt{Access\_Controller}, allora l'accesso alla Piattaforma verrà regolato nel seguente modo:
 			\begin{itemize}
-				\item Il Treno $T$ usa \ttt{Enter} per poter accedere alla prossima Piattaforma.
+				\item Il Treno $T$ usa \ttt{Access} per poter accedere alla prossima Piattaforma.
 				\item Se $T$ è effettivamente il primo della Coda allora 
 					\begin{itemize}
-						\item prosegue all'\ii{accesso alla Piattaforma};
-						\item libera l'\ttt{Access\_Controller} con \ttt{Free}. 
+						\item prosegue con l'accesso alla Piattaforma. 
+						\item libera il controllore di accessi \ttt{Access\_Controller} con \ttt{Free}. 
 					\end {itemize}
-				\item Altrimenti viene messo in attesa del proprio turno su una condizione (\ttt{Retry\_Enter}). I Treni in attesa sulla coda FIFO associata a questa guardia, verranno risvegliati ogni volta che un Treno effettuerà un accesso e una successiva chiamata a \ttt{Free} (la quale invocherà \ttt{signal(Retry\_Enter)} per ciascun thread in attesa).
+				\item Altrimenti viene messo in attesa del proprio turno su una condizione (\ttt{Retry\_Enter}). I Treni in attesa sulla coda FIFO associata a questa variabile di condizione, verranno risvegliati ogni volta che un Treno effettuerà un accesso e una successiva chiamata a \ttt{Free} (la quale invocherà \ttt{signal(Retry\_Enter)} per ciascun thread in attesa).
 			\end{itemize}
-		
-		La coda interna a ciascun \ttt{Access\_Controller} viene aggiornata nel momento in cui ciascun Treno esce dal Segmento corrispondente. 
 		
 	% ############################################## INGRESSO_PIATTAFORMA #########################################
 		
@@ -332,57 +343,43 @@ end monitor;
 			\item In maniera concorrente tra tutti i Treni provenienti da Segmenti diversi, fornendo precedenza di accesso ai Treni di tipo \ttt{FB}.
 		\end{itemize}
 		
-		Si rende quindi evidente la necessità di garantire l'ordine di esecuzione tra tutti i thread provenienti da uno stesso segmento, indipendentemente dalle scelte effettuate dello scheduler che verrà adottato.
-		Una Piattaforma può essere modellata come un'entità che espone una interfaccia semplice, con al suo interno una struttura dati \ttt{monitor} per la regolazione dell'ordine di ingresso. A tale scopo, quest'ultima mantiene al suo interno una coda FIFO \ttt{Trains\_Order} e fornisce una procedura protetta \ttt{Add\_Train} che permette di inserirvi l'identificativo di un Treno. Questa coda manterrà non solo l'ordine di accesso tra i Treni provenienti dallo Stesso segmento, ma più in generale tra tutti i Treni che intendono accedere alla Piattaforma (può essere vista come una sorta di "prenotazione" della risorsa prima di ottenervi l'accesso). Per garatire inoltre che l'ordine di ingresso dei Treni nella coda \ttt{Trains\_Order} sia tale da fornire accesso preferenziale ai Treni di tipo \ttt{FB}, è possibile utilizzare un oggetto \ttt{Priority\_Access\_Handler} come per l'accesso al Segmento (listato \ref{priority_access_controller}), e di conseguenza prevedere il seguente comportamento per la procedura protette \ttt{Add\_Train}:
-\begin{lstlisting}
+		Si rende quindi evidente la necessità di garantire l'ordine di esecuzione tra tutti i thread provenienti da uno stesso segmento, indipendentemente dalle scelte effettuate dello scheduler che verrà adottato. Non è inoltre desiderabile che il thread corrente effettui l'accesso prima di aver rilasciato il controllore di accessi per il Segmento di porvenienza. \'E quindi necessario, al rientro della procedura \ttt{Enter} del controllore d'accessi, \ii{prenotare} l'accesso alla Piattaforma per poi liberare la risorsa \ttt{Access\_Controller} e proseguire con l'ingresso vero e proprio.
+				  
+		Una Piattaforma è modellata quindi come una struttura dati che contiene una risorsa protetta da \ii{monitor} per la regolazione dell'ordine di ingresso \ttt{Platform\_Monitor}, e che espone una interfaccia semplice:
+		\begin{itemize}
+			\item \ttt{Add\_Train}, aggiunge il Descrittore del Treno passato come parametro nella coda FIFO \ttt{Trains\_Access\_Order} della risorsa protetta \ttt{Platform\_Monitor}. Questa coda manterrà l'ordine di accesso alla Piattaforma, non solo tra tutti i Treni provenienti dallo stesso Segmento, ma anche tra i Treni provenienti da Segmenti diversi.
+			\item \ttt{Enter\_Platform}, per eseguire l'accesso.
+			\item \ttt{Leave\_Platform}, per lasciare la piattaforma.
+		\end{itemize}
+		Per garatire inoltre che l'ordine di ingresso dei Treni sancito dalla coda \\\ttt{Trains\_Access\_Order} sia tale da fornire accesso preferenziale ai Treni di tipo \ttt{FB}, viene utilizzato un oggetto \ttt{Priority\_Access\_Handler} come per l'accesso al Segmento (si veda il listato \ref{priority_access_controller}), e di conseguenza il comportamento previsto per la procedura protetta \ttt{Add\_Train} sarà quello riportato nel listato \ref{code:platform_add_train}.
+\begin{lstlisting}[caption=\small{Esempio di procedure \ttt{Add\_Train} per l'accesso alla Piattaforma.},label=code:platform_add_train]
 	...
+	// Procedura Add_Train per l'aggiunta
+	// di un descrittore alla coda interna  
+	// alla risorsa protetta Platform_Monitor.
 	procedure Add_Train(T:Train)
 	begin
-		Priority_Access.Gain_Access();
-		Trains_Order.Enqueue(T);
+		Priority_Access.Gain_Access(T);
+		// Viene stabilito l'ordine prenotando la 
+		// posizione nella coda Trains_Access_Order del
+		// monitor a protezione della piattaforma.
+		Platform_Monitor.Trains_Access_Order.Enqueue(T);
 		Priority_Access.Access_Gained();
-		
 	end;
 	
 \end{lstlisting}
-		Una volta aggiunto l'identificativo del Treno corrente in \ttt{Trains\_Order}, può essere liberata la risorsa di controllo (\ttt{Access\_Controller}) mediante la procedura \ttt{Free} ed è quindi libero di richiedere l'accesso alla Piattaforma successiva prevista dal percorso (l'ordine di ingresso sarà rispettato). La semantica di accesso su di una Piattaforma $P$, mediante procedura di monitor \ttt{Enter} è la seguente:
+		Una volta aggiunto l'identificativo del Treno corrente in \ttt{Trains\_Access\_Order}, può essere liberata la risorsa di controllo (\ttt{Access\_Controller}) mediante la procedura \ttt{Free} ed è quindi possibile richiedere l'accesso alla Piattaforma successiva prevista dal percorso (l'ordine di ingresso sarà rispettato), che avviene mediante la procedura \ttt{Enter\_Platform} la quale:
 		\begin{itemize}
-			\item Se il Treno corrente $T$ è il prossimo a poter entrare in $P$ allora 
-				\begin{itemize}
-					\item Se l'azione (\ttt{action}) prevista dal Percorso è \ttt{ENTER} allora:
-						\begin{itemize}
-							\item esegue l'operazione di \bb{Discesa dei Viaggiatori};
-							\item rilascia la risorsa, in modo tale che altri Treni possano accodarsi, e rimane in attesa fino all'orario prestabilito di partenza;
-						\end{itemize}
-				\end{itemize} 
+			\item Richiede l'ingresso nella piattaforma tramite la procedura protetta \ttt{Enter\_Monitor} di \ttt{Platform\_Monitor}.
+			\item Effettua l'operazione di \bb{Discesa dei Viaggiatori} se previsto dal percorso.
+		\end{itemize}
+La semantica di accesso ad una Piattaforma $P$ è molto semplice; la procedura di monitor \ttt{Enter\_Monitor} è la seguente:
+		\begin{itemize}
+			\item Se il Treno corrente $T$ è il prossimo a poter entrare in $P$, allora termina l'esecuzione della procedura.
 			\item Se invece $T$ non è il prossimo Treno che può entrare, il Treno viene posto in attesa su variabile di condizione \ttt{Retry\_Enter}.
 		\end{itemize}
 
-Un esempio di struttura dati di controllo per una Piattaforma è visibile nel listato \ref{platform_access_controller}.
-
-\begin{lstlisting}[label=platform_access_controller]
-
-monitor Platform_Access_Controller 
-	...
-	procedure Add_Train(T:Train)
-	begin
-		...
-	end;
-	
-	procedure Enter(T:Train) 
-	begin
-		while(T.Id/=Trains_Order.First_Element()) loop
-			wait(Retry_Enter);
-		end loop;
-	end;
-	
-	procedure Leave()
-	begin
-		signal_all(Retry_Enter);
-	end;
-end monitor;
-	
-\end{lstlisting}
+Si può notare che la struttura dati di controllo per l'accesso ad una Piattaforma è molto simile a quella utilizzata per l'accesso al Segmento (listato \ref{code:station_access_controller}).
 		
 		L'Operazione di \bb{Discesa dei Viaggiatori}, si basa sulla possibilità che presso la Piattaforma corrente $P$ vi siano Viaggiatori all'interno della coda \ttt{Arrivals\_Queue} in attesa di un evento generato da uno specifico Treno, ovvero il suo arrivo presso $P$. L'operazione di Discesa dei passeggeri ha come precondizione l'accesso alla Piattaforma da parte di un Treno $T$ descritta in precedenza, ed è realizzata dalle seguenti azioni (eseguite dal thread associato a $T$):
 		\begin{itemize}
@@ -401,7 +398,7 @@ end monitor;
 			\end {itemize}
 		\end{itemize}
 		
-	Le operazioni necessarie ad attuare la Discesa dei Viaggiatori devono essere eseguite esternamente alla Sezione critica associata all'ingresso del Treno nella Piattaforma; se così non fosse infatti, essa risulterebbe occupata, e non sarebbe quindi possibile per i thread che sopraggiungono ottenere il lock sulla risorsa per eseguire \ttt{Add\_Train}.
+	Le operazioni necessarie ad attuare la Discesa dei Viaggiatori devono essere eseguite esternamente alla Sezione critica associata all'ingresso del Treno nella Piattaforma; se così non fosse infatti, essa risulterebbe occupata, e non sarebbe quindi possibile per i thread che sopraggiungono ottenere il blocco esclusivo sulla risorsa per eseguire \ttt{Add\_Train}.
 	
 	% ################################################# USCITA_PIATTAFORMA #########################################
 	\item{\ii{Uscita da una Piattaforma}}
@@ -412,20 +409,20 @@ end monitor;
 			\label{fig:platform_access}
 		\end{figure}
 		
-		L'uscita da una Piattaforma $P$ necessita di due prerequisiti:
+		L'uscita da una Piattaforma $P$ necessita dei seguenti prerequisiti:
 		
 			\begin{itemize}
-				\item Il thread che gestisce il Treno ha prima effettuato l'ingresso, e quindi il suo identificativo univoco è il primo elemento della coda \ttt{Trains\_Order} mantenuta dalla risorsa a protezione della Piattaforma.
+				\item Il thread che gestisce il Treno ha prima effettuato l'ingresso, e quindi il suo identificativo univoco è il primo elemento della coda \ttt{Trains\_Access\_Order} mantenuta dalla risorsa \ttt{Platform\_Monitor} a protezione della Piattaforma.
 				\item \'E già stata effettuata la Discesa dei Passeggeri (se prevista dal Percorso del Treno).
-				\item \'E stato generato l'evento che notifica l'arrivo dell'orario previsto per la partenza.
+				\item \'E stato generato l'evento che notifica al Treno l'arrivo dell'orario previsto per la partenza.
 			\end{itemize}
 		
 		A questo punto, le operazioni effettuate per completare la partenza sono:
 		
 			\begin{itemize}
-				\item Viene effettuata la Salita dei Viaggiatori in attesa presso $P$. 
+				\item Viene effettuata la \bb{Salita dei Viaggiatori} in attesa presso la Piattaforma. 
 				\item Il Treno corrente registra il proprio passaggio presso la Piattaforma, memorizzando in una struttura dati apposita \ttt{Last\_Train\_Run} il proprio identificativo univoco e l'identificativo univoco della Corsa corrente \ttt{Current\_Run\_Id}.
-				\item La risorsa viene rilasciata dal Treno in esecuzione mediante la procedura di monitor \ttt{Free}, la quale provvede a rimuovere il primo elemento della coda \ttt{Trains\_Order} e, se ci sono thread in attesa sulla condizione \ttt{Retry\_Enter}, a risvegliare tali thread.
+				\item La risorsa viene rilasciata dal Treno in esecuzione mediante la procedura di monitor \ttt{Free\_Monitor}, la quale provvede a rimuovere il primo elemento della coda \ttt{Trains\_Access\_Order} e, se ci sono thread in attesa sulla condizione \ttt{Retry\_Enter}, a risvegliare tali thread.
 			\end{itemize}
 		
 		La \bb{Salita dei Viaggiatori} è simile alla discesa dei Passeggeri presentata al punto precedente. Essa prevede l'esecuzione delle seguenti azioni:
@@ -449,22 +446,22 @@ end monitor;
 	\subsubsection{Accesso ad una Stazione di Gateway}\label{subsubsec:gateway_stations_func}
 	
 	Alcuni Treni seguono percorsi che attraversano più Regioni. Tra le tappe che compongono tali percorsi, alcune indicheranno l'attraversamento di Regioni di Gateway, introdotte nella sezione \ref{sec:gateway_stations}. 
-	Le azioni di Ingresso, Salita dei Viaggiatori, e Ripartenza presso questo tipo di stazioni seguono le stesse regole descritte per le stazioni Regionali nella sezione \ref{subsubsec:regional_station_access}. Esse hanno quindi un effetto locale alle Regioni (nodi) di provenienza e di destinazione.
-	Per quanto riguarda invece la Discesa dei Viaggiatori, essa può prevedere un \ii{trasferimento remoto} dei Viaggiatori in attesa di arrivo.
+	Le azioni di Ingresso, Salita dei Viaggiatori, e Ripartenza presso questo tipo di stazioni seguono le stesse regole descritte per le stazioni Regionali nella sezione \ref{subsubsec:regional_station_access}. Esse hanno quindi un effetto locale alle Regioni (Nodi) in cui vengono eseguite.
+	Per quanto riguarda invece la Discesa dei Viaggiatori, essa può prevedere un \ii{trasferimento remoto} dei Viaggiatori una volta scesi, nel caso essi continuino il proprio viaggio in una Regione diversa.
 	
-	Il Passaggio di un Treno da una regione alla successiva può essere schematizzato come segue: siano $G1$ e $G2$  Stazioni di Gateway connesse, che collegano le regioni $R1$ ed $R2$, con $G1 \in R1$, e sia $G2 \in R2$. Un Percorso che attraversa i due Gateway conterrà almeno una Tappa $T1$ tale per cui il campo \ttt{next\_station} avrà il valore $G1$, \ttt{destination\_platform} una delle Piattaforme possibili per effettuare l'accesso $P$, e \ttt{region} la regione $R1$, e una tappa $T2$ tale per cui il campo \ttt{next\_station} avrà il valore $G2$, \ttt{destination\_platform} la stessa piattaforma specificata in $T$, e \ttt{region} la regione $R2$.
+	Il Passaggio di un Treno da una regione alla successiva può essere schematizzato come segue: siano $G1$ e $G2$  Stazioni di Gateway connesse, che collegano le regioni $R1$ ed $R2$, con $G1 \in R1$, e $G2 \in R2$. Un Percorso che attraversa i due Gateway conterrà almeno una Tappa $T1$ tale per cui il campo \ttt{next\_station} avrà il valore $G1$, \ttt{destination\_platform} una delle Piattaforme possibili per effettuare l'accesso $P$, e \ttt{region} la regione $R1$, e una tappa $T2$ tale per cui il campo \ttt{next\_station} avrà il valore $G2$, \ttt{destination\_platform} la stessa piattaforma specificata in $T$, e \ttt{region} la regione $R2$.
 	Le operazioni eseguite saranno le seguenti:
 	\begin{itemize}
 		\item Il Treno corrente $T$ effettua l'accesso alla Stazione $G1$, Piattaforma $P$.
 		
-		\item $T$, se previsto dal Percorso, effettua Discesa dei Viaggiatori. Tale azione è simile alla Discesa descritta in sezione \ref{subsubsec:regional_station_access}, ma se un Viaggiatore una volta sceso proseguirà il proprio percorso su un nodo diverso da quello corrente, esso verrà trasferito mediante messaggio remoto al nodo successivo, e solo a questo punto verrà inserita l'Operazione \ttt{ENTER} del Viaggiatore nella coda di operazioni di \ttt{Traveler\_Pool} locale al nodo destinazione.
+		\item $T$, se previsto dal Percorso, effettua Discesa dei Viaggiatori. Tale azione è simile alla Discesa descritta in sezione \ref{subsubsec:regional_station_access}, ma se un Viaggiatore una volta sceso proseguirà il proprio percorso su un nodo diverso da quello corrente, esso verrà trasferito mediante messaggio remoto al nodo successivo (\ii{marshalling} dei dati e invio mediante invocazione remota al Nodo di destinazione), e solo a questo punto verrà inserita l'Operazione \ttt{ENTER} del Viaggiatore nella coda di operazioni di \ttt{Traveler\_Pool} locale al nodo destinazione.
 		
-		\item Il descrittore del Treno corrente $D_T$ viene serializzato (\ii{marshalling}), e inviato tramite invocazione remota alla Stazione di Gateway della Regione $G2$ ad essa connessa. L'individuazione dell'indirizzo della regione specificata nel parametro \ttt{region}, avviene interrogando il \ttt{Name\_Server}, se esso non è già presente in una cache locale.
+		\item Il descrittore del Treno corrente $D_T$ e la sua Tabella degli Orari vengono serializzati (\ii{marshalling}), e inviati tramite invocazione remota al Nodo della Regione $G2$ alla quale appartiene la Stazione di Gateway ad essa connessa. L'individuazione dell'indirizzo della regione specificata nel parametro \ttt{region}, avviene interrogando il \ttt{Name\_Server}, se esso non è già presente in una cache locale.
 		\item Il flusso ciclico di istruzioni eseguite dal thread che gestisce $T$ viene interrotto (esso potrà così ottenere un nuovo Descrittore di Treno ed eseguire per esso le proprie operazioni).
 		\item Presso la regione $R2$, stazione di Gateway $G2$, vengono eseguite le seguenti operazioni:
 			\begin{itemize}
-				\item Il Descrittore viene de-serializzato (\ii{unmarshalling}).
-				\item I dati del Descrittore $D_{T'}$ presenti nella regione $R2$ vengono aggiornati con quelli ricevuti.
+				\item Il Descrittore e la tabella degli orari vengono de-serializzati (\ii{unmarshalling}).
+				\item I dati del Descrittore $D_{T'}$ presenti nella regione $R2$ vengono aggiornati con quelli ricevuti. Stessa cosa per la Tabella degli Orari.
 				\item Viene aggiunto l'identificativo di $T$ nella coda \ttt{Trains\_Order} della Piattaforma $P$.
 				\item Vengono operate attesa fino all'orario di partenza previsto (secondo il clock del nodo corrente), Salita dei Viaggiatori e Partenza dalla Stazione come per le Stazioni Regionali.
 				\item Viene restituito un messaggio di \ii{acknowledgement} al nodo $R1$, che comunica l'avvenuta esecuzione delle operazioni.
@@ -480,7 +477,7 @@ end monitor;
 	Si noti che la soluzione riportata prevede lo scambio di due messaggi remoti, il primo per la transizione del Treni tra le Regioni, e il secondo di acknowledgement per poter liberare la risorsa Piattaforma presso il nodo di partenza. Di fatto, data l'inaffidabilità della rete, è possibile che uno dei due messaggi scambiati non venga ricevuto dal nodo di destinazione. Abbiamo quindi due casi:
 		\begin{itemize}
 			\item \ii{L'invio del primo messaggio fallisce.} In questo caso, il flusso di esecuzione del thread che gestisce il Treno viene interrotto. Per semplicità si può pensare che il Treno sia cancellato a causa di un guasto, o si può ridurre il Percorso fino alla Tappa che ha causato l'errore, dopo essersi accertati dell'effettiva irraggiungibilità del nodo destinazione.
-			\item \ii{Il messaggio di acknowledgement non viene consegnato.} In questo caso il problema è più grave. Il Treno presso il nodo di destinazione continua la propria corsa, mentre la Piattaforma abbandonata rimane occupata, e quindi inutilizzabile dai Treni che sopraggiungono. Per risolvere questo tipo di problema è possibile prevedere un tempo massimo di occupazione della Piattaforma, oltre il quale richiedere l'effettivo stato di occupazione della Piattaforma presso la Stazione di Gateway della Regione di destinazione e, nel caso in cui risultasse libera, procedere alla liberazione della stessa, impostando \ttt{Free} a \ttt{True}. 
+			\item \ii{Il messaggio di acknowledgement non viene consegnato.} In questo caso il problema è più grave. Il Treno presso il nodo di destinazione continua la propria corsa, mentre la Piattaforma abbandonata rimane occupata, e quindi inutilizzabile dai Treni che sopraggiungono. Per risolvere questo tipo di problema è possibile prevedere un tempo massimo di occupazione della Piattaforma, oltre il quale richiedere l'effettivo stato di occupazione della Piattaforma presso la Stazione di Gateway della Regione di destinazione e, nel caso in cui risultasse libera, procedere alla liberazione della stessa mediante la procedura \ttt{Leave}.
 		\end{itemize}
 	 
 	

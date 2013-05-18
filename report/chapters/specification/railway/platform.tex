@@ -6,33 +6,33 @@
 	
 	Il package \ttt{Platform} definisce il tipo protetto \ttt{Platform\_Type}, usato per regolare gli accessi alla Piattaforma. Esso mantiene i campi dato:
 	\begin{itemize}
-		\item \ttt{Free}: Variabile booleana usata per indicare lo stato di occupazione della Piattaforma.
-
 		\item \ttt{Can\_Retry}: Variabile booleana usata come guardia per regolare i tentativi di accesso alla Piattaforma.
 
 		\item \ttt{Retry\_Count}: Variabile a valori interi usata per la regolazione dei tentativi di accesso alla Piattaforma.
 		
 		\item \ttt{Trains\_Order}: Coda di interi FIFO, di tipo \ttt{Unlimited\_Simple\_Queue}, usata per memorizzare gli identificativi dei Treni che intendono accedere alla Piattaforma.
+		\item \ttt{Terminated}: Variabile booleana che indica se è stata richiesta la terminazione del sistema.
 	\end{itemize}
-	\ttt{Platform\_Type} si compone delle seguenti procedure:
-	
+	\ttt{Platform\_Type} si compone delle seguenti procedure protette:
 	\begin{description}
-		
+
 		\item \ttt{Add\_Train(Train\_ID:Integer)} \\
 		Aggiunge l'identificativo \ttt{Train\_ID} nella coda \ttt{Trains\_Order}.
-		
+
 		\item \ttt{Leave} \\
 		Imposta il campo \ttt{Free} a \ttt{False} liberando la risorsa, e, nel caso in cui ci fossero Task in attesa presso la \ii{entry} \ttt{Retry}, apre la guardia \ttt{Can\_Retry} memorizzando il numero di tali task nel campo \ttt{Retry\_Count}.
-		
+
+		\item \ttt{Terminate}\\
+		L'effetto di questa procedura è impostare il valore del campo dati \ttt{Terminated} a \ttt{True}.
+
 	\end{description}
 	e delle seguenti \ii{entries}:
 	\begin{description}
-		
 		\item \ttt{Enter(Train\_Descriptor\_Index:Integer)}\\
 		Ha guardia booleana sempre aperta (\ttt{True}). Essa verifica se il primo elemento della coda corrisponde al Treno corrente. In tal caso viene permesso l'accesso viene impostato lo stato della Piattaforma ad occupato (\ttt{Free = False}). Nel caso in cui invece tale condizione non si verifichi, il Task corrente viene riaccodato sulla \ii{entry} \ttt{Retry}.	
 		
 		\item \ttt{Retry(Train\_Descriptor\_Index:Integer)}\\
-		\'E regolata dalla guardia booleana \ttt{Can\_Retry}. Essa decrementa il valore di \ttt{Retry\_Count} e, nel caso in cui esso sia a 0, imposta il valore di \ttt{Can\_Retry} a \ttt{False}. Infine riaccoda il Task corrente presso la entry \ttt{Enter}.
+		\'E regolata dalla guardia booleana \ttt{Can\_Retry or Terminated}. Se \ttt{Terminated=False}, essa decrementa il valore di \ttt{Retry\_Count} e, nel caso in cui esso sia a 0, imposta il valore di \ttt{Can\_Retry} a \ttt{False}. Infine riaccoda il Task corrente presso la \ii{entry} \ttt{Enter}. Nel caso in cui \ttt{Terminated} sia \ttt{True} invece, non fa nulla.
 		
 	\end{description}
 	
@@ -40,11 +40,19 @@
 	% ********************* PLATFORM_HANDLER **********************+
 	%
 	
-	Il package \ttt{Platform} definisce inoltre il tipo \ii{tagged} \ttt{Platform\_Handler}, che viene espone dei metodi alla Stazione per permettere di interagire con le Piattaforme. Esso contiene un oggetto di tipo \ttt{Platform\_Type}, \ttt{The\_Platform}, e implementa i metodi dell'interfaccia \ttt{Platform\_Interface}:
+	Il package \ttt{Platform} definisce inoltre il tipo \ii{tagged} \ttt{Platform\_Handler}, che viene espone dei metodi alla Stazione per permettere di interagire con le Piattaforme. Esso contiene gli oggetti
+		\begin{itemize}
+			\item \ttt{The\_Platform}, di tipo \ttt{Platform\_Type}.
+			\item \ttt{Priority\_Controller}, di tipo \ttt{Priority\_Access\_Controller} (introdotto in sezione \ref{subsec:priority_access_controller}).
+		\end{itemize} 
+	e implementa i metodi dell'interfaccia \ttt{Platform\_Interface}:
 	\begin{description}
 		
-		\item \ttt{+ Add\_Train(Train\_ID:Integer)} \\
-			Invoca la procedura \ttt{Add\_Train} sull'oggetto \ttt{The\_Platform}.
+		\item \ttt{+ Add\_Train(Train\_Index:Integer)} \\
+			Aggiunge l'identificativo del Treno di indice \ttt{Train\_Index} nella coda \ttt{Trains\_Order} di \ttt{The\_Platform}, il cui ordine regolerà gli accessi. Per fornire priorità, viene prima ottenuto accesso con 
+			\begin{center}
+				\ttt{Priority\_Controller.Gain\_Access(Train\_Index)}
+			\end{center}, e successivamente viene invocata la procedura \ttt{Add\_Train} sull'oggetto \ttt{The\_Platform}. Infine viene invocata la procedura protetta \\\ttt{Priority\_Controller.Access\_Gained}.
 		
 		\item \ttt{+ Enter(\\
 			Train\_Descriptor\_Index:Integer,\\

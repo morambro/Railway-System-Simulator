@@ -23,19 +23,19 @@ Di seguito verranno presentati i linguaggi di programmazione adottati e le tecno
 		L'utilizzo di Ada ha permesso un buon livello di controllo di allocazione di thread, risorse protette e oggetti, e il suo sistema di tipi molto restrittivo ha consentito di ridurre i possibili errori in fase di sviluppo.
 	
 	\section{Yami4}
-L'interazione tra componenti remote del sistema, realizzate con tecnologie eterogenee, è stata possibile utilizzando il middleware per lo scambio di messaggi \ii{Yami4} (\url{http://www.inspirel.com/yami4/}), compatibile, tra gli altri linguaggi, con Ada e Java (e quindi di conseguenza anche con Scala). Questo strumento è stato preferito agli altri possibili middleware (\ii{Distributed Systems Annex} per RPC in Ada e \ii{CORBA}) in quanto si è rivelato molto semplice da utilizzare e versatile, e ha permesso di adottare un certo grado di disaccoppiamento tecnologico tra le componenti. Per ciascun Nodo di simulazione del Sistema è stato utilizzato un singolo Attore (definito da \ii{Yami4}), sia per quanto riguarda l'invio che la ricezione di messaggi remoti, in ascolto ad un singolo indirizzo (adottando il protocollo TCP). Per ciascun Attore, è possibile infatti definire:
+L'interazione tra componenti remote del sistema, realizzate con tecnologie eterogenee, è stata possibile utilizzando il middleware per lo scambio di messaggi \ii{Yami4} (\url{http://www.inspirel.com/yami4/}), compatibile, tra gli altri linguaggi, con Ada e Java (e quindi di conseguenza anche con Scala). Questo strumento è stato preferito agli altri possibili middleware (\ii{Distributed Systems Annex} per RPC in Ada e \ii{CORBA}) in quanto si è rivelato molto semplice da utilizzare e versatile, e ha permesso di adottare un certo grado di disaccoppiamento tecnologico tra le componenti. Per ciascun Nodo di simulazione del Sistema è stato utilizzato un singolo \ii{Agente} (oggetto fornito da \ii{Yami4} che permette l'invio e la ricezione di messaggi remoti), sia per quanto riguarda l'invio che la ricezione di messaggi remoti, in ascolto ad un singolo indirizzo (adottando il protocollo TCP). Per ciascun \ii{Agente}, è possibile infatti definire:
 	\begin{itemize}
 		\item \ttt{Object}: un oggetto remoto raggiungibile ad un dato indirizzo, identificato univocamente da una stringa.
-		\item \ttt{Service}s: insieme di servizi offerti da un oggetto remoto, identificati univocamente da una stringa.
+		\item \ttt{Service}: insieme di servizi offerti da un oggetto remoto, identificati univocamente da una stringa.
 	\end{itemize}
 Per quanto riguarda i nodi di simulazione, ho utilizzato quindi un unico \ttt{Object}, il quale mette a disposizione vari \ttt{Service} a seconda del tipo di servizio richiesto. Questa soluzione mi è sembrata la più semplice e estendibile possibile.
 Il protocollo usato tra le varie componenti del sistema per lo scambio di messaggi, è quello fornito da \ii{Yami4}, e quindi lo scambio di dati in formato stringa chiave-valore; inoltre per l'invio di strutture dati complesse come Descrittori di Treni o Passeggeri, e Biglietti, ho utilizzo lo standard \ttt{JSON}. Per la codifica e decodifica di stringhe \ttt{JSON} mi sono servito di due librerie:
 	\begin{itemize}
-		\item La libreria \ttt{Gnatcoll} fornita con la distribuzione \ttt{Gnat}, per il linguaggio Ada.
-		\item La libreria \ttt{json-smart} (disponibile all'indirizzo \url{https://code.google.com/p/json-smart/}), scritta in Java e integrata nelle componenti realizzate in linguaggio Scala. L'ho preferita alla libreria standard Scala \ttt{scala.util.parsing.json} poiché più semplice da utilizzare.
+		\item La libreria \ii{Gnatcoll} fornita con la distribuzione \ttt{Gnat}, per il linguaggio Ada.
+		\item La libreria \ii{json-smart} (disponibile all'indirizzo \url{https://code.google.com/p/json-smart/}), scritta in Java e integrata nelle componenti realizzate in linguaggio Scala.
 		
 	\end{itemize}
-	Ho utilizzato il formato \ttt{JSON} anche per la definizione dei file di configurazione, utilizzati all'avvio del sistema.
+	Il formato \ttt{JSON} è utilizzato anche per la definizione dei file di configurazione che definiscono le entità del sistema.
 
 
 

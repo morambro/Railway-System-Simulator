@@ -1,0 +1,41 @@
+	\subsection{Priority\_Access}\label{subsec:priority_access_controller}
+	
+	Il package \ttt{Priority\_Access} contiene la definizione del tipo \ii{protetto} \\\ttt{Priority\_Access\_Controller}, il quale viene sfruttato per garantire priorità di accesso ai Treni di tipo \ttt{FB} rispetto ai Treni \ttt{Regionali} nell'accesso a Segmenti e Piattaforme. La priorità di accesso è ottenuta mediante accodamento dei Task che rappresentano i Treni ingresso presso entries private distinte, a seconda del tipo al quale tali Treni appartengono. 
+	
+	Viene fornita una entry pubblica \ttt{Gain\_Access(Train\_Index:Integer)}, la quale verifica il tipo del Treno di indice \ttt{Train\_Index}, e se è \ttt{FB}, riaccoda il chiamante presso l'entry \ttt{Gain\_Access\_FB}, altrimenti presso \ttt{Gain\_Access\_Regional}, sfruttando il costrutto \ttt{requeue}. Queste due entry sono regolate da guardie booleane differenti. In particolare, \ttt{Gain\_Access\_FB} ha guardia booleana \ttt{Free}, variabile locale alla risorsa protetta che indica lo stato di occupazione della risorsa, mentre \\\ttt{Gain\_Access\_Regional} ha come guardia booleana l'espressione \ttt{Free and Gain\_Access\_FB'Count=0}, ovvero un Task in attesa presso questa entry potrà eseguire se e soltanto se la risorsa sarà libera e se non vi sono Task in attesa presso la coda \ttt{Gain\_Access\_FB}. Entrambe le entry impostano lo stato \ttt{Free} a \ttt{False}. 
+	Una volta che un Task ha ottenuto il permesso di procedere, esso potrà eseguire operazioni in mutua esclusione rispetto a tutti i Task che hanno richiesto l'accesso con \ttt{Gain\_Access}, fino all'invocazione successiva della procedura \ttt{Access\_Gained} che ristabilisce il valore di \ttt{Free} a \ttt{True}. Inoltre, l'esecuzione al di fuori della risorsa protetta permette ai Task in attesa di accedervi e di venire accodati in modo tale da poter poi essere effettivamente attribuita preferenza d'accesso. Il listato \ref{coda:priority_access} riporta la realizzazione della struttura presentata.
+\begin{lstlisting}[label=coda:priority_access,caption=\small{Realizzazione di \ttt{Priority\_Access\_Controller} per permettere esecuzione preferenziale a Task rappresentanti treni di tipo \ttt{FB}}]
+protected body Priority_Access_Controller is
+
+	entry Gain_Access(
+		Train_Index : in Positive) when True is
+	begin
+		-- In base al tipo del Treno corrente, riaccoda
+		-- il chiamante presso la entry corretta.
+		if Trains.Trains(Train_Index).T_Type = Train.FB then
+			requeue Gain_Access_FB;
+		else
+			requeue Gain_Access_Regional;
+		end if;
+	end Gain_Access;
+
+	entry Gain_Access_FB(
+		Train_Index : in Positive) when Free is
+	begin
+		Free := False;
+	end Gain_Access_Fb;
+
+	entry Gain_Access_Regional(
+		Train_Index : in Positive) 
+	when Free and Gain_Access_FB'Count = 0 is
+	begin
+		Free := False;
+	end Gain_Access_Regional;
+
+ 	procedure Access_Gained is
+	begin
+		Free := True;
+	end Access_Gained;
+
+end Priority_Access_Controller;
+\end{lstlisting}
