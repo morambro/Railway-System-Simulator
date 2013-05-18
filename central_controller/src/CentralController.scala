@@ -7,6 +7,7 @@ case class Stop()
 case class DistributedStop()
 case class Continue()
 case class NodeTerminated(nodeName : String)
+case class Start()
 
 case class InitController(address:String)
 
@@ -62,34 +63,58 @@ object Controller extends Actor {
 	}
 	
 	def getNodesList : Map[String,String] = {
+		try{
+			val agent = new Agent
+			// Ask Name Server for the List of Addresses
+			val message : OutgoingMessage = agent.send(
+				ControllerMain.NAME_SERVER_ADDRESS,
+				"name_server", 
+				"list", 
+				new Parameters);
+
+			ViewAgent ! Write("Waiting for Nodes list from Name Server...")				
+		
+			message.waitForCompletion
+		
+			val result = message.getState match {
+				case OutgoingMessage.MessageState.REPLIED => message.getReply.getString("response") match {
+						case "OK" => getMap(message.getReply.getString("list"))
+						case _ => Map[String,String]()
+				}
+				case OutgoingMessage.MessageState.REJECTED => {
+					println("ERROR: The message has been rejected: " + message.getExceptionMsg)
+					Map[String,String]()
+				}
+				case _ => {
+					println("ERROR: The message has been abandoned.")
+					Map[String,String]()
+				}
+			}
+		
+			result
+		} catch {
+			// If an Exception occurred, the name server is not reachable,
+			// so return an empty Map.
+			case _ : Throwable => Map[String,String]();
+		}
+	}
+	
+	def startTicketOffice() = {
 		val agent = new Agent
-		// Ask Name Server for the List of Addresses
-		val message : OutgoingMessage = agent.send(
-			ControllerMain.NAME_SERVER_ADDRESS,
-			"name_server", 
-			"list", 
+		val message = agent.send(
+			ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
+			"central_ticket_server", 
+			"start", 
 			new Parameters);
 
-		ViewAgent ! Write("Waiting for Nodes list from Name Server...")				
-		
 		message.waitForCompletion
-		
-		val result = message.getState match {
-			case OutgoingMessage.MessageState.REPLIED => message.getReply.getString("response") match {
-					case "OK" => getMap(message.getReply.getString("list"))
-					case _ => null
-			}
-			case OutgoingMessage.MessageState.REJECTED => {
-				println("ERROR: The message has been rejected: " + message.getExceptionMsg)
-				null
-			}
-			case _ => {
-				println("ERROR: The message has been abandoned.")
-				null
-			}
+
+		message.getState match {
+			case OutgoingMessage.MessageState.REPLIED => println("Central Ticket Office Started")
+			case OutgoingMessage.MessageState.REJECTED => println("ERROR: The message has been rejected by Central Ticket Office")
+			case _ => println("ERROR: The message has been abandoned by Central Ticket Office")
 		}
-		
-		result
+		agent.close
 	}
 	
 	def sendMarker : Boolean = {
@@ -230,7 +255,7 @@ object Controller extends Actor {
 				try {
 					getNodesList match {
 						case map : Map[_,_] => {
-							if (map == Map()){
+							if (map == null || map.size == 0){
 								ViewAgent ! Write("WARNING: No Nodes to terminate!")
 								ViewAgent ! Write("Sending the second Marker to Central Ticket Office...")
 								if (sendMarker) {
@@ -285,7 +310,7 @@ object Controller extends Actor {
 					}
 				}else{
 					// If there are > 0 nodes to wait, loop again.
-					controllerLoop
+					controllerLoop()
 				}
 			}
 			
@@ -293,6 +318,12 @@ object Controller extends Actor {
 				ViewAgent ! DisableButtons()
 				ViewAgent ! Write("Close the Window to quit central controller")
 				ViewAgent ! Stop()
+			}
+			
+			case Start() => {
+				startTicketOffice()
+				ViewAgent ! Write("Start message sent to Central Ticket Office")
+				controllerLoop()
 			}
 		}
 	}
@@ -336,6 +367,7 @@ object ViewAgent extends Actor {
 	
 	def act() {
 		view.setStopOperation(_ => Controller ! DistributedStop())
+		view.setStartOperation( _=> Controller ! Start())
 		viewAgentLoop()	
 	}
 }

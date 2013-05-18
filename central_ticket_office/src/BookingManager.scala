@@ -11,20 +11,19 @@ object BookingManager extends Actor {
 	/**
 	 * Default date formatter
 	 */
-	val dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+	private val dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 	// Set timezone to GMT, to print UTC-0 time 
 	dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"))
 	
 	/**
 	 * All FB Trains 
 	 */
-	var trainRouteMap : Map[Int,Train] = Route.loadTrainsRoutesMap("../../railway/res/trains.json")
+	private var trainRouteMap : Map[Int,Train] = null 
 	
 	/**
 	 * All the routes
 	 */
-	var routes : Array[Route] = Route.loadRoutes("../../railway/res/routes.json")
-	
+	private var routes : Array[Route] = null 
 	
 	
 	/**
@@ -99,57 +98,14 @@ object BookingManager extends Actor {
 	/**
 	 * The time table for each route.
 	 */
-	private var timeTables : Array[RouteTimeTable] = new Array(routes.size)
+	private var timeTables : Array[RouteTimeTable] = null
 	
-	// load the time table JSON file.
-	val jsonTimeTable = scala.io.Source.fromFile("../../railway/res/time_table.json").mkString
-	
-	// reference time from which build the time table.
-	val ref = new Date 
-	
-	val timeTable = JSON.parseJSON(jsonTimeTable).time_table
-	
-	// Loads time tables for each run
-	for (k <- 0 until timeTable.size) {
-		val tt = timeTable(k)
-		val r = new RouteTimeTable(tt.route.toInt-1,tt.time.size,tt.restart_span.toInt)
-		
-		for (i <- 0 until tt.time.size) {
-			
-			r.spans_table(i) = new Array(tt.time(i).size)
-			r.table(i) 		 = new Array(tt.time(i).size)
-			
-			for (j <- 0 until tt.time(i).size) {
-				val time = tt.time(i)(j).toInt
-				// Add an element to the current Time table
-				r.table(i)(j) = new Date(ref.getTime+(time*1000))
-				// Save also the span
-				r.spans_table(i)(j) = (time*1000)
-			}
-			timeTables(k) = r
-		}
-		
-	}
 	
 	/**
 	 * An Array where for each route contains the number of free sits.
 	 */
 	var bookingSits : Map[Int,Array[Array[Int]]] = Map()
 
-	// Initialization. Create an entry for each Train in trainRouteMap. This is done
-	// because only booking info for FB Trains is needed.
-	trainRouteMap.keys.foreach(trainId => {
-		val t : Train = trainRouteMap(trainId)
-		val timeTable = timeTables(t.routeIndex)
-		var bookingSitsElem : Array[Array[Int]] = new Array(timeTable.table.size)
-		for(i <- 0 until bookingSitsElem.size) {
-			bookingSitsElem(i) = Array.fill(timeTable.table(i).size)(t.sitsNumber)
-		}
-		
-		bookingSits += t.routeIndex -> bookingSitsElem 
-	})
-	
-	
 	// Debug print  
 	def printBookingSits {
 		
@@ -445,6 +401,62 @@ object BookingManager extends Actor {
 		}
 	}
 	
-	def act = bookingLoop
+	def act() = react {
+		case InitBookingManager() =>  {
+			// initializations
+			
+			trainRouteMap = Route.loadTrainsRoutesMap("../../railway/res/trains.json")
+			
+			routes = Route.loadRoutes("../../railway/res/routes.json")
+			
+			// load the time table JSON file.
+			val jsonTimeTable = scala.io.Source.fromFile("../../railway/res/time_table.json").mkString
+	
+			timeTables = new Array(routes.size)
+			// reference time from which build the time table.
+			val ref = new Date 
+	
+			val timeTable = JSON.parseJSON(jsonTimeTable).time_table
+	
+			// Loads time tables for each run
+			for (k <- 0 until timeTable.size) {
+				val tt = timeTable(k)
+				val r = new RouteTimeTable(tt.route.toInt-1,tt.time.size,tt.restart_span.toInt)
+		
+				for (i <- 0 until tt.time.size) {
+			
+					r.spans_table(i) = new Array(tt.time(i).size)
+					r.table(i) 		 = new Array(tt.time(i).size)
+			
+					for (j <- 0 until tt.time(i).size) {
+						val time = tt.time(i)(j).toInt
+						// Add an element to the current Time table
+						r.table(i)(j) = new Date(ref.getTime+(time*1000))
+						// Save also the span
+						r.spans_table(i)(j) = (time*1000)
+					}
+					timeTables(k) = r
+				}
+		
+			}
+			
+			// Initialization. Create an entry for each Train in trainRouteMap. This is done
+			// because only booking info for FB Trains is needed.
+			trainRouteMap.keys.foreach(trainId => {
+				val t : Train = trainRouteMap(trainId)
+				val timeTable = timeTables(t.routeIndex)
+				var bookingSitsElem : Array[Array[Int]] = new Array(timeTable.table.size)
+				for(i <- 0 until bookingSitsElem.size) {
+					bookingSitsElem(i) = Array.fill(timeTable.table(i).size)(t.sitsNumber)
+				}
+		
+				bookingSits += t.routeIndex -> bookingSitsElem 
+			})
+			
+			println("LOADED")
+			
+			bookingLoop()
+		}
+	} 
 }
 

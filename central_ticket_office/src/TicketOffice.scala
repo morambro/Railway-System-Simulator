@@ -23,7 +23,6 @@ object Main extends App {
 		// Start BookingManager and PrintsSerializer actors
 		BookingManager.start
 		PrintsSerializer.start
-		
 	}
 }
 

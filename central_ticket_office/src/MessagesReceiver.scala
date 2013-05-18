@@ -141,6 +141,12 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 		// Case on the requested service. 
 		im.getMessageName match {
 		
+			case "start" => {
+				// Initialize the booking manager.
+				BookingManager ! InitBookingManager()
+				im.reply(new Parameters)
+			}
+		
 			case "resolve"	=>	{
 				this ! ("resolve",im)				
 			}

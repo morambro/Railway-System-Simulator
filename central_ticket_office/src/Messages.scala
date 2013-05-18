@@ -16,3 +16,5 @@ case class HandleSynchRequest(request:SynchRequest,incomingMessage:IncomingMessa
 case class Init(address:String)
 case class CreationRequestResolved()
 
+case class InitBookingManager()
+

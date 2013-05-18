@@ -10,7 +10,7 @@ object TicketCreator {
 	var NAME_SERVER_ADDRESS = "";
 	
 	// Map containg for each region the list of regions to go through to reach it 
-	var regionsMap 		: Map[(String,String),List[(String,String)]] = TicketCreator.loadLinks("../../railway/res/links.json")
+	var regionsMap : Map[(String,String),List[(String,String)]] = TicketCreator.loadLinks("../../railway/res/links.json")
 	
 	/**
 	 * Loads the json file containg the location of regional ticket offices
