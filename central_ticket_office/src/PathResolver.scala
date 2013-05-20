@@ -378,7 +378,7 @@ class TicketCreator(messagesReceiver:Actor) extends Actor {
 							// *********************** MERGE TICKETS *************************
 							var resultTicket = tickets.reduceLeft((t1,t2) => Ticket.mergeTickets(t1,t2))
 							//PrintsSerializer ! Print("\n** Final Ticket is:")
-							//resultTicket.print
+							resultTicket.print
 		
 							// ******************** Send the Ticket Back to the Node ********* 
 						
@@ -395,6 +395,8 @@ class TicketCreator(messagesReceiver:Actor) extends Actor {
 						sendError(nodesAddresses(startNode),travelerIndex)
 					}
 				}	
+				
+				MessagesReceiver ! RequestAsynchTask()
 				
 				resolverLoop
 			}

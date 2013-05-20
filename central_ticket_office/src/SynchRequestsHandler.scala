@@ -75,6 +75,8 @@ class SynchRequestsHandler extends Actor {
 				// Send response back to client
 				incomingMessage.reply(replyPar)
 				
+				MessagesReceiver ! RequestSynchTask()
+				
 				// Loop
 				mainLoop
 			}

@@ -1,6 +1,10 @@
 import scala.actors._
 import com.inspirel.yami._
+import scala.collection.mutable.Queue
 
+case class Dispatch(e : Request)
+case class RequestSynchTask()
+case class RequestAsynchTask()
 /**
  * This class represents an actor responsible for keeping requests and dispatching them correctly.
  *
@@ -15,17 +19,34 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 	/**
 	 * Actors Pool used to execute Ticket Resolution requests. 
 	 */
-	private val ticketResolutionHandlers : Array[Actor] = Array.fill(10) {new TicketCreator(this)}
+	private val ticketResolutionHandlers : Array[Actor] = Array.fill(10){new TicketCreator(this)}.map(w => w.start())
 	
 	/**
 	 * Actors Pool used to Handle Synchronous requests
 	 */
-	private val synchReqHandlers : Array[Actor] = Array.fill(5)(new SynchRequestsHandler)
+	private val synchReqHandlers : Array[Actor] = Array.fill(5)(new SynchRequestsHandler).map(w => w.start())
 	
-	// Resolvers initialization 
-	ticketResolutionHandlers.foreach(a => a.start)
-	// Start synch handlers
-	synchReqHandlers.foreach(a => a.start)
+//	// Resolvers initialization 
+//	ticketResolutionHandlers.foreach(a => a.start)
+//	// Start synch handlers
+//	synchReqHandlers.foreach(a => a.start)
+	
+	/**
+	 * Queue containing the ticket creators actors
+	 **/
+	val waitingTicketCreationWorkers = Queue[OutputChannel[Any]](ticketResolutionHandlers:_*)
+	
+	/**
+	 * Queue containing the synch handlers actors
+	 **/
+	val waitingSynchReqHandlersQueue = Queue[OutputChannel[Any]](synchReqHandlers:_*)
+	
+	/**
+	 * Queue of Tasks to execute
+	 */
+	val syncTasks = Queue[SynchRequest]()
+	
+	val asyncTasks = Queue[AsynchRequest]()
 	
 	/**
 	 * The index of the next Resolver to be used
@@ -73,7 +94,6 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 			case Stop()	=> {
 				// Stop all the Actors used
 				PrintsSerializer ! Print("Central Ticket Office is shutting down...")
-//				serverAgent.close
 				ticketResolutionHandlers.foreach(a => a ! Stop())
 				synchReqHandlers.foreach(a => a ! Stop())
 				BookingManager ! Stop()
@@ -104,10 +124,11 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 					// If the First marker have been received, we have to buffer all the requests!
 					queue.enqueue(Resolve(startNode,from,to,traveler_index,requestTime))
 				}else {
+					this ! Dispatch(Resolve(startNode,from,to,traveler_index,requestTime))
 					// Delegate Ticket Creation
-					ticketResolutionHandlers(ticketResolutionIndex) ! Resolve(startNode,from,to,traveler_index,requestTime) 
-		
-					ticketResolutionIndex = (ticketResolutionIndex + 1)% ticketResolutionHandlers.size
+//					ticketResolutionHandlers(ticketResolutionIndex) ! Resolve(startNode,from,to,traveler_index,requestTime) 
+//		
+//					ticketResolutionIndex = (ticketResolutionIndex + 1)% ticketResolutionHandlers.size
 				}
 				// Return immediately
 				var replyPar : Parameters = new Parameters
@@ -116,6 +137,32 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				
 				im.reply(replyPar)
 				receiverLoop()
+			}
+			
+			case RequestSynchTask() => {
+				if (!syncTasks.isEmpty) sender ! syncTasks.dequeue()
+				else waitingSynchReqHandlersQueue enqueue sender
+				receiverLoop()
+			}
+			
+			case RequestAsynchTask() =>  {
+				if (! asyncTasks.isEmpty) sender ! asyncTasks.dequeue()
+				else waitingTicketCreationWorkers enqueue sender
+				receiverLoop()
+			}
+			
+			case Dispatch(request:Request) => {
+				request match {
+					case sr : SynchRequest => {
+						if (! waitingSynchReqHandlersQueue.isEmpty) waitingSynchReqHandlersQueue.dequeue() ! sr
+						else syncTasks enqueue sr
+					}
+					case ar : AsynchRequest => {
+						if (! waitingTicketCreationWorkers.isEmpty) waitingTicketCreationWorkers.dequeue() ! ar
+						else asyncTasks enqueue ar
+					}
+ 				}
+ 				receiverLoop()
 			}
 			
 		}
@@ -157,11 +204,12 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				PrintsSerializer ! Print("Received GET_TIME_TABLE request")
 				
 				// Dispatch to Synch request handler
-				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(GetTimeTable(),im)
+//				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(GetTimeTable(),im)
+//				
+//				synchHandlersIndex += 1
+//				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
 				
-				synchHandlersIndex += 1
-				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
-				
+				this ! Dispatch(HandleSynchRequest(GetTimeTable(),im))
 			}
 			
 			// Service called by train to update the current run value.
@@ -173,11 +221,12 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				val currentRun	= im.getParameters.getInteger("current_run").intValue
 				
 				// Ask to update the route timeTable
-				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(UpdateRun(routeIndex,currentRun),im)
-				
-				synchHandlersIndex += 1
-				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
+//				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(UpdateRun(routeIndex,currentRun),im)
+//				
+//				synchHandlersIndex += 1
+//				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
 
+				this ! Dispatch(HandleSynchRequest(UpdateRun(routeIndex,currentRun),im))
 			}
 			
 			case "validate" => {
@@ -188,10 +237,12 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				val requestTime = im.getParameters.getString("request_time") 
 				
 				// Delegate Validation request to a ValidationHandler actorr
-				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(Validate(ticket::List(),requestTime),im)
-				
-				synchHandlersIndex += 1
-				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
+//				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(Validate(ticket::List(),requestTime),im)
+//				
+//				synchHandlersIndex += 1
+//				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
+
+				this ! Dispatch(HandleSynchRequest(Validate(ticket::List(),requestTime),im))
 
 			}
 			

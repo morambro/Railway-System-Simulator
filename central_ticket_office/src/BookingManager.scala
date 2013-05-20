@@ -30,7 +30,7 @@ object BookingManager extends Actor {
 	 * This class represents a Timetable for a Route. It specifies the index of the route, the number of runs 
 	 * covered by the time table and the span used to update the time table.
 	 */ 
-	class RouteTimeTable(val routeIndex:Int,val runs:Int,val span:Int) {
+	class RouteTimeTable(val routeIndex:Int,val runs:Int) {
 		
 		/*
 		 * The run index.
@@ -71,7 +71,6 @@ object BookingManager extends Actor {
 		def toJSON : String = {
 			var timeTable = "{" 
 			timeTable += "\"route_index\" : " + (routeIndex+1) + ","
-			//timeTable += "\"restart_span\" : " + span + ","
 			timeTable += "\"current_run\" : " + (current_run+1) + ","
 			timeTable += "\"current_run_id\" : " + (current_run_id+1) + ","
 			timeTable += "\"time\" : ["
@@ -422,7 +421,7 @@ object BookingManager extends Actor {
 			// Loads time tables for each run
 			for (k <- 0 until timeTable.size) {
 				val tt = timeTable(k)
-				val r = new RouteTimeTable(tt.route.toInt-1,tt.time.size,tt.restart_span.toInt)
+				val r = new RouteTimeTable(tt.route.toInt-1,tt.time.size)
 		
 				for (i <- 0 until tt.time.size) {
 			
