@@ -1,0 +1,39 @@
+{
+	"stations" : [
+		{
+			"name" 				: "A",
+			"platform_number" 	: 3,
+			"type"				: "R"
+		},
+		{
+			"name" 				: "B",
+			"platform_number" 	: 4,
+			"type"				: "R"
+		},
+		{
+			"name" 				: "C",
+			"platform_number" 	: 4,
+			"type"				: "R"
+		},
+		{
+			"name" 				: "D",
+			"platform_number" 	: 2,
+			"type"				: "R"
+		},
+		{
+			"platform_number" 	: 6,
+			"name" 				: "G1",
+			"type"				: "G",
+			"links"				: [
+				{
+					"region" 	: "Node_2",
+					"station"	: 1
+				},
+				{
+					"region" 	: "Node_3",
+					"station"	: 1
+				}
+			]
+		}
+	]
+}

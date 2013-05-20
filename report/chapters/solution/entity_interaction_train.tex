@@ -99,21 +99,48 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 					\item \ttt{Free = False}, \ttt{Current\_Direction} coincide con l'estremo dal quale accede $T$ ma il numero massimo di accessi per direzione non è stato raggiunto.
 					\item \ttt{Free = False}, \ttt{Current\_Direction} coincide con l'estremo dal quale accede $T$, e il numero massimo di accessi per direzione è stato raggiunto ma il numero di Treni in attesa di accedere in direzione opposta è 0.
 				\end{itemize}
-			\item Se $T$ non può accedere, allora a seconda della direzione con la quale intende percorrere il Segmento, viene posto in attesa su condizione \ttt{Can\_Enter\_First\_End} oppure \ttt{Can\_Enter\_Second\_End} mediante il costrutto \ttt{wait}. Una possibile realizzazione in pseudo-codice della procedura \ttt{Enter} della risorsa \ii{monitor} a protezione del Segmento è presentata nel listato \ref{code:segment_monitor_enter}.
+			\item Se $T$ non può accedere, allora a seconda della direzione con la quale intende percorrere il Segmento, viene posto in attesa su condizione \ttt{Can\_Enter\_First\_End} oppure \ttt{Can\_Enter\_Second\_End} mediante il costrutto \ttt{wait}. Una possibile realizzazione in pseudo-codice della procedura \ttt{Enter\_Monitor} della risorsa \ii{monitor} a protezione del Segmento è presentata nel listato \ref{code:segment_monitor_enter}.
 \begin{lstlisting}[caption=\small{Procedura protetta \ttt{Enter\_Monitor} per l'accesso al Segmento.},label=code:segment_monitor_enter]
 monitor Segment_Monitor
 	...
 	procedure Enter_Monitor(T:Train,Access_End:integer) 
 	begin
 		...
-		while(Can_Not_Access) loop
-			if Access_End = First_End then
+		if Access_End = First_End then
+			// Accesso dal primo estremo del Segmento
+			while 
+				// Se il Segmento non e' libero perche'
+				// occupato da Treni in transito nella
+				// direzione opposta...
+				((not Free) and 
+				 (Access_End /= Current_Direction)) or 
+				// ...oppure se la direzione di accesso
+				// del Treno corrente e' la stessa dei 
+				// Treni in transito ma il numero massimo
+				// di accessi e' stato raggiunto e nella
+				// coda di attesa presso la direzione 
+				// opposta vi sono Treni in attesa...
+				((not Free) and 
+				 (Access_End = Current_Direction) and 
+				 (Access_Number = MAX) and 
+				 (First_End_Count > 0)) loop
+				// ...il chiamante e' posto in attesa
+				// su condizione.
 				wait(Can_Enter_First_End);
-			else
+			end loop;
+		else
+			while
+				((not Free) and 
+				 (Access_End /= Current_Direction)) or 
+				((not Free) and
+				 (Access_End = Current_Direction) and 
+				 (Access_Number = MAX) and 
+				 (First_End_Count > 0)) loop
 				wait(Can_Enter_Second_End);
-			end if;
-		end loop;
-	...
+			end loop;
+		end if;
+		// A questo punto il Treno puo' accedere.
+		...
 	end;
 ...	
 end monitor;

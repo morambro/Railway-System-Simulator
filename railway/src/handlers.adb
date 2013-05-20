@@ -31,6 +31,7 @@ with Ticket;
 with Gateway_Station;
 with Route;
 with Regional_Ticket_Office;
+with Segments;
 with Traveler_Pool;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Move_Operation;
@@ -226,9 +227,9 @@ package body Handlers Is
 					Train_ID 			=> Train_ID,
 					Platform_Index		=> Platform_Index);
 
-				Msg.Reply(Reply_Parameters);
-
 				Reply_Parameters.Set_String("response",OK);
+
+				Msg.Reply(Reply_Parameters);
 
 			else
 				Logger.Log(
@@ -245,11 +246,14 @@ package body Handlers Is
 
 		exception
 			when E : others =>
-			Logger.Log(
-				Sender => "",
-				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
-				L => Logger.ERROR);
-
+				begin
+					Logger.Log(
+						Sender => "",
+						Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+						L => Logger.ERROR);
+					Reply_Parameters.Set_String("response",ERROR);
+					Msg.Reply(Reply_Parameters);
+				end;
 		end Callback;
 
 	begin
@@ -315,11 +319,14 @@ package body Handlers Is
 
 		exception
 			when E : others =>
-			Logger.Log(
-				Sender => "",
-				Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
-				L => Logger.ERROR);
-
+				begin
+					Logger.Log(
+						Sender => "",
+						Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
+						L => Logger.ERROR);
+					Reply_Parameters.Set_String("response",ERROR);
+					Msg.Reply(Reply_Parameters);
+				end;
 		end Callback;
 
 	begin
@@ -401,6 +408,8 @@ package body Handlers Is
 					Sender => "",
 					Message => "ERROR : Exception: " & Ada.Exceptions.Exception_Name(E) & "  " & Ada.Exceptions.Exception_Message(E),
 					L => Logger.ERROR);
+				Reply_Parameters.Set_String("response",ERROR);
+				Msg.Reply(Reply_Parameters);
 
 		end Callback;
 
@@ -508,6 +517,34 @@ package body Handlers Is
 		Msg.Process_Content(Callback'Access);
 
     end Termination_Handler;
+
+    procedure Perform_Initializations_Handler(
+    	Msg : in 	Incoming_Message'Class)
+    is
+    	-- #
+		-- # Performs the initialization of Trains and Travelers
+		-- #
+		procedure Start is
+		begin
+
+			for I in 1 ..  Trains.Trains'Length loop
+				if Ada.Strings.Unbounded.To_String(Trains.Trains(I).Start_Node) = Environment.Get_Node_Name then
+					Train_Pool.Associate(I);
+				end if;
+			end loop;
+
+			for I in 1 ..  Environment.Travelers'Length loop
+				if Ada.Strings.Unbounded.To_String(Environment.Travelers(I).Start_Node) = Environment.Get_Node_Name then
+					Traveler_Pool.Execute(Environment.Operations(I)(Traveler.BUY_TICKET));
+				end if;
+			end loop;
+
+		end Start;
+    begin
+    	Environment.Load_Time_Table;
+		Start;
+		Msg.Reply(YAMI.Parameters.Make_Parameters);
+    end Perform_Initializations_Handler;
 
 
 end Handlers;

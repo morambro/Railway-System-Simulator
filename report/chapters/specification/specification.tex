@@ -416,26 +416,38 @@ Trains.Trains(Current_Descriptor_Index).Next_Stage :=
 	
 	\section{Controllo Centrale}
 	
-	L'entità di Controllo Centrale è responsabile della ricezione degli eventi generati dalla Simulazione, della gestione del meccanismo \ttt{Publish/Subscribe}, e della gestione della Terminazione dell'intero sistema.
+	L'entità di Controllo Centrale ha i seguenti compiti:
+	
+	\begin{itemize}
+		\item ricevere gli eventi generati dai Nodi di Simulazione;
+		\item gestire il meccanismo \ttt{Publish/Subscribe} per l'invio di eventi push in modalità push;
+		\item gestire Avvio e Terminazione dell'intero sistema.
+	\end{itemize}
+	
 	Essa è composta dall'oggetto \ttt{ControllerMain}, il quale mantiene una istanza della classe \ttt{Receiver}, utilizzata per la ricezione dei messaggi remoti, dall'oggetto \ii{Attore} \ttt{Controller} che gestisce la pubblicazione di eventi e la Terminazione, e dall'oggetto \ttt{ControllerView}, il quale gestisce una interfaccia grafica per permettere l'interazione dell'utente.
-	La classe \ttt{Receiver} contiene un istanza di agente remoto, e riceve i seguenti tipi di messaggio remoto:
+	
+	\subsection{Receiver}
+	La classe \ttt{Receiver} contiene un istanza di Agente remoto, per la ricezione dei seguenti tipi di messaggio:
 	\begin{itemize}
 		\item \ttt{event}: Rappresenta un evento, che viene inviato all'oggetto \ttt{Controller} mediante un messaggio di tipo \ttt{Event}.
 		\item \ttt{central\_office\_ack}: Rappresenta il messaggio inviato dalla Biglietteria Centrale per comunicare l'avvenuta terminazione delle richieste pendenti; alla ricezione di questo messaggio viene inviato un messaggio \ttt{Continue} all'oggetto \ttt{Controller} per portare a termine la procedura di Terminazione.
-		\item \ttt{node\_terminated}: Messaggio inviato da un Nodo per notificare l'avvenuta terminazione. Alla ricezione di tale messaggio, viene inviato un messaggio \ttt{NodeTerminated} all'oggetto \ttt{Controller}.
+		\item \ttt{node\_terminated}: Messaggio inviato da un Nodo per notificare l'avvenuta terminazione. Alla ricezione di tale messaggio, viene inviato un messaggio \ttt{NodeTerminated} all'oggetto (attore) \ttt{Controller}.
 	\end{itemize}
+	
+	\subsection{Controller}
 	L'oggetto \ttt{Controller}, mantiene tre tabelle, nelle quali memorizza lo stato della simulazione:
 		\begin{itemize}
 			\item \ttt{trainsOccupation}: per ciascun Treno, mantiene la lista dei Viaggiatori in transito;
 			\item \ttt{segmentsTrain}: per ciascun Segmento, mantiene la lista dei Treni in percorrenza;
 			\item \ttt{stationsTrains}: per ciascuna Stazione, mantiene una lista di coppie \ttt{(Treno,Piattaforma)}.
 		\end{itemize}
-	Lo stato viene semplicemente stampato su output standard.
+	Il contenuto di tali tabelle viene semplicemente stampato su output standard.
 	Esso gestisce inoltre i seguenti messaggi:
-	
 	\begin{itemize}
 		\item \ttt{Event}, che rappresenta un evento di simulazione, il quale viene pubblicato tramite l'istanza di Agente remoto mantenuta. Vengono inoltre estratti i dati contenuti per poter aggiornare le tabelle descritte.
 		\item \ttt{DistributedStop}, inviato da \ttt{ControllerView} a seguito dell'interazione dell'utente con la componente grafica. Alla ricezione viene inviato un messaggio remoto \ttt{marker} alla Biglietteria Centrale.
 		\item \ttt{Continue}, alla cui ricezione viene completata la procedura di terminazione, inviando a ciascun Nodo di simulazione una richiesta di terminazione. 
 		\item \ttt{NodeTerminated}, che indica la terminazione di uno specifico Nodo. Una volta che tutti i Nodi sono terminati, viene inviato un secondo \ttt{marker} alla Biglietteria Centrale. 
+		\item \ttt{Stop} il quale serve a completare la procedura di terminazione interna del Controller Centrale.
+		\item \ttt{Start} il quale serve per avviare la procedura di avvio dell'intero sistema.
 	\end{itemize}

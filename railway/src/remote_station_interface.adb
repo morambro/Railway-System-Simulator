@@ -34,6 +34,7 @@ with Train;
 with Traveler;
 with Name_Server_Interface;
 with Time_Table;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Remote_Station_Interface is
 
@@ -200,8 +201,7 @@ package body Remote_Station_Interface is
 						Object 				=> "message_handler",
 						Service 			=> "traveler_leave_transfer",
 						Params 				=> Parameters,
-						Callback			=> null
-					);
+						Callback			=> null);
 				end;
 			end if;
 	    end Get_Results;

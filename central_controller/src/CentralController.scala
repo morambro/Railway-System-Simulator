@@ -53,7 +53,7 @@ object Controller extends Actor {
 	 *
 	 * @return A list of couples (name,address)
 	 */ 
-	def getMap(json : String) : Map[String,String] = {
+	private def getMap(json : String) : Map[String,String] = {
 		var res : Map[String,String] = Map()
 		JSON.parseJSON(json).nodes.foreach(node => {res += node.name.toString -> node.address.toString})
 		
@@ -62,7 +62,7 @@ object Controller extends Actor {
 		res	
 	}
 	
-	def getNodesList : Map[String,String] = {
+	def getNodesList() : Map[String,String] = {
 		try{
 			val agent = new Agent
 			// Ask Name Server for the List of Addresses
@@ -95,47 +95,90 @@ object Controller extends Actor {
 		} catch {
 			// If an Exception occurred, the name server is not reachable,
 			// so return an empty Map.
-			case _ : Throwable => Map[String,String]();
+			case _ : Throwable => {
+				ViewAgent ! Write("ERROR: Cannot reach object 'name_server' at " + ControllerMain.NAME_SERVER_ADDRESS)
+				Map[String,String]();
+			}
 		}
 	}
 	
-	def startTicketOffice() = {
+	def startTicketOffice() {
 		val agent = new Agent
-		val message = agent.send(
-			ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
-			"central_ticket_server", 
-			"start", 
-			new Parameters);
+		try{
+		
+			val message = agent.send(
+				ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
+				"central_ticket_server", 
+				"start", 
+				new Parameters);
 
-		message.waitForCompletion
+			message.waitForCompletion
 
-		message.getState match {
-			case OutgoingMessage.MessageState.REPLIED => println("Central Ticket Office Started")
-			case OutgoingMessage.MessageState.REJECTED => println("ERROR: The message has been rejected by Central Ticket Office")
-			case _ => println("ERROR: The message has been abandoned by Central Ticket Office")
+			message.getState match {
+				case OutgoingMessage.MessageState.REPLIED => ViewAgent ! Write("Central Ticket Office Started")
+				case OutgoingMessage.MessageState.REJECTED => ViewAgent ! Write("ERROR: The message has been rejected by Central Ticket Office")
+				case _ => ViewAgent ! Write("ERROR: The message has been abandoned by Central Ticket Office")
+			}
+		}catch{
+			case e : Throwable => ViewAgent ! Write("ERROR: Cannot reach object 'central_ticket_server' at " + ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS)
 		}
 		agent.close
 	}
 	
-	def sendMarker : Boolean = {
+	def startNodes() {
+		
+		val nodesList = getNodesList()
+		if (nodesList.size == 0) return 
 		val agent = new Agent
-		val message = agent.send(
-			ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
-			"central_ticket_server", 
-			"marker", 
-			new Parameters);
+		nodesList.keys.foreach(node => {
+			ViewAgent ! Write("Sending to " + node +" at " + nodesList(node))
+			try{
+				val message = agent.send(
+					nodesList(node),
+					"message_handler", 
+					"start_simulation", 
+					new Parameters);
 
-		message.waitForCompletion
-		var received = false
+				message.waitForCompletion
 
-		message.getState match {
-			case OutgoingMessage.MessageState.REPLIED => {
-				println("Central Ticket Office Received the Marker")
-				received = true
+				message.getState match {
+					case OutgoingMessage.MessageState.REPLIED => ViewAgent ! Write("Node "+node+" Started!")
+					case OutgoingMessage.MessageState.REJECTED => ViewAgent ! Write("ERROR: The message has been rejected by Node "+node)
+					case _ => ViewAgent ! Write("ERROR: The message has been abandoned by Node "+node)
+				}
+			}catch{
+				case e : Throwable => ViewAgent ! Write("ERROR: Cannot reach object 'message_handler' at " + nodesList(node))
 			}
-			case OutgoingMessage.MessageState.REJECTED => println("ERROR: The message has been rejected by Central Ticket Office")
-			case _ => println("ERROR: The message has been abandoned by Central Ticket Office")
+		
+		})
+		agent.close
+	}
+	
+	def sendMarker() : Boolean = {
+		val agent = new Agent
+		var received = false
+		try{
+			val message = agent.send(
+				ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
+				"central_ticket_server", 
+				"marker", 
+				new Parameters);
+
+			message.waitForCompletion
+
+			message.getState match {
+				case OutgoingMessage.MessageState.REPLIED => {
+					println("Central Ticket Office Received the Marker")
+					received = true
+				}
+				case OutgoingMessage.MessageState.REJECTED => println("ERROR: The message has been rejected by Central Ticket Office")
+				case _ => println("ERROR: The message has been abandoned by Central Ticket Office")
+			}
+		
+		}catch{
+				case e : Throwable => ViewAgent ! Write("ERROR: Cannot reach object 'central_ticket_server' at " + ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS)
 		}
+		
 		agent.close
 		
 		received
@@ -245,6 +288,7 @@ object Controller extends Actor {
 				sendMarker match {
 					case true => // do nothing
 					case false => ViewAgent ! Write("ERROR: Central Ticket Office did not receive the Marker!")
+						
 				}
 				
 				controllerLoop()
@@ -322,7 +366,8 @@ object Controller extends Actor {
 			
 			case Start() => {
 				startTicketOffice()
-				ViewAgent ! Write("Start message sent to Central Ticket Office")
+				ViewAgent ! Write("START procedure initialized")
+				startNodes()
 				controllerLoop()
 			}
 		}
@@ -359,6 +404,7 @@ object ViewAgent extends Actor {
 			viewAgentLoop()
 		}
 		case DisableButtons() => {
+			println("Buttons disabled")
 			view.disableButtons()
 			viewAgentLoop()
 		}

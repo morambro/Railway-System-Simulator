@@ -1,0 +1,39 @@
+{
+	"segments" : [
+		{
+			"id" 			: 1,
+			"max_speed" 	: 160,
+			"max"			: 5,
+			"length" 		: 500,
+			"first_end"		: 1,
+			"second_end"	: 2
+		},
+		{
+			"id" 			: 2,
+			"max_speed" 	: 160,
+			"max"			: 5,
+			"queue_dim" 	: 10,
+			"length" 		: 700,
+			"first_end"		: 2,
+			"second_end"	: 3
+		},
+		{
+			"id" 			: 3,
+			"max_speed" 	: 160,
+			"max"			: 5,
+			"queue_dim" 	: 10,
+			"length" 		: 600,
+			"first_end"		: 3,
+			"second_end"	: 4
+		},
+		{
+			"id" 			: 4,
+			"max_speed" 	: 160,
+			"max"			: 5,
+			"queue_dim" 	: 10,
+			"length" 		: 600,
+			"first_end"		: 2,
+			"second_end"	: 5
+		}
+	]
+}

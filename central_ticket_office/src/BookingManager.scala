@@ -274,22 +274,22 @@ object BookingManager extends Actor {
 							
 								var firstIndex 	= -1
 								var secondIndex = -1		
-								PrintsSerializer ! Print("\nCurren index = " + routeIndex)
-								PrintsSerializer ! Print("startStation = " + ticketStage.startStation)
-								PrintsSerializer ! Print("nextStation  = " + ticketStage.nextStation)
+//								PrintsSerializer ! Print("\nCurren index = " + routeIndex)
+//								PrintsSerializer ! Print("startStation = " + ticketStage.startStation)
+//								PrintsSerializer ! Print("nextStation  = " + ticketStage.nextStation)
 					
 								// check in first half
 								for (i <- 0 until routes(routeIndex).stages.size/2) {
-									PrintsSerializer ! Print("Start Station = " + routes(routeIndex).stages(i).startStation)
-									PrintsSerializer ! Print("Ticket Start = " + ticketStage.startStation)
-									PrintsSerializer ! Print("NN = " +routes(routeIndex).stages(i).nodeName)
-									PrintsSerializer ! Print("Next = " + ticketStage.nextRegion)
+//									PrintsSerializer ! Print("Start Station = " + routes(routeIndex).stages(i).startStation)
+//									PrintsSerializer ! Print("Ticket Start = " + ticketStage.startStation)
+//									PrintsSerializer ! Print("NN = " +routes(routeIndex).stages(i).nodeName)
+//									PrintsSerializer ! Print("Next = " + ticketStage.nextRegion)
 									if (routes(routeIndex).stages(i).startStation 	== ticketStage.startStation && 
 										routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 										firstIndex = i 
 									}
-									PrintsSerializer ! Print("Next Station = " + routes(routeIndex).stages(i).nextStation)
-									PrintsSerializer ! Print("Ticket Next = " + ticketStage.nextStation+"\n")
+//									PrintsSerializer ! Print("Next Station = " + routes(routeIndex).stages(i).nextStation)
+//									PrintsSerializer ! Print("Ticket Next = " + ticketStage.nextStation+"\n")
 									if (routes(routeIndex).stages(i).nextStation 	== ticketStage.nextStation &&
 										routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 										secondIndex = i
@@ -299,24 +299,24 @@ object BookingManager extends Actor {
 								
 								if (firstIndex > secondIndex || firstIndex == -1 || secondIndex == -1) {
 									// If we haven't a match in the first half, search in the second half.
-									PrintsSerializer ! Print("")
-									PrintsSerializer ! Print("SECOND HALF")
-									PrintsSerializer ! Print("")
+//									PrintsSerializer ! Print("")
+//									PrintsSerializer ! Print("SECOND HALF")
+//									PrintsSerializer ! Print("")
 									
 									
 									for (i <- routes(routeIndex).stages.size/2 until routes(routeIndex).stages.size) {
 										
-										PrintsSerializer ! Print("Start Station = " + routes(routeIndex).stages(i).startStation)
-										PrintsSerializer ! Print("Ticket Start = " + ticketStage.startStation)
-										PrintsSerializer ! Print("NN = " +routes(routeIndex).stages(i).nodeName)
-										PrintsSerializer ! Print("Next = " + ticketStage.nextRegion)	
+//										PrintsSerializer ! Print("Start Station = " + routes(routeIndex).stages(i).startStation)
+//										PrintsSerializer ! Print("Ticket Start = " + ticketStage.startStation)
+//										PrintsSerializer ! Print("NN = " +routes(routeIndex).stages(i).nodeName)
+//										PrintsSerializer ! Print("Next = " + ticketStage.nextRegion)	
 											
 										if (routes(routeIndex).stages(i).startStation	== ticketStage.startStation&& 
 											routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 											firstIndex = i 
 										}
-										PrintsSerializer ! Print("Next Station = " + routes(routeIndex).stages(i).nextStation)
-										PrintsSerializer ! Print("Ticket Next = " + ticketStage.nextStation)
+//										PrintsSerializer ! Print("Next Station = " + routes(routeIndex).stages(i).nextStation)
+//										PrintsSerializer ! Print("Ticket Next = " + ticketStage.nextStation)
 										if (routes(routeIndex).stages(i).nextStation 	== ticketStage.nextStation&& 
 											routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 											secondIndex = i
@@ -324,8 +324,8 @@ object BookingManager extends Actor {
 									}
 								}
 								
-								PrintsSerializer ! Print(firstIndex+"")
-								PrintsSerializer ! Print(secondIndex+"")
+//								PrintsSerializer ! Print(firstIndex+"")
+//								PrintsSerializer ! Print(secondIndex+"")
 								
 								// decide weather to search in the current run or in the next one
 								val (selected_run,selected_run_id) = {
@@ -342,8 +342,8 @@ object BookingManager extends Actor {
 										(timeTables(routeIndex).current_run + 1,timeTables(routeIndex).current_run_id + 1)
 								}
 								
-								PrintsSerializer ! Print("selected_run = " + selected_run)
-								PrintsSerializer ! Print("selected_run_id = " + selected_run_id)
+//								PrintsSerializer ! Print("selected_run = " + selected_run)
+//								PrintsSerializer ! Print("selected_run_id = " + selected_run_id)
 								
 								// At this point firstIndex will be the first index of the route,
 								// secondIndex the last. 
@@ -391,7 +391,8 @@ object BookingManager extends Actor {
 				// debug print
 				printBookingSits
 				
-				bookingLoop
+				// Loop!
+				bookingLoop()
 			}
 			
 			
@@ -405,12 +406,12 @@ object BookingManager extends Actor {
 		case InitBookingManager() =>  {
 			// initializations
 			
-			trainRouteMap = Route.loadTrainsRoutesMap("../../railway/res/trains.json")
+			trainRouteMap = Route.loadTrainsRoutesMap("../../configuration/trains.json")
 			
-			routes = Route.loadRoutes("../../railway/res/routes.json")
+			routes = Route.loadRoutes("../../configuration/routes.json")
 			
 			// load the time table JSON file.
-			val jsonTimeTable = scala.io.Source.fromFile("../../railway/res/time_table.json").mkString
+			val jsonTimeTable = scala.io.Source.fromFile("../../configuration/time_table.json").mkString
 	
 			timeTables = new Array(routes.size)
 			// reference time from which build the time table.
@@ -453,8 +454,7 @@ object BookingManager extends Actor {
 				bookingSits += t.routeIndex -> bookingSitsElem 
 			})
 			
-			println("LOADED")
-			
+			// Start the main receiving Loop
 			bookingLoop()
 		}
 	} 

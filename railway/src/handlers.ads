@@ -92,4 +92,8 @@ package Handlers is
 	procedure Termination_Handler(
 		Msg : in 	Incoming_Message'Class);
 
+
+	procedure Perform_Initializations_Handler(
+    	Msg : in 	Incoming_Message'Class);
+
 end Handlers;

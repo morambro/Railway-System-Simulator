@@ -27,7 +27,7 @@ with Train;
 
 package Trains is
 
-	Trains : Train.Trains_Array := Train.Get_Trains_Array("res/trains.json");
+	Trains : Train.Trains_Array := Train.Get_Trains_Array("../configuration/trains.json");
 
 	procedure Update_Train(
 		Train_Index 	: in	Positive;

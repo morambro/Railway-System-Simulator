@@ -1,0 +1,22 @@
+{
+	"segments" : [
+		{
+			"id" 			: 9,
+			"max_speed" 	: 160,
+			"max"			: 5,
+			"queue_dim" 	: 10,
+			"length" 		: 500,
+			"first_end"		: 1,
+			"second_end"	: 2
+		},
+		{
+			"id" 			: 10,
+			"max_speed" 	: 100,
+			"max"			: 5,
+			"queue_dim" 	: 10,
+			"length" 		: 350,
+			"first_end"		: 2,
+			"second_end"	: 3
+		}
+	]
+}

@@ -57,6 +57,8 @@ package Environment Is
 	-- #
 	Route_Time_Table 	: Time_Table.Time_Table_Array_Ref 		:= null;
 
+	-- # Getter functions, which perform the conversion Unbounded_String to
+	-- # String.
 	function Get_Node_Name return String;
 
 	function Get_Name_Server return String;
@@ -87,6 +89,12 @@ package Environment Is
 	-- #
 	function Get_Index_For_Name(
 		Name 			: in 	String) return Natural;
+
+	-- #
+	-- # Procedure used to load Time Table. It requests it to the Central Ticket Office
+	-- # via remote message.
+	-- #
+	procedure Load_Time_Table;
 
 private
 

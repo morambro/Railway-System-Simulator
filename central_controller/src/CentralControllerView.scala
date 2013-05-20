@@ -10,6 +10,8 @@ class MyTextArea extends TextArea {
 	
 	lineWrap = true
 	
+	editable = false
+	
 	def addRow(t:String) {
 		this.text += "[" + format.format(new Date) + "] " + t + "\n"
 	}
@@ -24,7 +26,7 @@ class CentralControllerView extends MainFrame {
 	
 	
 	title = "Central Controller GUI"
-	val s = new Dimension(500,400)
+	val s = new Dimension(600,500)
 	resizable = false
     minimumSize = s
     maximumSize = s

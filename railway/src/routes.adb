@@ -33,7 +33,7 @@ package body Routes is
 
 	procedure Init is
 	begin
-		All_Routes := Route.Get_Routes("res/routes.json");
+		All_Routes := Route.Get_Routes("../configuration/routes.json");
     end Init;
 
 	function Contains(

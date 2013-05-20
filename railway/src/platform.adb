@@ -200,11 +200,14 @@ package body Platform is
 
 								Environment.Travelers(Traveler_Manager_Index).Start_Station := To_Switch;
 
+								Put_Line("NEW START = " & To_String(Environment.Travelers(Traveler_Manager_Index).Start_Station));
+								Put_Line("NEW DEST  = " & To_String(Environment.Travelers(Traveler_Manager_Index).Destination));
+
 								-- #.. Then update Current_Start_Stations and Current_Dest_Station
 								Environment.Travelers(Traveler_Manager_Index).Current_Start_Station :=
-										Environment.Travelers(Traveler_Manager_Index).Destination;
-								Environment.Travelers(Traveler_Manager_Index).Current_Dest_Station 	:=
 										Environment.Travelers(Traveler_Manager_Index).Start_Station;
+								Environment.Travelers(Traveler_Manager_Index).Current_Dest_Station 	:=
+										Environment.Travelers(Traveler_Manager_Index).Destination;
 							end;
 
 							-- # Next operation tells Traveler to buy a ticket!

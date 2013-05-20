@@ -133,6 +133,7 @@ begin
 		begin
 			Message_Agent.Init;
 			Message_Agent.Instance.Listen_To(Node_Addr);
+			Message_Agent.Instance.Add_Handler("start_simulation",Handlers.Perform_Initializations_Handler'Access);
 			Message_Agent.Instance.Add_Handler("train_transfer",Handlers.Station_Train_Transfer_Handler'Access);
 			Message_Agent.Instance.Add_Handler("traveler_leave_transfer",Handlers.Station_Traveler_Leave_Transfer_Handler'Access);
 			Message_Agent.Instance.Add_Handler("traveler_enter_transfer",Handlers.Station_Traveler_Enter_Transfer_Handler'Access);
@@ -154,26 +155,6 @@ begin
 				Traveler_Tasks 	: Traveler_Pool.Traveler_Pool_Type(5);
 				Pool			: Train_Pool.Train_Task_Pool(5,5);
 
-				-- #
-				-- # Performs the initialization of Trains and Travelers
-				-- #
-				procedure Start is
-				begin
-
-					for I in 1 ..  Trains.Trains'Length loop
-						if Ada.Strings.Unbounded.To_String(Trains.Trains(I).Start_Node) = Node_Name then
-							Train_Pool.Associate(I);
-						end if;
-					end loop;
-
-					for I in 1 ..  Environment.Travelers'Length loop
-						if Ada.Strings.Unbounded.To_String(Environment.Travelers(I).Start_Node) = Node_Name then
-							Traveler_Pool.Execute(Environment.Operations(I)(Traveler.BUY_TICKET));
-						end if;
-					end loop;
-
-				end Start;
-
 			-- # This block will be in co-begin with the Tasks in Traveler_Pool and Train_Pool
 			begin
 
@@ -187,9 +168,7 @@ begin
 				Routes.Init;
 
 				-- # Perform initialization of the Regional Ticket Office
-				Regional_Ticket_Office.Init("res/" & Node_Name & "-paths.json");
-
-				Start;
+				Regional_Ticket_Office.Init("../configuration/" & Node_Name & "-paths.json");
 
 			exception
 				when E : others =>

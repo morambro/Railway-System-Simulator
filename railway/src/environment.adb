@@ -78,10 +78,6 @@ package body Environment Is
     end Get_Station_Array;
 
 
-	-- #
-	-- # Procedure used to load Time Table. It sends a Message to the Central Ticket Office
-	-- # to get it.
-	-- #
 	procedure Load_Time_Table is
 
 		procedure Callback(
@@ -113,13 +109,13 @@ package body Environment Is
 		Central_Controller := To_Unbounded_String(C_C);
 
     	-- # Creates regional stations array loading data from file
-    	Stations 	:= Get_Station_Array("res/" & To_String(Node_Name) & "-stations.json");
+    	Stations 	:= Get_Station_Array("../configuration/" & To_String(Node_Name) & "-stations.json");
 
-		-- # Load Time Table.
-    	Load_Time_Table;
+--  		-- # Load Time Table.
+--      	Load_Time_Table;
 
 		-- # Creates travelers array loading data from file
-    	Travelers 	:= Traveler.Get_Traveler_Manager_array("res/travelers.json");
+    	Travelers 	:= Traveler.Get_Traveler_Manager_array("../configuration/travelers.json");
 
 		-- # Create an operations set for each Traveler
     	Operations	:= new Traveler.Travelers_All_Operations(1 .. Travelers'Length);
@@ -150,6 +146,8 @@ package body Environment Is
 	is
 	begin
 		for I in 1 .. Stations'Length loop
+			Put_Line("S = " & Stations(I).Get_Name & ", N = " & Name);
+
 			if Stations(I).Get_Name = Name then
 				return I;
 			end if;

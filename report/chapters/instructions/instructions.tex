@@ -12,6 +12,7 @@
 		\item distribuzione Scala, in particolare i compilatori \ttt{scalac} e \ttt{fsc} versione 2.10.1.
 		\item libreria \ttt{Gnatcoll 1.5w}.
 		\item server MVC \ii{Play} per Scala, versione 2.1.0 o superiore.
+		\item browser web \ii{Chrome}, versione 26.0.1410.63.
 	\end{itemize}
 	
 	Per semplicità, sono state riportate le versioni delle librerie utilizzate per lo sviluppo, tuttavia non è escluso che possa essere utilizzato anche con versioni più recenti.
@@ -29,7 +30,10 @@
 			\item \ttt{run\_all.sh} : Avvia le entità \ttt{Name\_Server}, \ttt{Central\_Controller} e \ttt{Central\_Ticket\_Office}.
 			\item \ttt{run\_simulation.sh} : Avvia i nodi di simulazione.
 		\end{itemize}
-	Viene fornita una configurazione di base composta da 3 Regioni; tuttavia è possibile utilizzare configurazioni diverse, modificando opportunamente i file \ttt{JSON} presenti nella cartella \ttt{railway/res}. Vengono fornite le seguenti regole:
+		
+	In seguito, per avviare la simulazione è sufficiente premere il pulsante \ii{Start} dall'interfaccia grafica fornita dal Controller Centrale.
+	 
+	Viene fornita una configurazione di base composta da 3 Regioni; tuttavia è possibile utilizzare configurazioni diverse, modificando opportunamente i file \ttt{JSON} presenti nella cartella \ttt{configuration} presente nella root del progetto. Vengono fornite le seguenti regole:
 	\begin{itemize}
 		\item \ttt{routes.json}: deve contenere un array di percorsi, identificato con chiave \ttt{routes}. Ciascun percorso dovrà essere dotato di:
 			\begin{itemize}
@@ -83,16 +87,22 @@
 				\item \ttt{neighbours}: Array di indici delle Stazioni limitrofe;
 				\item \ttt{distance}: Array di distanze, per raggiungere ciascuna Stazione in \ttt{neighbours}.
 			\end{itemize}
+		\item \ttt{links.json}: Contiene per ciascuna coppia ordinata di Regioni \ttt{<region1,region2>}, la lista delle stazioni di gateway che le collegano. Ciascun elemento di questa lista è una coppia \ttt{<regione,stazione\_gateway>}. 
 	\end{itemize}
 	
-	Una volta definita la configurazione, è necessario lanciare lo script \ttt{run.sh} nella cartella \ttt{railway/res/shortest\_path}, specificando il file \ttt{[Node\_Name]-topology.json} e il nome del nodo (ad esempio, \ttt{sh run.sh Node\_1-topology.json Node\_1}), per ciascun nodo di simulazione. Questo genererà i file \ttt{[Node\_Name]-paths.json} contenenti i cammini minimi utilizzati per la creazione dei Tiket.
-	Infine, è necessario modificare lo script \ttt{run\_simulation.sh} aggiungendo i comandi per inizializzare i nodi di simulazione: per ciascun nodo dovrà essere aggiunta un comando nella forma:
+	Una volta definita la configurazione, è necessario lanciare lo script \ttt{run.sh} nella cartella \ttt{configuration/shortest\_path}, specificando il file \ttt{[Node\_Name]-topology.json} e il nome del nodo (ad esempio, \ttt{sh run.sh Node\_1-topology.json Node\_1}), per ciascun nodo di simulazione. Questo genererà i file \ttt{[Node\_Name]-paths.json} contenenti i cammini minimi utilizzati per la creazione dei Tiket.
+	Infine, è necessario modificare lo script \ttt{run\_simulation.sh} aggiungendo i comandi per inizializzare i nodi di simulazione: per ciascun nodo dovrà essere aggiunto un comando nella forma:
 	\begin{verbatim}
 echo "Loading [Node_Name]..."
 gnome-terminal --title="[Node_Name]"
     --command="sh railway/run.sh [Node_Name] [Node tcp address]"
 echo "done"
 	\end{verbatim}
+	
+	\section{Visualizzazione della Simulazione}
+	
+	Per poter avere una rappresentazione grafica degli eventi generati dalla simulazione, è sufficiente aprire in una finestra del browser \ii{Chrome} la pagina all'indirizzo \ttt{http://localhost:8888}.
+	Viene fornita la rappresentazione grafica per la configurazione fornita; nel caso in cui si volesse realizzare una nuova configurazione, è necessario creare una nuova applicazione grafica per essa.
 	
 	\section{Terminazione}
 	

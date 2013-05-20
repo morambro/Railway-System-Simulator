@@ -1,0 +1,29 @@
+{
+	"topology" : [
+		{
+			"station" 		: 1,
+			"neighbours" 	: [2],
+			"distance"		: [400]
+		},
+		{
+			"station" 		: 2,
+			"neighbours" 	: [3  ,1],
+			"distance"		: [350,400]
+		},
+		{
+			"station" 		: 3,
+			"neighbours" 	: [4  ,2  ,5],
+			"distance"		: [500,350,400]
+		},
+		{
+			"station" 		: 4,
+			"neighbours" 	: [3],
+			"distance"		: [500]
+		},
+		{
+			"station" 		: 5,
+			"neighbours" 	: [3],
+			"distance"		: [400]
+		}
+	]
+}

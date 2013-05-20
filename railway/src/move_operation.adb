@@ -150,9 +150,11 @@ package body Move_Operation is
 		Logger.Log(
 			Sender	=> 	"Move_Operation.Buy_Ticket_Operation_Type",
 			Message => 	"Traveler" & Integer'Image(This.Traveler_Manager_Index) & " will wait for" & Random_Range'image(Num) &
-						" seconds before asking for a new Ticket from " & Environment.Stations(Start_Station).Get_Name &
+						" seconds before asking for a new Ticket from " & To_String(Environment.Travelers(This.Traveler_Manager_Index).Current_Start_Station) &
 						" to " & To_String(Environment.Travelers(This.Traveler_Manager_Index).Current_Dest_Station),
 			L 		=> 	Logger.INFO);
+
+		Put_Line("Station index = " & Integer'image(Start_Station));
 
 		-- # Update the Status of the Traveler
 		Central_Controller_Interface.Set_Traveler_Buying_Status(
