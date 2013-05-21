@@ -9,6 +9,7 @@
 		\item Sistema operativo Unix-Like.
 		\item compilatore Ada \ttt{gnatmake} versione 2012.
 		\item compilatore \ttt{gcc} versione 4.7.2.
+		\item compilatore \ttt{g++} versione 4.7.2.
 		\item distribuzione Scala, in particolare i compilatori \ttt{scalac} e \ttt{fsc} versione 2.10.1.
 		\item libreria \ttt{Gnatcoll 1.5w}.
 		\item server MVC \ii{Play} per Scala, versione 2.1.0 o superiore.
@@ -31,7 +32,7 @@
 			\item \ttt{run\_simulation.sh} : Avvia i nodi di simulazione.
 		\end{itemize}
 		
-	In seguito, per avviare la simulazione è sufficiente premere il pulsante \ii{Start} dall'interfaccia grafica fornita dal Controller Centrale.
+	In seguito, è necessario aprire il browser \ii{Chrome} e aprire la pagina all'indirizzo \ttt{localhost:9000}; infine per avviare la simulazione è sufficiente premere il pulsante \ii{Start} dall'interfaccia grafica fornita dal Controller Centrale.
 	 
 	Viene fornita una configurazione di base composta da 3 Regioni; tuttavia è possibile utilizzare configurazioni diverse, modificando opportunamente i file \ttt{JSON} presenti nella cartella \ttt{configuration} presente nella root del progetto. Vengono fornite le seguenti regole:
 	\begin{itemize}
@@ -101,7 +102,7 @@ echo "done"
 	
 	\section{Visualizzazione della Simulazione}
 	
-	Per poter avere una rappresentazione grafica degli eventi generati dalla simulazione, è sufficiente aprire in una finestra del browser \ii{Chrome} la pagina all'indirizzo \ttt{http://localhost:8888}.
+	Per poter avere una rappresentazione grafica degli eventi generati dalla simulazione, è sufficiente aprire in una finestra del browser \ii{Chrome} la pagina all'indirizzo \ttt{http://localhost:9000}.
 	Viene fornita la rappresentazione grafica per la configurazione fornita; nel caso in cui si volesse realizzare una nuova configurazione, è necessario creare una nuova applicazione grafica per essa.
 	
 	\section{Terminazione}
