@@ -79,6 +79,11 @@ package body Generic_Station is
 			-- # Dequeue the First Train (the one which already called Enter).
 			Trains_Order.Dequeue(Train_ID);
 
+			Logger.Log(
+				Sender 	=> "Access_Controller",
+				Message	=> "Train " & Integer'Image(Train_ID) & " Frees the Access Controller",
+				L 		=> Logger.DEBUG);
+
 			-- # Check if the number of waiting Trains in Wait entry is > 0.
 			if Wait'Count > 0 then
 				-- # Open the guard to let them retry

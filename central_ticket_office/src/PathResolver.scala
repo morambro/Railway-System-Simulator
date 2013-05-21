@@ -1,7 +1,12 @@
 import scala.actors._
 import com.inspirel.yami._
+import com.inspirel.yami.OutgoingMessage.MessageState._
 
 class NoRouteFoundException extends Exception
+
+trait Response
+case class Error() extends Response
+case class Ok(map:Map[String,String]) extends Response
 
 object TicketCreator {
 	
@@ -55,7 +60,7 @@ object TicketCreator {
  * Class TicketCreator is an Actor type allowing to create a Ticket where source and destination stations are
  * on different Regions.
  **/ 
-class TicketCreator(messagesReceiver:Actor) extends Actor {
+class TicketCreator(messagesReceiver : Actor) extends Actor {
 	
 	/** 
 	 * The list of couples (region,address)
@@ -72,46 +77,56 @@ class TicketCreator(messagesReceiver:Actor) extends Actor {
 	 */
 	var pathRegionCache : Map[String,String] = Map() 
 	
+	
+	def sendMessage(address:String,destObject:String,service:String,params:Map[String,String]) : Response = {
+		var result 	= Map[String,String]()
+		var ok 		= false
+		try {
+			val p = new Parameters
+			
+			if (params != null) params.keys.foreach(k => p.setString(k,params(k)))
+			
+			val message = agent.send(address,destObject,service,p)
+			
+			message.waitForCompletion()
+			
+			message.getState match {
+				case REPLIED 	=> {
+					PrintsSerializer ! Print("Message REPLIED from remote agent [" + 
+									  destObject + "] service [" +service+ "] at " + address)
+					val replyIterator = message.getReply.iterator
+					while(replyIterator.hasNext) {
+						val next = replyIterator.next()
+						result += next.name -> next.getString()
+					}
+					ok = true
+				}
+				case REJECTED 	=> PrintsSerializer ! Print("ERROR: Message REJECTED from remote agent [" + 
+													 destObject + "] service [" +service+ "] at " + address)
+				case ABANDONED 	=> PrintsSerializer ! Print("ERROR: Message ABANDONED from remote agent [" + 
+													 destObject + "] service [" +service+ "] at " + address)
+				case _ 			=> 
+			}
+			
+			
+			
+		} catch {
+			case e : Throwable => PrintsSerializer ! Print("ERROR: Can not reach remote agent [" + destObject + "] service [" +service+ "] at " + address)
+		}
+		if (ok) Ok(result)
+		else Error()
+	}
+	
+	
 	/**
 	 * Requests the list of all the nodes registered to the Name Server.
 	 * 
 	 * @return : A table which contains for each node the address where it is located.
 	 */
 	def getNodesAddressList : Map[String,String] =  {
-		
-		try {
-			val message : OutgoingMessage = agent.send(
-				TicketCreator.NAME_SERVER_ADDRESS,
-				"name_server", 
-				"list", 
-				new Parameters);
-				
-			message.waitForCompletion
-		
-			// Received the response by name server
-			message.getState match {
-				case OutgoingMessage.MessageState.REPLIED => message.getReply.getString("response") match {
-					// Case "OK" return simply the conversion in Map of the received JSON
-					case "OK" 	=> TicketCreator.jsonNodesListToMap(message.getReply.getString("list"))
-					case _ => {
-						PrintsSerializer ! Print("ERROR: Ivalid response to NameServer::LIST request")
-						null
-					}
-				}
-				case OutgoingMessage.MessageState.REJECTED => {
-					PrintsSerializer ! Print("ERROR: The message has been rejected: " + message.getExceptionMsg)
-					null
-				}
-				case _ => {
-					PrintsSerializer ! Print("ERROR: The message has been abandoned.")
-					null
-				}
-			}
-		}catch{
-			case e : Throwable => {
-				PrintsSerializer ! Print("ERROR: Cannot reach Name Server at " + TicketCreator.NAME_SERVER_ADDRESS)
-				null
-			}
+		sendMessage(TicketCreator.NAME_SERVER_ADDRESS,"name_server","list", Map()) match {
+			case Ok(map) => TicketCreator.jsonNodesListToMap(map("list"))
+			case Error() => null
 		}
 	}
 
@@ -129,43 +144,23 @@ class TicketCreator(messagesReceiver:Actor) extends Actor {
 				return region
 			}
 			case None => {
-				val p = new Parameters
-				p.setString("station",to) 
+				val p = Map("station" -> to)
 					
 				// Region not in cache, so search for it.
 				nodesAddresses.keys.foreach( node => {
-					
-					try{
-						PrintsSerializer ! Print(nodesAddresses(node))
-						val message : OutgoingMessage = agent.send(
-							nodesAddresses(node),
-							"message_handler", 
-							"is_present", 
-							p);
-						message.waitForCompletion
-			
-						message.getState match {
-							case OutgoingMessage.MessageState.REPLIED => {
-								message.getReply.getString("response") match {
-									case "TRUE" => {
-										pathRegionCache += to -> node
-										return node
-									}
-									case _ => // DO NOTHING
+					sendMessage(nodesAddresses(node),"message_handler","is_present",p) match {
+						case Ok(map) => map get "response" match {
+							case Some(s) => s match {
+								case "TRUE" => {
+									pathRegionCache += to -> node
+									return node
 								}
-							} 
-							case OutgoingMessage.MessageState.REJECTED => {
-								PrintsSerializer ! Print("The message for node " +node+ " has been rejected: " + message.getExceptionMsg)
+								case _ => 
 							}
-							case _ => {
-								PrintsSerializer ! Print("The message for node " +node+ " has been abandoned.")
-							}
+							case None 	=> 
 						}
-					}catch{
-						case e : com.inspirel.yami.YAMIIOException => {
-							PrintsSerializer ! Print("ERRORE: Connessione rifiutata all'indirizzo " + nodesAddresses(node))
-						}
-					} 
+						case Error() => 
+					}
 				})
 			}
 		}
@@ -179,49 +174,17 @@ class TicketCreator(messagesReceiver:Actor) extends Actor {
 	 *
 	 **/
 	def createTicket(node:String,from:String,to:String) : Ticket = {
-
-		try {
-			val p = new Parameters
-
-			p.setString("from",from)
-			p.setString("to",to)
-			
-			val message : OutgoingMessage = agent.send(
-				nodesAddresses(node),
-				"message_handler", 
-				"ticket_creation", 
-				p)
 		
-			message.waitForCompletion
-		
-			message.getState match {
-				case OutgoingMessage.MessageState.REPLIED => {
-			
-					message.getReply.getString("response") match {
-						case "ERROR" => {
-							PrintsSerializer ! Print("ERROR: " + message.getReply.getString("message"))
-						}
-						case "RECEIVED" => {
-							return message.getReply.getString("ticket")
-						}
-						case _ => PrintsSerializer ! Print("ERROR")
-					}
-				
-				} 
-				case OutgoingMessage.MessageState.REJECTED => {
-					PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
+		sendMessage(nodesAddresses(node),"message_handler","ticket_creation",Map("from"->from,"to"->to)) match {
+			case Ok(map) => map get "response" match {
+				case Some(s) => s match {
+					case "RECEIVED" => map("ticket")
+					case _ 	=> null
 				}
-				case _ => {
-					PrintsSerializer ! Print("The message has been abandoned.")
-				}
+				case None 	=> null
 			}
-		
-		}catch{
-			case e : Throwable => {
-				PrintsSerializer ! Print("ERROR: Cannot reach Node "+node+" at " + nodesAddresses(node))
-			}
+			case Error() => null
 		}
-		null
 	}
 
 	/**
@@ -229,34 +192,16 @@ class TicketCreator(messagesReceiver:Actor) extends Actor {
 	 * Method used to send an Error message to the Node which requested a ticket.
 	 *
 	 **/
-	def sendError(dest : String, traveler_index:String) {
-		try{
-			val p = new Parameters
-
-			p.setString("response","ERROR")
-			p.setString("traveler_index",traveler_index)
-		
-			val message : OutgoingMessage = agent.send(
-				dest,
-				"message_handler", 
-				"ticket_ready", 
-				p)
-		
-			// Wait to make the request synchornous
-			message.waitForCompletion
-		
-			message.getState match {
-				case OutgoingMessage.MessageState.REPLIED => 
-					PrintsSerializer ! Print("Error message has been received from destination "+dest);
-				case OutgoingMessage.MessageState.REJECTED => 
-					PrintsSerializer ! Print("ERROR: The message has been rejected: " + message.getExceptionMsg)
-				case _ => PrintsSerializer ! Print("ERROR: The message has been abandoned.")
-			}
-		}catch{
-			case e : Throwable =>  PrintsSerializer ! Print("ERROR: Cannot reach destination " + dest)
-		}
+	def sendError(dest : String, travelerIndex:String) {
+		sendMessage(
+			dest,
+			"message_handler",
+			"ticket_ready",
+			Map(
+				"response"->"ERROR",
+				"traveler_index"->travelerIndex))
 		// Tell MessagesReceiver that the Creation Request have been done
-		messagesReceiver ! CreationRequestResolved()	
+		messagesReceiver ! CreationRequestResolved()
 	}
 	
 	/**
@@ -265,30 +210,15 @@ class TicketCreator(messagesReceiver:Actor) extends Actor {
 	 * 
 	 **/
 	def sendTicket(dest:String,travelerIndex:String,resultTicket:Ticket) {
-		try{
-			val p = new Parameters
-					
-			p.setString("response","OK")
-			p.setString("traveler_index",travelerIndex)
-			p.setString("ticket",Ticket.ticket2Json(resultTicket))
-
-			val message : OutgoingMessage = agent.send(
-				dest,
-				"message_handler", 
-				"ticket_ready", 
-				p)
-
-			message.waitForCompletion
-
-			message.getState match {
-				case OutgoingMessage.MessageState.REPLIED => PrintsSerializer ! Print("Message Received")
-				case OutgoingMessage.MessageState.REJECTED => 
-					PrintsSerializer ! Print("The message has been rejected: " + message.getExceptionMsg)
-				case _ => PrintsSerializer ! Print("The message has been abandoned.")
-			}
-		}catch{
-			case e : Throwable => PrintsSerializer ! Print("ERROR: Cannot reach destination " + dest)
-		}
+	
+		sendMessage(
+			dest,
+			"message_handler",
+			"ticket_ready",
+			Map(
+				"response"->"OK",
+				"traveler_index"->travelerIndex,
+				"ticket"->Ticket.ticket2Json(resultTicket)))
 		// Tell MessagesReceiver that the Creation Request have been done
 		messagesReceiver ! CreationRequestResolved()
 	}
@@ -396,7 +326,7 @@ class TicketCreator(messagesReceiver:Actor) extends Actor {
 					}
 				}	
 				
-				MessagesReceiver ! RequestAsynchTask()
+				messagesReceiver ! RequestAsynchTask()
 				
 				resolverLoop
 			}

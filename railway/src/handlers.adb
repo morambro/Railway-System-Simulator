@@ -36,6 +36,7 @@ with Traveler_Pool;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Move_Operation;
 with Time_Table;
+with Central_Controller_Interface;
 
 package body Handlers Is
 
@@ -226,6 +227,14 @@ package body Handlers Is
 					Outgoing_Traveler 	=> Traveler_Index,
 					Train_ID 			=> Train_ID,
 					Platform_Index		=> Platform_Index);
+
+				-- # Notify the Central Controller that the current Traveler is waiting by the
+				-- # platform Start_Platform_Index, station Start_Station, to catch train Train_ID
+				Central_Controller_Interface.Set_Traveler_Left_Status(
+					Traveler	=> Traveler_Index,
+					Train		=> Train_ID,
+					Station		=> Environment.Stations(Station_Index).Get_Name,
+					Platform	=> Platform_Index);
 
 				Reply_Parameters.Set_String("response",OK);
 
@@ -437,9 +446,6 @@ package body Handlers Is
 					-- # Retrieve the Ticket
 					Environment.Travelers(Traveler_Index).The_Ticket := Ticket.Get_Ticket(Ticket_Data);
 
---  					Put_Line("***** ARRIVED TICKET : ");
---  					Ticket.Print(Environment.Travelers(Traveler_Index).The_Ticket);
-
 					-- # Put TICKET_READY operation on the Pool queue
 					Traveler_Pool.Execute(Environment.Operations(Traveler_Index)(Traveler.TICKET_READY));
 				end;
@@ -541,9 +547,9 @@ package body Handlers Is
 
 		end Start;
     begin
+    	Msg.Reply(YAMI.Parameters.Make_Parameters);
     	Environment.Load_Time_Table;
 		Start;
-		Msg.Reply(YAMI.Parameters.Make_Parameters);
     end Perform_Initializations_Handler;
 
 

@@ -52,8 +52,6 @@ package body Message_Agent is
 		Msg : aliased YAMI.Outgoing_Messages.Outgoing_Message;
       	State : YAMI.Outgoing_Messages.Message_State;
 	begin
-		--  the "content" field name is arbitrary,
-	    --  but needs to be recognized at the server side
         This.Client_Agent.Send(
         	Destination_Address,
         	Object,
@@ -67,17 +65,30 @@ package body Message_Agent is
 
 		if State = YAMI.Outgoing_Messages.Replied then
 
-        if Callback /= null then
-        	Msg.Process_Reply_Content(Callback);
-		else
-			Msg.Process_Reply_Content(Process_Reply'Access);
-		end if;
-
+			if Callback /= null then
+				Msg.Process_Reply_Content(Callback);
+			else
+				Msg.Process_Reply_Content(Process_Reply'Access);
+			end if;
       	elsif State = YAMI.Outgoing_Messages.Rejected then
-         	Put_Line("The message has been rejected: " & Msg.Exception_Message);
+         	Logger.Log(
+				Sender	=> "Message_Agent",
+				Message => "The message has been REJECTED: " & Msg.Exception_Message,
+				L 		=> Logger.ERROR);
       	else
-         	Put_Line ("The message has been abandoned.");
+         	Logger.Log(
+				Sender	=> "Message_Agent",
+				Message => "The message has been ABANDONED.",
+				L 		=> Logger.ERROR);
       	end if;
+
+    exception
+
+    	when YAMI.Runtime_Error =>
+    		Logger.Log(
+				Sender	=> "Message_Agent",
+				Message => "ERROR: The message could not be sent because the connection was not established with remote agent",
+				L 		=> Logger.ERROR);
 
     end Send;
 
@@ -90,8 +101,6 @@ package body Message_Agent is
 		Params 				: in YAMI.Parameters.Parameters_Collection)
 	is
 	begin
-		--  the "content" field name is arbitrary,
-	    --  but needs to be recognized at the server side
         This.Client_Agent.Send_One_Way(
         	Destination_Address,
         	Object,

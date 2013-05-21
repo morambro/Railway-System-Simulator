@@ -54,7 +54,7 @@ package Remote_Station_Interface is
 	-- # Procedure used to transfer a Traveler from a Gateway Station to the respective on node [Node_Name],
 	-- # to let him wait on the correct platform to catch another Train.
 	-- #
-	procedure Send_Traveler_To_Leave(
+	procedure Wait_For_Train_To_Go(
 		Traveler_Index	: in	 Positive;
 		Train_ID		: in 	 Positive;
 		Station	 		: in	 Positive;

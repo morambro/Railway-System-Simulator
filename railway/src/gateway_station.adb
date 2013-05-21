@@ -240,6 +240,9 @@ package body Gateway_Station is
 			Environment.Travelers(Outgoing_Traveler).The_Ticket.Stages(
 				Environment.Travelers(Outgoing_Traveler).The_Ticket.Next_Stage).Region;
 	begin
+
+		Put_Line("NEXT REGION = " & To_String(Next_Stage_Region));
+
 		-- # Check if the Next Step is in the Current Region or not.
 		if Next_Stage_Region /= Environment.Get_Node_Name then
 
@@ -248,7 +251,7 @@ package body Gateway_Station is
 			begin
 				-- # If the Next Region is different from the current one, let the
 				-- # traveler wait to leave on the other side of the Gateway Station.
-				Remote_Station_Interface.Send_Traveler_To_Leave (
+				Remote_Station_Interface.Wait_For_Train_To_Go (
 					Traveler_Index	=> Outgoing_Traveler,
 					Train_ID 		=> Train_ID,
 					Station 		=> Next_Station_Index,
@@ -273,7 +276,8 @@ package body Gateway_Station is
 			This 				: in out	Gateway_Station_Type;
 			Incoming_Traveler 	: in		Positive;
 			Train_ID 			: in		Positive;
-			Platform_Index		: in		Positive) is
+			Platform_Index		: in		Positive)
+	is
 	begin
 		This.Platforms(Platform_Index).Add_Incoming_Traveler(Incoming_Traveler);
 

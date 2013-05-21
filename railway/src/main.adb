@@ -63,12 +63,13 @@ procedure Main is
   		"  4) Node address [ -na ] (e.g. -na tcp://...)" & ASCII.LF &
   		"  5) Central ticket office address [ -ct ] (e.g. -ct tcp://...)" & ASCII.LF &
   		"  6) Central controller address [ -cc ] (e.g. -ct tcp://...)" & ASCII.LF &
+  		"  7) Low Train Task Pool dimention [ -lpd ] (e.g. -lpd 5)" & ASCII.LF &
+  		"  8) Central controller address [ -hpd ] (e.g. -hpd 5)" & ASCII.LF &
   	"------------------------------------------------------------------------";
 
 begin
 
-	if Ada.Command_Line.Argument_Count < 11 then
-		-- ./run -name Node_Name -address tcp_//... -ns_address tcp://name_server_address [ -i | -n | -d ]
+	if Ada.Command_Line.Argument_Count < 15 then
 		Ada.Text_IO.Put_Line("ERROR : Not enougth arguments!");
 		Ada.Text_IO.Put_Line(INSTRUCTIONS);
 		Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
@@ -77,59 +78,99 @@ begin
 
 	declare
 
-		Log_Level 	: constant String := Ada.Command_Line.Argument (1);
-		Par_1 	  	: constant String := Ada.Command_Line.Argument (2);
-		Name_Server : aliased String := Ada.Command_Line.Argument (3);
-		Par_2 	  	: constant String := Ada.Command_Line.Argument (4);
-		Node_Name  	: aliased String := Ada.Command_Line.Argument (5);
-		Par_3 	  	: constant String := Ada.Command_Line.Argument (6);
-		Node_Addr  	: aliased String := Ada.Command_Line.Argument (7);
-		Par_4 	  	: constant String := Ada.Command_Line.Argument (8);
-		Central_T  	: constant String := Ada.Command_Line.Argument (9);
-		Par_5	  	: constant String := Ada.Command_Line.Argument (10);
-		Central_C  	: constant String := Ada.Command_Line.Argument (11);
+		Log_Level 	: constant String 	:= Ada.Command_Line.Argument (1);
+		Par_1 	  	: constant String 	:= Ada.Command_Line.Argument (2);
+		Name_Server : aliased String 	:= Ada.Command_Line.Argument (3);
+		Par_2 	  	: constant String 	:= Ada.Command_Line.Argument (4);
+		Node_Name  	: aliased String 	:= Ada.Command_Line.Argument (5);
+		Par_3 	  	: constant String 	:= Ada.Command_Line.Argument (6);
+		Node_Addr  	: aliased String 	:= Ada.Command_Line.Argument (7);
+		Par_4 	  	: constant String 	:= Ada.Command_Line.Argument (8);
+		Central_T  	: constant String 	:= Ada.Command_Line.Argument (9);
+		Par_5	  	: constant String 	:= Ada.Command_Line.Argument (10);
+		Central_C  	: constant String 	:= Ada.Command_Line.Argument (11);
+		Par_6	  	: constant String 	:= Ada.Command_Line.Argument (12);
+		L_Task_Num	: constant Integer	:= Integer'Value(Ada.Command_Line.Argument(13));
+		Par_7	  	: constant String 	:= Ada.Command_Line.Argument (14);
+		H_Task_Num 	: constant Integer 	:= Integer'Value(Ada.Command_Line.Argument(15));
 
 	begin
+		-- # Parameters correctness check.
 
 		if(not Logger.Init(Log_Level)) then
-			Ada.Text_IO.Put_Line("ERROR : Unknown log level " & Log_Level & "! Use a valid log level [ -i | -n | -d ].");
+			Logger.Log(
+				Sender 	=> "Main",
+				Message =>"ERROR : Unknown log level " & Log_Level & "! Use a valid log level [ -i | -n | -d ].",
+				L 		=> Logger.ERROR);
+
 			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
 			return;
 		end if;
 
 		if Par_1 /= "-ns" then
-			Ada.Text_IO.Put_Line("ERROR : You must specify name server address, invalid option " & Par_1);
+			Logger.Log(
+				Sender 	=> "Main",
+				Message => "ERROR : name server address MUST be specified, invalid option " & Par_1,
+				L 		=> Logger.ERROR);
 			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
 			return;
 		end if;
 
 		if Par_2 /= "-nn" then
-			Ada.Text_IO.Put_Line("ERROR : You must specify node name, invalid option " & Par_2);
+			Logger.Log(
+				Sender 	=> "Main",
+				Message => "ERROR : node name MUST be specified, invalid option " & Par_2,
+				L 		=> Logger.ERROR);
 			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
 			return;
 		end if;
 
 		if Par_3 /= "-na" then
-			Ada.Text_IO.Put_Line("ERROR : You must specify node address, invalid option " & Par_3);
+			Logger.Log(
+				Sender 	=> "Main",
+				Message => "ERROR : node address MUST be specified, invalid option " & Par_3,
+				L 		=> Logger.ERROR);
 			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
 			return;
 		end if;
 
 		if Par_4 /= "-ct" then
-			Ada.Text_IO.Put_Line("ERROR : You must specify central ticket office address, invalid option " & Par_4);
+			Logger.Log(
+				Sender 	=> "Main",
+				Message => "ERROR : central ticket office address MUST be specified, invalid option " & Par_4,
+				L 		=> Logger.ERROR);
 			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
 			return;
 		end if;
 
 		if Par_5 /= "-cc" then
-			Ada.Text_IO.Put_Line("ERROR : You must specify central controller address, invalid option " & Par_5);
+			Logger.Log(
+				Sender 	=> "Main",
+				Message => "ERROR : central controller address MUST be specified, invalid option " & Par_5,
+				L 		=> Logger.ERROR);
 			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
 			return;
 		end if;
 
-		-- # Start a new block to perform initializations
-		declare
+		if Par_6 /= "-lpd" then
+			Logger.Log(
+				Sender 	=> "Main",
+				Message => "ERROR : Low Priority Task Pool Dimension MUST be specified, invalid option " & Par_6,
+				L 		=> Logger.ERROR);
+			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
+			return;
+		end if;
 
+		if Par_7 /= "-hpd" then
+			Logger.Log(
+				Sender 	=> "Main",
+				Message => "ERROR : High Priority Task Pool Dimension MUST be specified, invalid option " & Par_7,
+				L 		=> Logger.ERROR);
+			Ada.Command_Line.Set_Exit_Status(Ada.Command_Line.Failure);
+			return;
+		end if;
+
+		-- # Now Initializations can be made.
 		begin
 			Message_Agent.Init;
 			Message_Agent.Instance.Listen_To(Node_Addr);
@@ -143,17 +184,16 @@ begin
 			Message_Agent.Instance.Add_Handler("ticket_ready",Handlers.Ticket_Ready_Handler'Access);
 			Message_Agent.Instance.Add_Handler("terminate",Handlers.Termination_Handler'Access);
 
-			-- # Register to the Name Server!
+			-- # Register to the Name Server
 			Name_Server_Interface.Bind(
 				Name_Server  => Name_Server'Access,
 				Node_Name 	 => Node_Name'Access,
 				Address 	 => Node_Addr'Access);
 
 			declare
-				-- # Start the real simulation, creating the two Pools.
-
+				-- # Create the two Task Pool, to execute Trains and Travelers operations.
 				Traveler_Tasks 	: Traveler_Pool.Traveler_Pool_Type(5);
-				Pool			: Train_Pool.Train_Task_Pool(5,5);
+				Pool			: Train_Pool.Train_Task_Pool(L_Task_Num,H_Task_Num);
 
 			-- # This block will be in co-begin with the Tasks in Traveler_Pool and Train_Pool
 			begin
@@ -180,7 +220,7 @@ begin
 					Traveler_Pool.Stop;
 					Train_Pool.Stop;
 			end;
-			Ada.Text_IO.Put_Line("NOW WE CAN TERMINATE");
+
 			-- # At this point, all the Tasks will be out of scope, so we can Terminate in peace.
 			-- # Notify termination to the Central Controller.
 			Central_Controller_Interface.Notify_Termination;
@@ -199,7 +239,7 @@ begin
 	   				Sender => "Main",
 	   				Message => "ERROR : " & Exception_Message(E) & " Impossibile connettersi al Name Server",
 	   				L => Logger.ERROR);
-	   			-- # Close the Message Agent before quitting.
+	   			-- # Close the Message Agent before exit.
 	   			Message_Agent.Instance.Close;
 
 	   		when Error : others =>
@@ -207,7 +247,7 @@ begin
 	   				Sender => "Main",
 	   				Message => "ERROR : " & Ada.Exceptions.Exception_Name(Error) & " " & Ada.Exceptions.Exception_Message(Error),
 	   				L => Logger.ERROR);
-	   			-- # Close the Message Agent before quitting.
+	   			-- # Close the Message Agent before exit.
 	   			Message_Agent.Instance.Close;
 		end;
 	end;

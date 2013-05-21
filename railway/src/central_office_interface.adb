@@ -55,8 +55,7 @@ package body Central_Office_Interface is
 				Object 				=> "central_ticket_server",
 				Service 			=> "resolve",
 				Params 				=> Parameters,
-				Callback			=> null
-			);
+				Callback 			=> null);
 		end;
     end Ask_For_Ticket;
 
@@ -114,8 +113,7 @@ package body Central_Office_Interface is
 				Object 				=> "central_ticket_server",
 				Service 			=> "validate",
 				Params 				=> Parameters,
-				Callback			=> Process_Result'Access
-			);
+				Callback			=> Process_Result'Access);
 
 		end;
     end Validate;
@@ -174,8 +172,7 @@ package body Central_Office_Interface is
 			Object 				=> "central_ticket_server",
 			Service 			=> "update_run",
 			Params 				=> Parameters,
-			Callback			=> Process_Result'Access
-		);
+			Callback			=> Process_Result'Access);
 
     end Update_Run;
 

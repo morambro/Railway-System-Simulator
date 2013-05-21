@@ -8,7 +8,7 @@ object PrintsSerializer extends Actor {
 	def printSerializerLoop() : Unit = react {
 		case Print(message) => {
 			println(message)
-			printSerializerLoop
+			printSerializerLoop()
 		}
 		case StopPrint() => println("Print Serializer is shutting down...")		
 	}

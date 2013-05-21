@@ -27,6 +27,7 @@ with YAMI.Parameters;
 with Message_Agent;
 with Ada.Exceptions;
 with Logger;
+with Ada.Text_IO;use Ada.Text_IO;
 
 package body Name_Server_Interface is
 
@@ -45,7 +46,7 @@ package body Name_Server_Interface is
 			Object 				=> "name_server",
 			Service 			=> "bind",
 			Params 				=> Params,
-			Callback			=> null);
+			Callback 			=> null);
 
 	exception
 		when E : YAMI.Runtime_Error => raise Name_Server_Exception with Ada.Exceptions.Exception_Message(E);
@@ -90,7 +91,7 @@ package body Name_Server_Interface is
 				Object 				=> "name_server",
 				Service 			=> "resolve",
 				Params 				=> Parameters,
-				Callback			=> Process_Result'Access);
+				Callback 			=> null);
 
 		end if;
     end Resolve;
@@ -104,12 +105,11 @@ package body Name_Server_Interface is
 	begin
 		Params.Set_String("node_name",Node_Name.all);
 
-		Message_Agent.Instance.Send(
+		Message_Agent.Instance.Send_One_Way(
 			Destination_Address => Name_Server.all,
 			Object 				=> "name_server",
 			Service 			=> "remove",
-			Params 				=> Params,
-			Callback			=> null);
+			Params 				=> Params);
 
 	exception
 		when E : YAMI.Runtime_Error => raise Name_Server_Exception with Ada.Exceptions.Exception_Message(E);

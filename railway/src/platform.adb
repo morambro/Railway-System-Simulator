@@ -34,6 +34,7 @@ with Trains;
 with Traveler;
 with Routes;
 with Central_Controller_Interface;
+with Remote_Station_Interface;
 
 
 package body Platform is
@@ -166,9 +167,6 @@ package body Platform is
 
 
 					-- # Now let's check the status of the Travel for the Traveler
-					declare
-						-- # Next operation to execute.
-						Next_Operation : Traveler.Traveler_Operations_Types := Traveler.LEAVE;
 					begin
 
 						-- # Check if there are more stages, otherwise re-start
@@ -211,16 +209,14 @@ package body Platform is
 							end;
 
 							-- # Next operation tells Traveler to buy a ticket!
-							Next_Operation := Traveler.BUY_TICKET;
+							Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Traveler.BUY_TICKET));
 
 						else
 							-- # Go to the next stage (there will be at least another one for sure!)
 							Environment.Travelers(Traveler_Manager_Index).The_Ticket.Next_Stage :=
 								Environment.Travelers(Traveler_Manager_Index).The_Ticket.Next_Stage + 1;
+							Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Traveler.LEAVE));
 						end if;
-
-						-- # Execute the operation Next_Operation
-						Traveler_Pool.Execute(Environment.Operations(Traveler_Manager_Index)(Next_Operation));
 
 					exception
 						when Error : others =>

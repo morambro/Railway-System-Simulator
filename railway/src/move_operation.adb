@@ -63,20 +63,39 @@ package body Move_Operation is
 					   ", station" & Integer'Image(Start_Station) & " for train " & Integer'Image(Train_ID),
 			L 		=> Logger.NOTICE);
 
-		-- # Make the Traveler wait to a specific Train.
-		Environment.Stations(Start_Station).Wait_For_Train_To_Go(
-			Outgoing_Traveler 	=> This.Traveler_Manager_Index,
-			Train_ID 			=> Train_ID,
-			Platform_Index		=> Start_Platform_Index);
 
-		-- # Notify the Central Controller that the current Traveler is waiting by the
-		-- # platform Start_Platform_Index, station Start_Station, to catch train Train_ID
-		Central_Controller_Interface.Set_Traveler_Left_Status(
-			Traveler	=> This.Traveler_Manager_Index,
-			Train		=> Train_ID,
-			Station		=> Environment.Stations(Start_Station).Get_Name,
-			Platform	=> Start_Platform_Index);
+		declare
+			Next_Stage 		: Integer := Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Next_Stage;
+			Next_Region 	: String  := To_String(Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Region);
+			Train_ID 		: Integer := Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Train_ID;
+			Start_Station 	: Integer := Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Start_Station;
+			Platform 		: Integer := Environment.Travelers(This.Traveler_Manager_Index).The_Ticket.Stages(Next_Stage).Start_Platform_Index;
+		begin
+			if Next_Region /= Environment.Get_Node_Name then
+				-- # If the next stage of the Ticket is on a different Node,
+				-- # transfer the Traveler to wait on that Node.
+				Remote_Station_Interface.Wait_For_Train_To_Go(
+					Traveler_Index	=> This.Traveler_Manager_Index,
+					Train_ID		=> Train_ID,
+					Station	 		=> Start_Station,
+					Platform		=> Platform,
+					Node_Name		=> Next_Region);
+			else
+				-- # Make the Traveler wait to a specific Train.
+				Environment.Stations(Start_Station).Wait_For_Train_To_Go(
+					Outgoing_Traveler 	=> This.Traveler_Manager_Index,
+					Train_ID 			=> Train_ID,
+					Platform_Index		=> Start_Platform_Index);
 
+				-- # Notify the Central Controller that the current Traveler is waiting by the
+				-- # platform Start_Platform_Index, station Start_Station, to catch train Train_ID
+				Central_Controller_Interface.Set_Traveler_Left_Status(
+					Traveler	=> This.Traveler_Manager_Index,
+					Train		=> Train_ID,
+					Station		=> Environment.Stations(Start_Station).Get_Name,
+					Platform	=> Start_Platform_Index);
+			end if;
+		end;
 
 	exception
 		when Error : others =>
@@ -153,8 +172,6 @@ package body Move_Operation is
 						" seconds before asking for a new Ticket from " & To_String(Environment.Travelers(This.Traveler_Manager_Index).Current_Start_Station) &
 						" to " & To_String(Environment.Travelers(This.Traveler_Manager_Index).Current_Dest_Station),
 			L 		=> 	Logger.INFO);
-
-		Put_Line("Station index = " & Integer'image(Start_Station));
 
 		-- # Update the Status of the Traveler
 		Central_Controller_Interface.Set_Traveler_Buying_Status(

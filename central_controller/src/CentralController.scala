@@ -1,5 +1,6 @@
 import scala.actors._
 import com.inspirel.yami._
+import com.inspirel.yami.OutgoingMessage.MessageState._
 import scala.collection.mutable.ListBuffer
 
 case class Event(description:String) 
@@ -8,8 +9,12 @@ case class DistributedStop()
 case class Continue()
 case class NodeTerminated(nodeName : String)
 case class Start()
-
 case class InitController(address:String)
+
+
+trait Response
+case class Error() extends Response
+case class Ok(map:Map[String,String]) extends Response
 
 class Traveler(val id:String,val name:String,val surname:String) {
 	
@@ -34,8 +39,9 @@ object Controller extends Actor {
 	
 	var stationsTrains : Map[String,ListBuffer[(String,String)]] = Map()
 	
-	val publisherValue = new ValuePublisher
-	val publisherAgent = new Agent
+	val publisherValue 	= new ValuePublisher
+	val publisherAgent 	= new Agent
+	val senderAgent 	= new Agent
 	
 	/**
 	 * Nodes asked to terminate
@@ -62,126 +68,82 @@ object Controller extends Actor {
 		res	
 	}
 	
-	def getNodesList() : Map[String,String] = {
-		try{
-			val agent = new Agent
-			// Ask Name Server for the List of Addresses
-			val message : OutgoingMessage = agent.send(
-				ControllerMain.NAME_SERVER_ADDRESS,
-				"name_server", 
-				"list", 
-				new Parameters);
-
-			ViewAgent ! Write("Waiting for Nodes list from Name Server...")				
-		
-			message.waitForCompletion
-		
-			val result = message.getState match {
-				case OutgoingMessage.MessageState.REPLIED => message.getReply.getString("response") match {
-						case "OK" => getMap(message.getReply.getString("list"))
-						case _ => Map[String,String]()
+	def sendMessage(address:String,destObject:String,service:String,params:Map[String,String]) : Response = {
+		var result 	= Map[String,String]()
+		var ok 		= false
+		try {
+			val p = new Parameters
+			
+			if (params != null) params.keys.foreach(k => p.setString(k,params(k)))
+			
+			val message = senderAgent.send(address,destObject,service,p)
+			
+			message.waitForCompletion()
+			
+			message.getState match {
+				case REPLIED 	=> {
+					ViewAgent ! Write("Message REPLIED from remote agent [" + destObject + "] service [" +service+ "] at " + address)
+					val replyIterator = message.getReply.iterator
+					while(replyIterator.hasNext) {
+						val next = replyIterator.next()
+						result += next.name -> next.getString()
+					}
+					ok = true
 				}
-				case OutgoingMessage.MessageState.REJECTED => {
-					println("ERROR: The message has been rejected: " + message.getExceptionMsg)
-					Map[String,String]()
-				}
-				case _ => {
-					println("ERROR: The message has been abandoned.")
-					Map[String,String]()
-				}
+				case REJECTED 	=> ViewAgent ! Write("ERROR: Message REJECTED from remote agent [" + destObject + "] service [" +service+ "] at " + address)
+				case ABANDONED 	=> ViewAgent ! Write("ERROR: Message ABANDONED from remote agent [" + destObject + "] service [" +service+ "] at " + address)
+				case _ 			=> 
 			}
-		
-			result
+			
+			
+			
 		} catch {
-			// If an Exception occurred, the name server is not reachable,
-			// so return an empty Map.
-			case _ : Throwable => {
-				ViewAgent ! Write("ERROR: Cannot reach object 'name_server' at " + ControllerMain.NAME_SERVER_ADDRESS)
-				Map[String,String]();
+			case e : Throwable => Write("ERROR: Can not reach remote agent [" + destObject + "] service [" +service+ "] at " + address)
+		}
+		if (ok) Ok(result)
+		else Error()
+	}
+	
+	def getNodesList() : Map[String,String] = {
+		
+		sendMessage(ControllerMain.NAME_SERVER_ADDRESS,"name_server","list", Map()) match {
+			case Ok(map) => map get ("response") match {
+				case Some(s) => s match {
+					case "OK" => getMap(map("list"))
+					case _ 	 => Map()
+				}
+				case None 	=> Map()
 			}
+			case Error() => Map()
 		}
 	}
 	
 	def startTicketOffice() {
-		val agent = new Agent
-		try{
-		
-			val message = agent.send(
-				ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
-				"central_ticket_server", 
-				"start", 
-				new Parameters);
-
-			message.waitForCompletion
-
-			message.getState match {
-				case OutgoingMessage.MessageState.REPLIED => ViewAgent ! Write("Central Ticket Office Started")
-				case OutgoingMessage.MessageState.REJECTED => ViewAgent ! Write("ERROR: The message has been rejected by Central Ticket Office")
-				case _ => ViewAgent ! Write("ERROR: The message has been abandoned by Central Ticket Office")
-			}
-		}catch{
-			case e : Throwable => ViewAgent ! Write("ERROR: Cannot reach object 'central_ticket_server' at " + ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS)
-		}
-		agent.close
+		sendMessage(ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,"central_ticket_server","start",Map()) 
 	}
 	
 	def startNodes() {
 		
 		val nodesList = getNodesList()
 		if (nodesList.size == 0) return 
-		val agent = new Agent
 		nodesList.keys.foreach(node => {
 			ViewAgent ! Write("Sending to " + node +" at " + nodesList(node))
-			try{
-				val message = agent.send(
-					nodesList(node),
-					"message_handler", 
-					"start_simulation", 
-					new Parameters);
-
-				message.waitForCompletion
-
-				message.getState match {
-					case OutgoingMessage.MessageState.REPLIED => ViewAgent ! Write("Node "+node+" Started!")
-					case OutgoingMessage.MessageState.REJECTED => ViewAgent ! Write("ERROR: The message has been rejected by Node "+node)
-					case _ => ViewAgent ! Write("ERROR: The message has been abandoned by Node "+node)
-				}
-			}catch{
-				case e : Throwable => ViewAgent ! Write("ERROR: Cannot reach object 'message_handler' at " + nodesList(node))
-			}
+			sendMessage(nodesList(node),"message_handler","start_simulation",Map())
 		
 		})
-		agent.close
 	}
 	
 	def sendMarker() : Boolean = {
-		val agent = new Agent
-		var received = false
-		try{
-			val message = agent.send(
-				ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,
-				"central_ticket_server", 
-				"marker", 
-				new Parameters);
-
-			message.waitForCompletion
-
-			message.getState match {
-				case OutgoingMessage.MessageState.REPLIED => {
-					println("Central Ticket Office Received the Marker")
-					received = true
-				}
-				case OutgoingMessage.MessageState.REJECTED => println("ERROR: The message has been rejected by Central Ticket Office")
-				case _ => println("ERROR: The message has been abandoned by Central Ticket Office")
-			}
 		
-		}catch{
-				case e : Throwable => ViewAgent ! Write("ERROR: Cannot reach object 'central_ticket_server' at " + ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS)
+		sendMessage(ControllerMain.CENTRAL_TICKET_OFFICE_ADDRESS,"central_ticket_server","marker",Map()) match {
+			case Ok(map) => true
+			case Error() => false
 		}
-		
-		agent.close
-		
-		received
+
+	}
+	
+	def sendMarkerNameServer() {
+		sendMessage(ControllerMain.NAME_SERVER_ADDRESS,"name_server","terminate",Map())
 	}
 
 	
@@ -349,6 +311,7 @@ object Controller extends Actor {
 					// All nodes terminated, so we can send another Marker to Central Ticket Office to 
 					// Shut it down!
 					if(sendMarker) {
+						sendMarkerNameServer()
 						ViewAgent ! Write("Central Controller can be now termianted!")
 						this ! Stop()
 					}

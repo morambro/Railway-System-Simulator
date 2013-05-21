@@ -40,7 +40,7 @@ class Subscriber(ID : Int, default : ActorRef) extends Actor with IncomingMessag
 				subscriberAgent.sendOneWay("tcp://localhost:2222","events", "subscribe", params);
 			} catch {
 				case e : Exception => {
-					e.printStackTrace;
+					println("ERROR: Connection Error!")
 					ChatHandler.errorState = true;
 				}
 			}
@@ -89,12 +89,14 @@ object ChatHandler {
 	
 	def join(username:String):scala.concurrent.Future[(Iteratee[String,_],Enumerator[String])] = {
 		
-		if (errorState) {
-			val a = Akka.system.actorOf(Props(new Subscriber(1,default)))
-	  		a ! Init()
-	  		println("Actor created")
-	  		a
-		}
+		println(errorState)
+		
+//		if (errorState) {
+		val a = Akka.system.actorOf(Props(new Subscriber(1,default)))
+  		a ! Init()
+  		println("Actor created")
+  		a
+//		}
 		
 		(default ? Join(username)).map {
       

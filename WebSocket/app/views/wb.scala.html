@@ -51,15 +51,14 @@
 			obj = JSON.parse(jsonData,null);
 			switch (obj.type) {
 				case "train_arriving" :
+					// Add a new row to Arrivals Panel
 					addArrivalRow(obj.train_id,obj.station,obj.platform,obj.time,obj.delay);
 					break;
 				case "train_arrived" :
 					// Move train to platform
-					console.log(obj.train_id + " ENTERS TO STATION " + obj.station + " PLATFORM " + obj.platform);
 					moveToPlatform(obj.train_id,obj.station,obj.platform);
-					
+					// Add a new row to the correct Notice Panel.
 					addLeavingRow(obj.train_id,obj.station,obj.platform,obj.time,obj.delay);
-					
 					break;
 				case "train_left" : 
 					// trainId,segmentId,destination,time
@@ -68,8 +67,9 @@
 				
 				case "traveler_event" : 
 					if (obj.action == "buy")
+						// If the action is buying a ticket, no platform is specified
 						moveTravelerToPlatform(obj.traveler_id,obj.station,0,obj.action);
-					else 
+					else
 						moveTravelerToPlatform(obj.traveler_id,obj.station,obj.platform,obj.action);
 					break;
 					
@@ -77,10 +77,14 @@
 			}
 		}
 		
+		/**
+		 * Definition of direction type, as a couple of elements
+		 **/
 		function direction(from,to) {
 			this.from 	= from;
 			this.to 	= to;
 		}
+		
 		
 		function segment(from_x,from_y,to_x,to_y,from_station,to_station){
 			
@@ -737,18 +741,15 @@
     		th2 = document.createElement('th');
     		th2.innerHTML = "Piattaforma";
     		th3 = document.createElement('th');
-    		th3.innerHTML = "Ferma";
+    		th3.innerHTML = "Orario";
     		th4 = document.createElement('th');
-    		th4.innerHTML = "Orario";
-    		th5 = document.createElement('th');
-    		th5.innerHTML = "Ritardo";
+    		th4.innerHTML = "Ritardo";
     		tr = document.createElement('tr');
     		var tr = document.createElement('tr');
     		tr.appendChild(th1);
     		tr.appendChild(th2);
     		tr.appendChild(th3);
     		tr.appendChild(th4);
-    		tr.appendChild(th5);
     		
     		arrivalTable.appendChild(tr);
     		
@@ -759,17 +760,14 @@
     		th2 = document.createElement('th');
     		th2.innerHTML = "Piattaforma";
     		th3 = document.createElement('th');
-    		th3.innerHTML = "Ferma";
+    		th3.innerHTML = "Orario";
     		th4 = document.createElement('th');
-    		th4.innerHTML = "Orario";
-    		th5 = document.createElement('th');
-    		th5.innerHTML = "Ritardo";
+    		th4.innerHTML = "Ritardo";
     		tr = document.createElement('tr');
     		tr.appendChild(th1);
     		tr.appendChild(th2);
     		tr.appendChild(th3);
     		tr.appendChild(th4);
-    		tr.appendChild(th5);
     		
     		leavingTable.appendChild(tr);
     		
@@ -797,20 +795,18 @@
     		tr = document.createElement('tr');
     		var td1 = document.createElement('td');td1.innerHTML = trainid;
     		var td2 = document.createElement('td');td2.innerHTML = platform;
-    		var td3 = document.createElement('td');td3.innerHTML = false;
-    		var td4 = document.createElement('td');td4.innerHTML = time;
-    		var td5 = td5 = document.createElement('td');
+    		var td3 = document.createElement('td');td3.innerHTML = time;
+    		var td4 = document.createElement('td');
     		if (delay < 0) {
-    			td5.innerHTML = "-";
+    			td4.innerHTML = "-";
     		}else{
     			td5.innerHTML = delay;
-  				td5.style.color='red';
+  				td4.style.color='red';
     		}
     		tr.appendChild(td1);
     		tr.appendChild(td2);
     		tr.appendChild(td3);
 			tr.appendChild(td4);
-    		tr.appendChild(td5);
     		table.insertBefore(tr,table.children[1]);
     	}
 		
@@ -824,20 +820,18 @@
     		tr = document.createElement('tr');
     		var td1 = document.createElement('td');td1.innerHTML = trainid;
     		var td2 = document.createElement('td');td2.innerHTML = platform;
-    		var td3 = document.createElement('td');td3.innerHTML = false;
-    		var td4 = document.createElement('td');td4.innerHTML = time;
-    		var td5 = document.createElement('td');
+    		var td3 = document.createElement('td');td3.innerHTML = time;
+    		var td4 = document.createElement('td');
     		if (delay < 0) {
-    			td5.innerHTML = "-";
+    			td4.innerHTML = "-";
     		}else{
     			td5.innerHTML = delay;
-    			td5.style.color='red';
+    			td4.style.color='red';
     		}
     		tr.appendChild(td1);
     		tr.appendChild(td2);
     		tr.appendChild(td3);
     		tr.appendChild(td4);
-    		tr.appendChild(td5);
     		table.insertBefore(tr,table.children[1]);
     	}
 			

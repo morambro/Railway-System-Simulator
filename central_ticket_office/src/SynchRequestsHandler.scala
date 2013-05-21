@@ -4,17 +4,14 @@ import com.inspirel.yami._
 /**
  * Actor class used to handle Synchronous Requests
  */
-class SynchRequestsHandler extends Actor {
+class SynchRequestsHandler(val messagesReceiver:Actor) extends Actor {
 	
-	def mainLoop {
+	def mainLoop() {
 		react {
 			// Syncronous request received
 			case HandleSynchRequest(request,incomingMessage) => {
-				
 				var replyPar : Parameters = new Parameters
-				
 				request match {
-					
 					// Validate request handling
 					case validateRequest : Validate => {
 						val result = BookingManager !? validateRequest
@@ -75,22 +72,21 @@ class SynchRequestsHandler extends Actor {
 				// Send response back to client
 				incomingMessage.reply(replyPar)
 				
-				MessagesReceiver ! RequestSynchTask()
+				messagesReceiver ! RequestSynchTask()
+				mainLoop()
 				
-				// Loop
-				mainLoop
 			}
 			
 			case Stop() => {
-				println("Shutting down SynchREquestsHandler")
+				println("Shutting down SynchRequestsHandler")
 			}
 			
 			case _ => {
 				println("ERROR: Invalid request Received")
-				mainLoop
+				mainLoop()
 			}
 		}
 	}
 	
-	def act() = mainLoop
+	def act() = mainLoop()
 }

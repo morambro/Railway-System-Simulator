@@ -48,7 +48,6 @@ package body Central_Controller_Interface is
 		Station		: in	String;
 		Train_ID	: in 	Integer;
 		Platform	: in 	Integer;
-		Action		: in 	Train_Action;
 		Time		: in 	String;
 		Train_Delay	: in 	Integer)
 	is
@@ -58,7 +57,6 @@ package body Central_Controller_Interface is
 		J_Event.Set_Field("train_id",Train_ID);
 		J_Event.Set_Field("station",Station);
 		J_Event.Set_Field("platform",Platform);
-		J_Event.Set_Field("action",(if (Action = ENTER) then "enter" else "leave"));
 		J_Event.Set_Field("time",Time);
 		J_Event.Set_Field("delay",Train_Delay);
 

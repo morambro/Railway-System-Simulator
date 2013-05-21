@@ -2,9 +2,6 @@ import scala.actors._
 import com.inspirel.yami._
 import scala.collection.mutable.Queue
 
-case class Dispatch(e : Request)
-case class RequestSynchTask()
-case class RequestAsynchTask()
 /**
  * This class represents an actor responsible for keeping requests and dispatching them correctly.
  *
@@ -19,17 +16,12 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 	/**
 	 * Actors Pool used to execute Ticket Resolution requests. 
 	 */
-	private val ticketResolutionHandlers : Array[Actor] = Array.fill(10){new TicketCreator(this)}.map(w => w.start())
+	private val ticketResolutionHandlers : Array[Actor] = Array.fill(5){new TicketCreator(this)}.map(w => w.start())
 	
 	/**
 	 * Actors Pool used to Handle Synchronous requests
 	 */
-	private val synchReqHandlers : Array[Actor] = Array.fill(5)(new SynchRequestsHandler).map(w => w.start())
-	
-//	// Resolvers initialization 
-//	ticketResolutionHandlers.foreach(a => a.start)
-//	// Start synch handlers
-//	synchReqHandlers.foreach(a => a.start)
+	private val synchReqHandlers : Array[Actor] = Array.fill(2)(new SynchRequestsHandler(this)).map(w => w.start())
 	
 	/**
 	 * Queue containing the ticket creators actors
@@ -86,10 +78,10 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 		agent.close
 	}
 	
-	/**
-	 * Main loop. It is used to keep the Actor alive until Stop message is received
-	 */
-	def receiverLoop() {
+	val queue = Queue[AsynchRequest]()
+	
+	
+	def mainLoop() {
 		react {
 			case Stop()	=> {
 				// Stop all the Actors used
@@ -99,58 +91,54 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				BookingManager ! Stop()
 				PrintsSerializer ! StopPrint()
 			}
-			
+
+			// Tells the Message Receiver that a creation request have been resolved
 			case CreationRequestResolved() => {
 				creationRequests -= 1
-				if (markerReceived && creationRequests == 0) {
-					sendControllerAck()
-				}
-				receiverLoop()
+				if (markerReceived && creationRequests == 0) sendControllerAck()
+				mainLoop()
 			}
-			
+
 			case ("resolve",im:IncomingMessage) => {
 				PrintsSerializer ! Print("Received RESOLVE request")
-				
+
 				creationRequests += 1
-				
+
 				// Retrieve all the parameters from the request
 				val traveler_index	= im.getParameters.getString("traveler_index")
 				val from 			= im.getParameters.getString("from")
 				val startNode 		= im.getParameters.getString("start_node")
 				val to				= im.getParameters.getString("to")
 				val requestTime		= im.getParameters.getString("request_time")
-				
+
 				if(markerReceived) { 
 					// If the First marker have been received, we have to buffer all the requests!
 					queue.enqueue(Resolve(startNode,from,to,traveler_index,requestTime))
 				}else {
+					// Otherwise, dispatch it 
 					this ! Dispatch(Resolve(startNode,from,to,traveler_index,requestTime))
-					// Delegate Ticket Creation
-//					ticketResolutionHandlers(ticketResolutionIndex) ! Resolve(startNode,from,to,traveler_index,requestTime) 
-//		
-//					ticketResolutionIndex = (ticketResolutionIndex + 1)% ticketResolutionHandlers.size
 				}
 				// Return immediately
 				var replyPar : Parameters = new Parameters
-				
+
 				replyPar.setString("response","OK");
-				
 				im.reply(replyPar)
-				receiverLoop()
-			}
 			
+				mainLoop()
+			}
+
 			case RequestSynchTask() => {
 				if (!syncTasks.isEmpty) sender ! syncTasks.dequeue()
 				else waitingSynchReqHandlersQueue enqueue sender
-				receiverLoop()
+				mainLoop()
 			}
-			
+
 			case RequestAsynchTask() =>  {
 				if (! asyncTasks.isEmpty) sender ! asyncTasks.dequeue()
 				else waitingTicketCreationWorkers enqueue sender
-				receiverLoop()
+				mainLoop()
 			}
-			
+
 			case Dispatch(request:Request) => {
 				request match {
 					case sr : SynchRequest => {
@@ -161,14 +149,11 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 						if (! waitingTicketCreationWorkers.isEmpty) waitingTicketCreationWorkers.dequeue() ! ar
 						else asyncTasks enqueue ar
 					}
- 				}
- 				receiverLoop()
+				}
+				mainLoop()
 			}
-			
 		}
 	}
-	
-	val queue = scala.collection.mutable.Queue[AsynchRequest]()
 	
 	def act() = react {
 		case Init(address) => {
@@ -179,7 +164,8 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 	
 			// Register remote object "central_ticket_server"
 			serverAgent.registerObject("central_ticket_server", this);
-			receiverLoop()
+			
+			mainLoop()
 		}
 	}
 	
@@ -203,12 +189,6 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				
 				PrintsSerializer ! Print("Received GET_TIME_TABLE request")
 				
-				// Dispatch to Synch request handler
-//				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(GetTimeTable(),im)
-//				
-//				synchHandlersIndex += 1
-//				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
-				
 				this ! Dispatch(HandleSynchRequest(GetTimeTable(),im))
 			}
 			
@@ -220,12 +200,6 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				val routeIndex 	= im.getParameters.getInteger("route_index").intValue
 				val currentRun	= im.getParameters.getInteger("current_run").intValue
 				
-				// Ask to update the route timeTable
-//				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(UpdateRun(routeIndex,currentRun),im)
-//				
-//				synchHandlersIndex += 1
-//				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
-
 				this ! Dispatch(HandleSynchRequest(UpdateRun(routeIndex,currentRun),im))
 			}
 			
@@ -236,12 +210,6 @@ object MessagesReceiver extends Actor with IncomingMessageCallback{
 				val ticket 		= im.getParameters.getString("ticket")
 				val requestTime = im.getParameters.getString("request_time") 
 				
-				// Delegate Validation request to a ValidationHandler actorr
-//				synchReqHandlers(synchHandlersIndex) ! HandleSynchRequest(Validate(ticket::List(),requestTime),im)
-//				
-//				synchHandlersIndex += 1
-//				synchHandlersIndex = synchHandlersIndex % synchReqHandlers.size
-
 				this ! Dispatch(HandleSynchRequest(Validate(ticket::List(),requestTime),im))
 
 			}

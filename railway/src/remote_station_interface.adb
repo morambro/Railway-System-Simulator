@@ -165,7 +165,7 @@ package body Remote_Station_Interface is
 
 
 
-    procedure Send_Traveler_To_Leave(
+    procedure Wait_For_Train_To_Go(
 		Traveler_Index	: in	 Positive;
 		Train_ID		: in 	 Positive;
 		Station	 		: in	 Positive;
@@ -220,7 +220,7 @@ package body Remote_Station_Interface is
    				L => Logger.ERROR);
 
 
-    end Send_Traveler_To_Leave;
+    end Wait_For_Train_To_Go;
 
 
 	procedure Wait_For_Train_To_Arrive(
@@ -260,8 +260,7 @@ package body Remote_Station_Interface is
 						Object 				=> "message_handler",
 						Service 			=> "traveler_enter_transfer",
 						Params 				=> Parameters,
-						Callback			=> null
-					);
+						Callback			=> null);
 				end;
 
 			end if;

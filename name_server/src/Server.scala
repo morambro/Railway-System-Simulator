@@ -24,8 +24,8 @@ object NameServer extends Actor with IncomingMessageCallback{
 
 		}
 		case Stop() => {
-			println ("closing yami agent...")
-			serverAgent.close
+			println ("Stopping Name Server...")
+			serverAgent.closeConnection("name_server")
 		}
 	}
 
@@ -117,11 +117,16 @@ object NameServer extends Actor with IncomingMessageCallback{
 				replyParams.setString("response","OK")
 				im.reply(replyParams)
 				
-				if (addresses.keys.size == 0) {
-					this ! Stop()
-				}
+//				if (addresses.keys.size == 0) {
+//					this ! Stop()
+//				}
 				
 			}
+			
+			case "terminate" => {
+				this ! Stop()
+			}
+			
 			case _ => println("Invalid operation " + im.getMessageName)
 		
 		}

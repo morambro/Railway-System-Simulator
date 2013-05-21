@@ -141,17 +141,14 @@ object BookingManager extends Actor {
 	/** 
 	 * Main loop for the Actor.
 	 */
-	def bookingLoop() {
+	def bookingLoop() { 
 		react {
-			
-			
 			case GetTimeTable => {
 				// Simply return the JSON representation of the Time Table.
 				reply{timeTablesToJSON}
-				bookingLoop
+				bookingLoop()
 			}
-			
-			
+		
 			// Updates the current run index. It is done keeping always at least 2 route time tables,
 			// so if the updates reguardes 
 			case UpdateRun(routeIndex,current_run) => {
@@ -166,16 +163,16 @@ object BookingManager extends Actor {
 					timeTables(routeIndex-1).current_run = (current_run-1)
 					// Increase the identificator of the run by one.
 					timeTables(routeIndex-1).current_run_id += 1
-					
+				
 					// If the current run is the last, update the entire 
 					// table and give it back to the sender.
 					if ((current_run-1) == timeTables(routeIndex-1).table.size-1) {
-						
+					
 						val newTable : Array[Array[Date]]= new Array(timeTables(routeIndex-1).runs)
 						// Put last two elements on the first two positions
 						newTable(0) = timeTables(routeIndex-1).table(timeTables(routeIndex-1).table.size-1)
 						//newTable(1) = timeTables(routeIndex-1).table(timeTables(routeIndex-1).table.size-1)
-						
+					
 						bookingSits get (routeIndex-1) match {
 							case Some(t) => t match {
 								case table : Array[_] => {
@@ -184,31 +181,31 @@ object BookingManager extends Actor {
 									for(j <- 1 until table.size)  {
 										table(j) = Array.fill(table(0).size)(5)
 									}
-									
+								
 								}
 								case _ => PrintsSerializer ! Print("ERROR!!")
 							}
 							case None => 
 						}
-						
+					
 						// Copy all other Time Tables, adding new span!
 						for(i <- 0 until timeTables(routeIndex-1).runs-1) {
 							newTable(i+1) = timeTables(routeIndex-1).table(i)
 							for (j<- 0 until newTable(i+1).size) {
 								newTable(i+1)(j) = new Date(newTable(0).last.getTime + timeTables(routeIndex-1).spans_table(i)(j)) 
 							}
-							
+						
 						}
 						// Finally update the timeTable!
 						timeTables(routeIndex-1).table = newTable
 						// Set current_run to 0 .
 						timeTables(routeIndex-1).current_run = 0
-						
+					
 						PrintsSerializer ! Print("New Time Table for route " + (routeIndex-1) + ":\n" + timeTables(routeIndex-1).toJSON)
-						
+					
 						PrintsSerializer ! Print("Current run = " + timeTables(routeIndex-1).current_run + 
 								", run id = " + timeTables(routeIndex-1).current_run_id)
-						
+					
 						var str = "booking table : \n"
 						bookingSits get (routeIndex-1) match {
 							case Some(t) => t match {
@@ -222,117 +219,94 @@ object BookingManager extends Actor {
 							case None => 
 						}		
 						PrintsSerializer ! Print(str)
-						
-						
+					
+					
 						// Give it back to Sender
 						reply(("new_time_table",timeTables(routeIndex-1).toJSON))
 						 
-						
+					
 					}else{
 						PrintsSerializer ! Print("Current Run for route " + (routeIndex-1) + " updated : " + (current_run-1))	
 						reply(("updated",timeTables(routeIndex-1).current_run_id+1))
 					}
 				}
-				bookingLoop
+				bookingLoop()
 			}
-			
+		
 			// Validates a list of ticket. They have to be for a unique Region, otherwise
 			// it would not be able to validate.
 			case Validate(ticketList,requestTime) => {
-				
+			
 				// Create Date from String
 				val requestTimeDate = dateFormatter.parse(requestTime)
-				
+			
 				// Map used to keep track of the sits to edit once the sit is booked.
 				var bookingSitsToUpdate : List[Map[Int,(Int,Int,Int)]] = List()
-				
+			
 				var valid : Boolean = true
-				
+			
 				var routeMap : Map[Int,(Int,Int,Int,Int)] = Map()
-				
+			
 				PrintsSerializer ! Print(ticketList.size+"")
-				
+			
 				for (i <- 0 until ticketList.size;if (valid)) {
-					
+				
 					var ticket = ticketList(i)
-					
+				
 					PrintsSerializer ! Print(ticket.stages.size+"")
-					
+				
 					//var routeMap : Map[Int,(Int,Int,Int)] = Map()
-					
+				
 					// Run over all the stages
 					for (j <- 0 until ticket.stages.size;if (valid)) {
-					
+				
 						var ticketStage = ticket.stages(j)
-						
+					
 						trainRouteMap get (ticketStage.trainId) match {
 							// Only if the train is a FB Train the ticket must be validated.
 							case Some(map) => {
 								// Retrieve the route index
 								val routeIndex = map.routeIndex
-							
+						
 								var firstIndex 	= -1
 								var secondIndex = -1		
-//								PrintsSerializer ! Print("\nCurren index = " + routeIndex)
-//								PrintsSerializer ! Print("startStation = " + ticketStage.startStation)
-//								PrintsSerializer ! Print("nextStation  = " + ticketStage.nextStation)
-					
+				
 								// check in first half
 								for (i <- 0 until routes(routeIndex).stages.size/2) {
-//									PrintsSerializer ! Print("Start Station = " + routes(routeIndex).stages(i).startStation)
-//									PrintsSerializer ! Print("Ticket Start = " + ticketStage.startStation)
-//									PrintsSerializer ! Print("NN = " +routes(routeIndex).stages(i).nodeName)
-//									PrintsSerializer ! Print("Next = " + ticketStage.nextRegion)
 									if (routes(routeIndex).stages(i).startStation 	== ticketStage.startStation && 
 										routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 										firstIndex = i 
 									}
-//									PrintsSerializer ! Print("Next Station = " + routes(routeIndex).stages(i).nextStation)
-//									PrintsSerializer ! Print("Ticket Next = " + ticketStage.nextStation+"\n")
 									if (routes(routeIndex).stages(i).nextStation 	== ticketStage.nextStation &&
 										routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 										secondIndex = i
 									}
-									
-								}
 								
+								}
+							
 								if (firstIndex > secondIndex || firstIndex == -1 || secondIndex == -1) {
 									// If we haven't a match in the first half, search in the second half.
-//									PrintsSerializer ! Print("")
-//									PrintsSerializer ! Print("SECOND HALF")
-//									PrintsSerializer ! Print("")
-									
-									
+								
 									for (i <- routes(routeIndex).stages.size/2 until routes(routeIndex).stages.size) {
+									
 										
-//										PrintsSerializer ! Print("Start Station = " + routes(routeIndex).stages(i).startStation)
-//										PrintsSerializer ! Print("Ticket Start = " + ticketStage.startStation)
-//										PrintsSerializer ! Print("NN = " +routes(routeIndex).stages(i).nodeName)
-//										PrintsSerializer ! Print("Next = " + ticketStage.nextRegion)	
-											
 										if (routes(routeIndex).stages(i).startStation	== ticketStage.startStation&& 
 											routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 											firstIndex = i 
 										}
-//										PrintsSerializer ! Print("Next Station = " + routes(routeIndex).stages(i).nextStation)
-//										PrintsSerializer ! Print("Ticket Next = " + ticketStage.nextStation)
 										if (routes(routeIndex).stages(i).nextStation 	== ticketStage.nextStation&& 
 											routes(routeIndex).stages(i).nodeName 		== ticketStage.nextRegion) {
 											secondIndex = i
 										}
 									}
 								}
-								
-//								PrintsSerializer ! Print(firstIndex+"")
-//								PrintsSerializer ! Print(secondIndex+"")
-								
 								// decide weather to search in the current run or in the next one
 								val (selected_run,selected_run_id) = {
 									val current_run = timeTables(routeIndex).current_run
 									// If the time at witch the train leaves in the current run is after the
 									// time at witch the request was made, consider the current run, otherwise the next
 									PrintsSerializer ! Print("after ? " + (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)))
-									
+								
 									if (routeMap.contains(routeIndex))
 										(routeMap(routeIndex)._3,routeMap(routeIndex)._4)
 									else if (timeTables(routeIndex).table(current_run)(firstIndex).after(requestTimeDate)) 
@@ -340,17 +314,14 @@ object BookingManager extends Actor {
 									else
 										(timeTables(routeIndex).current_run + 1,timeTables(routeIndex).current_run_id + 1)
 								}
-								
-//								PrintsSerializer ! Print("selected_run = " + selected_run)
-//								PrintsSerializer ! Print("selected_run_id = " + selected_run_id)
-								
+							
 								// At this point firstIndex will be the first index of the route,
 								// secondIndex the last. 
 								// Check if there are enougth sits to assign to the Traveler
 								for (i <- firstIndex to secondIndex; if (valid)) {
 									valid = valid && bookingSits(routeIndex)(selected_run)(i) > 0
 								}
-								
+							
 								// Add to routeMap, to be updated if the ticket will result validated
 								if (valid) {
 									routeMap get (routeIndex) match { 
@@ -367,8 +338,8 @@ object BookingManager extends Actor {
 						}
 					}
 				}
-				
-				
+			
+			
 				if (!valid) {
 					// Send negative response in case the ticket could not be booked
 					reply(false)
@@ -386,17 +357,21 @@ object BookingManager extends Actor {
 					})
 					reply ((true,ticketList))
 				}
-				
+			
 				// debug print
 				printBookingSits
-				
+			
 				// Loop!
 				bookingLoop()
 			}
-			
-			
+		
+		
 			case Stop() => {
 				println("BookingManager shutted down")
+			}
+		
+			case _ => {
+				println("Invalid Message!")
 			}
 		}
 	}
@@ -404,30 +379,30 @@ object BookingManager extends Actor {
 	def act() = react {
 		case InitBookingManager() =>  {
 			// initializations
-			
+			PrintsSerializer ! Print("Received INIT_BOOKING_MANAGER message")
 			trainRouteMap = Route.loadTrainsRoutesMap("../../configuration/trains.json")
-			
+		
 			routes = Route.loadRoutes("../../configuration/routes.json")
-			
+		
 			// load the time table JSON file.
 			val jsonTimeTable = scala.io.Source.fromFile("../../configuration/time_table.json").mkString
-	
+
 			timeTables = new Array(routes.size)
 			// reference time from which build the time table.
 			val ref = new Date 
-	
+
 			val timeTable = JSON.parseJSON(jsonTimeTable).time_table
-	
+
 			// Loads time tables for each run
 			for (k <- 0 until timeTable.size) {
 				val tt = timeTable(k)
 				val r = new RouteTimeTable(tt.route.toInt-1,tt.time.size)
-		
+	
 				for (i <- 0 until tt.time.size) {
-			
+		
 					r.spans_table(i) = new Array(tt.time(i).size)
 					r.table(i) 		 = new Array(tt.time(i).size)
-			
+		
 					for (j <- 0 until tt.time(i).size) {
 						val time = tt.time(i)(j).toInt
 						// Add an element to the current Time table
@@ -437,9 +412,9 @@ object BookingManager extends Actor {
 					}
 					timeTables(k) = r
 				}
-		
+	
 			}
-			
+		
 			// Initialization. Create an entry for each Train in trainRouteMap. This is done
 			// because only booking info for FB Trains is needed.
 			trainRouteMap.keys.foreach(trainId => {
@@ -449,12 +424,15 @@ object BookingManager extends Actor {
 				for(i <- 0 until bookingSitsElem.size) {
 					bookingSitsElem(i) = Array.fill(timeTable.table(i).size)(t.sitsNumber)
 				}
-		
+	
 				bookingSits += t.routeIndex -> bookingSitsElem 
 			})
-			
+		
 			// Start the main receiving Loop
 			bookingLoop()
+		}
+		case Stop() => {
+			println("BookingManager shutted down")
 		}
 	} 
 }

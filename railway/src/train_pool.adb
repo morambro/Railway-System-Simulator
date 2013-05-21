@@ -102,7 +102,6 @@ package body Train_Pool is
 				Trains.Trains(Current_Descriptor_Index).Current_Station := Start_Station;
 
 				-- # Wait Until time to leave
-
 				declare
 					-- # Get the Current Run index
 					Current_Run 	: Positive :=
@@ -182,7 +181,6 @@ package body Train_Pool is
 						Station		=> Environment.Stations(Next_Station).Get_Name,
 						Train_ID	=> Trains.Trains(Current_Descriptor_Index).ID,
 						Platform	=> Next_Platform,
-						Action		=> Central_Controller_Interface.ARRIVING,
 						-- # Time at witch the Train will approximately arrive to the next Platform.
 						Time 		=> Ada.Calendar.Formatting.Image(
 										Date					=> Ada.Calendar."+"(Time_To_Wait,Duration(Time_In_Segment)),
@@ -219,9 +217,6 @@ package body Train_Pool is
 					Segment_ID 			=> Segments.Segments(Next_Segment).Id,
 					Action				=> Routes.All_Routes(Route_Index)(Next_Stage).Enter_Action);
 
-				-- # Slow down factor
-				delay 3.0;
-
 				-- # Go to the next Stage!
 				Trains.Trains(Current_Descriptor_Index).Next_Stage := Trains.Trains(Current_Descriptor_Index).Next_Stage + 1;
 
@@ -234,6 +229,7 @@ package body Train_Pool is
 					  	" restart his travel!",Logger.DEBUG);
 				end if;
 
+				-- # Re-run the Train!
 				Associate(Current_Descriptor_Index);
 
 			-- # ############################ ERROR HANDLING ###############################

@@ -32,8 +32,7 @@ with YAMI.Parameters;
 -- #
 package Central_Controller_Interface is
 
-
-	type Train_Action is (ENTER,LEAVE,ARRIVING);
+	-- ############################################# TRAIN ####################################
 
 	-- #
 	-- # Procedure used to send the one-way message to the Controller.
@@ -59,7 +58,6 @@ package Central_Controller_Interface is
 		Station		: in	String;
 		Train_ID	: in 	Integer;
 		Platform	: in 	Integer;
-		Action		: in 	Train_Action;
 		Time		: in 	String;
 		Train_Delay	: in 	Integer);
 
@@ -76,6 +74,7 @@ package Central_Controller_Interface is
 		Time		: in 	String;
 		Train_Delay	: in 	Integer);
 
+	-- ############################################# TRAVELER ####################################
 
 	-- #
 	-- # Updates the status of the given traveler.

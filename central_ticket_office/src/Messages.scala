@@ -21,3 +21,7 @@ case class CreationRequestResolved()
 
 case class InitBookingManager()
 
+case class Dispatch(e : Request)
+case class RequestSynchTask()
+case class RequestAsynchTask()
+
