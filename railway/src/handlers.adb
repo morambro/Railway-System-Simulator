@@ -499,6 +499,10 @@ package body Handlers Is
 			Train_Pool.Stop;
 			Traveler_Pool.Stop;
 
+			for I in 1 .. Environment.Stations'Length loop
+				Environment.Stations(I).Terminate_Platforms;
+			end loop;
+
 			Logger.Log(
 				Sender 	=> "Termination_Handler",
 				Message => "Termination Request Accepted",
