@@ -32,7 +32,7 @@
 		\item \ttt{Train\_Entered\_Per\_Direction}: Numero di Treni transitati per la direzione corrente.
 		
 		
-		\item \ttt{Can\_Retry\_Leave}: Variabile booleana utilizata come guardia per regolare l'\ii{entry} \ttt{Retry\_Leave}.
+		\item \ttt{Can\_Retry\_Leave}: Variabile booleana utilizzata come guardia per regolare l'\ii{entry} \ttt{Retry\_Leave}.
 
 		
 		\item \ttt{Trains\_Order}: Coda di tipo \ttt{Unlimited\_Simple\_Queue} che mantiene l'ordine di accesso dei Treni.
@@ -79,7 +79,7 @@
 	Essa invoca per prima cosa l'\ii{entry} della risorsa protetta \ttt{Access\_Controller}, in modo tale da ottenere accesso preferenziale, in base alla tipologia ti Treno. Una volta superata la barriere rappresentata dalla \ii{entry} \ttt{Gain\_Access}, viene aggiunto l'identificativo del Treno corrente nella coda interna alla risorsa protetta \ttt{Segment\_Monitor}, e quindi liberata la risorsa \ttt{Access\_Controller} con \ttt{Access\_Gained}. A questo punto, il Treno avrà un ordine assegnato e potrà quindi richiedere l'accesso vero e proprio, utilizzando l'\ii{entry} pubblica \ttt{Enter} fornita da \ttt{Segment\_Monitor}, la quale, con l'utilizzo dell'\ii{entry} privata \ttt{Retry}, consente l'esecuzione ordinata dei Task, secondo l'ordine sancito da \ttt{Trains\_Order} (listato \ref{code:impl_segment_monitor_enter}).
 
 \begin{lstlisting}[caption=\small{Meccanismo che garantisce accesso ordinato secondo l'ordine sancito da \ttt{Trains\_Order}.},label=code:impl_segment_monitor_enter]
-potected body Segment_Access_Controller is
+protected body Segment_Access_Controller is
 	...
 	entry Retry(
 		To_Add      : in     Positive;
@@ -138,7 +138,7 @@ end Segment_Access_Controller;
 Una volta che il controllo di accesso ordinato è stato superato, si può procedere al controllo di ingresso vero e proprio, mediante l'\ii{entry} privata \ttt{Perform\_Enter}. Essa controlla in primo luogo se il Treno accede dall'estremo \ttt{First\_End} o \ttt{Second\_End}, per poi poter proseguire all'accesso di conseguenza. Nel listato \ref{code:segment_monitor_perform_enter} riportato solo il codice per uno dei due casi, ovvero il caso in cui \ttt{Trains.Trains(To\_Add).Current\_Station = First\_End}, in quanto sono analoghi. 
 
 \begin{lstlisting}[caption=\small{Porzione della \ii{entry} \ttt{Perform\_Enter} per l'accesso dall'estremo \ttt{First\_End}},label=code:segment_monitor_perform_enter]
-potected body Segment_Access_Controller is
+protected body Segment_Access_Controller is
 	...
 	entry Perform_Enter(
 		To_Add      : in     Positive;
@@ -215,7 +215,7 @@ Se il Task corrente non è stato riaccodato ad un'altra \ii{entry}, allora viene
 	Le \ii{entries} private \ttt{Retry\_First\_End} e \ttt{Retry\_Second\_End} sono molto simili e sono utilizzate per mantenere accodati i Task relativi ai Treni in attesa di accedere al Segmento, rispettivamente presso l'estremo \ttt{First\_End} e \ttt{Second\_End}. Viene riportato nel listato \ref{code:segment_monitor_retry_first} il codice che realizza l'\ii{entry} \ttt{Retry\_First\_End}.
 	
 \begin{lstlisting}[caption=\small{\ii{entry} utilizzata per accodare i Task che rappresentano Treni in attesa di accesso presso il primo estremo del Segmento.},label=code:segment_monitor_retry_first]
-potected body Segment_Access_Controller is
+protected body Segment_Access_Controller is
 	...
 	entry Retry_First_End(
 		To_Add     :in		Positive;
@@ -249,7 +249,7 @@ end Segment_Access_Controller;
 	La \ii{entry} \ttt{Leave} della risorsa \ttt{Segment\_Monitor} (listato \ref{code:segment_monitor_leave}), per prima cosa controlla che il Task correntemente in esecuzione sia effettivamente il prossimo a dover uscire dal Segmento. Tale controllo viene effettuato confrontando il primo elemento della coda \ttt{Running\_Trains} con l'identificativo del Treno rappresentato dal Task in esecuzione: se essi sono uguali allora l'identificativo viene rimosso dalla coda e viene effettuata l'uscita, altrimenti il Task corrente viene accodato presso l'\ii{entry} privata \ttt{Retry\_Leave}.
 	
 \begin{lstlisting}[caption=\small{Uscita di un Task dal Segmento.},label=code:segment_monitor_leave]
-potected body Segment_Access_Controller is
+protected body Segment_Access_Controller is
 	...
 	
 	entry Retry_Leave(
@@ -293,7 +293,7 @@ potected body Segment_Access_Controller is
 			-- percorrono il Segmento.
 			Trains_Number := Trains_Number - 1;
 			if Trains_Number = 0 then
-				-- Nel caso in cui il Semento si sia
+				-- Nel caso in cui il Segmento si sia
 				-- svuotato, la velocita' massima
 				-- di percorrenza viene aggiornata 
 				Current_Max_Speed := Segment_Max_Speed;

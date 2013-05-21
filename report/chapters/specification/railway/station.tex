@@ -56,7 +56,7 @@
 		Action           : in 	  Route.Action) is
 	begin
 		-- Per prima cosa, richiede l'accesso all'access
-		-- controller associato al segmento di porvenienza.
+		-- controller associato al segmento di provenienza.
 		This.Segments_Map_Order.Element(Segment_ID).Enter(
 			Train_Index	=> Descriptor_Index);
 		-- Aggiunge il Treno alla coda interna alla risorsa 

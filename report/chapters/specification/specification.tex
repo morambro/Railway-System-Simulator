@@ -11,7 +11,7 @@ Di seguito verrà fornita una descrizione delle componenti principali che costit
 		\label{img:class_diagram}
 	\end{figure}
 
-L'architettura di massima adottata per la realizzazione del core di simulazione, è visibile nel diagramma delle classi in figura \ref{img:class_diagram} nel quale, per brevità, sono stati riportati solo le informazioni più significative, omettendo per esempio i package nei quali sono contenute gli oggetti creati duarante l'esecuzione.
+L'architettura di massima adottata per la realizzazione del core di simulazione, è visibile nel diagramma delle classi in figura \ref{img:class_diagram} nel quale, per brevità, sono stati riportati solo le informazioni più significative, omettendo per esempio i package nei quali sono contenute gli oggetti creati durante l'esecuzione.
 	
 	Viene ora fornita una breve descrizione delle varie componenti che sono state utilizzate, procedendo per Package. Nelle sezioni seguenti si utilizzeranno le nozioni di \ii{Task} e \ii{Tipo protetto} definite dal linguaggio \ii{Ada}, utilizzato per l'implementazione, e verrà mostrato come le soluzioni presentate nel capitolo \ref{chapter:solution} sono state tradotte con strumenti di linguaggio.
 
@@ -427,7 +427,7 @@ Trains.Trains(Current_Descriptor_Index).Next_Stage :=
 	
 	\begin{itemize}
 		\item ricevere gli eventi generati dai Nodi di Simulazione;
-		\item gestire il meccanismo \ttt{Publish/Subscribe} per l'invio di eventi push in modalità push;
+		\item gestire il meccanismo \ttt{Publish/Subscribe} per l'invio di eventi in modalità push;
 		\item gestire Avvio e Terminazione dell'intero sistema.
 	\end{itemize}
 	
