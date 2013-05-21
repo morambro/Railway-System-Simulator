@@ -55,7 +55,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	\subsection{Central\_Controller\_Interface}
 	
-	Il package \ttt{Central\_Controller\_Interface} fornisce un'interfaccia per permettere alle entità della simulazione di inviare un evento di notifica all'oggetto remoto \ttt{central\_controller}. A tal proposito sono messi a disposizione procedure che le quali effettuano il marshalling dei dati in ingresso (in formato \ttt{JSON}) e inviano un messaggio remoto mediante il metodo \ttt{Send\_One\_Way} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}.
+	Il package \ttt{Central\_Controller\_Interface} fornisce un'interfaccia per permettere alle entità della simulazione di inviare un evento di notifica all'oggetto remoto \ttt{central\_controller}. A tal proposito sono messi a disposizione procedure che le quali effettuano il marshalling dei dati in ingresso (in formato \ii{JSON}) e inviano un messaggio remoto mediante il metodo \ttt{Send\_One\_Way} offerto dall'unica istanza di \ttt{Message\_Agent\_Type}.
 	
 	\subsection{Central\_Office\_Interface}
 	
@@ -80,7 +80,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 				Current\_Run:Integer,\\
 				Callback:access procedure(...))}\\ 
 				
-			Invia un messaggio remoto per comunicare l'aggiornamento della corsa corrente \ttt{Current\_Run} per il percorso \ttt{Route\_Index}. Nel caso in cui la corsa sia l'ultima delle $N$ mantenute, viene creata una nuova Time Table per il percorso \ttt{Route\_Index} dalla Biglietteria Centrale che viene restituito al chiamante. Nel caso in cui essa venga ricevuta (in formato \ttt{JSON}), viene effettuato l'unmarshalling e creata l'istanza corrispondente di \ttt{Time\_Table\_Type} da sostituire a quella corrente.
+			Invia un messaggio remoto per comunicare l'aggiornamento della corsa corrente \ttt{Current\_Run} per il percorso \ttt{Route\_Index}. Nel caso in cui la corsa sia l'ultima delle $N$ mantenute, viene creata una nuova Time Table per il percorso \ttt{Route\_Index} dalla Biglietteria Centrale che viene restituito al chiamante. Nel caso in cui essa venga ricevuta (in formato \ii{JSON}), viene effettuato l'unmarshalling e creata l'istanza corrispondente di \ttt{Time\_Table\_Type} da sostituire a quella corrente.
 			
 			\item \ttt{+ Load\_Time\_Tables(\\
 				Callback:access procedure(Table:Time\_Table\_Array\_Ref))}\\
@@ -214,7 +214,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 			\item \ttt{Destination\_Platform\_Index} : Indice della Piattaforma di destinazione;
 			\item \ttt{Region} : Nome della regione nella quale si colloca la stazione \ttt{Next\_Station};
 		\end{itemize}
-	Il package fornisce inoltre le funzioni necessarie per effettuare marshalling e unmarshalling degli oggetti di tipo \ttt{Ticket\_Type} in/dal formato \ttt{JSON}.
+	Il package fornisce inoltre le funzioni necessarie per effettuare marshalling e unmarshalling degli oggetti di tipo \ttt{Ticket\_Type} in/dal formato \ii{JSON}.
 	
 	\subsection{Traveler}
 	
@@ -248,7 +248,7 @@ L'architettura di massima adottata per la realizzazione del core di simulazione,
 	
 	\subsection{Train}
 	
-	Il package \ttt{Train} contiene la definizione del tipo \ttt{Train\_Descriptor}, record contenente tutti i dati che caratterizzano una entità Treno, e alcune funzioni necessarie ad effettuare la conversione da JSON a oggetto \ttt{Train\_Descriptor} e viceversa.
+	Il package \ttt{Train} contiene la definizione del tipo \ttt{Train\_Descriptor}, record contenente tutti i dati che caratterizzano una entità Treno, e alcune funzioni necessarie ad effettuare la conversione da \ii{JSON} a oggetto \ttt{Train\_Descriptor} e viceversa.
 	I campi principali del record \ttt{Train\_Descriptor} sono:
 	\begin{itemize}
 		\item \ttt{Id}: identificativo univoco del Treno.
@@ -369,7 +369,7 @@ Trains.Trains(Current_Descriptor_Index).Next_Stage :=
 	
 	\subsection{MessagesReceiver}
 	
-	La classe Singleton \ttt{MessagesReceiver}, rappresenta un \ii{Attore} il cui compito è ricevere messaggi remoti (implementa infatti l'interfaccia \ttt{IncomingMessageCallback}). Tra i parametri principali mantenuti dall'unico oggetto di tipo \ttt{MessagesReceiver}, vi sono un'istanza di agente messo a disposizione dal middleware \ii{Yami4} per la ricezione dei messaggi remoti, e due array di oggetti, rispettivamente di tipo \ttt{TicketCreator} e \ttt{SynchRequestsHandler}. 
+	La classe Singleton \ttt{MessagesReceiver}, rappresenta un \ii{Attore} il cui compito è ricevere messaggi remoti (implementa infatti l'interfaccia \ttt{IncomingMessageCallback}). Tra i parametri principali mantenuti dall'unico oggetto di tipo \ttt{MessagesReceiver}, vi sono un'istanza di agente messo a disposizione dal middleware \ii{Yami4} per la ricezione dei messaggi remoti, e due Pool di \ii{Attori}, rispettivamente di tipo \ttt{TicketCreator} e \ttt{SynchRequestsHandler}, memorizzati in due array.
 	In base al tipo di richiesta remota ricevuta, l'oggetto \ttt{MessagesReceiver} delega la gestione del messaggio ad uno degli attori nei due array, a seconda se la richiesta è di natura asincrona o sincrona. I tipi di messaggio remoto ricevuti possono essere:
 	\begin{itemize}
 		\item \ttt{create\_ticket}: richiesta di creazione di un Ticket, che viene delegata ad uno degli attori di tipo \ttt{TicketCreator} mantenuti, inviando ad esso un messaggio di tipo \ttt{Resolve}. Il risultato dell'operazione richiesta viene restituito in maniera asincrona al richiedente.
@@ -412,9 +412,16 @@ Trains.Trains(Current_Descriptor_Index).Next_Stage :=
 		\item \ttt{resolve}: Dato un identificativo di entità, restituisce, se presente nella tabella, l'indirizzo al quale quell'entità si trova.
 		\item \ttt{list}: Restituisce tutte le coppie \ttt{<entità,indirizzo>} possedute.
 		\item \ttt{remove}: Rimuove dalla tabella la voce corrispondente all'identificativo passato.
+		\item \ttt{terminate}: Il Server dei Nomi termina la propria esecuzione.
 	\end{itemize}
 	
 	\section{Controllo Centrale}
+	
+	\begin{figure}[htbp]
+		\includegraphics[scale=0.6,trim= 30mm 0mm 0mm 10mm]{imgs/Controller_Class_Diagram.pdf}
+		\caption{\footnotesize{Diagramma delle classi semplificato che mostra le relazioni principali tra le classi che compongono il Controller Centrale.}}
+		\label{img:ticket_office_class_diagram}
+	\end{figure}
 	
 	L'entità di Controllo Centrale ha i seguenti compiti:
 	
@@ -424,7 +431,7 @@ Trains.Trains(Current_Descriptor_Index).Next_Stage :=
 		\item gestire Avvio e Terminazione dell'intero sistema.
 	\end{itemize}
 	
-	Essa è composta dall'oggetto \ttt{ControllerMain}, il quale mantiene una istanza della classe \ttt{Receiver}, utilizzata per la ricezione dei messaggi remoti, dall'oggetto \ii{Attore} \ttt{Controller} che gestisce la pubblicazione di eventi e la Terminazione, e dall'oggetto \ttt{ControllerView}, il quale gestisce una interfaccia grafica per permettere l'interazione dell'utente.
+	Essa è composta dall'oggetto \ttt{ControllerMain}, il quale mantiene una istanza della classe \ttt{Receiver}, utilizzata per la ricezione dei messaggi remoti, dall'oggetto \ii{Attore} \ttt{Controller} che gestisce la pubblicazione di eventi e la Terminazione, e dall'oggetto \ii{Attore} \ttt{ControllerView}, il quale gestisce una interfaccia grafica per permettere l'interazione dell'utente.
 	
 	\subsection{Receiver}
 	La classe \ttt{Receiver} contiene un istanza di Agente remoto, per la ricezione dei seguenti tipi di messaggio:

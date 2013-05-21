@@ -11,13 +11,13 @@ Di seguito verranno presentati i linguaggi di programmazione adottati e le tecno
 				\item \bb{Application Server}, al quale i client HTTP possono collegarsi mediante protocollo \ii{Web Socket} per poter fornire una rappresentazione grafica della simulazione, in linguaggio HTML e Javascript. Per la sua realizzazione è stato utilizzato il framework MVC \ttt{Play 2.0} (disponibile all'indirizzo \url{http://www.playframework.com/}).
 				\item \bb{Name Server} per la gestione delle Regioni di simulazione.
 			\end{itemize}
-		Internamente alle componenti distribuite, la concorrenza è stata gestita adottando il modello di concorrenza ad Attori fornito nativamente dal linguaggio. 
+		Internamente alle componenti distribuite, la concorrenza è stata gestita adottando il modello di concorrenza ad \ii{Attori} fornito nativamente dal linguaggio. 
 		
 	\section{Ada}
-		Il linguaggio Ada è stato utilizzato per realizzare la componente di simulazione presente in ciascuna Regione. Ho preferito infatti il modello di concorrenza fornito dal linguaggio, il quale mi è sembrato più adatto per rappresentare le interazioni tra le entità introdotte al capitolo precedente, rispetto ai modelli offerti da altri linguaggi. 
-		In prima battuta, ho valutato l'utilizzo del modello di concorrenza ad Attori di Scala; tale modello avrebbe garantito una separazione naturale tra Attore e Thread che lo esegue, e quindi fornito un meccanismo di linguaggio scalabile per l'esecuzione delle entità Viaggiatore e Treno, da utilizzare in sostituzione a quello descritto nelle sezioni \ref{subsec:traveler_def} e \ref{subsec:train_def}. Tuttavia, il modello ad Attori avrebbe reso necessaria l'adozione di \ii{entità attive Server} a protezione delle entità reattive come Segmenti e Piattaforme, e ciò avrebbe comportato:
+		Il linguaggio Ada è stato utilizzato per realizzare la componente di simulazione presente in ciascuna Regione. Ho preferito infatti il modello di concorrenza fornito da questo linguaggio, il quale mi è sembrato più adatto per rappresentare le interazioni tra le entità introdotte al capitolo precedente, rispetto ai modelli offerti da altri linguaggi. 
+		In prima battuta, ho valutato l'utilizzo del modello di concorrenza ad \ii{Attori} di Scala; tale modello avrebbe garantito una separazione naturale tra Attore e Thread che lo esegue, e quindi fornito un meccanismo di linguaggio scalabile per l'esecuzione delle entità Viaggiatore e Treno, da utilizzare in sostituzione a quello descritto nelle sezioni \ref{subsec:traveler_def} e \ref{subsec:train_def}. Tuttavia, il modello ad \ii{Attori} avrebbe reso necessaria l'adozione di \ii{entità attive Server} a protezione delle entità reattive come Segmenti e Piattaforme, e ciò avrebbe comportato:
 			\begin{itemize}
-				\item la necessità di utilizzare thread per l'esecuzione degli attori a protezione delle entità;
+				\item la necessità di utilizzare thread per l'esecuzione degli \ii{Attori} a protezione delle entità;
 				\item una maggiore complessità di terminazione;
 			\end{itemize}
 		L'utilizzo di Ada ha permesso un buon livello di controllo di allocazione di thread, risorse protette e oggetti, e il suo sistema di tipi molto restrittivo ha consentito di ridurre i possibili errori in fase di sviluppo.
@@ -29,13 +29,13 @@ L'interazione tra componenti remote del sistema, realizzate con tecnologie etero
 		\item \ttt{Service}: insieme di servizi offerti da un oggetto remoto, identificati univocamente da una stringa.
 	\end{itemize}
 Per quanto riguarda i nodi di simulazione, ho utilizzato quindi un unico \ttt{Object}, il quale mette a disposizione vari \ttt{Service} a seconda del tipo di servizio richiesto. Questa soluzione mi è sembrata la più semplice e estendibile possibile.
-Il protocollo usato tra le varie componenti del sistema per lo scambio di messaggi, è quello fornito da \ii{Yami4}, e quindi lo scambio di dati in formato stringa chiave-valore; inoltre per l'invio di strutture dati complesse come Descrittori di Treni o Passeggeri, e Biglietti, ho utilizzo lo standard \ttt{JSON}. Per la codifica e decodifica di stringhe \ttt{JSON} mi sono servito di due librerie:
+Il protocollo usato tra le varie componenti del sistema per lo scambio di messaggi, è quello fornito da \ii{Yami4}, e quindi lo scambio di dati in formato stringa chiave-valore; inoltre per l'invio di strutture dati complesse come Descrittori di Treni o Passeggeri, e Biglietti, ho utilizzo lo standard \ii{JSON}. Per la codifica e decodifica di stringhe \ii{JSON} mi sono servito di due librerie:
 	\begin{itemize}
 		\item La libreria \ii{Gnatcoll} fornita con la distribuzione \ttt{Gnat}, per il linguaggio Ada.
 		\item La libreria \ii{json-smart} (disponibile all'indirizzo \url{https://code.google.com/p/json-smart/}), scritta in Java e integrata nelle componenti realizzate in linguaggio Scala.
 		
 	\end{itemize}
-	Il formato \ttt{JSON} è utilizzato anche per la definizione dei file di configurazione che definiscono le entità del sistema.
+	Il formato \ii{JSON} è utilizzato anche per la definizione dei file di configurazione che descrivono le entità del sistema.
 
 
 
