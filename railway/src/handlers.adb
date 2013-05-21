@@ -71,8 +71,7 @@ package body Handlers Is
 				Logger.Log(
 					Sender		=> "Station_Message_Handler",
 					Message		=> "Updated Train " & Train_Data,
-					L 			=> Logger.DEBUG
-				);
+					L 			=> Logger.DEBUG);
 
 				Put_Line("PLatfrom Index = " & integer'image(Platform_Index) & " Station = " & integer'image(Station_Index));
 

@@ -130,7 +130,7 @@ package body Gateway_Station is
 
 			begin
 			  	if Next_Station_Node /= Environment.Get_Node_Name then
-				-- # Send train with descriptor Train_D to the next Station, if defined and on another node, and stop current Train Execution
+					-- # Send train with descriptor Train_D to the next Station, if defined and on another node, and stop current Train Execution
 
 					-- # Go to the next stage, to let the train start to the right position on the next region
 					Trains.Trains(Descriptor_Index).Next_Stage := Trains.Trains(Descriptor_Index).Next_Stage + 1;

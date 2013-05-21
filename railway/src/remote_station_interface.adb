@@ -81,8 +81,7 @@ package body Remote_Station_Interface is
 							Object 				=> "message_handler",
 							Service 			=> "train_transfer",
 							Params 				=> Parameters,
-							Callback			=> null
-						);
+							Callback			=> null);
 				    end;
 				end if;
 		    end Get_Results;
@@ -143,8 +142,7 @@ package body Remote_Station_Interface is
 						Object 				=> "message_handler",
 						Service 			=> "train_left_platfrom",
 						Params 				=> Parameters,
-						Callback			=> null
-					);
+						Callback			=> null);
 				end;
 			end if;
 		end Get_Results;

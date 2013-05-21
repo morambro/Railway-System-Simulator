@@ -52,6 +52,7 @@ package body Message_Agent is
 		Msg : aliased YAMI.Outgoing_Messages.Outgoing_Message;
       	State : YAMI.Outgoing_Messages.Message_State;
 	begin
+
         This.Client_Agent.Send(
         	Destination_Address,
         	Object,

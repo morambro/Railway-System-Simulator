@@ -91,7 +91,7 @@ package body Name_Server_Interface is
 				Object 				=> "name_server",
 				Service 			=> "resolve",
 				Params 				=> Parameters,
-				Callback 			=> null);
+				Callback 			=> Process_Result'Access);
 
 		end if;
     end Resolve;
