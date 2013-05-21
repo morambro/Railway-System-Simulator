@@ -1,3 +1,0 @@
-cd out
-scala -classpath ../out/:../../lib/yami4.jar DebugMain $@
-cd ..
