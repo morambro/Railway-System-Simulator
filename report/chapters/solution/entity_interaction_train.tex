@@ -103,7 +103,7 @@ Una volta che un thread del pool della struttura \ttt{Train\_Pool} ottiene un De
 \begin{lstlisting}[caption=\small{Procedura protetta \ttt{Enter\_Monitor} per l'accesso al Segmento.},label=code:segment_monitor_enter]
 monitor Segment_Monitor
 	...
-	procedure Enter_Monitor(T:Train,Access_End:integer) 
+	procedure Enter_Monitor(T:Train,Access_End:Integer) 
 	begin
 		...
 		if Access_End = First_End then
@@ -431,7 +431,7 @@ Si può notare che la struttura dati di controllo per l'accesso ad una Piattafor
 	\item{\ii{Uscita da una Piattaforma}}
 
 		\begin{figure}[htbp]
-			\includegraphics[trim = 45mm 0mm 0mm 0mm,scale=0.55]{imgs/platform_exit_Sequence_Diagram.pdf}
+			\includegraphics[trim = 50mm 0mm 0mm 0mm,scale=0.55]{imgs/platform_exit_Sequence_Diagram.pdf}
 			\caption{\footnotesize{Diagramma di Sequenza, operazioni necessarie per l'uscita da una Piattaforma.}}
 			\label{fig:platform_access}
 		\end{figure}

@@ -79,6 +79,16 @@
             "destination"		: "I",
             "start_station" 	: "H",
             "start_node"		: "Node_2"
+        },
+        {
+            "traveler"	: {
+                "id"		: 9,
+                "name"		: "Giancarlo",
+                "surname"	: "Verdi"
+            },
+            "destination"		: "D",
+            "start_station" 	: "A",
+            "start_node"		: "Node_1"
         }
     ]
 }

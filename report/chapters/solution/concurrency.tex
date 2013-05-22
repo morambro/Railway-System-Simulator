@@ -49,7 +49,7 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	Ho optato invece nel progettare una struttura dati \ttt{Train\_Pool} che mantiene:
 		\begin{itemize}
 			\item una \ii{coda di Descrittori di Treno}, che contengono tutte le informazioni che distinguono una entità Treno;
-			\item un \ii{Pool di thread} dimensionato in maniera opportuna; ciascun thread sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni. Le interazioni tra le entità del sistema, prevedono la possibilità che i thread del pool vengano posti in attesa su variabili di condizione, in attesa di eventi: è quindi necessario che la dimensione del pool di thread sia pari al massimo numero di Treni circolanti nella Regione alla quale esso appartiene, in modo tale da evitare situazioni di stallo dei thread in attesa. Infine, per fornire una garanzia di esecuzione più elevata a Treni di tipo \ttt{FB}, è possibile introdurre una coda per tipologia di Treno, ciascuna servita da un pool dedicato a dimensione fissata.
+			\item un \ii{Pool di thread} dimensionato in maniera opportuna; ciascun thread sarà tale per cui una volta ottenuto un descrittore dalla coda, eseguirà per lui una fissata sequenza di azioni. Le interazioni tra le entità del sistema, prevedono la possibilità che i thread del pool vengano posti in attesa su variabili di condizione, in attesa di eventi: è quindi necessario che la dimensione del pool di thread sia pari al massimo numero di Treni circolanti nella Regione alla quale esso appartiene, in modo tale da evitare situazioni di stallo dei thread in attesa. Infine, per fornire una garanzia di esecuzione maggiore a Treni di tipo \ttt{FB} rispetto a Treni \ttt{Regionali}, è possibile introdurre una coda per tipologia di Treno, ciascuna servita da un pool dedicato a dimensione fissata.
 		\end{itemize}
 	In questo modo un entità Treno eseguirà all'interno di un nodo se e soltanto se il suo descrittore sarà inserito nella coda di descrittori della struttura dati descritta, permettendo così un agevole trasferimento tra nodi diversi.
 				
@@ -58,7 +58,7 @@ Internamente a ciascuna Regione di simulazione, sono definite entità che modell
 	
 	Una Stazione (\ttt{Station}) è modellata come una struttura dati contenete:
 		\begin{itemize}
-			\item un certo numero $ n \ge 2$ di Piattaforme (\ttt{Platform});
+			\item un certo numero $ n \ge 1$ di Piattaforme (\ttt{Platform}); nel caso in cui la stazione sia di Gateway, valgono le considerazioni fatte in sezione \ref{sec:gateway_stations};
 			\item una Biglietteria (\ttt{Ticket\_Office});
 			\item un Pannello Informativo (\ttt{Notice\_Panel}).
 		\end{itemize}

@@ -1,13 +1,13 @@
 cd name_server
-make
+make fast
 cd ..
 
 cd central_controller
-make
+make fast
 cd ..
 
 cd central_ticket_office
-make
+make fast
 cd ..
 
 cd railway

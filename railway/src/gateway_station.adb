@@ -141,6 +141,18 @@ package body Gateway_Station is
 						-- # The platform index will be the same!!
 						Platform					=>	Platform_Index,
 						Next_Node_Name				=>	Next_Station_Node);
+				else
+					-- # Tell the Notice Panel to display the Train gained access
+					This.Panel.Set_Train_Accessed_Platform(
+						Train_ID	=> Trains.Trains(Descriptor_Index).ID,
+						Platform 	=> Platform_Index);
+
+					-- # TO SLOW DOWN SIMULATION!
+					if (Action = Route.ENTER) then
+						delay 2.5;
+					else
+						delay 1.0;
+					end if;
 				end if;
 			end;
 		end if;

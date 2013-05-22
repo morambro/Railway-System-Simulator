@@ -581,7 +581,7 @@
 		r.text(legendStart+trainLength+5,47.5,"Treno Regionale").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
 		
 		r.circle(legendStart+6,70,6).attr('fill',BUYING);
-		r.text(legendStart+trainLength+5,70,"Passeggero - In Acquisto").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		r.text(legendStart+trainLength+5,70,"Passeggero - In Acquisto di un Ticket").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
 		
 		r.circle(legendStart+6,90,6).attr('fill',ENTER);
 		r.text(legendStart+trainLength+5,90,"Passeggero - In Arrivo").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
@@ -592,7 +592,7 @@
 		r.circle(legendStart+6,130,6).attr('fill',LEAVE);
 		r.text(legendStart+trainLength+5,130,"Passeggero - In Attesa del Treno").attr({ 'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
 		
-		r.rect(legendStart-20,0,300,160);
+		r.rect(legendStart-20,0,320,160);
 		
 		
 		trains = {};
@@ -657,13 +657,13 @@
 		travelers = {};
 		
 		// Travelers creation.
-		for ( var i = 1 ; i <= 8 ; i++ ){
+		for ( var i = 1 ; i <= 9 ; i++ ){
 			travelers[i] = new traveler("T"+i,travelersRadius);
 			travelers[i].image.attr('fill',ENTER);
 		}
 		
 		// Initially put alla the passengers on the correct place
-		moveTravelerToPlatform(1,"A",0,"buy");
+		moveTravelerToPlatform(1,"B",0,"buy");
 		moveTravelerToPlatform(2,"C",0,"buy");
 		moveTravelerToPlatform(3,"I",0,"buy");
 		moveTravelerToPlatform(4,"M",0,"buy");
@@ -671,6 +671,24 @@
 		moveTravelerToPlatform(6,"H",0,"buy");
 		moveTravelerToPlatform(7,"H",0,"buy");
 		moveTravelerToPlatform(8,"H",0,"buy");
+		moveTravelerToPlatform(9,"A",0,"buy");
+		
+		
+		r.rect(paddingLeft,260,200,205)
+		start = 290
+		
+		r.text(paddingLeft+5,start-20,"Destinazione dei Viaggiatori").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif","font-weight":"bold"});
+		
+		r.text(paddingLeft+5,start,"T_1 : Da B a L").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		r.text(paddingLeft+5,start+20,"T_2 : Da C a D").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		r.text(paddingLeft+5,start+40,"T_3 : Da I a G1").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		r.text(paddingLeft+5,start+60,"T_4 : Da M a G1").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		r.text(paddingLeft+5,start+80,"T_5 : Da L a H").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		r.text(paddingLeft+5,start+100,"T_6 : Da H a G1").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		r.text(paddingLeft+5,start+120,"T_7 : Da H a G1").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		r.text(paddingLeft+5,start+140,"T_8 : Da H a I").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		r.text(paddingLeft+5,start+160,"T_9 : Da A a D").attr({'text-anchor': 'start',"font-size": 14, "font-family": "Arial, Helvetica, sans-serif"});
+		
 		
 		
 		/**

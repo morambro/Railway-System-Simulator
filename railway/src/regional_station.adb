@@ -115,6 +115,13 @@ package body Regional_Station is
 			Train_ID	=> Trains.Trains(Descriptor_Index).ID,
 			Platform 	=> Platform_Index);
 
+		-- # TO SLOW DOWN SIMULATION!
+		if (Action = Route.ENTER) then
+			delay 2.5;
+		else
+			delay 1.0;
+		end if;
+
 	end Enter;
 
 

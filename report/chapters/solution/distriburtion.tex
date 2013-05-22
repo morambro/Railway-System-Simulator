@@ -49,7 +49,7 @@ Un diagramma informale delle componenti distribuite che compongono il sistema è
 	Questa scelta, vincola così il numero di Piattaforme per Stazione di Gateway: 
 	
 	\begin{consequence}
-	Date N Stazioni di Gateway connesse, sia K\_i il numero di Piattaforme che permettono ad un Treno di lasciare la Regione i-esima; allora ciascuna Stazione dovrà complessivamente mantenere un numero di Piattaforme pari a $\sum_{i = 1}^{N}{K_i}$.
+	Date N Stazioni di Gateway connesse $G_1,...,G_N$, sia $K_i$ il numero di Piattaforme che permettono ad un Treno di lasciare la Regione i-esima; allora ciascuna Stazione di Gateway $G_j, j\in[1,..,N]$ dovrà complessivamente mantenere un numero di Piattaforme pari a $\sum_{i = 1}^{N}{K_i}$.
 	\end{consequence}
 	
 	 Tali vincoli sono sufficienti a mantenere locale ai nodi la sincronizzazione tra i thread che permettono l'esecuzione dei Treni. Una descrizione dettagliata del protocollo di accesso alle Stazioni di Gateway e di migrazione dei Treni, e presentata in sezione \ref{subsubsec:gateway_stations_func}.
@@ -76,5 +76,5 @@ Un diagramma informale delle componenti distribuite che compongono il sistema è
 	Il \ii{Controllo Centrale} è una entità distribuita, alla quale tutti i nodi inviano Eventi per notificare lo stato di avanzamento globale della simulazione, che viene memorizzato in strutture dati opportune. Esso fornisce una interfaccia alle varie Regioni per ricevere gli Eventi di simulazione, ed un'interfaccia per permettere a client remoti di poter visualizzare gli effetti di tali Eventi. Quest'ultima possibilità è ottenuta mediante un meccanismo di tipo Publish/Subscribe, attraverso il quale client remoti possono registrarsi presso il Controller per ricevere, in modalità Push, gli Eventi.
 	In questo modo è possibile per un qualsiasi client interfacciarsi al Controller e fornire, ad esempio, una rappresentazione grafica della simulazione.
 
-	Il Controller Centrale sarà anche responsabile dell'invio di un \ii{segnale di terminazione}, che verrà recapitato a tutti i nodi che compongono la simulazione, mediante la procedura descritta in sezione \ref{sec:distributed_termination}.
+	Il Controller Centrale è anche responsabile della gestione dell'\ii{avvio} e della \ii{terminazione} dell'intero sistema; quest'ultima avviene secondo la procedura descritta in sezione \ref{sec:distributed_termination}.
 \newpage
