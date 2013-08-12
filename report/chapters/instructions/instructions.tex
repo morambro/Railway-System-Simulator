@@ -20,11 +20,16 @@
 	
 	\section{Installazione}
 	
-	Il sistema viene fornito in una directory \ttt{TrainProject}. Da tale directory, è sufficiente lanciare il comando \ttt{sh compile\_all.sh}, il quale effettuerà la compilazione di tutte le componenti.
+	Il prototipo viene fornito assieme ad una immagine di Sistema Operativo linux (\ii{Ubuntu 12.10} a 64 bit) già configurata, creata con il programma \ii{VMWare Player}. La directory contenente i files che compongono il sistema è \ttt{/home/moreno/Desktop/TrainProject}; il comando \ttt{sh compile\_all.sh}, effettuerà la compilazione di tutte le componenti.
 	
 	\section{Avvio}
 	
-	L'avvio del sistema si effettua eseguendo i seguenti script presenti nella cartella principale:
+	Una volta avviata l'immagine di Sistema Operativo fornita, è necessario inserire le seguenti credenziali d'accesso:
+	\begin{verbatim}
+                      username: moreno
+                      password: scd
+	\end{verbatim}
+	Ad accesso effettuato, il sistema può essere avviato eseguendo i seguenti script presenti nella cartella principale:
 	
 		\begin{itemize}
 			\item \ttt{run\_play.sh} : Avvia il server \ii{Play}, necessario per la rappresentazione grafica della simulazione. Il suo avvio può richiedere alcuni secondi.
@@ -34,12 +39,12 @@
 		
 	In seguito, è necessario aprire il browser \ii{Chrome} e aprire la pagina all'indirizzo \ttt{localhost:9000}; infine per avviare la simulazione è sufficiente premere il pulsante \ii{Start} dall'interfaccia grafica fornita dal Controller Centrale.
 	 
-	Viene fornita una configurazione di base composta da 3 Regioni; tuttavia è possibile utilizzare configurazioni diverse, modificando opportunamente i file \ttt{JSON} presenti nella cartella \ttt{configuration} presente nella root del progetto. Vengono fornite le seguenti regole:
+	Viene fornita una configurazione di base composta da 3 Regioni; tuttavia è possibile utilizzare configurazioni diverse, modificando opportunamente i file \ii{JSON} presenti nella cartella \ttt{configuration} presente nella root del progetto. Vengono fornite le seguenti regole per la definizione di una configurazione:
 	\begin{itemize}
 		\item \ttt{routes.json}: deve contenere un array di percorsi, identificato con chiave \ttt{routes}. Ciascun percorso dovrà essere dotato di:
 			\begin{itemize}
 				\item un campo \ttt{id} contenente l'identificativo univoco.
-				\item un array con chiave \ttt{route} composto da tappe, ciascuna con i seguenti campi:
+				\item un array identificato da \ttt{route} composto da tappe, ciascuna con i seguenti campi:
 					\begin{itemize}
 						\item \ttt{start\_station}: Indice della Stazione di partenza;
 						\item \ttt{next\_station}: Indice della Stazione di destinazione della tappa;
@@ -91,20 +96,20 @@
 		\item \ttt{links.json}: Contiene per ciascuna coppia ordinata di Regioni \ttt{<region1,region2>}, la lista delle stazioni di gateway che le collegano. Ciascun elemento di questa lista è una coppia \ttt{<regione,stazione\_gateway>}. 
 	\end{itemize}
 	
-	Una volta definita la configurazione, è necessario lanciare lo script \ttt{run.sh} nella cartella \ttt{configuration/shortest\_path}, specificando il file \ttt{[Node\_Name]-topology.json} e il nome del nodo (ad esempio, \ttt{sh run.sh Node\_1-topology.json Node\_1}), per ciascun nodo di simulazione. Questo genererà i file \ttt{[Node\_Name]-paths.json} contenenti i cammini minimi utilizzati per la creazione dei Tiket.
+	Una volta definita la configurazione, è necessario lanciare lo script \ttt{run.sh} nella cartella \ttt{configuration/shortest\_path}, specificando il file \\\ttt{[Node\_Name]-topology.json} e il nome del nodo (ad esempio, \ttt{sh run.sh Node\_1-topology.json Node\_1}), per ciascun nodo di simulazione. Questo genererà i file \ttt{[Node\_Name]-paths.json} contenenti i cammini minimi utilizzati per la creazione dei Tiket.
 	Infine, è necessario modificare lo script \ttt{run\_simulation.sh} aggiungendo i comandi per inizializzare i nodi di simulazione: per ciascun nodo dovrà essere aggiunto un comando nella forma:
 	\begin{verbatim}
 echo "Loading [Node_Name]..."
 gnome-terminal --title="[Node_Name]"
-    --command="sh railway/run.sh [Node_Name] [Node tcp address]"
+  --command="sh railway/run.sh [Node_Name] [TCP address + port]"
 echo "done"
 	\end{verbatim}
 	
 	\section{Visualizzazione della Simulazione}
 	
-	Per poter avere una rappresentazione grafica degli eventi generati dalla simulazione, è sufficiente aprire in una finestra del browser \ii{Chrome} la pagina all'indirizzo \ttt{http://localhost:9000}. Essa è composta da una parte dove è visibile la configurazione con Stazioni, Piattaforme, Treni e Passeggeri, e da una parte dove sono mostrati i Pannelli di notifica delle Stazioni. Nel corso della simulazione, è possibile che graficamente alcuni Treni si sovrappongano, ma questo è solo dovuto alla rappresentazione.
+	Per poter avere una rappresentazione grafica degli eventi generati dalla simulazione, è sufficiente aprire in una finestra del browser \ii{Chrome} la pagina all'indirizzo \ttt{http://localhost:9000}. La pagina che comparirà sarà composta da una parte dove è visibile la configurazione con Stazioni, Piattaforme, Treni e Passeggeri, e da una parte dove sono mostrati i Pannelli di notifica delle Stazioni\footnote{Nel corso della simulazione, è possibile che graficamente alcuni Treni si sovrappongano, ma questo è solo dovuto alla rappresentazione.}.
 	La rappresentazione grafica fornita, è relativa alla configurazione iniziale; nel caso in cui si volesse realizzare una nuova configurazione, è necessario creare una nuova applicazione grafica per essa.
 	
 	\section{Terminazione}
 	
-	La terminazione viene iniziata premendo il pulsante \ttt{Stop} disponibile nell'interfaccia grafica messa a disposizione dal Controller Centrale; al termine di tale procedura, esso può essere terminato semplicemente chiudendo la finestra grafica.
+	La terminazione viene iniziata premendo il pulsante \ttt{Stop} disponibile nell'interfaccia grafica messa a disposizione dal Controller Centrale; al termine di tale procedura, esso può essere terminato semplicemente chiudendo la finestra grafica, mentre il Server Http dovrà essere terminato a parte inviando un segnale \ttt{SIGTERM} (a tal proposito si rimanda alla pagina all'indirizzo \url{http://www.playframework.com/documentation/2.0/Production}).

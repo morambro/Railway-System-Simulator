@@ -10,3 +10,4 @@ server
 report/out/*
 *.bak
 old
+presentation/out/*

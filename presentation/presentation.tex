@@ -1,0 +1,62 @@
+\documentclass[slidestop,compress,blackandwhite]{beamer}
+
+\usepackage[utf8x]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{tikz}
+
+\usetheme{Frankfurt}
+\usecolortheme{default}
+
+\pgfdeclareimage[height=1.5cm]{logo}{imgs/unipd_logo}
+
+\setbeamercolor{block title}{fg=red,bg=structure!15}
+
+\setbeamercolor{block body}{bg=structure!15}
+
+% TITOLO
+\setbeamercovered{transparent}
+
+\author{Moreno Ambrosin}
+
+\title[Progetto esame di Sistemi Concorrenti e Distribuiti]{Railway Simulation}
+
+\institute[\insertframenumber/\inserttotalframenumber]{
+	\large{Università degli studi di Padova} \\
+	\vspace{5pt}
+	\normalsize Facoltà di Scienze MM. FF. NN. \\
+	\vspace{5pt}
+	\small Corso di laurea in Informatica
+}
+\date{23 settembre 2011}
+
+\newcommand{\itemB}[1]{
+	\item \textbf{#1}
+}
+
+\begin{document}
+	
+	\usebackgroundtemplate{
+		\hspace{0.13\paperwidth}\includegraphics[height=\paperheight]{imgs/logoUnipd}
+	}	
+	
+	\begin{frame}[c]
+		\titlepage
+	\end{frame}
+	
+	\logo{\pgfuseimage{logo}}
+	
+	\usebackgroundtemplate{}
+	
+	\begin{frame}
+		\frametitle{Indice}
+		\tableofcontents
+	\end{frame}
+	
+	\section{Contesto}
+	\begin{frame}
+		\frametitle{L'azienda}
+		YO
+	\end{frame}
+	
+\end{document}
+
