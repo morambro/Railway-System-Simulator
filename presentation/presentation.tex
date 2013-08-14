@@ -69,8 +69,28 @@
 \newcommand{\PRO}{\textbf{PRO:}}
 \newcommand{\CONTRO}{\textbf{CONTRO:}}
 
+\newcommand{\newtitle}[4]{
+	#1 
+	\ifx&#2&%
+	\else
+  		\large- #2
+	\fi
+	\ifx&#3&%
+	\else
+  		\normalsize- #3
+	\fi
+	\ifx&#4&%
+	\else
+  		\normalsize (#4)
+	\fi
+}
 
-\newcommand{\newframe}[2]{\begin{frame}\frametitle{#1}#2\end{frame}}
+\newcommand{\newframe}[5]{
+	\begin{frame}
+		\frametitle{\newtitle{#1}{#2}{#3}{#4}}
+		#5
+	\end{frame}
+}
 
 \newcommand{\itemt}[1]{\item (\ttt{#1})}
 \newcommand{\myitemize}[1]{\begin{itemize}#1\end{itemize}}
@@ -98,8 +118,8 @@
 	
 	\section{Il Problema}
 	\subsection{Descrizione}
-	\begin{frame}
-		\frametitle{Descrizione}
+	
+	\newframe{Descrizione}{}{}{}{
 		Simulatore software concorrente e distribuito, per la simulazione di un sistema ferroviario composto da:
 		\begin{itemize}
 			\item \treni, appartenenti a diverse categorie.
@@ -114,12 +134,11 @@
 			\item \segmenti~che collegano le diverse \stazioni.
 			\item un \controller~che mantiene lo stato di ciascun \treno~e di ciascun \viaggiatore~in transito.
 		\end{itemize}
-	\end{frame}
+	}
 	
 	\subsection{Requisiti di alto livello}\label{requirements}
-	\begin{frame}
 	
-		\frametitle{\nameref{requirements} - 1}
+	\newframe{\nameref{requirements}}{}{}{1}{
 		\textbf{Treno}
 		\begin{itemize}
 			\itemt{RT1} Ciascun \treno, appatiene ad una delle seguenti categorie: \ttt{FB} o \ttt{REG}.
@@ -132,12 +151,11 @@
 					\itemt{RT3.1} Il tragitto di ciascun \treno~è scandito da una \timetable, che definisce,per ciascuna \stage, l'orario di partenza.
 				\end{itemize}
 		\end{itemize}
-	\end{frame}
-
-	\begin{frame}
+	}
 	
-		\frametitle{\nameref{requirements} - 2}
-		
+	
+	\newframe{\nameref{requirements}}{}{}{2}{
+	
 		\begin{itemize}
 			\item[]
 			\begin{itemize} 
@@ -157,10 +175,9 @@
 			\itemt{RV1} Ciascun \viaggiatori~possiede una \stazione~di partenza ed una di destinazione.
 			\itemt{RV2} Per poter salire a bordo di un \treno, ciascun \viaggiatori~deve prima acquistare un \ticket~presso la \biglietteria~della \stazione~di partenza.
 		\end{itemize}
-	\end{frame}
+	}
 
-	\begin{frame}
-		\frametitle{\nameref{requirements} - 3}
+	\newframe{\nameref{requirements}}{}{}{3}{
 		\begin{itemize}
 			\itemt{RV3} Una volta arivato a destinazione, ciascun \viaggiatore~attende un tempo casuale prima di ritornare alla stazione di partenza.
 			\itemt{RV4} Il viaggio di ciascun \viaggiatore~può comprendere cambi di \treno.
@@ -171,10 +188,9 @@
 			\itemt{RS1} Ciascun \segmento~è ha un identificativo univoco, una lunghezza e una velocità massima di percorrenza; esso collega esattamente due \stazioni~diverse.
 			\itemt{RS2} Un \segmento~ha percorrenza bidirezionale; inoltre più \treni~possono percorrere il \segmento~nello stesso senso di marcia (percorrenza multipla).  
 		\end{itemize}
-	\end{frame}
+	}
 
-	\begin{frame}
-		\frametitle{\nameref{requirements} - 4}
+	\newframe{\nameref{requirements}}{}{}{4}{
 		\vspace{0.5cm}
 		\textbf{Stazione}
 		\begin{itemize}
@@ -187,24 +203,23 @@
 					\item Una biglietteria accessibile ai \viaggiatori, per l'acquisto del biglietto necessario.
 				\end{itemize}
 		\end{itemize} 
-	\end{frame}
+	}
 
 %###################################### DISTRIBUZIONE	
 
 	\section{Distribuzione}
 	
 	\subsection{Caratteristiche desiderabili}\label{characteristics}
-	\begin{frame}
-		\frametitle{\nameref{characteristics}}
+	\newframe{\nameref{characteristics}}{}{}{}{
 		\begin{itemize}
 			\itemB{Distribution Transparency}{}{1cm}
 			\itemB{Openess}{}{1cm}
 			\itemB{Scalability}{}{1cm} 
 		\end{itemize}
-	\end{frame}
+	}
 	
-	\begin{frame}
-		\frametitle{\nameref{characteristics} - Distribution Transparency}
+		
+	\newframe{\nameref{characteristics}}{Distribution Transparency}{}{}{
 		
 		Il sistema appare all'utilizzatore come un sistema monolitico.
 		\begin{itemize}
@@ -216,19 +231,18 @@
 		\end{itemize}
 		
 		Il grado di trasparenza da adottare dipende dal problema.
-		
-	\end{frame}
+	}
 	
-	\begin{frame}
-		\frametitle{\nameref{characteristics} - Openess}
+	
+	\newframe{\nameref{characteristics}}{Openess}{}{}{
 		Il sistema deve essere fruibile mediante un'interfaccia semplice.
 		
-	\end{frame}
+	}
 
 	
-	\subsection{Scelete progettuali}
-	\begin{frame}
-		\frametitle{Grado di distribuzione}
+	\subsection{Scelete progettuali}\label{scelte}
+	
+	\newframe{\nameref{scelte}}{}{}{}{
 		
 		Il grado di distribuzione da utilizzare va scelto con cura.
 		\begin{itemize}
@@ -238,11 +252,11 @@
 		
 		Analisi di tre soluzioni a grado di distribuzione diverso. 
 		
-	\end{frame}
+	}
 	
 	\subsection{Soluzione A}
-	\begin{frame}
-		\frametitle{Soluzione A - Grado di distribuzione elevato - 1}
+	
+	\newframe{Soluzione A}{Descrizione}{}{1}{
 		Primalla Soluzione valutata: tutte le entità risiedono su un diverso nodo di calcolo.
 		\begin{itemize}
 			\item Ciascuna \stazione, \treno~e \viaggiatore~esegue su uno specifico nodo di calcolo.  
@@ -251,20 +265,18 @@
 			\item Unice entità di \controller, che espone interfaccia remota a \treni~e \stazioni.
 			\item Server dei nomi presso il quale le entità si registrano all'avvio del sistema.
 		\end{itemize}
-	\end{frame}
+	}
 	
-	\begin{frame}
-		\frametitle{Soluzione A - Grado di distribuzione elevato - 1}
+	\newframe{Soluzione A}{Descrizione}{}{2}{
 		\begin{figure}
 			\includegraphics[scale=0.24,trim=0mm 5mm 0mm 20mm]{imgs/All_distributed.pdf}
 			\caption{\small{Grafico informale che illustra l'architettura di distribuzione di massima dellalla Soluzione presentata.}}
 		\end{figure}
-	\end{frame}
+	}
 	
 			
 	
-	\begin{frame}
-		\frametitle{Soluzione A - Grado di distribuzione elevato - 2}
+	\newframe{Soluzione A}{Valutazione}{}{1}{
 		\PRO
 			\begin{itemize}
 				\item Sistema scalabile in dimensione rispetto a \treni, \stazioni~e \viaggiatori.
@@ -273,10 +285,9 @@
 				\item \ii{Distribution Transparency} rispetto alle entità \ii{Monitor}.
 			\end{itemize}
 		
-	\end{frame}
+	}
 
-	\begin{frame}
-		\frametitle{Soluzione A - Grado di distribuzione elevato - 3}
+	\newframe{Soluzione A}{Valutazione}{}{2}{
 		\CONTRO
 			\begin{itemize}
 				\item Sincronizzazione in distribuito.
@@ -286,11 +297,10 @@
 				\item Elevato traffico di rete.
 				\item Terminazione e avvio del sistema complesse.
 			\end{itemize}
-		
-	\end{frame}
+	}
 	
 	\subsection{Soluzione B}
-	\newframe{Soluzione B - Grado di distribuzione contenuto - 1}{
+	\newframe{Soluzione B}{Descrizione}{}{1}{
 		Secondalla Soluzione valutata: entità di simulazione in un unico nodo di calcolo.
 		\begin{itemize}
 			\item Solo \controller~e \ii{monitor} distribuiti.
@@ -303,7 +313,7 @@
 		
 	}
 	
-	\newframe{Soluzione B - Grado di distribuzione contenuto - 2}{
+	\newframe{Soluzione B}{Valutazione}{}{1}{
 		\vspace{0.5cm}
 		\PRO
 			\begin{itemize}
@@ -317,7 +327,7 @@
 	}
 	
 	
-	\newframe{Soluzione B - Grado di distribuzione contenuto - 3}{
+	\newframe{Soluzione B}{Valutazione}{}{1}{
 		\vspace{0.5cm}
 		\CONTRO
 			\begin{itemize}
@@ -329,9 +339,9 @@
 			\end{itemize}
 	}
 	
-	\subsection{Soluzione C}
+	\subsection{Soluzione Adottata}
 	
-	\newframe{Soluzione C - Descrizione(1)}{
+	\newframe{Soluzione Adottata}{Descrizione}{}{1}{
 		\vspace{0.5cm}
 		\begin{itemize}
 			\item Soluzione intermedia che mitiga le problematiche riscontrate nelle Soluzioni A e B.
@@ -343,7 +353,7 @@
 	
 	}
 	
-	\newframe{Soluzione C - Descrizione(2)}{
+	\newframe{Soluzione Adottata}{Descrizione}{}{2}{
 		\vspace{0.5cm}
 		\myitemize{
 			\item Introduzione di più livelli di \biglietterie:
@@ -356,7 +366,7 @@
 		}
 	}
 	
-	\newframe{Soluzione C - Valutazione(1)}{
+	\newframe{Soluzione Adottata}{Valutazione}{}{1}{
 		\vspace{0.5cm}
 		\PRO
 		\begin{itemize}
@@ -368,7 +378,7 @@
 	
 	}
 	
-	\newframe{Soluzione C - Valutazione(2)}{
+	\newframe{Soluzione Adottata}{Valutazione}{}{2}{
 		\vspace{0.5cm}
 		\CONTRO
 		\begin{itemize}
@@ -379,7 +389,7 @@
 		\end{itemize}
 	}
 	
-	\newframe{Soluzione C - Requisiti}{
+	\newframe{Soluzione Adottata}{Requisiti}{}{}{
 		\vspace{0.5cm}
 		\textbf{Requisiti aggiuntivi}
 		\begin{itemize}
@@ -388,7 +398,7 @@
 		\end{itemize}
 	}
 	
-	\newframe{Soluzione C - Problematiche}{
+	\newframe{Soluzione Adottata}{Problematiche}{}{}{
 		\vspace{0.5cm}
 		\begin{enumerate}
 			\item Come rappresentare il trasferimento di \treni~e \viaggiatori~tra \regioni? 
@@ -399,7 +409,7 @@
 		\end{enumerate}
 	}
 	
-	\newframe{Soluzione C - Problematiche - Trasferimento remoto (1)}{
+	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{1}{
 		\vspace{0.5cm}
 		\myitemize{
 			\item Sono introdotte \gateways.
@@ -408,7 +418,7 @@
 		}
 	}
 	
-	\newframe{Soluzione C - Problematiche - Trasferimento remoto (2)}{
+	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{2}{
 		\vspace{0.5cm}
 		\myitemize{
 			\item Sono posti dei vincoli sull'utilizzo di \gateways:
@@ -420,7 +430,7 @@
 		}
 	}
 	
-	\newframe{Soluzione C - Problematiche - Trasferimento remoto (3)}{
+	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{3}{
 		\vspace{0.5cm}
 		\myitemize{
 			\item[] 
