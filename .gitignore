@@ -11,3 +11,4 @@ report/out/*
 *.bak
 old
 presentation/out/*
+presentation/*.pdf
