@@ -114,7 +114,7 @@
 		\tableofcontents
 	\end{frame}
 	
-	\setbeamertemplate{footline}[text line]{\parbox{\linewidth}{\vspace*{-8pt}\insertframenumber/\inserttotalframenumber\hfill Progetto Sistemi Concorrenti e Distribuiti\hfill}}
+	\setbeamertemplate{footline}[text line]{\parbox{\linewidth}{\vspace*{-8pt}\scriptsize\insertframenumber/\inserttotalframenumber\hfill Progetto Sistemi Concorrenti e Distribuiti\hfill}}
 	
 	\section{Il Problema}
 	\subsection{Descrizione}
@@ -213,8 +213,9 @@
 	\newframe{\nameref{characteristics}}{}{}{}{
 		\begin{itemize}
 			\itemB{Distribution Transparency}{}{1cm}
-			\itemB{Openess}{}{1cm}
-			\itemB{Scalability}{}{1cm} 
+			\itemB{Scalabilità}{}{1cm} 
+			\itemB{Avvio Ordinato}{}{1cm} 
+			\itemB{Terminazione Consitente}{}{1cm} 
 		\end{itemize}
 	}
 	
@@ -223,31 +224,41 @@
 		
 		Il sistema appare all'utilizzatore come un sistema monolitico.
 		\begin{itemize}
-			\item Deve fornire un unico metodo per accedere alle risorse (\ii{Access Transparency}).
-			\item Deve nascondere all'utente la locazione fisica delle risorse (\ii{Location Transparency}) e la loro migrazione (\ii{Migration Transparency}).
-			\item Deve nascondere all'utilizzatore finale la possibilità che le risorse siano replicate (\ii{Replication Transparency}).
-			\item Deve nascondere all'utente l'eventuale accesso concorrente ad una stessa risorsa condivisa (\ii{Concurrency Transparency}).
-			\item Deve rendere il sistema trasparente rispetto ai malfunzionamenti (\ii{Faliure Transparency}).
+			\item Unico metodo per accedere alle risorse (\ii{Access Transparency}).
+			\item Locazione fisica delle risorse (\ii{Location Transparency}) e la loro migrazione (\ii{Migration Transparency}) nascoste.
+			\item Sistema trasparente rispetto a replicazione delle risorse (\ii{Replication Transparency}).
+			\item Sistema trasparente rispetto ad accesso concorrente ad una risorsa condivisa (\ii{Concurrency Transparency}).
+			\item Sistema trasparente rispetto ai malfunzionamenti (\ii{Faliure Transparency}).
 		\end{itemize}
 		
 		Il grado di trasparenza da adottare dipende dal problema.
 	}
 	
 	
-	\newframe{\nameref{characteristics}}{Openess}{}{}{
-		Il sistema deve essere fruibile mediante un'interfaccia semplice.
-		
+	\newframe{\nameref{characteristics}}{Scalabilità}{}{}{
+		TODO...
 	}
 
+	
+	\newframe{\nameref{characteristics}}{Avvio Ordinato}{}{}{
+		TODO...
+	}
+	
+	
+	\newframe{\nameref{characteristics}}{Terminazione Consitente}{}{}{
+		TODO...
+	}
 	
 	\subsection{Scelete progettuali}\label{scelte}
 	
 	\newframe{\nameref{scelte}}{}{}{}{
 		
-		Il grado di distribuzione da utilizzare va scelto con cura.
 		\begin{itemize}
-			\item Pro e contro per diverse soluzioni possibili.
-			\item Analisi delle implicazioni.
+			\item Cosa distribuire e perché.
+			\item Analisi delle implicazioni:
+				\myitemize{
+					\item Valutazione di aspetti positivi e negativi
+				}
 		\end{itemize}
 		
 		Analisi di tre soluzioni a grado di distribuzione diverso. 
@@ -256,21 +267,21 @@
 	
 	\subsection{Soluzione A}
 	
-	\newframe{Soluzione A}{Descrizione}{}{1}{
-		Primalla Soluzione valutata: tutte le entità risiedono su un diverso nodo di calcolo.
-		\begin{itemize}
-			\item Ciascuna \stazione, \treno~e \viaggiatore~esegue su uno specifico nodo di calcolo.  
-			\item Le \stazioni~espongono un'interfaccia remota per l'iterazione con \treni~e \viaggiatori.
-			\item Unica entità \biglietteria, accessibile ai \viaggiatori~tramite interfaccia esposta dalle \stazioni.
-			\item Unice entità di \controller, che espone interfaccia remota a \treni~e \stazioni.
-			\item Server dei nomi presso il quale le entità si registrano all'avvio del sistema.
-		\end{itemize}
-	}
+%	\newframe{Soluzione A}{Descrizione}{}{1}{
+%		Prima Soluzione valutata: tutte le entità risiedono su un diverso nodo di calcolo.
+%		\begin{itemize}
+%			\item Ciascuna \stazione, \treno~e \viaggiatore~esegue su uno specifico nodo di calcolo.  
+%			\item Le \stazioni~espongono un'interfaccia remota per l'iterazione con \treni~e \viaggiatori.
+%			\item Unica entità \biglietteria, accessibile ai \viaggiatori~tramite interfaccia esposta dalle \stazioni.
+%			\item Unice entità di \controller, che espone interfaccia remota a \treni~e \stazioni.
+%			\item Server dei nomi presso il quale le entità si registrano all'avvio del sistema.
+%		\end{itemize}
+%	}
 	
 	\newframe{Soluzione A}{Descrizione}{}{2}{
 		\begin{figure}
-			\includegraphics[scale=0.24,trim=0mm 5mm 0mm 20mm]{imgs/All_distributed.pdf}
-			\caption{\small{Grafico informale che illustra l'architettura di distribuzione di massima dellalla Soluzione presentata.}}
+			\includegraphics[scale=0.24,trim=0mm 5mm 0mm 35mm]{imgs/All_distributed.pdf}
+			\caption{\scriptsize Grafico informale che illustra l'architettura di distribuzione di massima per la Soluzione A.}
 		\end{figure}
 	}
 	
@@ -366,6 +377,14 @@
 		}
 	}
 	
+	\newframe{Soluzione Adottata}{Descrizione}{}{3}{
+		\begin{figure}
+			\includegraphics[scale=0.28,trim=0mm 0mm 0mm 20mm]{imgs/solution.pdf}
+			\caption{\small Grafico informale che illustra l'architettura di distribuzione di massima dellalla Soluzione presentata.}
+		\end{figure}
+	}
+	
+	
 	\newframe{Soluzione Adottata}{Valutazione}{}{1}{
 		\vspace{0.5cm}
 		\PRO
@@ -401,7 +420,9 @@
 	\newframe{Soluzione Adottata}{Problematiche}{}{}{
 		\vspace{0.5cm}
 		\begin{enumerate}
-			\item Come rappresentare il trasferimento di \treni~e \viaggiatori~tra \regioni? 
+			\item Come viene effettuato il passaggio di un \treno~tra due \regioni? 
+			\vspace{0.4cm}
+			\item Come rappresentare il trasferimento di \treni~e \viaggiatori~tra i nodi? 
 			\vspace{0.4cm}
 			\item Come gestire le problematiche relative al tempo?
 			\vspace{0.4cm}
@@ -409,16 +430,16 @@
 		\end{enumerate}
 	}
 	
-	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{1}{
+	\newframe{Soluzione Adottata}{Problematiche}{Passaggio tra regioni}{1}{
 		\vspace{0.5cm}
 		\myitemize{
 			\item Sono introdotte \gateways.
-			\item Luogo unico dal quale i \treni~possono uscire dalla regione corrente e accedere a un'insieme di \regioni.
+			\item Luogo unico attraversano il quale i \treni~possono uscire dalla regione corrente e accedere a un'insieme di \regioni.
 			\item Una volta che un \treno~accede ad una \gateway~e viene trasferito su una regione $R'$, esso riprenderà il suo \route~dalla \gateway~corrispondente presso $R'$. 
 		}
 	}
 	
-	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{2}{
+	\newframe{Soluzione Adottata}{Problematiche}{Passaggio tra regioni}{2}{
 		\vspace{0.5cm}
 		\myitemize{
 			\item Sono posti dei vincoli sull'utilizzo di \gateways:
@@ -430,7 +451,7 @@
 		}
 	}
 	
-	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{3}{
+	\newframe{Soluzione Adottata}{Problematiche}{Passaggio tra regioni}{3}{
 		\vspace{0.5cm}
 		\myitemize{
 			\item[] 
@@ -439,7 +460,43 @@
 						$\Rightarrow$ Questo permette di mantenere locale alle regioni la competizione per l'accesso al \binario.	
 				}
 		}	
-	}	
+	}
+	
+	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{1}{
+		\myitemize{
+			\item \treni~e \viaggiatori~possono essere modellati in prima approssimazione come entità attive. 
+			\item Il passaggio di un \treno~(\viaggiatore) da una \regione~ad un'altra, prevede l'interruzione dell'esecuzione dell'entità nel nodo di partenza e la continuazione della stessa nel nodo di destinazione.
+				\myitemize{
+					\item Se a ciascun \treno~(\viaggiatore) viene associato ad un thread allora:
+						\myitemize{
+							\item Il trasferimento può essere ottenuto con distruzione-creazione del thread $\Rightarrow$ operazione costosa, preferibilmente da eseguire solo all'avvio del sistema.
+							\item Replicazione e attivazione-disattivazione dei thread nei nodi di destinazione e di partenza $\Rightarrow$ Soluzione non scalabile in termini di dimensione della popolazione, e onerosa in termini di risorse utilizzate. 
+						} 
+				}
+		}
+	}
+	
+	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{2}{
+		\myitemize{
+			\item Necessario disaccoppiare entità e operazioni eseguite da thread che la esegue.
+			\item Utilizzo di un \ii{thread pool} in cui ciascun thread esegue una sequenza di istruzioni per i \treni; il prossimo \treno~per il quale eseguire viene estratto da una \ii{coda} di oggetti rappresentanti un \treno.
+			\item Utilizzo di un \ii{thread pool}, i cui thread eseguono operazioni estratte da una \ii{coda} per i \viaggiatori. 
+		}
+	}
+
+
+	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{3}{
+		\vspace{0.5cm}
+		\myitemize{
+			\item Vengono replicati solo dei \ii{decrittori} di \treni~e \viaggiatori~su tutti i nodi (costo minimo).
+			\item Il trasferimento si concretizza in: 
+				\myitemize{
+					\item inserimento della prossima operazione da eseguire nella \ii{coda} di operazioni nel nodo destinazione, se l'entità da trasferire è un \viaggiatore;
+					\item inserimento del \treno~nella coda di \treni~nel nodo destinazione, se l'entità da trasferire è un \treno;
+				}
+		}
+		
+	}
 		
 \end{document}
 
