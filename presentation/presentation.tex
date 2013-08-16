@@ -4,6 +4,7 @@
 \usepackage[italian]{babel}
 \usepackage{tikz}
 \usepackage{nameref}
+\usepackage{scrextend}
 
 \usetheme{Antibes}
 \usecolortheme{default}
@@ -205,18 +206,53 @@
 		\end{itemize} 
 	}
 
-%###################################### DISTRIBUZIONE	
 
-	\section{Distribuzione}
+\section{Entià di Simulazione}\label{entities}
+
+	\newframe{\nameref{entities}}{}{}{}{
+		Indipendenti dalle scelte di progetto.
+		
+		\vspace{0.4cm}
+		\textbf{Treno} \\
+		
+			\begin{addmargin}[2em]{0em}
+			Entità \ii{attiva} caratterizzata da (...)
+			\end{addmargin}
+	
+		\textbf{Viaggiatore} \\
+		
+			\begin{addmargin}[2em]{0em}
+			Entità \ii{attiva} caratterizzata da (...)
+			\end{addmargin}
+		
+		\textbf{Stazione} \\
+		
+			\begin{addmargin}[2em]{0em}
+			Entità \ii{reattiva} caratterizzata da (...)
+			\end{addmargin}
+			
+		\textbf{Piattaforma} \\
+		
+			\begin{addmargin}[2em]{0em}
+			Entità \ii{reattiva} caratterizzata da (...)
+			\end{addmargin}
+	
+	}
+
+
+%###################################### DISTRIBUZIONE	
+\section{Distribuzione}
+
 	
 	\subsection{Caratteristiche desiderabili}\label{characteristics}
 	\newframe{\nameref{characteristics}}{}{}{}{
+		\vspace{0.5cm}
 		\begin{itemize}
-			\itemB{Distribution Transparency}{}{1cm}
-			\itemB{Scalabilità}{}{1cm} 
-			\itemB{Roubustezza ai fallimenti}{}{1cm} 
-			\itemB{Avvio Ordinato}{}{1cm} 
-			\itemB{Terminazione Consitente}{}{1cm} 
+			\itemB{Distribution Transparency}{}{0.6cm}
+			\itemB{Scalabilità}{}{0.6cm} 
+			\itemB{Roubustezza ai fallimenti}{}{0.6cm} 
+			\itemB{Avvio Ordinato}{}{0.6cm} 
+			\itemB{Terminazione in stato Consitente}{}{0.6cm} 
 		\end{itemize}
 	}
 	
@@ -255,8 +291,8 @@
 	\newframe{\nameref{scelte}}{}{}{}{
 		
 		\begin{itemize}
-			\item Cosa distribuire e perché.
-			\item Analisi delle implicazioni:
+			\item Cosa distribuire e perché
+			\item Analisi di possibili soluzioni
 				\myitemize{
 					\item Valutazione di aspetti positivi e negativi
 				}
