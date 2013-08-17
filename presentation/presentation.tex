@@ -47,8 +47,6 @@
 \newcommand{\stazioni}{\ii{stazioni}}
 \newcommand{\piattaforma}{\ii{piattaforma}}
 \newcommand{\piattaforme}{\ii{piattaforme}}
-\newcommand{\binario}{\ii{binario}}
-\newcommand{\binari}{\ii{binari}}
 \newcommand{\ticket}{\ii{biglietto}}
 \newcommand{\tickets}{\ii{biglietti}}
 \newcommand{\segmento}{\ii{segmento}}
@@ -69,6 +67,17 @@
 
 \newcommand{\PRO}{\textbf{PRO:}}
 \newcommand{\CONTRO}{\textbf{CONTRO:}}
+
+
+\newcommand{\cm}[1]{\vspace{#1cm}}
+
+\newcommand{\describe}[2]{
+	\textbf{#1}\\
+	\begin{addmargin}[2em]{0em}
+		#2
+	\end{addmargin}
+}
+
 
 \newcommand{\newtitle}[4]{
 	#1 
@@ -117,17 +126,17 @@
 	
 	\setbeamertemplate{footline}[text line]{\parbox{\linewidth}{\vspace*{-8pt}\scriptsize\insertframenumber/\inserttotalframenumber\hfill Progetto Sistemi Concorrenti e Distribuiti\hfill}}
 	
-	\section{Il Problema}
+	\section{Il Problema}\label{problem}
+	
 	\subsection{Descrizione}
 	
-	\newframe{Descrizione}{}{}{}{
+	\newframe{\nameref{problem}}{Descrizione}{}{}{
 		Simulatore software concorrente e distribuito, per la simulazione di un sistema ferroviario composto da:
 		\begin{itemize}
 			\item \treni, appartenenti a diverse categorie.
-			\item \viaggiatori, che operano azioni elementari come acquisto di \tickets, salita a bordo e discesa dai treni, attesa presso il \binario.
+			\item \viaggiatori, che operano azioni elementari come acquisto di \tickets, salita a bordo e discesa dai treni, attesa presso la \piattaforma.
 			\item \stazioni~composte da 
 				\begin{itemize}
-					\item \binari~interni di sosta per i \treni;
 					\item \piattaforme~di attesa per i \viaggiatori;
 					\item una \biglietteria~interna, accessibile ai \viaggiatori;
 					\item un \ii{pannello informativo}.
@@ -139,15 +148,16 @@
 	
 	\subsection{Requisiti di alto livello}\label{requirements}
 	
-	\newframe{\nameref{requirements}}{}{}{1}{
+	\newframe{\nameref{problem}}{\nameref{requirements}}{}{1}{
 		\textbf{Treno}
 		\begin{itemize}
 			\itemt{RT1} Ciascun \treno, appatiene ad una delle seguenti categorie: \ttt{FB} o \ttt{REG}.
 				\begin{itemize}
-					\itemt{RT1.1} La categoria \ttt{FB} ha priorità più alta rispetto a \ttt{REG} nell'accesso a \stazione, \piattaforme~e \binari.
+					\itemt{RT1.1} La categoria \ttt{FB} è a prenotazione. 
+					\itemt{RT1.2} La categoria \ttt{FB} ha priorità maggiore rispetto alla categoria \ttt{REG}. 
 				\end{itemize}
-			\itemt{RT2} Ciascun \treno~è caratterizzato da un identificativo univoco, e possiede capacità e velocità massime, e mantiene stazioni di partenza e destinazione.
-			\itemt{RT3} Ciascun \treno~effettua continuamente un tragitto simmetrico di andata e ritorno, definito da un \route~costituito da più \stages
+			\itemt{RT2} Ciascun \treno~è caratterizzato da un identificativo univoco, e possiede capienza e velocità massime, e mantiene stazioni di partenza e destinazione.
+			\itemt{RT3} Ciascun \treno~effettua ripetutamente un tragitto di andata e ritorno, definito da un \route~costituito da più \stages.
 				\begin{itemize}
 					\itemt{RT3.1} Il tragitto di ciascun \treno~è scandito da una \timetable, che definisce,per ciascuna \stage, l'orario di partenza.
 				\end{itemize}
@@ -155,7 +165,7 @@
 	}
 	
 	
-	\newframe{\nameref{requirements}}{}{}{2}{
+	\newframe{\nameref{problem}}{\nameref{requirements}}{}{2}{
 	
 		\begin{itemize}
 			\item[]
@@ -178,7 +188,7 @@
 		\end{itemize}
 	}
 
-	\newframe{\nameref{requirements}}{}{}{3}{
+	\newframe{\nameref{problem}}{\nameref{requirements}}{}{3}{
 		\begin{itemize}
 			\itemt{RV3} Una volta arivato a destinazione, ciascun \viaggiatore~attende un tempo casuale prima di ritornare alla stazione di partenza.
 			\itemt{RV4} Il viaggio di ciascun \viaggiatore~può comprendere cambi di \treno.
@@ -186,20 +196,19 @@
 		\vspace{0.5cm}
 		\textbf{Segmento}
 		\begin{itemize}
-			\itemt{RS1} Ciascun \segmento~è ha un identificativo univoco, una lunghezza e una velocità massima di percorrenza; esso collega esattamente due \stazioni~diverse.
+			\itemt{RS1} Ciascun \segmento~ha un identificativo univoco, una lunghezza e una velocità massima di percorrenza; esso collega due \stazioni~diverse.
 			\itemt{RS2} Un \segmento~ha percorrenza bidirezionale; inoltre più \treni~possono percorrere il \segmento~nello stesso senso di marcia (percorrenza multipla).  
 		\end{itemize}
 	}
 
-	\newframe{\nameref{requirements}}{}{}{4}{
+	\newframe{\nameref{problem}}{\nameref{requirements}}{}{4}{
 		\vspace{0.5cm}
 		\textbf{Stazione}
 		\begin{itemize}
 			\itemt{RST1} Ciascuna \stazione~è caratterizzata da un identificativo univoco.
 			\itemt{RST2} Ciascuna \stazione~contiene:
 				\begin{itemize}
-					\item Un certo numero $N$ di \binari~di sosta per i \treni, a percorrenza bidirezionale e ad accesso mutuamente esclusivo.
-					\item Un certo numero $N$ di \piattaforme~per l'attesa dei passeggeri.
+					\item Un certo numero $N$ di \piattaforme~per la sosta dei \treni, a percorrenza bidirezionale e ad accesso mutuamente esclusivo, e per l'attesa dei \viaggiatori.
 					\item Un \ii{pannello informativo} che riporta informazioni su \treni~in arrivo, in transito, e che hanno appena superato la \stazione.
 					\item Una biglietteria accessibile ai \viaggiatori, per l'acquisto del biglietto necessario.
 				\end{itemize}
@@ -207,52 +216,37 @@
 	}
 
 
-\section{Entià di Simulazione}\label{entities}
+	
+	\subsection{Entità di Simulazione}\label{entities}
 
-	\newframe{\nameref{entities}}{}{}{}{
-		Indipendenti dalle scelte di progetto.
+	\newframe{\nameref{problem}}{\nameref{entities}}{}{}{
+		Indipendenti dalle scelte di distribuzione.
 		
-		\vspace{0.4cm}
-		\textbf{Treno} \\
-		
-			\begin{addmargin}[2em]{0em}
-			Entità \ii{attiva} caratterizzata da (...)
-			\end{addmargin}
+		\vspace{0.2cm}
+		\describe{Treno}{Entità \ii{attiva}.}
 	
-		\textbf{Viaggiatore} \\
+		\describe{Viaggiatore}{Entità \ii{attiva}.}
 		
-			\begin{addmargin}[2em]{0em}
-			Entità \ii{attiva} caratterizzata da (...)
-			\end{addmargin}
+		\describe{Segmento}{Entità \ii{reattiva} con agente di controllo, a molteplicità $N>1$.}
 		
-		\textbf{Stazione} \\
+		\describe{Piattaforma}{Entità \ii{reattiva} con agente di controllo, a molteplicità $1$.}
 		
-			\begin{addmargin}[2em]{0em}
-			Entità \ii{reattiva} caratterizzata da (...)
-			\end{addmargin}
-			
-		\textbf{Piattaforma} \\
-		
-			\begin{addmargin}[2em]{0em}
-			Entità \ii{reattiva} caratterizzata da (...)
-			\end{addmargin}
-	
+		\describe{Stazione}{Struttura dati che contiene $n\ge1$ \piattaforme, una \biglietteria~e un \ii{pannello informativo}. Fornisce un'interfaccia per l'interazione con \piattaforme~e \biglietteria.}
 	}
 
 
 %###################################### DISTRIBUZIONE	
-\section{Distribuzione}
+\section{Distribuzione}\label{distr}
 
-	
 	\subsection{Caratteristiche desiderabili}\label{characteristics}
-	\newframe{\nameref{characteristics}}{}{}{}{
+	\newframe{\nameref{distr}}{\nameref{characteristics}}{}{}{
 		\vspace{0.5cm}
 		\begin{itemize}
 			\itemB{Distribution Transparency}{}{0.6cm}
 			\itemB{Scalabilità}{}{0.6cm} 
 			\itemB{Roubustezza ai fallimenti}{}{0.6cm} 
 			\itemB{Avvio Ordinato}{}{0.6cm} 
-			\itemB{Terminazione in stato Consitente}{}{0.6cm} 
+			\itemB{Terminazione in stato Consitente}{}{0.6cm}
 		\end{itemize}
 	}
 	
@@ -288,80 +282,81 @@
 	
 	\subsection{Scelete progettuali}\label{scelte}
 	
-	\newframe{\nameref{scelte}}{}{}{}{
+	\newframe{\nameref{distr}}{\nameref{scelte}}{}{}{
 		
 		\begin{itemize}
-			\item Cosa distribuire e perché
-			\item Analisi di possibili soluzioni
+			\item Criteri di distribuzione.
+				\myitemize{
+					\item Individuazione delle componenti da distribuire.
+				}
+			\item Analisi di più soluzioni possibili.
 				\myitemize{
 					\item Valutazione di aspetti positivi e negativi
 				}
+			\item Modalità di comunicazione tra le componenti distribuite.
 		\end{itemize}
 		
 		Analisi di tre soluzioni a grado di distribuzione diverso. 
 		
 	}
 	
-	\subsection{Soluzione A}
+	\subsection{Soluzione A}\label{sol_a}
 	
 %	\newframe{Soluzione A}{Descrizione}{}{1}{
 %		Prima Soluzione valutata: tutte le entità risiedono su un diverso nodo di calcolo.
 %		\begin{itemize}
 %			\item Ciascuna \stazione, \treno~e \viaggiatore~esegue su uno specifico nodo di calcolo.  
-%			\item Le \stazioni~espongono un'interfaccia remota per l'iterazione con \treni~e \viaggiatori.
+%			\item Le \stazioni~espongono un'interfaccia remota per l'iterazione con \treni~e \vi43aggiatori.
 %			\item Unica entità \biglietteria, accessibile ai \viaggiatori~tramite interfaccia esposta dalle \stazioni.
 %			\item Unice entità di \controller, che espone interfaccia remota a \treni~e \stazioni.
 %			\item Server dei nomi presso il quale le entità si registrano all'avvio del sistema.
 %		\end{itemize}
 %	}
 	
-	\newframe{Soluzione A}{Descrizione}{}{2}{
+	\newframe{\nameref{distr}}{\nameref{sol_a}}{Descrizione}{}{
 		\begin{figure}
 			\includegraphics[scale=0.24,trim=0mm 5mm 0mm 35mm]{imgs/All_distributed.pdf}
-			\caption{\scriptsize Grafico informale che illustra l'architettura di distribuzione di massima per la Soluzione A.}
+			\caption{\scriptsize Grafico informale che illustra l'architettura di distribuzione di massima per la Soluzione A; tutte le entità sono distribuite.}
 		\end{figure}
 	}
 	
 			
 	
-	\newframe{Soluzione A}{Valutazione}{}{1}{
+	\newframe{\nameref{distr}}{\nameref{sol_a}}{Valutazione}{1}{
 		\PRO
+			\vspace{0.5cm}
 			\begin{itemize}
 				\item Sistema scalabile in dimensione rispetto a \treni, \stazioni~e \viaggiatori.
-				\item Robusto rispetto a malfunzionamenti di \treni, \stazioni~e \viaggiatori, con impatto ridotto sull'intero sistema.
-%				\item Guadagno in termini di \ii{Location Transparency}.
+				\vspace{0.5cm}
+				\item Robusto rispetto a fallimenti HW e SW a livello di \treni, \stazioni~e \viaggiatori, con impatto ridotto sull'intero sistema.
+				\vspace{0.5cm}
 				\item \ii{Distribution Transparency} rispetto alle entità \ii{Monitor}.
 			\end{itemize}
 		
 	}
 
-	\newframe{Soluzione A}{Valutazione}{}{2}{
+	\newframe{\nameref{distr}}{\nameref{sol_a}}{Valutazione}{2}{
 		\CONTRO
 			\begin{itemize}
 				\item Sincronizzazione in distribuito.
 				\item Differenza tra i clock fisici delle macchine che compongono il sistema possono creare inconsistenze.
 				\item La \biglietteria~deve mantenere tutta l'informazione relativa alla topologia del sistema ferroviario, e allo stato di prenotazione dei \treni.
 				\item Rischio di comunicazioni errate, a causa dell'inaffidabilità della rete; conseguente perdita di performance. 
-				\item Elevato traffico di rete.
-				\item Terminazione e avvio del sistema complesse.
+				\item Elevato traffico di rete al crescere della topologia.
+				\item Operazioni di terminazione e avvio del sistema complesse.
 			\end{itemize}
 	}
 	
-	\subsection{Soluzione B}
-	\newframe{Soluzione B}{Descrizione}{}{1}{
-		Secondalla Soluzione valutata: entità di simulazione in un unico nodo di calcolo.
-		\begin{itemize}
-			\item Solo \controller~e \ii{monitor} distribuiti.
-		\end{itemize}
-		
+	\subsection{Soluzione B}\label{sol_b}
+	\newframe{\nameref{distr}}{\nameref{sol_b}}{Descrizione}{}{
 		\begin{figure}
-			\includegraphics[scale=0.22,trim=0mm 5mm 0mm 0mm]{imgs/nothing_distributed.pdf}
-			\caption{\small Grafico informale che illustra l'architettura di distribuzione di massima dellalla Soluzione presentata.}
+			\includegraphics[scale=0.22,trim=0mm 0mm 0mm 0mm]{imgs/nothing_distributed.pdf}
+			\caption{\small Grafico informale che illustra l'architettura di distribuzione di massima della Soluzione B; solo \controller~e componente di visualizzazione (\ii{monitor}) sono distribuite.}
 		\end{figure}
 		
 	}
 	
-	\newframe{Soluzione B}{Valutazione}{}{1}{
+	\newframe{\nameref{distr}}{\nameref{sol_b}}{Valutazione}{1}{
 		\vspace{0.5cm}
 		\PRO
 			\begin{itemize}
@@ -375,54 +370,78 @@
 	}
 	
 	
-	\newframe{Soluzione B}{Valutazione}{}{1}{
-		\vspace{0.5cm}
+	\newframe{\nameref{distr}}{\nameref{sol_b}}{Valutazione}{2}{
+		\cm{0.5}
 		\CONTRO
 			\begin{itemize}
 				\item Di scarso interesse.
-				\item Fragile rispetto a malfunzionamenti.
+				\item Fragile rispetto a fallimenti HW e SW, che hanno grande impatto sull'intero sistema.
 				\item Non scalabile.
 				\item Conoscenza su Topologia e Stato in un unico luogo.
 				\item Carico computazionele elevato sul singolo nodo di simulazione.
 			\end{itemize}
 	}
 	
-	\subsection{Soluzione Adottata}
+
+\section{Concorrenza}\label{concurrency}
+
+	\subsection{Caratteristiche Desiderabili}
+	\newframe{\nameref{concurrency}}{Caratteristiche Desiderabili}{}{}{
+		\cm{0.5}
+		\myitemize{
+			\item La progettazione deve essere il più possibile indipendente dalle tecnologie.
+			\cm{0.5}
+			\item La scelta del modello di concorrenza è legata alla natura del problema e alle scelte di distribuzione.
+			\cm{0.5}
+			\item La soluzione ai problemi di concorrenza deve evitare situazioni di \ii{stallo} o di \ii{starvation}.
+		}
+	}
 	
-	\newframe{Soluzione Adottata}{Descrizione}{}{1}{
+	\newframe{\nameref{concurrency}}{Interazione Treno - Segmento}{}{}{
+	
+		
+		
+	}
+	
+
+% ################################################## SOLUTION ###################################################
+\section{Soluzione Adottata}\label{sol}
+	
+	\subsection{Distribuzione}\label{sol_distr}
+	
+	\newframe{\nameref{sol}}{\nameref{sol_distr}}{Descrizione}{1}{
 		\vspace{0.5cm}
 		\begin{itemize}
 			\item Soluzione intermedia che mitiga le problematiche riscontrate nelle Soluzioni A e B.
 			\item Introduzione di \regioni~per distribuire il carico computazionale su nodi diversi
+			\item Ciascuna \regione~è composta da un insieme di \stazioni e di \segmenti, e contiene \treni~e \viaggiatori.
 			\item Ciascuna \regione~risiede su un proprio nodo di calcolo.
-			\item In ciascuna \regione~vi sono un certo numero di \stazioni, di \segmenti, di \treni~e di \viaggiatori.
-			\item Necessario l'utilizzo di un \ii{Server dei Nomi} per lookup degli indirizzi delle varie \regioni.
+			\item \`E necessario l'utilizzo di un \ii{Server dei Nomi} per lookup degli indirizzi delle varie \regioni.
 		\end{itemize}
 	
 	}
 	
-	\newframe{Soluzione Adottata}{Descrizione}{}{2}{
+	\newframe{\nameref{sol}}{\nameref{sol_distr}}{Descrizione}{2}{
 		\vspace{0.5cm}
 		\myitemize{
 			\item Introduzione di più livelli di \biglietterie:
 				\myitemize{
 					\item \ii{interne alle stazioni:} Forniscono da interfaccia per accedere alle biglietterie regionali.
 					\item \ii{regionali:} Hanno conoscenza della topologia interna a ciascuna regione; si occupano della creazione dei \tickets.
-					\item \ii{centrale:} Mantiene lo stato di prenotazione dei \treni~\ttt{FB}
+					\item \ii{centrale:} Mantiene lo stato di prenotazione dei \treni~\ttt{FB} e coordina le creazione di \tickets~interregionali.
 				}
 			\item L'entità di \controller~è centralizzata, e raccoglie lo stato della simulazione; esso si occupa inoltre delle procedure di Avvio e Terminazione del sistema.
 		}
 	}
 	
-	\newframe{Soluzione Adottata}{Descrizione}{}{3}{
-		\begin{figure}
+	\newframe{\nameref{sol}}{\nameref{sol_distr}}{Descrizione}{3}{
+	\begin{figure}
 			\includegraphics[scale=0.28,trim=0mm 0mm 0mm 20mm]{imgs/solution.pdf}
 			\caption{\small Grafico informale che illustra l'architettura di distribuzione di massima dellalla Soluzione presentata.}
 		\end{figure}
 	}
 	
-	
-	\newframe{Soluzione Adottata}{Valutazione}{}{1}{
+	\newframe{\nameref{sol}}{\nameref{sol_distr}}{Valutazione}{1}{
 		\vspace{0.5cm}
 		\PRO
 		\begin{itemize}
@@ -434,26 +453,29 @@
 	
 	}
 	
-	\newframe{Soluzione Adottata}{Valutazione}{}{2}{
+	\newframe{\nameref{sol}}{\nameref{sol_distr}}{Valutazione}{2}{
 		\vspace{0.5cm}
 		\CONTRO
 		\begin{itemize}
 			\item Rimane il problema dei clock fisici non sincronizzati, anche se con impatto minore rispetto alla Soluzione A.
 			\item Maggiore complessità di Avvio e Terminazione del sistema rispetto alla Soluzione B.
-			\item Meno robusta ai fallimenti rispetto alla Soluzione A .
+			\item Meno robusta ai fallimenti HW e SW, rispetto alla Soluzione A .
 			\item Maggiore traffico di rete rispetto alla Soluzione B
 		\end{itemize}
 	}
 	
-	\newframe{Soluzione Adottata}{Requisiti}{}{}{
-		\vspace{0.5cm}
+	\newframe{Soluzione Adottata}{Requisiti Aggiuntivi}{}{}{
+		\cm{0.5}
 		\textbf{Requisiti aggiuntivi}
+		\cm{0.5}
 		\begin{itemize}
 			\itemt{RT5} I \treni~possono compiere tragitti che attraversano più \regioni.
+			\cm{0.5}	
 			\itemt{RV5} I \viaggiatori~possono viaggiare attreverso più \regioni.
 		\end{itemize}
 	}
 	
+	\subsection{Problematiche}
 	\newframe{Soluzione Adottata}{Problematiche}{}{}{
 		\vspace{0.5cm}
 		\begin{enumerate}
@@ -462,52 +484,47 @@
 			\item Come rappresentare il trasferimento di \treni~e \viaggiatori~tra i nodi? 
 			\vspace{0.4cm}
 			\item Come gestire le problematiche relative al tempo?
-			\vspace{0.4cm}
-			\item Come organizzare avvio e terminazione del sistema?
+%			\vspace{0.4cm}
+%			\item Come organizzare avvio e terminazione del sistema?
 		\end{enumerate}
 	}
 	
 	\newframe{Soluzione Adottata}{Problematiche}{Passaggio tra regioni}{1}{
 		\vspace{0.5cm}
 		\myitemize{
-			\item Sono introdotte \gateways.
-			\item Luogo unico attraversano il quale i \treni~possono uscire dalla regione corrente e accedere a un'insieme di \regioni.
-			\item Una volta che un \treno~accede ad una \gateway~e viene trasferito su una regione $R'$, esso riprenderà il suo \route~dalla \gateway~corrispondente presso $R'$. 
+			\item Introduzione di \gateways.
+			\vspace{0.3cm}
+			\item \stazioni~attreverso le quali i \treni~possono uscire dalla \regione~corrente.
+			\vspace{0.3cm}
+			\item Una volta che un \treno~accede ad una \gateway~presso la \regione~$R$, e viene trasferito su una \regione~$R'$, esso riprenderà il suo \route~dalla \gateway~corrispondente presso $R'$. 
+			\item Analogia con i \ii{gateways} di rete.
 		}
 	}
 	
 	\newframe{Soluzione Adottata}{Problematiche}{Passaggio tra regioni}{2}{
 		\vspace{0.5cm}
 		\myitemize{
-			\item Sono posti dei vincoli sull'utilizzo di \gateways:
+			\item Sono posti i seguenti vincoli sull'utilizzo di \gateways:
 				\myitemize{
-					\item Siano $g$ ed $g'$ \gateways~appartenenti rispettivamente a due \regioni~$R$ ed $R'$. Allora se da $g$ è possibile raggiungere $g'$ in modo diretto (e viceversa), allora $!\exists g''$ appartenente a $R$ tale per cui da $g''$ si può raggiungere $g'$.\\
-					$\Rightarrow$ In questo modo, dal punto di vista dei \treni, $g$ e $g'$ saranno la stessa \stazione~logica.
+					%\item Siano $g$ ed $g'$ \gateways~appartenenti rispettivamente a due \regioni~$R$ ed $R'$. Allora se da $g$ è possibile raggiungere $g'$ in modo diretto (e viceversa), allora $!\exists g''$ appartenente a $R$ tale per cui da $g''$ si può raggiungere $g'$.\\
+					%$\Rightarrow$ In questo modo, dal punto di vista dei \treni, $g$ e $g'$ saranno la stessa \stazione~logica.
+					\item Se la \regione~$R'$ è raggiungibile dalla \regione~$R$, allora esiste un'unica \gateway~$\in R$ che permette di raggiungere $R'$
+					\item \gateways~appartenenti a \regioni~diverse collegate sono considerate a livello logico come un'unica \stazione.
 				
 				}
 		}
 	}
 	
-	\newframe{Soluzione Adottata}{Problematiche}{Passaggio tra regioni}{3}{
-		\vspace{0.5cm}
-		\myitemize{
-			\item[] 
-				\myitemize{
-					\item I \binari~di sosta per i \treni, interni a ciascuna \gateway, sono unidirezionali. Inoltre, ciascuna \gateway~avrà $p_1,p_2,...,p_m$ \binari~per permettere l'uscita dalla \regione~corrente, e $p_{m+1},p_{m+2},...,p_k$ \binari~per consentire l'arrivo dei \treni provenienti da altre stazioni. I \binari~$p_1,p_2,...,p_m$ avranno il loro corrispettivo presso le altre \gateways~connesse per permettere l'arrivo dei treni provenienti dalla \regione~corrente. Il numero di \binari~(e \piattaforme) date  $g_1,g_2,...,g_n$ \gateways, è $sum_{i=1}^{n} m_i$.\\
-						$\Rightarrow$ Questo permette di mantenere locale alle regioni la competizione per l'accesso al \binario.	
-				}
-		}	
-	}
 	
 	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{1}{
 		\myitemize{
-			\item \treni~e \viaggiatori~possono essere modellati in prima approssimazione come entità attive. 
-			\item Il passaggio di un \treno~(\viaggiatore) da una \regione~ad un'altra, prevede l'interruzione dell'esecuzione dell'entità nel nodo di partenza e la continuazione della stessa nel nodo di destinazione.
+			\item Il passaggio di un \treno~( o di un \viaggiatore) da una \regione~ad un'altra, prevede l'interruzione dell'esecuzione dell'entità nel nodo di partenza e la continuazione della stessa nel nodo di destinazione.
+			\item Come è opportuno mappare ciascuna entità attiva?
 				\myitemize{
 					\item Se a ciascun \treno~(\viaggiatore) viene associato ad un thread allora:
 						\myitemize{
-							\item Il trasferimento può essere ottenuto con distruzione-creazione del thread $\Rightarrow$ operazione costosa, preferibilmente da eseguire solo all'avvio del sistema.
-							\item Replicazione e attivazione-disattivazione dei thread nei nodi di destinazione e di partenza $\Rightarrow$ Soluzione non scalabile in termini di dimensione della popolazione, e onerosa in termini di risorse utilizzate. 
+							\item Il trasferimento può essere ottenuto con distruzione e creazione dei thread associati a \treni~e \viaggiatori~$\Rightarrow$ operazione costosa, preferibilmente da eseguire solo all'avvio del sistema.
+							\item Replicazione e attivazione-disattivazione dei thread rispettivamente nei nodi di destinazione e di partenza $\Rightarrow$ Soluzione non scalabile in termini di dimensione della popolazione, e onerosa in termini di risorse utilizzate. 
 						} 
 				}
 		}
@@ -515,25 +532,130 @@
 	
 	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{2}{
 		\myitemize{
-			\item Necessario disaccoppiare entità e operazioni eseguite da thread che la esegue.
-			\item Utilizzo di un \ii{thread pool} in cui ciascun thread esegue una sequenza di istruzioni per i \treni; il prossimo \treno~per il quale eseguire viene estratto da una \ii{coda} di oggetti rappresentanti un \treno.
-			\item Utilizzo di un \ii{thread pool}, i cui thread eseguono operazioni estratte da una \ii{coda} per i \viaggiatori. 
-		}
-	}
-
-
-	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{3}{
-		\vspace{0.5cm}
-		\myitemize{
-			\item Vengono replicati solo dei \ii{decrittori} di \treni~e \viaggiatori~su tutti i nodi (costo minimo).
-			\item Il trasferimento si concretizza in: 
+			\item Necessario disaccoppiare le Entità e le operazioni da eseguire, dai thread che le eseguono.
 				\myitemize{
-					\item inserimento della prossima operazione da eseguire nella \ii{coda} di operazioni nel nodo destinazione, se l'entità da trasferire è un \viaggiatore;
-					\item inserimento del \treno~nella coda di \treni~nel nodo destinazione, se l'entità da trasferire è un \treno;
+					\item In questo modo si trasferiscono solo le informazioni relative all'entità da eseguire (non i thread).
+					\item I dati di ciascuna entità sono replicati in tutti i nodi di simulazione, e solamente aggiornati nel momento del trasferimento.	
 				}
 		}
+		\describe{Viaggiatore}{
+			\myitemize{
+				\item Definito come:
+					\myitemize{
+						\item Descrittore, che contiene i dati relativi al \viaggiatore;
+						\item Insieme di \ii{operazioni} da eseguire su di esso.
+					}
+				\item \ii{operazioni} eseguite da una struttura composta da un \ii{thread pool} a dimensione statica, e da una coda FIFO di operazioni.
+				\item Per eseguire la prossima operazione, essa viene inserita nella coda\\
+				$\Rightarrow$ trasferimento del \viaggiatore~realizzato con aggiornamento dei dati relativi al \viaggiatore~e inserimento della prossima \ii{operazione} da eseguire nella coda di operazioni, del nodo destinazione. 
+			}
+		}
+		
 		
 	}
+	
+	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{3}{
+		\describe{Treno}{
+			\myitemize{
+				\item Ciascun \treno~è rappresentato da un \ii{descrittore}, che contiene i dati che lo caratterizzano.
+				\item Viene utilizzata una struttura composta da un \ii{thread pool} a dimensione statica, e da una coda FIFO di \ii{descrittori}.\\
+				\item Ciascun thread del pool esegue una sequenza fissata di operazioni per il prossimo \treno~estratto dalla coda di \ii{descrittori}.\\
+				$\Rightarrow$ trasferimento di un \treno~realizzato con aggiornamento dei dati relativi al \treno~e inserimento del \ii{descrittore} nella coda apposita, presso al nodo destinazione.
+			}
+		}
 		
+	}
+	
+	\newframe{Soluzione Adottata}{Problematiche}{Trasferimento remoto}{4}{
+		\textbf{Problema:} Come dimensionare il \ii{thread pool}?
+		\myitemize{
+			\item Dipende dai protocolli logici di interazione tra entità attive e reattive;
+			\item Scelta tra dimensione \ii{statica} o \ii{dinamica}.
+		}
+	}
+	
+	\newframe{Soluzione Adottata}{Problematiche}{Consitenza Temporale}{}{
+		\myitemize{
+			\item La differenza tra gli orologi fisici delle macchine che compongono il sistema e il ritardo di rete possono generare inconsistenze, in riferimento ai \treni.
+%			\item es: un \treno~arriva presso una piattaforma di una \gateway~in orario, al tempo $t$, e dopo il trasferimento si aggiunge un ritardo $\Delta t$.
+			\item Adottando \ii{tabelle orarie} che definiscono solo orari di partenza:
+				\myitemize{
+					\item I ritardi di rete (o dovuti al clock fisico) sono considerati come ritardi dei \treni~della simualzione
+					\item Se il clock del nodo destinazione è in anticipo rispetto al clock del nodo do partenza, allora il \treno~trasferito viene considerato in anticipo (può prolungare la sua attesa).
+				}
+			\item Le differenze vengono accettate.
+		}
+	}
+	
+	\subsection{Concorrenza}\label{sol_conc}
+	
+	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Scelte Implementative}{}{
+		\myitemize{
+			\item Scelta del modello di concorrenza da utilizzare.
+			\item Valutazione di modelli differenti:
+				\myitemize{
+					\item \ii{Modello ad Attori}
+						\myitemize{
+							\itemB{PRO:}{Disaccoppiamento a modello, tra \ii{attore} e thread che lo esegue;}{0cm}
+							\itemB{CONTRO:}{
+									utilizzo di agenti di controllo \ii{server} per le entità reattive e terminazione complessa;
+							}{0cm}
+						}
+					\item \ii{Modello a monitor di hoare}
+						\myitemize{
+							\itemB{PRO:}{Più adatto alle caratteristiche del problema, terminazione semplice delle entità reattive (uscita da scope).}{0cm}
+							\itemB{CONTRO:}{Definizione delle interazioni più complessa, e soggetta ad errori.}{0cm}
+						}
+				}
+			\item Scelta del modello a \ii{monitor}.
+		}
+	}
+	
+	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Problematiche}{}{
+		
+		\begin{columns}[c]
+		\column{0.5\textwidth}
+		\begin{enumerate}
+			\item Vincoli di accesso ad un \segmento:
+				\myitemize{
+					\item accesso concorrente tra le entità \treno~intendono accedervi in entrambi i sensi di marcia;
+					\item percorrenza multipla in un unico senso di marcia;
+					\item mantenimento dell'ordine di accesso;
+					\item simulazione della percorrenza dei \treni.
+					\item priorità ai \treni~di tipo \ttt{FB}.
+				}
+		\end{enumerate}
+		\column{0.5\textwidth}
+		\begin{figure}
+			\includegraphics[scale=0.26,trim=0mm 5mm 0mm 35mm]{imgs/ingresso_segmento.pdf}
+			%\caption{\scriptsize Grafico informale che illustra l'architettura di distribuzione di massima per la Soluzione A; tutte le entità sono distribuite.}
+		\end{figure}
+		\end{columns}
+	}
+	
+	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Problematiche}{2}{
+		\begin{columns}[c]
+		\column{0.6\textwidth}
+		\begin{enumerate}
+			\setcounter{enumi}{1}
+			\item Vincoli di uscita da un \segmento:
+				\myitemize{
+					\item uscita ordinata dei \treni~in transito secondo l'ordine di accesso.
+				}
+			\item Vincoli di Accesso ad una \piattaforma:
+				\myitemize{
+					\item accesso in mutua esclusione, ordinato rispetto ai \treni~provenienti dallo stesso \segmento;
+					\item accesso in mutua esclusione, concorente rispetto a \treni~provenienti da \segmenti~diversi;
+					\item priorità ai \treni~di tipo \ttt{FB}.
+				}
+		\end{enumerate}
+		\column{0.5\textwidth}
+		\begin{figure}
+			\includegraphics[scale=0.27,trim=30mm 0mm 0mm 0mm]{imgs/Ingresso_Stazione.pdf}
+			%\caption{\scriptsize Grafico informale che illustra l'architettura di distribuzione di massima per la Soluzione A; tutte le entità sono distribuite.}
+		\end{figure}
+		\end{columns}
+	}
+	
 \end{document}
 
