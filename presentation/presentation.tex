@@ -149,6 +149,47 @@
 	\subsection{Requisiti di alto livello}\label{requirements}
 	
 	\newframe{\nameref{problem}}{\nameref{requirements}}{}{1}{
+		
+		\vspace{0.5cm}
+		\textbf{Stazione}
+		\begin{itemize}
+			\itemt{RST1} Ciascuna \stazione~è caratterizzata da un identificativo univoco.
+			\itemt{RST2} Ciascuna \stazione~contiene:
+				\begin{itemize}
+					\item Un numero $N$ di \piattaforme~a percorrenza bidirezionale e ad accesso mutuamente esclusivo per la sosta dei \treni, e per l'attesa dei \viaggiatori.
+					\item Un \ii{pannello informativo} che riporta informazioni su \treni~in arrivo, in transito, e che hanno appena superato la \stazione.
+					\item Una biglietteria accessibile ai \viaggiatori, per l'acquisto del \ticket~necessario.
+				\end{itemize}
+		\end{itemize} 
+		
+	}
+	
+	
+	\newframe{\nameref{problem}}{\nameref{requirements}}{}{2}{
+	
+		\vspace{0.5cm}
+		\textbf{Segmento}
+		\begin{itemize}
+			\itemt{RS1} Ciascun \segmento~ha un identificativo univoco, una lunghezza e una velocità massima di percorrenza; esso collega due \stazioni~diverse.
+			\itemt{RS2} Un \segmento~ha percorrenza bidirezionale; inoltre più \treni~possono percorrere il \segmento~nello stesso senso di marcia (percorrenza multipla).  
+		\end{itemize}
+	
+	}
+
+	\newframe{\nameref{problem}}{\nameref{requirements}}{}{3}{
+		
+		\vspace{0.5cm}
+		\textbf{Viaggiatore}
+		\begin{itemize}
+			\itemt{RV1} Ciascun \viaggiatori~possiede una \stazione~di partenza ed una di destinazione.
+			\itemt{RV2} Per poter salire a bordo di un \treno, ciascun \viaggiatori~deve prima acquistare un \ticket~presso la \biglietteria~della \stazione~di partenza.
+			\itemt{RV3} Una volta arivato a destinazione, ciascun \viaggiatore~attende un tempo casuale prima di ritornare alla stazione di partenza.
+			\itemt{RV4} Il viaggio di ciascun \viaggiatore~può comprendere cambi di \treno.
+		\end{itemize}
+		
+	}
+
+	\newframe{\nameref{problem}}{\nameref{requirements}}{}{4}{
 		\textbf{Treno}
 		\begin{itemize}
 			\itemt{RT1} Ciascun \treno, appatiene ad una delle seguenti categorie: \ttt{FB} o \ttt{REG}.
@@ -160,16 +201,11 @@
 			\itemt{RT3} Ciascun \treno~effettua ripetutamente un tragitto di andata e ritorno, definito da un \route~costituito da più \stages.
 				\begin{itemize}
 					\itemt{RT3.1} Il tragitto di ciascun \treno~è scandito da una \timetable, che definisce,per ciascuna \stage, l'orario di partenza.
-				\end{itemize}
-		\end{itemize}
-	}
-	
-	
-	\newframe{\nameref{problem}}{\nameref{requirements}}{}{2}{
-	
-		\begin{itemize}
-			\item[]
-			\begin{itemize} 
+%				\end{itemize}
+%		\end{itemize}
+%		\begin{itemize}
+%			\item[]
+%			\begin{itemize} 
 				\itemt{RT3.2} Ciascuna \stage~definisce:
 				\begin{itemize}
 					\item \stazioni~di partenza e destinazione
@@ -180,39 +216,6 @@
 			\end{itemize}
 			\itemt{RT4} I \treni~di tipo \ttt{FB} sono a prenotazione.
 		\end{itemize}
-		\vspace{0.5cm}
-		\textbf{Viaggiatore}
-		\begin{itemize}
-			\itemt{RV1} Ciascun \viaggiatori~possiede una \stazione~di partenza ed una di destinazione.
-			\itemt{RV2} Per poter salire a bordo di un \treno, ciascun \viaggiatori~deve prima acquistare un \ticket~presso la \biglietteria~della \stazione~di partenza.
-		\end{itemize}
-	}
-
-	\newframe{\nameref{problem}}{\nameref{requirements}}{}{3}{
-		\begin{itemize}
-			\itemt{RV3} Una volta arivato a destinazione, ciascun \viaggiatore~attende un tempo casuale prima di ritornare alla stazione di partenza.
-			\itemt{RV4} Il viaggio di ciascun \viaggiatore~può comprendere cambi di \treno.
-		\end{itemize}
-		\vspace{0.5cm}
-		\textbf{Segmento}
-		\begin{itemize}
-			\itemt{RS1} Ciascun \segmento~ha un identificativo univoco, una lunghezza e una velocità massima di percorrenza; esso collega due \stazioni~diverse.
-			\itemt{RS2} Un \segmento~ha percorrenza bidirezionale; inoltre più \treni~possono percorrere il \segmento~nello stesso senso di marcia (percorrenza multipla).  
-		\end{itemize}
-	}
-
-	\newframe{\nameref{problem}}{\nameref{requirements}}{}{4}{
-		\vspace{0.5cm}
-		\textbf{Stazione}
-		\begin{itemize}
-			\itemt{RST1} Ciascuna \stazione~è caratterizzata da un identificativo univoco.
-			\itemt{RST2} Ciascuna \stazione~contiene:
-				\begin{itemize}
-					\item Un certo numero $N$ di \piattaforme~per la sosta dei \treni, a percorrenza bidirezionale e ad accesso mutuamente esclusivo, e per l'attesa dei \viaggiatori.
-					\item Un \ii{pannello informativo} che riporta informazioni su \treni~in arrivo, in transito, e che hanno appena superato la \stazione.
-					\item Una biglietteria accessibile ai \viaggiatori, per l'acquisto del biglietto necessario.
-				\end{itemize}
-		\end{itemize} 
 	}
 
 
@@ -280,7 +283,7 @@
 %		TODO...
 %	}
 	
-	\subsection{Scelete progettuali}\label{scelte}
+	\subsection{Scelte progettuali}\label{scelte}
 	
 	\newframe{\nameref{distr}}{\nameref{scelte}}{}{}{
 		
@@ -296,7 +299,6 @@
 			\item Modalità di comunicazione tra le componenti distribuite.
 		\end{itemize}
 		
-		Analisi di tre soluzioni a grado di distribuzione diverso. 
 		
 	}
 	
@@ -397,11 +399,52 @@
 		}
 	}
 	
-	\newframe{\nameref{concurrency}}{Interazione Treno - Segmento}{}{}{
-	
+		\newframe{\nameref{concurrency}}{Vincoli}{}{1}{
 		
-		
+		\begin{columns}[c]
+		\column{0.5\textwidth}
+		\begin{enumerate}
+			\item Vincoli di accesso ad un \segmento:
+				\myitemize{
+					\item accesso concorrente tra le entità \treno~intendono accedervi in entrambi i sensi di marcia;
+					\item percorrenza multipla in un unico senso di marcia;
+					\item mantenimento dell'ordine di accesso;
+					\item simulazione della percorrenza dei \treni.
+					\item priorità ai \treni~di tipo \ttt{FB}.
+				}
+		\end{enumerate}
+		\column{0.5\textwidth}
+		\begin{figure}
+			\includegraphics[scale=0.26,trim=0mm 5mm 0mm 35mm]{imgs/ingresso_segmento.pdf}
+			%\caption{\scriptsize Grafico informale che illustra l'architettura di distribuzione di massima per la Soluzione A; tutte le entità sono distribuite.}
+		\end{figure}
+		\end{columns}
 	}
+	
+	\newframe{\nameref{concurrency}}{Vincoli}{}{2}{
+		\begin{columns}[c]
+		\column{0.6\textwidth}
+		\begin{enumerate}
+			\setcounter{enumi}{1}
+			\item Vincoli di uscita da un \segmento:
+				\myitemize{
+					\item uscita ordinata dei \treni~in transito secondo l'ordine di accesso.
+				}
+			\item Vincoli di Accesso ad una \piattaforma:
+				\myitemize{
+					\item accesso in mutua esclusione, ordinato rispetto ai \treni~provenienti dallo stesso \segmento;
+					\item accesso in mutua esclusione, concorente rispetto a \treni~provenienti da \segmenti~diversi;
+					\item priorità ai \treni~di tipo \ttt{FB}.
+				}
+		\end{enumerate}
+		\column{0.5\textwidth}
+		\begin{figure}
+			\includegraphics[scale=0.27,trim=30mm 0mm 0mm 0mm]{imgs/Ingresso_Stazione.pdf}
+			%\caption{\scriptsize Grafico informale che illustra l'architettura di distribuzione di massima per la Soluzione A; tutte le entità sono distribuite.}
+		\end{figure}
+		\end{columns}
+	}
+	
 	
 
 % ################################################## SOLUTION ###################################################
@@ -607,55 +650,62 @@
 							\itemB{CONTRO:}{Definizione delle interazioni più complessa, e soggetta ad errori.}{0cm}
 						}
 				}
-			\item Scelta del modello a \ii{monitor}.
+			\item Ho scelto il modello a \ii{monitor}.
 		}
 	}
 	
-	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Problematiche}{}{
+	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Viaggiatore}{1}{
+		\textbf{Viaggiatore}\\
+		\vspace{0.5cm}
+		Sono definite le seguenti operazioni:
+		\myitemize{
+			\item \ii{Acquisto di un biglietto}\\
+			Richiede la creazione di un \ticket~mediante l'interfaccia esposta dalla \stazione~di partenza (richiesta asincrona). Quando il \ticket~è disponibile, viene inserita nella coda di operazioni da eseguire l'operazione \ii{Biglietto pronto}.
+			
+			\item \ii{Biglietto pronto}\\
+			Viene eseguita sia nel caso in cui il \ticket~sia stato creato, sia nel caso in cui vi sia stato un errore. Nel primo caso, viene inserita nella coda di operazioni da eseguire l'operazione \ii{Partenza da una stazione}. 
+			
+		}
+	}
+
+	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Viaggiatore}{2}{
+	
+		\myitemize{
+			\item \ii{Partenza da una stazione}\\
+			Richiesta di attesa di un \treno~presso la \piattaforma~di partenza tramite interfaccia offerta dalla \stazione~opportuna. L'attesa si traduce nell'inserimento del descrittore del \viaggiatore~in una coda presso la \piattaforma.
+			
+			\item \ii{Arrivo in una stazione}\\ 
+			Operazione inserita nella coda di operazioni da eseguire dal \treno~sul quale il relativo \viaggiatore~è in viaggio, nel momento in cui arriva presso la \stazione~di discesa del \viaggiatore.
+			\item Operazioni di Partenza e Arrivo possono prevedere trasferimento remoto nel caso di destinazione in una \regione~diversa.
+		}
+	}
+
+	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Treno}{1}{
+	
+		\begin{figure}
+			\includegraphics[scale=0.27,trim=0mm 20mm 0mm 20mm]{imgs/platform_access_1}
+			\caption{\scriptsize Ingresso in una \stazione (1).}
+		\end{figure}
 		
-		\begin{columns}[c]
-		\column{0.5\textwidth}
-		\begin{enumerate}
-			\item Vincoli di accesso ad un \segmento:
-				\myitemize{
-					\item accesso concorrente tra le entità \treno~intendono accedervi in entrambi i sensi di marcia;
-					\item percorrenza multipla in un unico senso di marcia;
-					\item mantenimento dell'ordine di accesso;
-					\item simulazione della percorrenza dei \treni.
-					\item priorità ai \treni~di tipo \ttt{FB}.
-				}
-		\end{enumerate}
-		\column{0.5\textwidth}
-		\begin{figure}
-			\includegraphics[scale=0.26,trim=0mm 5mm 0mm 35mm]{imgs/ingresso_segmento.pdf}
-			%\caption{\scriptsize Grafico informale che illustra l'architettura di distribuzione di massima per la Soluzione A; tutte le entità sono distribuite.}
-		\end{figure}
-		\end{columns}
 	}
+
+	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Treno}{2}{
 	
-	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Problematiche}{2}{
-		\begin{columns}[c]
-		\column{0.6\textwidth}
-		\begin{enumerate}
-			\setcounter{enumi}{1}
-			\item Vincoli di uscita da un \segmento:
-				\myitemize{
-					\item uscita ordinata dei \treni~in transito secondo l'ordine di accesso.
-				}
-			\item Vincoli di Accesso ad una \piattaforma:
-				\myitemize{
-					\item accesso in mutua esclusione, ordinato rispetto ai \treni~provenienti dallo stesso \segmento;
-					\item accesso in mutua esclusione, concorente rispetto a \treni~provenienti da \segmenti~diversi;
-					\item priorità ai \treni~di tipo \ttt{FB}.
-				}
-		\end{enumerate}
-		\column{0.5\textwidth}
 		\begin{figure}
-			\includegraphics[scale=0.27,trim=30mm 0mm 0mm 0mm]{imgs/Ingresso_Stazione.pdf}
-			%\caption{\scriptsize Grafico informale che illustra l'architettura di distribuzione di massima per la Soluzione A; tutte le entità sono distribuite.}
+			\includegraphics[scale=0.27,trim=0mm 20mm 0mm 20mm]{imgs/platform_access_2}
+			\caption{\scriptsize Ingresso in una \stazione (2).}
 		\end{figure}
-		\end{columns}
+		
 	}
+
+	\newframe{Soluzione Adottata}{\nameref{sol_conc}}{Treno}{3}{
 	
+		\begin{figure}
+			\includegraphics[scale=0.27,trim=0mm 0mm 0mm 0mm]{imgs/platform_exit}
+			\caption{\scriptsize Uscita da una \piattaforma.}
+		\end{figure}
+		
+	}
+
 \end{document}
 

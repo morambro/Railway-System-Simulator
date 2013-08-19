@@ -1,0 +1,443 @@
+\documentclass[slidestop,compress,blackandwhite]{beamer}
+
+\usepackage[utf8x]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{tikz}
+\usepackage{nameref}
+\usepackage{scrextend}
+
+\usetheme{Antibes}
+\usecolortheme{default}
+
+\setbeameroption{show notes}
+
+
+\pgfdeclareimage[height=1.5cm]{logo}{imgs/unipd_logo}
+
+\setbeamercolor{block title}{fg=red,bg=structure!15}
+
+\setbeamercolor{block body}{bg=structure!15}
+
+% TITOLO
+\setbeamercovered{transparent}
+
+\author{Moreno Ambrosin}
+
+\title[Progetto esame di Sistemi Concorrenti e Distribuiti]{Railway Simulation}
+
+\institute[\insertframenumber/\inserttotalframenumber]{
+	\large{Università degli studi di Padova} \\
+	\vspace{5pt}
+	\normalsize Facoltà di Scienze MM. FF. NN. \\
+	\vspace{5pt}
+	\small Corso di laurea in Informatica
+}
+\date{Settembre 2013}
+
+\newcommand{\itemB}[3]{
+	\item \textbf{#1} #2 \vspace{#3}
+}
+
+\newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\ii}[1]{\textit{#1}}
+\newcommand{\bb}[1]{\textbf{#1}}
+
+
+\newcommand{\treno}{\ii{treno}}
+\newcommand{\treni}{\ii{treni}}
+\newcommand{\viaggiatore}{\ii{viaggiatore}}
+\newcommand{\viaggiatori}{\ii{viaggiatori}}
+\newcommand{\stazione}{\ii{stazione}}
+\newcommand{\stazioni}{\ii{stazioni}}
+\newcommand{\piattaforma}{\ii{piattaforma}}
+\newcommand{\piattaforme}{\ii{piattaforme}}
+\newcommand{\ticket}{\ii{biglietto}}
+\newcommand{\tickets}{\ii{biglietti}}
+\newcommand{\segmento}{\ii{segmento}}
+\newcommand{\segmenti}{\ii{segmenti}}
+\newcommand{\route}{\ii{percorso}}
+\newcommand{\routes}{\ii{percorsi}}
+\newcommand{\stage}{\ii{tappa}}
+\newcommand{\stages}{\ii{tappe}}
+\newcommand{\biglietteria}{\ii{biglietteria}}
+\newcommand{\biglietterie}{\ii{biglietterie}}
+\newcommand{\timetable}{\ii{tabella oraria}}
+\newcommand{\timetables}{\ii{tabelle di orari}}
+\newcommand{\controller}{\ii{controllo centrale}}
+\newcommand{\regione}{\ii{regione}}
+\newcommand{\regioni}{\ii{regioni}}
+\newcommand{\gateway}{\ii{stazione di gateway}}
+\newcommand{\gateways}{\ii{stazioni di gateway}}
+
+\newcommand{\PRO}{\textbf{PRO:}}
+\newcommand{\CONTRO}{\textbf{CONTRO:}}
+
+%\renewcommand{\item}{\vspace{0.1cm}\item}
+
+\newcommand{\cm}[1]{\vspace{#1cm}}
+
+\newcommand{\describe}[2]{
+	\textbf{#1}\\
+	\begin{addmargin}[2em]{0em}
+		#2
+	\end{addmargin}
+}
+
+
+\newcommand{\newtitle}[4]{
+	#1 
+	\ifx&#2&%
+	\else
+  		\large- #2
+	\fi
+	\ifx&#3&%
+	\else
+  		\normalsize- #3
+	\fi
+	\ifx&#4&%
+	\else
+  		\normalsize (#4)
+	\fi
+}
+
+\newcommand{\newframe}[5]{
+	\begin{frame}
+		\frametitle{\newtitle{#1}{#2}{#3}{#4}}
+		#5
+	\end{frame}
+}
+
+\newcommand{\itemt}[1]{\item (\ttt{#1})}
+
+\newcommand{\myitemize}[1]{
+	\begin{itemize}\itemsep4pt
+	#1
+	\end{itemize}
+}
+
+\newcommand{\newfigure}[3]{
+	\begin{figure}
+		\centering
+		\includegraphics[scale=#2]{#1}
+		\ifx&#3&%
+		\else
+	  		\caption{\scriptsize #3}
+		\fi
+	\end{figure}
+}
+
+
+\begin{document}
+	
+	\usebackgroundtemplate{
+		\hspace{0.13\paperwidth}\includegraphics[height=\paperheight]{imgs/logoUnipd}
+	}	
+	
+	\begin{frame}[c]
+		\titlepage
+	\end{frame}
+	
+	\newframe{Indice}{}{}{}{
+		\tableofcontents
+	}
+	
+	\setbeamertemplate{footline}[text line]{\parbox{\linewidth}{\vspace*{-8pt}\scriptsize\insertframenumber/\inserttotalframenumber\hfill Progetto Sistemi Concorrenti e Distribuiti\hfill}}
+	
+	
+	
+% ###################################################################################################################
+\section{Introduzione}\label{intro}
+
+	\newframe{\nameref{intro}}{}{}{}{
+		\myitemize {
+			\item La progettazione di un sistema distribuito si compone di:
+				\cm{0.5}
+				\myitemize {
+					\item Analisi del problema.
+						\cm{0.4}
+						\myitemize {
+							\item Aspetti legati alla Distribuzione.
+							\item Aspetti legati alla Concorrenza.
+						}
+					\cm{0.4}
+					\item Costruzione di una soluzione.
+					\cm{0.4}
+					\item Scelta delle Tecnologie.
+					\cm{0.4}
+				}
+		}
+	}
+
+\section{Analisi del Problema}\label{analisis}
+	\newframe{\nameref{analisis}}{}{}{}{
+		\myitemize {
+			\item Identificare e definire i requisiti di massima del sistema.
+				\myitemize{
+					\item Operazione sottovalutata ma importante.
+				}
+%			\item I requisiti possono variare durante la progettazione (grado di libertà eleveto nella specifica).
+%				\myitemize {
+%					\item Importante mantenere semplice la specifica (si può poi procedere in maniera incrementale).
+%				}
+			\item Individuazione e prima definizione delle entità del sistema.
+				\myitemize {
+					\item ad es. nel progetto di un sistema ferroviario:
+						\myitemize{
+							\item Treno (entità attiva)
+							\item Viaggiatore (antità attiva)
+							\item Segmento (entità reattiva)
+							\item Piattaforma (entità reattiva)
+							\item Biglietteria (entità reattiva)
+							\item Stazione (entità reattiva)
+						}
+				}
+		}
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{}{1}{
+		\myitemize {
+			\item Primo aspetto da valutare
+				\myitemize {
+					\item Fornisce un'architettura di alto livello del sistema.
+					\item Alcune scelte vincolano le modalità di interazione tra le entità.
+				}
+			\item Caratteristiche Desiderabili
+				\myitemize {
+					\item Il sistema dovrà apparire agli utenti in modo unitario e coerente. 
+						\myitemize{
+							\item ad es. nel progetto di un sistema ferroviario, la componente di visualizzazione dovrà nascondere l'architettura di distribuzione. 
+						}
+					\itemB{Trasparenza:}{Il sistema dovra il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza}{0.1cm}
+				}
+		}
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{}{2}{
+		\myitemize {
+			\item[]
+				\myitemize {
+					\itemB{Openess:}{
+						\myitemize {
+							\item Il sistema dovrà garantire portabilità e interoperabilità.
+							\item Il sistema dovrà essere fruibile mediante regole standard (interfacce).
+							\item Organizzazione del sistema in componenti di dimensione ridotta, e facilmente sostituibili.
+							\item Separazione tra \ii{politiche} e \ii{meccanismi}.
+						}
+					}{0.1cm}
+					\itemB{Scalabilità:}{
+						\myitemize {
+							\item Rispetto alla cardinalità del sistema (ad es. nel progetto di un sistema ferroviario, è desiderabile poter aumentare la popolazione di Stazioni e Segmenti di collegamento).
+							\item Rispetto alla distribuzione spaziale delle componenti.
+							\item Rispetto alle problematiche locali di gestione (che non devono affliggere l'intero sistema).
+						}
+					}{0.1cm}
+				}
+		}
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{}{3}{
+		\myitemize {
+			\item[]
+				\myitemize {
+					\itemB{Fault Tollerance:}{
+						\myitemize{
+							\item Il sistema deve essere progettato in modo tale da ridurre l'impatto causato da \ii{partial failures}.
+							\item Il sistema dovrà gestire errori di comunicazione tra i nodi.
+						}
+					}{0.1cm}
+					
+					\itemB{Avvio ordinato:}{Il sistema dovrà essere avviato in modo tale da permettere a tutte le componenti di comunicare senza errori.}{0.1cm}
+					\itemB{Terminazione in stato Consistente}{Il sistema deve poter essere terminato in uno stato consistente; nessun entità dovrà rimanere attiva dopo la procedura di terminazione.}{0.1cm}
+				}
+				
+		}
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{Scelte di progetto}{}{
+		\myitemize {
+			\item Modellazione ad alto livello delle componenti del sistema necessarie e loro distribuzione.
+			\item Scelta delle modalità di distribuzione
+				\myitemize{
+					\item Dove adottare distribuzione \ii{verticale} o \ii{orizzontale}
+				}
+			\item Scelta della modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona}) e definizione di possibili interfacce.
+			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
+			\item Individuazione delle problematiche specifiche del problema, ad es.
+				\myitemize {
+					\item Gestione del \ii{Name Resolution} per le componenti.
+					\item Gestione della sincronizzazione tra clock fisici dei nodi che ospitano le varie componenti.
+				}
+			
+		}
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{1}{
+		\newfigure{imgs/All_distributed}{0.22}{Architettura di distribuzione in cui tutte le entità principali vengono distribuite.}
+		\note[includegraphics]{
+			PRO:
+			\myitemize {
+				\item Scalabilità 
+				\item Fault Tollerance
+			}
+		}
+		\note[includegraphics]{CONTRO
+			\myitemize {
+				\item Complessità terminazione
+				\item Assenza di riferimento temporale
+			}
+		}
+		\note[includegraphics]{Deve essere adottato un sistema di Naming che scali meglio di semplice tabella [Nome,Indirizzo]}
+		
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{2}{
+		\cm{0.5}
+		\newfigure{imgs/nothing_distributed}{0.22}{Architettura di distribuzione in cui solo Controller Centrale e Visualizzazione sono distribuite.}
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{3}{
+		\newfigure{imgs/solution}{0.24}{Architettura di distribuzione in cui sono aggiunte e distribuite \ii{regioni}.}
+	}
+
+%############################### CONCURRENCY	
+
+	
+	\newframe{\nameref{analisis}}{Concorrenza}{}{}{
+		
+		\myitemize {
+			\item Scelta delle caratteristiche specifiche per ciascuna entità.
+				\myitemize {
+					\item ad es.: scelta di definire un Segmento come entità reattiva con agente di controllo, ad accesso mutuamente esclusivo con molteplicità $N\ge1$.
+					\item ad es.: scelta di definire una Stazione come una struttura che mantiene al suo interno
+						\myitemize {
+							\item un numero $M\ge1$ di Piattaforme (entità reattive con agente di controllo ad accesso mutuamente esclusivo con molteplicità $1$),	....
+						}
+				}
+			\item Prima definizione dei protocolli logici di interazione tra entità che risiedono sullo stesso nodo di calcolo.
+				\myitemize {
+					\item Il più possibile indipendente dalla scelta di un modello di concorrenza specifico.
+					\item Identificazione dei punti critici in cui il problema è concorrente.
+				}
+				
+		}
+		
+	}
+	
+	\newframe{\nameref{analisis}}{Concorrenza}{Esempio}{1}{
+		\newfigure{imgs/ingresso_segmento}{0.5}{Ingresso in un segmento}
+	}
+	
+	\newframe{\nameref{analisis}}{Concorrenza}{Esempio}{2}{
+		\newfigure{imgs/ingresso_stazione}{0.5}{Ingresso in un segmento}
+	}
+	
+	
+% ####################################### PROBLEM SOLUTION ###################################
+	
+\section{Soluzione al Problema}\label{sol}
+
+	\newframe{\nameref{sol}}{Distribuzione}{}{} {
+		\myitemize {
+			\item Scelta di un'architettura di distribuzione.
+				\myitemize {
+					\item Introduce nuove entità?
+					\item ad es.: utilizzare Regioni come collezione di Stazioni e Segmenti, che risiedono su un singolo nodo di calcolo, e sulle quali transitano Treni e Viaggiatori.
+					\item ad es.: introduzione di una gerarchia di Biglietterie per distribuire conoscenza e oneri di calcolo.
+						\myitemize {
+							\item Centrale
+							\item Regionale
+							\item di Stazione
+						}
+				}
+			\item Identificazione delle problematiche conseguenti a tale scelta.
+				
+		}
+	}
+
+	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{} {
+		\myitemize {
+			\item Come realizzare il passaggio di entità Treno e Viaggiatore tra Regioni?
+			\myitemize {
+				\item \ii{possibile soluzione:} Utilizzare Stazioni speciali (di ``gateway'') per permettere l'uscita di un Treno da una Regione; trasferimento diretto di un Viaggiatore.
+			}
+			\item Come si traduce il trasferimento remoto di una entità?
+				\myitemize {
+					\item creazione/distruzione?
+					\item replicazione?
+					\item Vincolo sulla realizzazione dell'entità per facilitare il trasferimento remoto!
+				}
+		}
+	}
+	
+	\newframe{\nameref{sol}}{Distribuzione}{Avvio e Terminazione}{1}{
+		\describe{Avvio}{
+			\myitemize{
+				\item Deve essere coordinato tra le entità.
+				\item \`E opportuno scegliere un ordine di avvio tra le componenti e separare la fase di inizializzazione della componente e l'avvio della simulazione.
+			}
+		}
+		\cm{0.1}
+		\describe{Terminazione}{
+			\myitemize{
+				\item Ha come pre-requisito la definizione dei limiti entro i quali uno Stato del sistema è consistente. Ad es. nel progetto di un sistema ferroviario:
+					\myitemize {
+						\item è accettabile che il sistema termini con un certo numero di Treni in attesa di accedere ad una Piattaforma;
+						\item non è accettato lo stato di terminazione per il quale un Viaggiatore è in attesa di un Biglietto.
+					} 
+			}
+		}
+	}
+	
+	\newframe{\nameref{sol}}{Distribuzione}{Avvio e Terminazione}{2}{
+		\describe{}{
+			\myitemize {
+				\item \`E conveniente adattare algoritmi noti distribuiti (ad es. \ii{distributed snapshot}).
+				\item Nessun thread in esecuzione sui nodi di calcolo dopo la procedura.
+			}
+		}
+	}
+	\newframe{\nameref{sol}}{Concorrenza}{}{}{
+		
+		\myitemize {
+			\item Scelta di un modello di concorrenza adatto alle caratteristiche del problema.
+			\item Valutazione di modelli differenti
+				\myitemize{
+					\item ad es. modello ad \ii{Attori} o a \ii{monitor}.
+				}
+			\item Modellazione delle entità di simulazione e della loro interazione con strumenti di modello.
+				\myitemize {
+					\item Scomposizione delle interazioni in sottoproblemi semplici.
+				}
+			\item Evitare scelte di progettazione che utilizzano operazioni specifiche offerte dalle tecnologie
+				\myitemize {
+					\item Nessuna assunzione a priori sul linguaggio che verrà utilizzato.
+				}
+			\item Validare ciascuna soluzione, partendo dai pre-requisiti.
+				
+		}
+		
+	}
+	
+	\newframe{\nameref{sol}}{Tecnologiche}{}{}{
+		\myitemize {
+			\item Scelta delle tecnologie che meglio si adattano alle scelte di progetto.
+			\item Interessante l'utilizzo di tecnologie eterogenee
+				\myitemize {
+					\item \`E difficile pensare ad un Sistema Distribuito realizzato con tecnologie omogenee.
+					\item Possibilità di utilizzare tecnologie specifiche per singola componente
+						\myitemize {
+							\item Nella solouzione che ho adottato, ho utilizzato il linguaggio Ada per codificare le componenti che rappresentano le Regioni;
+							\item Utilizzo del linguaggio Scala per la realizzazione di Name Server, Biglietteria e Controller Centrale;
+							\item Utilizzo di Javascript e HTML per la realizzazione dell'interfaccia grafica.
+						}
+				}
+		}
+	}
+\section{Conclusioni}\label{conclusions}
+	
+	\newframe{\nameref{conclusions}}{}{}{}{
+		
+	}
+	
+\end{document}
+
