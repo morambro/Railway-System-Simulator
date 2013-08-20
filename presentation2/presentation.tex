@@ -5,6 +5,8 @@
 \usepackage{tikz}
 \usepackage{nameref}
 \usepackage{scrextend}
+\usepackage{listings}
+\usepackage{ragged2e}
 
 \usetheme{Antibes}
 \usecolortheme{default}
@@ -276,14 +278,16 @@
 		\note[includegraphics]{
 			PRO:
 			\myitemize {
-				\item Scalabilità 
-				\item Fault Tollerance
+				\item Scalabilità in dimensione
+				\item Fault Tollerance a partial failures
+				\item Semplice sostituibilità dei componenti
 			}
 		}
 		\note[includegraphics]{CONTRO
 			\myitemize {
 				\item Complessità terminazione
-				\item Assenza di riferimento temporale
+				\item Assenza di riferimento temporale unico
+				\item Elevato traffico di rete (ok in LAN, bad on WAN)
 			}
 		}
 		\note[includegraphics]{Deve essere adottato un sistema di Naming che scali meglio di semplice tabella [Nome,Indirizzo]}
@@ -291,8 +295,7 @@
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{2}{
-		\cm{0.5}
-		\newfigure{imgs/nothing_distributed}{0.22}{Architettura di distribuzione in cui solo Controller Centrale e Visualizzazione sono distribuite.}
+		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di distribuzione in cui solo Controller Centrale e Visualizzazione sono distribuite.}
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{3}{
@@ -370,6 +373,7 @@
 	}
 	
 	\newframe{\nameref{sol}}{Distribuzione}{Avvio e Terminazione}{1}{
+		\justifying
 		\describe{Avvio}{
 			\myitemize{
 				\item Deve essere coordinato tra le entità.
@@ -396,8 +400,10 @@
 			}
 		}
 	}
+	
+	
 	\newframe{\nameref{sol}}{Concorrenza}{}{}{
-		
+		\justifying
 		\myitemize {
 			\item Scelta di un modello di concorrenza adatto alle caratteristiche del problema.
 			\item Valutazione di modelli differenti
@@ -411,14 +417,112 @@
 			\item Evitare scelte di progettazione che utilizzano operazioni specifiche offerte dalle tecnologie
 				\myitemize {
 					\item Nessuna assunzione a priori sul linguaggio che verrà utilizzato.
+					\item Nessuna assunzione sulle politiche di scheduling adottate dalla macchina sottostante.
 				}
-			\item Validare ciascuna soluzione, partendo dai pre-requisiti.
+%			\item Validare ciascuna soluzione, partendo dai pre-requisiti.
 				
 		}
 		
 	}
 	
-	\newframe{\nameref{sol}}{Tecnologiche}{}{}{
+	\begin{frame}[fragile]
+	\frametitle{\newtitle{\nameref{sol}}{Concorrenza}{Esempio}{1}}
+	\vspace{-0.5cm}
+	\tiny\begin{verbatim}
+    procedure Access_Segment_Monitor(T:Train,Access_End:Integer) 
+    begin
+        ...
+        if Access_End = First_End then
+            while 
+                ((not Free) and (Access_End /= Current_Direction)) 
+                or
+                ((not Free) and (Access_End = Current_Direction) and 
+                    (Access_Number = MAX) and (Second_End_Count > 0)) 
+            loop
+                First_End_Count := First_End_Count + 1;
+                wait(Can_Enter_First_End);
+                First_End_Count := First_End_Count - 1;
+            end loop;
+        else
+            // Simmetrico per la direzione opposta
+            ...
+        end if;
+        if (Free = True) then
+            Free := False;
+            Access_Number := 1;
+            Current_Direction := Access_End;
+        else
+            if (Access_Number < MAX) then
+                Access_Number := Access_Number + 1;
+            end if;
+        end if;
+        ...
+    end;
+\end{verbatim}
+	\end{frame}
+
+%            while
+%                ((not Free) and (Access_End /= Current_Direction)) 
+%                or 
+%                ((not Free) and (Access_End = Current_Direction) and 
+%                    (Access_Number = MAX) and (First_End_Count > 0)) 
+%            loop
+%                Second_End_Count := Second_End_Count + 1;
+%                wait(Can_Enter_Second_End);
+%                Second_End_Count := Second_End_Count - 1;
+%            end loop;	
+	
+	
+	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{2}{
+		\myitemize {
+			\item \justifying Supponiamo che un thread esegua per un dato Treno $T$, e che $T$ intenda accedere al Segmento $S$ dall'estremo $D_T$, con $D_T=$\ttt{First\_End}.  
+			\item \justifying Valutazione dei casi possibili per dimostrare la correttezza della soluzione presentata, una volta che $T$ esegue all'interno della procedure di risorsa protetta \ttt{Access\_Segment\_Monitor}.
+		}
+		\describe{\footnotesize Caso 1:}{
+			\footnotesize
+			\justifying
+			\ii{Pre-condizione:} \ttt{Free=True}\\
+			$T$ imposta il valore di \ttt{Free} a \ttt{False}, il numero di accessi per direzione \ttt{Access\_Number} a $1$, e la direzione corrente \ttt{Current\_Direction=}$1$. Esegue infine le operazioni previste dopo aver ottenuto l'accesso.
+		}
+	}
+	
+	
+	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{3}{
+		\describe{\footnotesize Caso 2:}{
+			\footnotesize
+			\justifying
+			\ii{Pre-condizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ \\and $1<$\ttt{Access\_Number}$<$\ttt{MAX} \\
+			Poiché sia verificata la Pre-condizione, almeno un altro Treno proveniente dallo stesso estremo deve aver avuto accesso al Segmento (Caso 1). In questo caso, $T$ si limita a incrementare di $1$ il contatore di accessi per estremo \ttt{Access\_Number}, e ad eseguire le operazioni previste dopo l'accesso.
+		}
+		\describe{\footnotesize Caso 3:}{
+			\footnotesize
+			\justifying
+			\ii{Pre-condizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$=0$ \\
+			Poiché sia verificata la Pre-condizione, almeno $MAX$ Treni provenienti dallo stesso estremo hanno avuto accesso al Segmento (Caso 1 + Caso 2). In questo caso, $T$ non incrementare il contatore di accessi \ttt{Access\_Number}, ed esegue le operazioni previste dopo l'accesso.
+		}
+	}
+	
+	
+	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{4}{
+		
+		\describe{\footnotesize Caso 4: Accesso non consentito}{
+			\footnotesize
+			\justifying
+			\ii{Pre-condizione:} \ttt{Free=False} and \ttt{Current\_Direction}$\ne D_T$\\
+			Poiché la pre-condizione sia verificata, almeno un Treno proveniente dall'estremo opposto rispetto a $T$ ha eseguito nel Caso 1. Il thread corrente incrementa il contatore dei Treni in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \\\ttt{Can\_Enter\_First\_End}. 
+			
+		}
+		\describe{\footnotesize Caso 5: Accesso non consentito}{
+			\footnotesize
+			\justifying
+			\ii{Pre-condizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$>0$\\
+			Poiché la pre-condizione sia verificata, almeno un Treno proveniente dall'estremo opposto rispetto a $T$ ha eseguito all'interno di \ttt{Access\_Segment\_Monitor} nel Caso 4 (relativamente alla propria direzione). Il thread crrente incrementa il contatore dei Treni in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \ttt{Can\_Enter\_First\_End}. 
+			
+		}
+	}
+	
+	
+	\newframe{\nameref{sol}}{Tecnologie}{}{}{
 		\myitemize {
 			\item Scelta delle tecnologie che meglio si adattano alle scelte di progetto.
 			\item Interessante l'utilizzo di tecnologie eterogenee
