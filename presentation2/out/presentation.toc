@@ -1,6 +1,0 @@
-\beamer@endinputifotherversion {3.10pt}
-\select@language {italian}
-\beamer@sectionintoc {1}{Introduzione}{3}{0}{1}
-\beamer@sectionintoc {2}{Analisi del Problema}{4}{0}{2}
-\beamer@sectionintoc {3}{Soluzione al Problema}{16}{0}{3}
-\beamer@sectionintoc {4}{Conclusioni}{26}{0}{4}
