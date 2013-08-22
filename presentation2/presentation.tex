@@ -25,7 +25,7 @@
 
 \author{Moreno Ambrosin}
 
-\title[Progetto esame di Sistemi Concorrenti e Distribuiti]{Railway Simulation}
+\title[Progetto di Sistemi Concorrenti e Distribuiti]{Realizzazione del Progetto di Sistemi Concorrenti e Distribuiti}
 
 \institute[\insertframenumber/\inserttotalframenumber]{
 	\large{Università degli studi di Padova} \\
@@ -143,7 +143,7 @@
 		\tableofcontents
 	}
 	
-	\setbeamertemplate{footline}[text line]{\parbox{\linewidth}{\vspace*{-8pt}\scriptsize\insertframenumber/\inserttotalframenumber\hfill Progetto Sistemi Concorrenti e Distribuiti\hfill}}
+	\setbeamertemplate{footline}[text line]{\parbox{\linewidth}{\vspace*{-8pt}\scriptsize\insertframenumber/\inserttotalframenumber\hfill Progetto di Sistemi Concorrenti e Distribuiti\hfill}}
 	
 	
 	
@@ -186,7 +186,7 @@
 					\item ad es. nel progetto di un sistema ferroviario:
 						\myitemize{
 							\item Treno (entità attiva)
-							\item Viaggiatore (antità attiva)
+							\item Viaggiatore (entità attiva)
 							\item Segmento (entità reattiva)
 							\item Piattaforma (entità reattiva)
 							\item Biglietteria (entità reattiva)
@@ -205,11 +205,11 @@
 				}
 			\item Caratteristiche Desiderabili
 				\myitemize {
-					\item Il sistema dovrà apparire agli utenti in modo unitario e coerente. 
+					\item \justifying Il sistema dovrà apparire agli utenti come unitario e coerente. 
 						\myitemize{
 							\item ad es. nel progetto di un sistema ferroviario, la componente di visualizzazione dovrà nascondere l'architettura di distribuzione. 
 						}
-					\itemB{Trasparenza:}{Il sistema dovra il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza}{0.1cm}
+					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza}{0.1cm}
 				}
 		}
 	}
@@ -218,15 +218,15 @@
 		\myitemize {
 			\item[]
 				\myitemize {
-					\itemB{Openess:}{
+					\itemB{Openess:}{\justifying
 						\myitemize {
 							\item Il sistema dovrà garantire portabilità e interoperabilità.
 							\item Il sistema dovrà essere fruibile mediante regole standard (interfacce).
-							\item Organizzazione del sistema in componenti di dimensione ridotta, e facilmente sostituibili.
+							\item \justifying Organizzazione del sistema in componenti di dimensione ridotta, e facilmente sostituibili.
 							\item Separazione tra \ii{politiche} e \ii{meccanismi}.
 						}
 					}{0.1cm}
-					\itemB{Scalabilità:}{
+					\itemB{Scalabilità:}{\justifying
 						\myitemize {
 							\item Rispetto alla cardinalità del sistema (ad es. nel progetto di un sistema ferroviario, è desiderabile poter aumentare la popolazione di Stazioni e Segmenti di collegamento).
 							\item Rispetto alla distribuzione spaziale delle componenti.
@@ -248,8 +248,8 @@
 						}
 					}{0.1cm}
 					
-					\itemB{Avvio ordinato:}{Il sistema dovrà essere avviato in modo tale da permettere a tutte le componenti di comunicare senza errori.}{0.1cm}
-					\itemB{Terminazione in stato Consistente}{Il sistema deve poter essere terminato in uno stato consistente; nessun entità dovrà rimanere attiva dopo la procedura di terminazione.}{0.1cm}
+					\itemB{Avvio ordinato:}{\justifying Il sistema dovrà essere avviato in modo tale da permettere a tutte le componenti di comunicare senza errori.}{0.1cm}
+					\itemB{Terminazione in stato Consistente}{\justifying Il sistema deve poter essere terminato in uno stato consistente; nessun entità dovrà rimanere attiva dopo la procedura di terminazione.}{0.1cm}
 				}
 				
 		}
@@ -311,7 +311,7 @@
 			\item Scelta delle caratteristiche specifiche per ciascuna entità.
 				\myitemize {
 					\item ad es.: scelta di definire un Segmento come entità reattiva con agente di controllo, ad accesso mutuamente esclusivo con molteplicità $N\ge1$.
-					\item ad es.: scelta di definire una Stazione come una struttura che mantiene al suo interno
+					\item ad es.: scelta di definire una Stazione come una entità passiva, che mantiene al suo interno
 						\myitemize {
 							\item un numero $M\ge1$ di Piattaforme (entità reattive con agente di controllo ad accesso mutuamente esclusivo con molteplicità $1$),	....
 						}
@@ -327,11 +327,11 @@
 	}
 	
 	\newframe{\nameref{analisis}}{Concorrenza}{Esempio}{1}{
-		\newfigure{imgs/ingresso_segmento}{0.5}{Ingresso in un segmento}
+		\newfigure{imgs/ingresso_segmento}{0.5}{Accesso ad un segmento.}
 	}
 	
 	\newframe{\nameref{analisis}}{Concorrenza}{Esempio}{2}{
-		\newfigure{imgs/ingresso_stazione}{0.5}{Ingresso in un segmento}
+		\newfigure{imgs/ingresso_stazione}{0.5}{Uscita da un segmento e accesso alla Piattaforma successiva.}
 	}
 	
 	
@@ -383,7 +383,7 @@
 		\cm{0.1}
 		\describe{Terminazione}{
 			\myitemize{
-				\item Ha come pre-requisito la definizione dei limiti entro i quali uno Stato del sistema è consistente. Ad es. nel progetto di un sistema ferroviario:
+				\item Ha come prerequisito la definizione dei limiti entro i quali uno Stato del sistema è consistente. Ad es. nel progetto di un sistema ferroviario:
 					\myitemize {
 						\item è accettabile che il sistema termini con un certo numero di Treni in attesa di accedere ad una Piattaforma;
 						\item non è accettato lo stato di terminazione per il quale un Viaggiatore è in attesa di un Biglietto.
@@ -395,7 +395,7 @@
 	\newframe{\nameref{sol}}{Distribuzione}{Avvio e Terminazione}{2}{
 		\describe{}{
 			\myitemize {
-				\item \`E conveniente adattare algoritmi noti distribuiti (ad es. \ii{distributed snapshot}).
+				\item \`E conveniente adattare algoritmi distribuiti noti (ad es. \ii{distributed snapshot}).
 				\item Nessun thread in esecuzione sui nodi di calcolo dopo la procedura.
 			}
 		}
@@ -418,6 +418,7 @@
 				\myitemize {
 					\item Nessuna assunzione a priori sul linguaggio che verrà utilizzato.
 					\item Nessuna assunzione sulle politiche di scheduling adottate dalla macchina sottostante.
+					\item Attenzione a \ii{deadlock} e \ii{starvation}.
 				}
 %			\item Validare ciascuna soluzione, partendo dai pre-requisiti.
 				
@@ -425,12 +426,32 @@
 		
 	}
 	
+	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{1}{
+		\footnotesize
+		\myitemize {
+			\item Accesso ad un Segmento $S$ da parte di un Treno $T$, dall'estremo $D_T$, $D_T=$\ttt{ First\_End}.
+				\myitemize {
+					\item \footnotesize Rischio starvation dei Treni in attesa.
+				}
+			\item Segmento realizzato come risorsa protetta con agente di controllo \ii{monitor}.
+			\item $T$ accede solo se:
+				\myitemize{
+					\item \footnotesize $S$ è libero
+					\item $S$ non è libero ma i Treni in transito hanno avuto accesso da $D_T$ e il numero di accessi massimo non è stato raggiunto.
+					\item $S$ non è libero ma i Treni in transito hanno avuto accesso da $D_T$, il numero di accessi massimo è stato raggiunto, ma all'estremo opposto non vi sono Treni in attesa.
+				}
+			\item In tutti gli altri casi $T$ deve attendere presso l'estremo di accesso.
+			\item All'uscita da $S$ l'ultimo Treno risveglia i Treni in attesa presso l'estremo opposto.
+		}	
+	}
+	
 	\begin{frame}[fragile]
 	\frametitle{\newtitle{\nameref{sol}}{Concorrenza}{Esempio}{1}}
-	\vspace{-0.5cm}
+	\begin{columns}
+	\column{0.65\textwidth}
+	\vspace{-1.1cm}
 	\tiny\begin{verbatim}
-    procedure Access_Segment_Monitor(T:Train,Access_End:Integer) 
-    begin
+    procedure Access_Segment_Monitor(T:Train,Access_End:Integer) begin
         ...
         if Access_End = First_End then
             while 
@@ -444,13 +465,14 @@
                 First_End_Count := First_End_Count - 1;
             end loop;
         else
-            // Simmetrico per la direzione opposta
-            ...
+            ... // Simmetrico per accesso dalla direzione opposta
         end if;
         if (Free = True) then
             Free := False;
-            Access_Number := 1;
-            Current_Direction := Access_End;
+            if (Access_End /= Current_Direction) then
+                Access_Number := 1;
+                Current_Direction := Access_End;
+            end if;
         else
             if (Access_Number < MAX) then
                 Access_Number := Access_Number + 1;
@@ -459,30 +481,28 @@
         ...
     end;
 \end{verbatim}
+	\column{0.4\textwidth}
+		\footnotesize
+		\myitemize{
+			\item Procedura che regola l'accesso ad un Segmento da parte di un Treno;
+			\item Accesso multiplo al Segmento, con numero massimo $MAX$ di ingressi consecutivi per estremo.
+			\item \ttt{Current\_Direction} mantiene la direzione dei Treni in transito.
+		}
+	\end{columns}
 	\end{frame}
 
-%            while
-%                ((not Free) and (Access_End /= Current_Direction)) 
-%                or 
-%                ((not Free) and (Access_End = Current_Direction) and 
-%                    (Access_Number = MAX) and (First_End_Count > 0)) 
-%            loop
-%                Second_End_Count := Second_End_Count + 1;
-%                wait(Can_Enter_Second_End);
-%                Second_End_Count := Second_End_Count - 1;
-%            end loop;	
-	
 	
 	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{2}{
+		\footnotesize
+		\justifying
 		\myitemize {
-			\item \justifying Supponiamo che un thread esegua per un dato Treno $T$, e che $T$ intenda accedere al Segmento $S$ dall'estremo $D_T$, con $D_T=$\ttt{First\_End}.  
 			\item \justifying Valutazione dei casi possibili per dimostrare la correttezza della soluzione presentata, una volta che $T$ esegue all'interno della procedure di risorsa protetta \ttt{Access\_Segment\_Monitor}.
 		}
 		\describe{\footnotesize Caso 1:}{
 			\footnotesize
 			\justifying
-			\ii{Pre-condizione:} \ttt{Free=True}\\
-			$T$ imposta il valore di \ttt{Free} a \ttt{False}, il numero di accessi per direzione \ttt{Access\_Number} a $1$, e la direzione corrente \ttt{Current\_Direction=}$1$. Esegue infine le operazioni previste dopo aver ottenuto l'accesso.
+			\ii{Precondizione:} \ttt{Free=True}\\
+			$T$ imposta il valore di \ttt{Free} a \ttt{False}. Se l'estremo di accesso è diverso da quello corrente, allora il numero di accessi per estremo \ttt{Access\_Number} viene incrementato di $1$, e la direzione corrente \ttt{Current\_Direction} è settata a $1$. In questo modo una volta raggiunto il massimo numero di accessi $MAX$, esso viene re-impostato ad $1$ solo se $T$ proviene da una direzione diversa dall'ultima percorsa. Esegue infine le operazioni previste dopo aver ottenuto l'accesso.
 		}
 	}
 	
@@ -491,14 +511,14 @@
 		\describe{\footnotesize Caso 2:}{
 			\footnotesize
 			\justifying
-			\ii{Pre-condizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ \\and $1<$\ttt{Access\_Number}$<$\ttt{MAX} \\
-			Poiché sia verificata la Pre-condizione, almeno un altro Treno proveniente dallo stesso estremo deve aver avuto accesso al Segmento (Caso 1). In questo caso, $T$ si limita a incrementare di $1$ il contatore di accessi per estremo \ttt{Access\_Number}, e ad eseguire le operazioni previste dopo l'accesso.
+			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ \\and $1<$\ttt{Access\_Number}$<$\ttt{MAX} \\
+			Perché sia verificata la Precondizione, almeno un altro Treno proveniente dallo stesso estremo deve aver avuto accesso al Segmento (Caso 1). In questo caso, $T$ si limita a incrementare di $1$ il contatore di accessi per estremo \ttt{Access\_Number}, e ad eseguire le operazioni previste dopo l'accesso.
 		}
 		\describe{\footnotesize Caso 3:}{
 			\footnotesize
 			\justifying
-			\ii{Pre-condizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$=0$ \\
-			Poiché sia verificata la Pre-condizione, almeno $MAX$ Treni provenienti dallo stesso estremo hanno avuto accesso al Segmento (Caso 1 + Caso 2). In questo caso, $T$ non incrementare il contatore di accessi \ttt{Access\_Number}, ed esegue le operazioni previste dopo l'accesso.
+			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$=0$ \\
+			Perché sia verificata la Precondizione, almeno $MAX$ Treni provenienti dallo stesso estremo hanno avuto accesso al Segmento (Caso 1 + Caso 2). In questo caso, $T$ non incrementare il contatore di accessi \ttt{Access\_Number}, ed esegue le operazioni previste dopo l'accesso.
 		}
 	}
 	
@@ -508,15 +528,15 @@
 		\describe{\footnotesize Caso 4: Accesso non consentito}{
 			\footnotesize
 			\justifying
-			\ii{Pre-condizione:} \ttt{Free=False} and \ttt{Current\_Direction}$\ne D_T$\\
-			Poiché la pre-condizione sia verificata, almeno un Treno proveniente dall'estremo opposto rispetto a $T$ ha eseguito nel Caso 1. Il thread corrente incrementa il contatore dei Treni in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \\\ttt{Can\_Enter\_First\_End}. 
+			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$\ne D_T$\\
+			Perché la pre-condizione sia verificata, almeno un Treno proveniente dall'estremo opposto rispetto a $T$ ha eseguito nel Caso 1. Il thread corrente incrementa il contatore dei Treni in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \\\ttt{Can\_Enter\_First\_End}. 
 			
 		}
 		\describe{\footnotesize Caso 5: Accesso non consentito}{
 			\footnotesize
 			\justifying
-			\ii{Pre-condizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$>0$\\
-			Poiché la pre-condizione sia verificata, almeno un Treno proveniente dall'estremo opposto rispetto a $T$ ha eseguito all'interno di \ttt{Access\_Segment\_Monitor} nel Caso 4 (relativamente alla propria direzione). Il thread crrente incrementa il contatore dei Treni in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \ttt{Can\_Enter\_First\_End}. 
+			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$>0$\\
+			Perché la pre-condizione sia verificata, almeno un Treno proveniente dall'estremo opposto rispetto a $T$ ha eseguito all'interno di \ttt{Access\_Segment\_Monitor} nel Caso 4 (relativamente alla propria direzione). Il thread corrente incrementa il contatore dei Treni in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \ttt{Can\_Enter\_First\_End}. 
 			
 		}
 	}
@@ -530,7 +550,7 @@
 					\item \`E difficile pensare ad un Sistema Distribuito realizzato con tecnologie omogenee.
 					\item Possibilità di utilizzare tecnologie specifiche per singola componente
 						\myitemize {
-							\item Nella solouzione che ho adottato, ho utilizzato il linguaggio Ada per codificare le componenti che rappresentano le Regioni;
+							\item Nella soluzione che ho adottato, ho utilizzato il linguaggio Ada per codificare le componenti che rappresentano le Regioni;
 							\item Utilizzo del linguaggio Scala per la realizzazione di Name Server, Biglietteria e Controller Centrale;
 							\item Utilizzo di Javascript e HTML per la realizzazione dell'interfaccia grafica.
 						}
@@ -540,7 +560,11 @@
 \section{Conclusioni}\label{conclusions}
 	
 	\newframe{\nameref{conclusions}}{}{}{}{
-		
+		\myitemize {
+			\item La progettazione di un Sistema Concorrente e Distribuito è un problema non banale.
+			\item Molto importante l'analisi iniziale e il confronto fra diverse soluzioni possibili.
+			\item 
+		}
 	}
 	
 \end{document}
