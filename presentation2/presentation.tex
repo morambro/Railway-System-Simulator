@@ -190,7 +190,7 @@
 							\item Segmento (entità reattiva)
 							\item Piattaforma (entità reattiva)
 							\item Biglietteria (entità reattiva)
-							\item Stazione (entità reattiva)
+							\item Stazione (entità passiva)
 						}
 				}
 		}
@@ -200,7 +200,7 @@
 		\myitemize {
 			\item Primo aspetto da valutare
 				\myitemize {
-					\item Fornisce un'architettura di alto livello del sistema.
+					\item Decomposizione architetturale del Sistema (derivazione di un'architettura di Sistema, di alto livello).
 					\item Alcune scelte vincolano le modalità di interazione tra le entità.
 				}
 			\item Caratteristiche Desiderabili
@@ -209,7 +209,7 @@
 						\myitemize{
 							\item ad es. nel progetto di un sistema ferroviario, la componente di visualizzazione dovrà nascondere l'architettura di distribuzione. 
 						}
-					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza}{0.1cm}
+					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
 				}
 		}
 	}
@@ -264,11 +264,11 @@
 				}
 			\item Scelta della modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona}) e definizione di possibili interfacce.
 			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
-			\item Individuazione delle problematiche specifiche del problema, ad es.
-				\myitemize {
-					\item Gestione del \ii{Name Resolution} per le componenti.
-					\item Gestione della sincronizzazione tra clock fisici dei nodi che ospitano le varie componenti.
-				}
+			\item Individuazione delle problematiche specifiche del problema.%, ad es.
+%				\myitemize {
+%					\item Gestione del \ii{Name Resolution} per le componenti.
+%					\item Gestione della sincronizzazione tra clock fisici dei nodi che ospitano le varie componenti.
+%				}
 			
 		}
 	}
@@ -310,13 +310,13 @@
 		\myitemize {
 			\item Scelta delle caratteristiche specifiche per ciascuna entità.
 				\myitemize {
-					\item ad es.: scelta di definire un Segmento come entità reattiva con agente di controllo, ad accesso mutuamente esclusivo con molteplicità $N\ge1$.
+					\item ad es.: scelta di definire un Segmento come entità reattiva con agente di controllo con molteplicità $N\ge1$.
 					\item ad es.: scelta di definire una Stazione come una entità passiva, che mantiene al suo interno
 						\myitemize {
 							\item un numero $M\ge1$ di Piattaforme (entità reattive con agente di controllo ad accesso mutuamente esclusivo con molteplicità $1$),	....
 						}
 				}
-			\item Prima definizione dei protocolli logici di interazione tra entità che risiedono sullo stesso nodo di calcolo.
+			\item Prima definizione dei protocolli logici di interazione tra le entità.% che risiedono sullo stesso nodo di calcolo.
 				\myitemize {
 					\item Il più possibile indipendente dalla scelta di un modello di concorrenza specifico.
 					\item Identificazione dei punti critici in cui il problema è concorrente.
@@ -344,7 +344,7 @@
 			\item Scelta di un'architettura di distribuzione.
 				\myitemize {
 					\item Introduce nuove entità?
-					\item ad es.: utilizzare Regioni come collezione di Stazioni e Segmenti, che risiedono su un singolo nodo di calcolo, e sulle quali transitano Treni e Viaggiatori.
+					\item ad es.: utilizzo di Regioni: collezione di Stazioni e Segmenti, che risiedono su un singolo nodo di calcolo, e sulle quali transitano Treni e Viaggiatori.
 					\item ad es.: introduzione di una gerarchia di Biglietterie per distribuire conoscenza e oneri di calcolo.
 						\myitemize {
 							\item Centrale
@@ -360,14 +360,15 @@
 	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{} {
 		\myitemize {
 			\item Come realizzare il passaggio di entità Treno e Viaggiatore tra Regioni?
-			\myitemize {
-				\item \ii{possibile soluzione:} Utilizzare Stazioni speciali (di ``gateway'') per permettere l'uscita di un Treno da una Regione; trasferimento diretto di un Viaggiatore.
-			}
+				\myitemize {
+					\item \ii{possibile soluzione:} Utilizzare Stazioni speciali (di ``gateway'') per permettere l'uscita di un Treno da una Regione; trasferimento diretto di un Viaggiatore.
+				}
 			\item Come si traduce il trasferimento remoto di una entità?
 				\myitemize {
 					\item creazione/distruzione?
 					\item replicazione?
 					\item Vincolo sulla realizzazione dell'entità per facilitare il trasferimento remoto!
+					\item \ii{possibile soluzione:} Disaccoppiamento tra entità e thread che ne esegue le operazioni: utilizzo di un thread pool e di descrittori di entità.
 				}
 		}
 	}
@@ -377,6 +378,9 @@
 		\describe{Avvio}{
 			\myitemize{
 				\item Deve essere coordinato tra le entità.
+					\myitemize {
+						\item Devono essere evitati tentativi di comunicazione tra componenti non ancora pronte o allocate.
+					}
 				\item \`E opportuno scegliere un ordine di avvio tra le componenti e separare la fase di inizializzazione della componente e l'avvio della simulazione.
 			}
 		}
@@ -386,7 +390,6 @@
 				\item Ha come prerequisito la definizione dei limiti entro i quali uno Stato del sistema è consistente. Ad es. nel progetto di un sistema ferroviario:
 					\myitemize {
 						\item è accettabile che il sistema termini con un certo numero di Treni in attesa di accedere ad una Piattaforma;
-						\item non è accettato lo stato di terminazione per il quale un Viaggiatore è in attesa di un Biglietto.
 					} 
 			}
 		}
@@ -395,6 +398,10 @@
 	\newframe{\nameref{sol}}{Distribuzione}{Avvio e Terminazione}{2}{
 		\describe{}{
 			\myitemize {
+				\item[]
+					\myitemize {
+						\item non è accettato lo stato di terminazione per il quale un Viaggiatore è in attesa di un Biglietto.
+					}
 				\item \`E conveniente adattare algoritmi distribuiti noti (ad es. \ii{distributed snapshot}).
 				\item Nessun thread in esecuzione sui nodi di calcolo dopo la procedura.
 			}
@@ -418,8 +425,8 @@
 				\myitemize {
 					\item Nessuna assunzione a priori sul linguaggio che verrà utilizzato.
 					\item Nessuna assunzione sulle politiche di scheduling adottate dalla macchina sottostante.
-					\item Attenzione a \ii{deadlock} e \ii{starvation}.
 				}
+			\item Attenzione a \ii{deadlock} e \ii{starvation}.
 %			\item Validare ciascuna soluzione, partendo dai pre-requisiti.
 				
 		}
@@ -446,7 +453,7 @@
 	}
 	
 	\begin{frame}[fragile]
-	\frametitle{\newtitle{\nameref{sol}}{Concorrenza}{Esempio}{1}}
+	\frametitle{\newtitle{\nameref{sol}}{Concorrenza}{Esempio}{2}}
 	\begin{columns}
 	\column{0.65\textwidth}
 	\vspace{-1.1cm}
@@ -492,7 +499,7 @@
 	\end{frame}
 
 	
-	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{2}{
+	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{3}{
 		\footnotesize
 		\justifying
 		\myitemize {
@@ -507,7 +514,7 @@
 	}
 	
 	
-	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{3}{
+	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{4}{
 		\describe{\footnotesize Caso 2:}{
 			\footnotesize
 			\justifying
@@ -523,7 +530,7 @@
 	}
 	
 	
-	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{4}{
+	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{5}{
 		
 		\describe{\footnotesize Caso 4: Accesso non consentito}{
 			\footnotesize
@@ -560,10 +567,15 @@
 \section{Conclusioni}\label{conclusions}
 	
 	\newframe{\nameref{conclusions}}{}{}{}{
+		\cm{0.5}
 		\myitemize {
 			\item La progettazione di un Sistema Concorrente e Distribuito è un problema non banale.
 			\item Molto importante l'analisi iniziale e il confronto fra diverse soluzioni possibili.
-			\item 
+			\item Errori comuni:
+				\myitemize {
+					\item Dare per scontato problematiche di distribuzione
+					\item Affidarsi a strumenti di linguaggio per risolvere problemi di concorrenza
+				}
 		}
 	}
 	
