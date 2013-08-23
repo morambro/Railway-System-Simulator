@@ -188,9 +188,11 @@
 							\item Treno (entità attiva)
 							\item Viaggiatore (entità attiva)
 							\item Segmento (entità reattiva)
-							\item Piattaforma (entità reattiva)
-							\item Biglietteria (entità reattiva)
-							\item Stazione (entità passiva)
+							\item Stazione (entità passiva)\\\cm{0.1}
+								- Piattaforma (entità reattiva)\\ \cm{0.1}
+								- Biglietteria (entità reattiva)\\ \cm{0.1}
+								- Pannello Informativo (entità reattiva)
+							
 						}
 				}
 		}
@@ -203,12 +205,11 @@
 					\item Decomposizione architetturale del Sistema (derivazione di un'architettura di Sistema, di alto livello).
 					\item Alcune scelte vincolano le modalità di interazione tra le entità.
 				}
+			
+			\item \justifying Il sistema dovrà apparire agli utenti come unitario e coerente. 
+				
 			\item Caratteristiche Desiderabili
 				\myitemize {
-					\item \justifying Il sistema dovrà apparire agli utenti come unitario e coerente. 
-						\myitemize{
-							\item ad es. nel progetto di un sistema ferroviario, la componente di visualizzazione dovrà nascondere l'architettura di distribuzione. 
-						}
 					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
 				}
 		}
@@ -257,12 +258,13 @@
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{Scelte di progetto}{}{
 		\myitemize {
-			\item Modellazione ad alto livello delle componenti del sistema necessarie e loro distribuzione.
-			\item Scelta delle modalità di distribuzione
+			\item Prima modellazione ad alto livello delle componenti distribuite del Sistema.
+			\item Scelta di alcuni aspetti legati alla distribuzione
 				\myitemize{
-					\item Dove adottare distribuzione \ii{verticale} o \ii{orizzontale}
+					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
+					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
+					\item definizione di possibili interfacce.		
 				}
-			\item Scelta della modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona}) e definizione di possibili interfacce.
 			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
 			\item Individuazione delle problematiche specifiche del problema.%, ad es.
 %				\myitemize {
@@ -308,18 +310,18 @@
 	\newframe{\nameref{analisis}}{Concorrenza}{}{}{
 		
 		\myitemize {
-			\item Scelta delle caratteristiche specifiche per ciascuna entità.
-				\myitemize {
-					\item ad es.: scelta di definire un Segmento come entità reattiva con agente di controllo con molteplicità $N\ge1$.
-					\item ad es.: scelta di definire una Stazione come una entità passiva, che mantiene al suo interno
-						\myitemize {
-							\item un numero $M\ge1$ di Piattaforme (entità reattive con agente di controllo ad accesso mutuamente esclusivo con molteplicità $1$),	....
-						}
-				}
-			\item Prima definizione dei protocolli logici di interazione tra le entità.% che risiedono sullo stesso nodo di calcolo.
+			\item Prima definizione dei protocolli logici di interazione concorrente tra le entità.
 				\myitemize {
 					\item Il più possibile indipendente dalla scelta di un modello di concorrenza specifico.
 					\item Identificazione dei punti critici in cui il problema è concorrente.
+				}
+			\item Definizione delle caratteristiche specifiche per ciascuna entità.
+				\myitemize {
+					\item ad es.: Segmento come entità reattiva con agente di controllo, a molteplicità $N\ge1$.
+					\item ad es.: Stazione come una entità passiva, che mantiene al suo interno
+						\myitemize {
+							\item un numero $M\ge1$ di Piattaforme (entità reattive con agente di controllo, a molteplicità $1$),	....
+						}
 				}
 				
 		}
@@ -337,7 +339,7 @@
 	
 % ####################################### PROBLEM SOLUTION ###################################
 	
-\section{Soluzione al Problema}\label{sol}
+\section{Costruzione di una Soluzione}\label{sol}
 
 	\newframe{\nameref{sol}}{Distribuzione}{}{} {
 		\myitemize {
