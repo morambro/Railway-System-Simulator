@@ -30,9 +30,9 @@
 \institute[\insertframenumber/\inserttotalframenumber]{
 	\large{Università degli studi di Padova} \\
 	\vspace{5pt}
-	\normalsize Facoltà di Scienze MM. FF. NN. \\
+	\normalsize Dipartimento di Matematica \\
 	\vspace{5pt}
-	\small Corso di laurea in Informatica
+	\small Corso di laurea Magistrale in Informatica
 }
 \date{Agosto 2013}
 
@@ -66,8 +66,8 @@
 \newcommand{\timetable}{\ii{tabella oraria}}
 \newcommand{\timetables}{\ii{tabelle di orari}}
 \newcommand{\controller}{\ii{controllo centrale}}
-\newcommand{\regione}{\ii{regione}}
-\newcommand{\regioni}{\ii{regioni}}
+\newcommand{\Regione}{\ii{Regione}}
+\newcommand{\Regioni}{\ii{Regioni}}
 \newcommand{\gateway}{\ii{stazione di gateway}}
 \newcommand{\gateways}{\ii{stazioni di gateway}}
 
@@ -152,7 +152,7 @@
 
 	\newframe{\nameref{intro}}{}{}{}{
 		\myitemize {
-			\item La progettazione di un sistema distribuito si compone di:
+			\item La progettazione di un Sistema distribuito si compone di:
 				\cm{0.3}
 				\myitemize {
 					\item Analisi del problema.
@@ -170,7 +170,7 @@
 							\item Risoluzione delle problematiche di concorrenza.
 						}
 					\cm{0.3}
-					\item Scelta delle Tecnologie.
+					\item Scelta del supporto tecnologico da utilizzare per l'implementazione.
 				}
 		}
 	}
@@ -184,7 +184,7 @@
 %				}
 			\item Individuazione e prima definizione delle entità del Sistema.
 				\myitemize {
-					\item ad es. nel progetto di un sistema ferroviario:
+					\item ad es. nel progetto di un Sistema ferroviario:
 						\myitemize{
 							\item Treno (entità attiva)
 							\item Viaggiatore (entità attiva)
@@ -208,15 +208,15 @@
 		\myitemize {
 			\item Primo aspetto da valutare
 				\myitemize {
-					\item Derivazione di un'architettura di Sistema di alto livello.
+					\item Fornisce una visione di alto livello dell'architettura di Sistema.
 					\item Alcune scelte vincolano le modalità di interazione tra le entità.
 				}
 			\cm{0.2}
-			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
+			\item Il Sistema dovrà apparire agli utenti come unitario e coerente. 
 			\cm{0.2}
 			\item Caratteristiche Desiderabili
 				\myitemize {
-					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
+					\itemB{Trasparenza:}{Il Sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
 				}
 		}
 	}
@@ -227,17 +227,17 @@
 				\myitemize {
 					\itemB{Openess:}{\justifying
 						\myitemize {
-							\item Il sistema dovrà garantire portabilità e interoperabilità.
-							\item Il sistema dovrà essere fruibile mediante regole standard (interfacce).
-							\item \justifying Organizzazione del sistema in componenti di dimensione ridotta, e facilmente sostituibili.
+							\item Il Sistema dovrà garantire portabilità e interoperabilità.
+							\item Il Sistema dovrà essere fruibile mediante regole standard (interfacce).
+							\item \justifying Organizzazione del Sistema in componenti di dimensione ridotta, e facilmente sostituibili.
 							\item Separazione tra \ii{politiche} e \ii{meccanismi}.
 						}
 					}{0.1cm}
 					\itemB{Scalabilità:}{\justifying
 						\myitemize {
-							\item Rispetto alla cardinalità del sistema (ad es. nel progetto di un sistema ferroviario, è desiderabile poter aumentare la popolazione di Stazioni e Segmenti di collegamento).
+							\item Rispetto alla cardinalità del Sistema (ad es. nel progetto di un Sistema ferroviario, è desiderabile poter aumentare la popolazione di Stazioni e Segmenti di collegamento).
 							\item Rispetto alla distribuzione spaziale delle componenti.
-							\item Rispetto alle problematiche locali di gestione (che non devono affliggere l'intero sistema).
+							\item Rispetto alle problematiche locali di gestione (che non devono affliggere l'intero Sistema).
 						}
 					}{0.1cm}
 				}
@@ -251,13 +251,13 @@
 				\myitemize {
 					\itemB{Fault Tollerance:}{
 						\myitemize{
-							\item Il sistema deve essere progettato in modo tale da ridurre l'impatto causato da \ii{partial failures}.
-							\item Il sistema dovrà gestire errori di comunicazione tra i nodi.
+							\item Il Sistema deve essere progettato in modo tale da ridurre l'impatto causato da \ii{partial failures}.
+							\item Il Sistema dovrà gestire errori di comunicazione tra i nodi.
 						}
 					}{0.1cm}
 					
-					\itemB{Avvio ordinato:}{\justifying Il sistema dovrà essere avviato in modo tale da permettere a tutte le componenti di comunicare senza errori.}{0.1cm}
-					\itemB{Terminazione in stato Consistente}{\justifying Il sistema deve poter essere terminato in uno stato consistente; nessun entità dovrà rimanere attiva dopo la procedura di terminazione.}{0.1cm}
+					\itemB{Avvio ordinato:}{\justifying Il Sistema dovrà essere avviato in modo tale da permettere a tutte le componenti di comunicare senza errori.}{0.1cm}
+					\itemB{Terminazione in stato Consistente}{\justifying Il Sistema deve poter essere terminato in uno stato consistente; nessun entità dovrà rimanere attiva dopo la procedura di terminazione.}{0.1cm}
 				}
 				
 		}
@@ -272,7 +272,7 @@
 					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
 					\item definizione di possibili interfacce.		
 				}
-			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
+			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul Sistema.
 			\item Individuazione delle problematiche specifiche del problema.
 				\myitemize {
 					\item Ad es. effetti sul realismo della simulazione.
@@ -382,9 +382,9 @@
 		\cm{0.1}
 		\describe{Terminazione}{
 			\myitemize{
-				\item Ha come prerequisito la definizione dei limiti entro i quali uno Stato del sistema è consistente. Ad es. nel progetto di un sistema ferroviario:
+				\item Ha come prerequisito la definizione dei limiti entro i quali uno Stato del Sistema è consistente. Ad es. nel progetto di un Sistema ferroviario:
 					\myitemize {
-						\item è accettabile che il sistema termini con un certo numero di Treni in attesa di accedere ad una Piattaforma;
+						\item è accettabile che il Sistema termini con un certo numero di Treni in attesa di accedere ad una Piattaforma;
 					} 
 			}
 		}
@@ -542,14 +542,15 @@
 		}
 	}
 	
+\section{Scelta degli strumenti tecnologici}\label{tec}
 	
-	\newframe{\nameref{sol}}{Tecnologie}{}{}{
+	\newframe{\nameref{tec}}{}{}{}{
 		\myitemize {
-			\item Scelta delle tecnologie che meglio si adattano alle scelte di progetto.
+			\item Utilizzo di linguaggi di programmazione e strumenti che meglio si adattano alle scelte di progetto (e non viceversa).
 			\item Interessante l'utilizzo di tecnologie eterogenee
 				\myitemize {
-					\item \`E difficile pensare ad un Sistema Distribuito realizzato con tecnologie omogenee.
-					\item Possibilità di utilizzare tecnologie specifiche per singola componente.\\Ad es. nella soluzione progettata:
+					\item \`E difficile pensare ad un Sistema Distribuito realizzato con tecnologia uniforme.
+					\item Possibilità di utilizzare supporti tecnologici specifici per singola componente.\\Ad es. nella soluzione progettata:
 					
 						\myitemize {
 							\item ho utilizzato il linguaggio Ada per codificare le componenti che rappresentano le Regioni;
