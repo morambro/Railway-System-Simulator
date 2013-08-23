@@ -11,7 +11,7 @@
 \usetheme{Antibes}
 \usecolortheme{default}
 
-\setbeameroption{show notes}
+%\setbeameroption{show notes}
 
 
 \pgfdeclareimage[height=1.5cm]{logo}{imgs/unipd_logo}
@@ -256,7 +256,7 @@
 		}
 	}
 	
-	\newframe{\nameref{analisis}}{Distribuzione}{Scelte di progetto}{}{
+	\newframe{\nameref{analisis}}{Distribuzione}{}{4}{
 		\myitemize {
 			\item Prima modellazione ad alto livello delle componenti distribuite del Sistema.
 			\item Scelta di alcuni aspetti legati alla distribuzione
@@ -344,9 +344,12 @@
 	\newframe{\nameref{sol}}{Distribuzione}{}{} {
 		\myitemize {
 			\item Scelta di un'architettura di distribuzione.
+			\item Introduzione di nuove entitàs
 				\myitemize {
-					\item Introduce nuove entità?
 					\item ad es.: utilizzo di Regioni: collezione di Stazioni e Segmenti, che risiedono su un singolo nodo di calcolo, e sulle quali transitano Treni e Viaggiatori.
+				}
+			\item Decomposizione architetturale a grana più fine
+				\myitemize {
 					\item ad es.: introduzione di una gerarchia di Biglietterie per distribuire conoscenza e oneri di calcolo.
 						\myitemize {
 							\item Centrale
@@ -354,7 +357,7 @@
 							\item di Stazione
 						}
 				}
-			\item Identificazione delle problematiche conseguenti a tale scelta.
+			\item Identificazione delle problematiche conseguenti alle scelte architetturali.
 				
 		}
 	}
