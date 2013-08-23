@@ -13,6 +13,8 @@
 
 %\setbeameroption{show notes}
 
+\newcommand{\presTitle}{Progettazione di un Sistema Concorrente e Distribuito}
+
 
 \pgfdeclareimage[height=1.5cm]{logo}{imgs/unipd_logo}
 
@@ -25,7 +27,7 @@
 
 \author{Moreno Ambrosin}
 
-\title[Progetto di Sistemi Concorrenti e Distribuiti]{Realizzazione del Progetto di Sistemi Concorrenti e Distribuiti}
+\title[\presTitle]{\presTitle}
 
 \institute[\insertframenumber/\inserttotalframenumber]{
 	\large{Università degli studi di Padova} \\
@@ -143,7 +145,7 @@
 		\tableofcontents
 	}
 	
-	\setbeamertemplate{footline}[text line]{\parbox{\linewidth}{\vspace*{-8pt}\scriptsize\insertframenumber/\inserttotalframenumber\hfill Progetto di Sistemi Concorrenti e Distribuiti\hfill}}
+	\setbeamertemplate{footline}[text line]{\parbox{\linewidth}{\vspace*{-8pt}\scriptsize\insertframenumber/\inserttotalframenumber\hfill \presTitle \hfill}}
 	
 	
 	
@@ -152,24 +154,24 @@
 
 	\newframe{\nameref{intro}}{}{}{}{
 		\myitemize {
-			\item La progettazione di un Sistema distribuito si compone di:
-				\cm{0.3}
+			\item La progettazione di un Sistema Concorrente e Distribuito si compone di:
+				\cm{0.2}
 				\myitemize {
 					\item Analisi del problema.
-						\cm{0.3}
+						\cm{0.2}
 						\myitemize {
 							\item Definizione della specifica.
 							\item Analisi degli aspetti legati alla Distribuzione.
 							\item Analisi degli aspetti legati alla Concorrenza.
 						}
-					\cm{0.3}
+					\cm{0.2}
 					\item Costruzione di una soluzione.
-					\cm{0.3}	
+					\cm{0.2}	
 						\myitemize {
 							\item Definizione di una architettura di distribuzione.
 							\item Risoluzione delle problematiche di concorrenza.
 						}
-					\cm{0.3}
+					\cm{0.2}
 					\item Scelta del supporto tecnologico da utilizzare per l'implementazione.
 				}
 		}
