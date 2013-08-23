@@ -34,7 +34,7 @@
 	\vspace{5pt}
 	\small Corso di laurea in Informatica
 }
-\date{Settembre 2013}
+\date{Agosto 2013}
 
 \newcommand{\itemB}[3]{
 	\item \textbf{#1} #2 \vspace{#3}
@@ -153,19 +153,24 @@
 	\newframe{\nameref{intro}}{}{}{}{
 		\myitemize {
 			\item La progettazione di un sistema distribuito si compone di:
-				\cm{0.5}
+				\cm{0.3}
 				\myitemize {
 					\item Analisi del problema.
-						\cm{0.4}
+						\cm{0.3}
 						\myitemize {
-							\item Aspetti legati alla Distribuzione.
-							\item Aspetti legati alla Concorrenza.
+							\item Definizione della specifica.
+							\item Analisi degli aspetti legati alla Distribuzione.
+							\item Analisi degli aspetti legati alla Concorrenza.
 						}
-					\cm{0.4}
+					\cm{0.3}
 					\item Costruzione di una soluzione.
-					\cm{0.4}
+					\cm{0.3}	
+						\myitemize {
+							\item Definizione di una architettura di distribuzione.
+							\item Risoluzione delle problematiche di concorrenza.
+						}
+					\cm{0.3}
 					\item Scelta delle Tecnologie.
-					\cm{0.4}
 				}
 		}
 	}
@@ -173,15 +178,11 @@
 \section{Analisi del Problema}\label{analisis}
 	\newframe{\nameref{analisis}}{}{}{}{
 		\myitemize {
-			\item Identificare e definire i requisiti di massima del sistema.
-				\myitemize{
-					\item Operazione sottovalutata ma importante.
-				}
 %			\item I requisiti possono variare durante la progettazione (grado di libertà eleveto nella specifica).
 %				\myitemize {
 %					\item Importante mantenere semplice la specifica (si può poi procedere in maniera incrementale).
 %				}
-			\item Individuazione e prima definizione delle entità del sistema.
+			\item Individuazione e prima definizione delle entità del Sistema.
 				\myitemize {
 					\item ad es. nel progetto di un sistema ferroviario:
 						\myitemize{
@@ -195,6 +196,10 @@
 							
 						}
 				}
+			\item Identificazione e definizione dei requisiti di massima del Sistema.
+				\myitemize{
+					\item Operazione sottovalutata ma importante.
+				}
 		}
 	}
 	
@@ -206,7 +211,7 @@
 					\item Alcune scelte vincolano le modalità di interazione tra le entità.
 				}
 			
-			\item \justifying Il sistema dovrà apparire agli utenti come unitario e coerente. 
+			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
 				
 			\item Caratteristiche Desiderabili
 				\myitemize {
@@ -276,32 +281,15 @@
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{1}{
-		\newfigure{imgs/All_distributed}{0.22}{Architettura di distribuzione in cui tutte le entità principali vengono distribuite.}
-		\note[includegraphics]{
-			PRO:
-			\myitemize {
-				\item Scalabilità in dimensione
-				\item Fault Tollerance a partial failures
-				\item Semplice sostituibilità dei componenti
-			}
-		}
-		\note[includegraphics]{CONTRO
-			\myitemize {
-				\item Complessità terminazione
-				\item Assenza di riferimento temporale unico
-				\item Elevato traffico di rete (ok in LAN, bad on WAN)
-			}
-		}
-		\note[includegraphics]{Deve essere adottato un sistema di Naming che scali meglio di semplice tabella [Nome,Indirizzo]}
-		
+		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità principali vengono distribuite.}		
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{2}{
-		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di distribuzione in cui solo Controller Centrale e Visualizzazione sono distribuite.}
+		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e Visualizzazione sono distribuite.}
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{3}{
-		\newfigure{imgs/solution}{0.24}{Architettura di distribuzione in cui sono aggiunte e distribuite \ii{regioni}.}
+		\newfigure{imgs/solution}{0.24}{Architettura di alto livello con distribuzione a livello di \ii{Regioni}.}
 	}
 
 %############################### CONCURRENCY	
@@ -344,9 +332,9 @@
 	\newframe{\nameref{sol}}{Distribuzione}{}{} {
 		\myitemize {
 			\item Scelta di un'architettura di distribuzione.
-			\item Introduzione di nuove entitàs
+			\item Introduzione di nuove entità
 				\myitemize {
-					\item ad es.: utilizzo di Regioni: collezione di Stazioni e Segmenti, che risiedono su un singolo nodo di calcolo, e sulle quali transitano Treni e Viaggiatori.
+					\item ad es.: utilizzo di Regioni.
 				}
 			\item Decomposizione architetturale a grana più fine
 				\myitemize {
@@ -354,9 +342,10 @@
 						\myitemize {
 							\item Centrale
 							\item Regionale
-							\item di Stazione
+							\item Interna alle Stazioni
 						}
 				}
+			\item Scelta del modello di comunicazione tra le componenti.
 			\item Identificazione delle problematiche conseguenti alle scelte architetturali.
 				
 		}
@@ -510,7 +499,7 @@
 		\myitemize {
 			\item \justifying Valutazione dei casi possibili per dimostrare la correttezza della soluzione presentata, una volta che $T$ esegue all'interno della procedure di risorsa protetta \ttt{Access\_Segment\_Monitor}.
 		}
-		\describe{\footnotesize Caso 1:}{
+		\describe{\footnotesize Caso 1: Accesso Consentito}{
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=True}\\
@@ -520,13 +509,13 @@
 	
 	
 	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{4}{
-		\describe{\footnotesize Caso 2:}{
+		\describe{\footnotesize Caso 2: Accesso Consentito}{
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ \\and $1<$\ttt{Access\_Number}$<$\ttt{MAX} \\
 			Perché sia verificata la Precondizione, almeno un altro Treno proveniente dallo stesso estremo deve aver avuto accesso al Segmento (Caso 1). In questo caso, $T$ si limita a incrementare di $1$ il contatore di accessi per estremo \ttt{Access\_Number}, e ad eseguire le operazioni previste dopo l'accesso.
 		}
-		\describe{\footnotesize Caso 3:}{
+		\describe{\footnotesize Caso 3: Accesso Consentito}{
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$=0$ \\
@@ -560,11 +549,12 @@
 			\item Interessante l'utilizzo di tecnologie eterogenee
 				\myitemize {
 					\item \`E difficile pensare ad un Sistema Distribuito realizzato con tecnologie omogenee.
-					\item Possibilità di utilizzare tecnologie specifiche per singola componente
+					\item Possibilità di utilizzare tecnologie specifiche per singola componente.\\Ad es. nella soluzione progettata:
+					
 						\myitemize {
-							\item Nella soluzione che ho adottato, ho utilizzato il linguaggio Ada per codificare le componenti che rappresentano le Regioni;
-							\item Utilizzo del linguaggio Scala per la realizzazione di Name Server, Biglietteria e Controller Centrale;
-							\item Utilizzo di Javascript e HTML per la realizzazione dell'interfaccia grafica.
+							\item ho utilizzato il linguaggio Ada per codificare le componenti che rappresentano le Regioni;
+							\item ho utilizzato il linguaggio Scala per la realizzazione di Name Server, Biglietteria e Controller Centrale;
+							\item ho utilizzato Javascript e HTML per la realizzazione dell'interfaccia grafica.
 						}
 				}
 		}
@@ -574,12 +564,12 @@
 	\newframe{\nameref{conclusions}}{}{}{}{
 		\cm{0.5}
 		\myitemize {
-			\item La progettazione di un Sistema Concorrente e Distribuito è un problema non banale.
-			\item Molto importante l'analisi iniziale e il confronto fra diverse soluzioni possibili.
+			\item La progettazione di un Sistema Concorrente e Distribuito è un'operazione complessa.
+			\item Molto importante l'analisi iniziale e il confronto fra diverse architetture si Sistema possibili.
 			\item Errori comuni:
 				\myitemize {
-					\item Dare per scontato problematiche di distribuzione
-					\item Affidarsi a strumenti di linguaggio per risolvere problemi di concorrenza
+					\item dare per scontato problematiche di distribuzione;
+					\item affidarsi a strumenti di linguaggio per risolvere problemi di concorrenza.
 				}
 		}
 	}
