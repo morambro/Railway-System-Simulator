@@ -13,7 +13,7 @@
 
 %\setbeameroption{show notes}
 
-\newcommand{\presTitle}{Progettazione di un Sistema Concorrente e Distribuito}
+\newcommand{\presTitle}{Progettazione di un sistema Concorrente e Distribuito}
 
 
 \pgfdeclareimage[height=1.5cm]{logo}{imgs/unipd_logo}
@@ -154,15 +154,15 @@
 
 	\newframe{\nameref{intro}}{}{}{}{
 		\myitemize {
-			\item La progettazione di un Sistema Concorrente e Distribuito si compone di:
+			\item La progettazione di un sistema concorrente e distribuito si compone di:
 				\cm{0.2}
 				\myitemize {
 					\item Analisi del problema.
 						\cm{0.2}
 						\myitemize {
 							\item Definizione della specifica.
-							\item Analisi degli aspetti legati alla Distribuzione.
-							\item Analisi degli aspetti legati alla Concorrenza.
+							\item Analisi degli aspetti legati alla distribuzione.
+							\item Analisi degli aspetti legati alla concorrenza.
 						}
 					\cm{0.2}
 					\item Costruzione di una soluzione.
@@ -184,9 +184,9 @@
 %				\myitemize {
 %					\item Importante mantenere semplice la specifica (si può poi procedere in maniera incrementale).
 %				}
-			\item Individuazione e prima definizione delle entità del Sistema.
+			\item Individuazione e prima definizione delle entità del sistema.
 				\myitemize {
-					\item ad es. nel progetto di un Sistema ferroviario:
+					\item ad es. nel progetto di un sistema ferroviario:
 						\myitemize{
 							\item Treno (entità attiva)
 							\item Viaggiatore (entità attiva)
@@ -198,7 +198,7 @@
 							
 						}
 				}
-			\item Identificazione e definizione dei requisiti di massima del Sistema.
+			\item Identificazione e definizione dei requisiti di massima del sistema.
 				\myitemize{
 					\item Operazione sottovalutata ma importante.
 				}
@@ -210,15 +210,15 @@
 		\myitemize {
 			\item Primo aspetto da valutare
 				\myitemize {
-					\item Fornisce una visione di alto livello dell'architettura di Sistema.
+					\item Fornisce una visione di alto livello dell'architettura di sistema.
 					\item Alcune scelte vincolano le modalità di interazione tra le entità.
 				}
 			\cm{0.2}
-			\item Il Sistema dovrà apparire agli utenti come unitario e coerente. 
+			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
 			\cm{0.2}
-			\item Caratteristiche Desiderabili
+			\item Caratteristiche desiderabili
 				\myitemize {
-					\itemB{Trasparenza:}{Il Sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
+					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
 				}
 		}
 	}
@@ -229,17 +229,17 @@
 				\myitemize {
 					\itemB{Openess:}{\justifying
 						\myitemize {
-							\item Il Sistema dovrà garantire portabilità e interoperabilità.
-							\item Il Sistema dovrà essere fruibile mediante regole standard (interfacce).
-							\item \justifying Organizzazione del Sistema in componenti di dimensione ridotta, e facilmente sostituibili.
+							\item Il sistema dovrà garantire portabilità e interoperabilità.
+							\item Il sistema dovrà essere fruibile mediante regole standard (interfacce).
+							\item \justifying Organizzazione del sistema in componenti di dimensione ridotta, e facilmente sostituibili.
 							\item Separazione tra \ii{politiche} e \ii{meccanismi}.
 						}
 					}{0.1cm}
 					\itemB{Scalabilità:}{\justifying
 						\myitemize {
-							\item Rispetto alla cardinalità del Sistema (ad es. nel progetto di un Sistema ferroviario, è desiderabile poter aumentare la popolazione di Stazioni e Segmenti di collegamento).
+							\item Rispetto alla cardinalità del sistema (ad es. nel progetto di un sistema ferroviario, è desiderabile poter aumentare la popolazione di Stazioni e Segmenti di collegamento).
 							\item Rispetto alla distribuzione spaziale delle componenti.
-							\item Rispetto alle problematiche locali di gestione (che non devono affliggere l'intero Sistema).
+							\item Rispetto alle problematiche locali di gestione (che non devono affliggere l'intero sistema).
 						}
 					}{0.1cm}
 				}
@@ -253,13 +253,13 @@
 				\myitemize {
 					\itemB{Fault Tollerance:}{
 						\myitemize{
-							\item Il Sistema deve essere progettato in modo tale da ridurre l'impatto causato da \ii{partial failures}.
-							\item Il Sistema dovrà gestire errori di comunicazione tra i nodi.
+							\item Il sistema deve essere progettato in modo tale da ridurre l'impatto causato da \ii{partial failures}.
+							\item Il sistema dovrà gestire errori di comunicazione tra i nodi.
 						}
 					}{0.1cm}
 					
-					\itemB{Avvio ordinato:}{\justifying Il Sistema dovrà essere avviato in modo tale da permettere a tutte le componenti di comunicare senza errori.}{0.1cm}
-					\itemB{Terminazione in stato Consistente}{\justifying Il Sistema deve poter essere terminato in uno stato consistente; nessun entità dovrà rimanere attiva dopo la procedura di terminazione.}{0.1cm}
+					\itemB{Avvio ordinato:}{\justifying Il sistema dovrà essere avviato in modo tale da permettere a tutte le componenti di comunicare senza errori.}{0.1cm}
+					\itemB{Terminazione in stato Consistente}{\justifying Il sistema deve poter essere terminato in uno stato consistente; nessun entità dovrà rimanere attiva dopo la procedura di terminazione.}{0.1cm}
 				}
 				
 		}
@@ -267,14 +267,14 @@
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{}{4}{
 		\myitemize {
-			\item Prima modellazione ad alto livello delle componenti distribuite del Sistema.
+			\item Prima modellazione ad alto livello delle componenti distribuite del sistema.
 			\item Scelta di alcuni aspetti legati alla distribuzione
 				\myitemize{
 					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
 					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
 					\item definizione di possibili interfacce.		
 				}
-			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul Sistema.
+			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
 			\item Individuazione delle problematiche specifiche del problema.
 				\myitemize {
 					\item Ad es. effetti sul realismo della simulazione.
@@ -330,7 +330,7 @@
 	
 % ####################################### PROBLEM SOLUTION ###################################
 	
-\section{Costruzione di una Soluzione}\label{sol}
+\section{Costruzione di una soluzione}\label{sol}
 
 	\newframe{\nameref{sol}}{Distribuzione}{}{} {
 		\myitemize {
@@ -370,38 +370,32 @@
 		}
 	}
 	
-	\newframe{\nameref{sol}}{Distribuzione}{Avvio e Terminazione}{1}{
+	\newframe{\nameref{sol}}{Distribuzione}{Avvio}{}{
+		\cm{0.5}
 		\justifying
-		\describe{Avvio}{
-			\myitemize{
-				\item Deve essere coordinato tra le entità.
-					\myitemize {
-						\item Devono essere evitati tentativi di comunicazione tra componenti non ancora pronte o allocate.
-					}
-				\item \`E opportuno scegliere un ordine di avvio tra le componenti e separare la fase di inizializzazione della componente e l'avvio della simulazione.
-			}
+		\myitemize{
+			\item L'avvio deve essere coordinato tra le entità.
+				\cm{0.3}
+				\myitemize {
+					\item Devono essere evitati tentativi di comunicazione tra componenti non ancora pronte o allocate.
+				}
+				\cm{0.3}
+			\item \`E opportuno scegliere un ordine di avvio tra le componenti e separare la fase di inizializzazione delle componenti e l'avvio della simulazione.
 		}
-		\cm{0.1}
-		\describe{Terminazione}{
-			\myitemize{
-				\item Ha come prerequisito la definizione dei limiti entro i quali uno Stato del Sistema è consistente. Ad es. nel progetto di un Sistema ferroviario:
-					\myitemize {
-						\item è accettabile che il Sistema termini con un certo numero di Treni in attesa di accedere ad una Piattaforma;
-					} 
-			}
-		}
+		
 	}
 	
-	\newframe{\nameref{sol}}{Distribuzione}{Avvio e Terminazione}{2}{
-		\describe{}{
-			\myitemize {
-				\item[]
-					\myitemize {
-						\item non è accettato lo stato di terminazione per il quale un Viaggiatore è in attesa di un Biglietto.
-					}
-				\item \`E conveniente adattare algoritmi distribuiti noti (ad es. \ii{distributed snapshot}).
-				\item Nessun thread in esecuzione sui nodi di calcolo dopo la procedura.
-			}
+	\newframe{\nameref{sol}}{Distribuzione}{Terminazione}{}{
+		\cm{0.5}
+		\myitemize{
+			\item La Terminazione ha come prerequisito la definizione dei limiti entro i quali uno stato del sistema è consistente. 
+			\item Ad es. nel progetto di un sistema ferroviario:
+				\myitemize {
+					\item è accettabile che il sistema termini con un certo numero di Treni in attesa di accedere ad una Piattaforma;
+					\item non è accettato lo stato di terminazione per il quale un Viaggiatore è in attesa di un Biglietto.
+				}
+			\item \`E conveniente adattare algoritmi distribuiti noti (ad es. \ii{distributed snapshot}).
+			\item Nessun thread in esecuzione sui nodi di calcolo dopo la procedura.
 		}
 	}
 	
@@ -551,7 +545,7 @@
 			\item Utilizzo di linguaggi di programmazione e strumenti che meglio si adattano alle scelte di progetto (e non viceversa).
 			\item Interessante l'utilizzo di tecnologie eterogenee
 				\myitemize {
-					\item \`E difficile pensare ad un Sistema Distribuito realizzato con tecnologia uniforme.
+					\item \`E difficile pensare ad un sistema distribuito realizzato con tecnologia uniforme.
 					\item Possibilità di utilizzare supporti tecnologici specifici per singola componente.\\Ad es. nella soluzione progettata:
 					
 						\myitemize {
@@ -567,8 +561,8 @@
 	\newframe{\nameref{conclusions}}{}{}{}{
 		\cm{0.5}
 		\myitemize {
-			\item La progettazione di un Sistema Concorrente e Distribuito è un'operazione complessa.
-			\item Molto importante l'analisi iniziale e il confronto fra diverse architetture si Sistema possibili.
+			\item La progettazione di un sistema concorrente e distribuito è un'operazione complessa.
+			\item Molto importante l'analisi iniziale e il confronto fra diverse architetture si sistema possibili.
 			\item Errori comuni:
 				\myitemize {
 					\item dare per scontato problematiche di distribuzione;
