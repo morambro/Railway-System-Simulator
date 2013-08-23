@@ -204,15 +204,16 @@
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{}{1}{
+		\cm{0.5}
 		\myitemize {
 			\item Primo aspetto da valutare
 				\myitemize {
-					\item Decomposizione architetturale del Sistema (derivazione di un'architettura di Sistema, di alto livello).
+					\item Derivazione di un'architettura di Sistema di alto livello.
 					\item Alcune scelte vincolano le modalità di interazione tra le entità.
 				}
-			
+			\cm{0.2}
 			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
-				
+			\cm{0.2}
 			\item Caratteristiche Desiderabili
 				\myitemize {
 					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
@@ -244,6 +245,7 @@
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{}{3}{
+		\cm{0.5}
 		\myitemize {
 			\item[]
 				\myitemize {
@@ -271,11 +273,10 @@
 					\item definizione di possibili interfacce.		
 				}
 			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
-			\item Individuazione delle problematiche specifiche del problema.%, ad es.
-%				\myitemize {
-%					\item Gestione del \ii{Name Resolution} per le componenti.
-%					\item Gestione della sincronizzazione tra clock fisici dei nodi che ospitano le varie componenti.
-%				}
+			\item Individuazione delle problematiche specifiche del problema.
+				\myitemize {
+					\item Ad es. effetti sul realismo della simulazione.
+				}
 			
 		}
 	}
@@ -332,11 +333,11 @@
 	\newframe{\nameref{sol}}{Distribuzione}{}{} {
 		\myitemize {
 			\item Scelta di un'architettura di distribuzione.
-			\item Introduzione di nuove entità
+			\item Possibile introduzione di nuove entità
 				\myitemize {
 					\item ad es.: utilizzo di Regioni.
 				}
-			\item Decomposizione architetturale a grana più fine
+			\item Definizione architetturale a grana più fine
 				\myitemize {
 					\item ad es.: introduzione di una gerarchia di Biglietterie per distribuire conoscenza e oneri di calcolo.
 						\myitemize {
