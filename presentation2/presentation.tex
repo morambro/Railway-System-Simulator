@@ -180,22 +180,17 @@
 \section{Analisi del Problema}\label{analisis}
 	\newframe{\nameref{analisis}}{}{}{}{
 		\myitemize {
-%			\item I requisiti possono variare durante la progettazione (grado di libertà eleveto nella specifica).
-%				\myitemize {
-%					\item Importante mantenere semplice la specifica (si può poi procedere in maniera incrementale).
-%				}
 			\item Individuazione e prima definizione delle entità del sistema.
 				\myitemize {
 					\item ad es. nel progetto di un sistema ferroviario:
 						\myitemize{
-							\item Treno (entità attiva)
-							\item Viaggiatore (entità attiva)
-							\item Segmento (entità reattiva)
-							\item Stazione (entità passiva)\\\cm{0.1}
-								- Piattaforma (entità reattiva)\\ \cm{0.1}
-								- Biglietteria (entità reattiva)\\ \cm{0.1}
-								- Pannello Informativo (entità reattiva)
-							
+							\item Treno
+							\item Viaggiatore
+							\item Segmento
+							\item Stazione\\\cm{0.1}
+								- Piattaforma\\ \cm{0.1}
+								- Biglietteria\\ \cm{0.1}
+								- Pannello Informativo
 						}
 				}
 			\item Identificazione e definizione dei requisiti di massima del sistema.
@@ -206,12 +201,14 @@
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{}{1}{
-		\cm{0.5}
+		\cm{0.3}
 		\myitemize {
 			\item Primo aspetto da valutare
 				\myitemize {
 					\item Fornisce una visione di alto livello dell'architettura di sistema.
-					\item Alcune scelte vincolano le modalità di interazione tra le entità.
+					\item Le scelte di distribuzione influenzano\\
+						 - la rappresentazione delle entità;\\
+						 - le modalità di interazione tra di esse.
 				}
 			\cm{0.2}
 			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
@@ -251,7 +248,7 @@
 		\myitemize {
 			\item[]
 				\myitemize {
-					\itemB{Fault Tollerance:}{
+					\itemB{Fault Tolerance:}{
 						\myitemize{
 							\item Il sistema deve essere progettato in modo tale da ridurre l'impatto causato da \ii{partial failures}.
 							\item Il sistema dovrà gestire errori di comunicazione tra i nodi.
@@ -380,7 +377,7 @@
 					\item Devono essere evitati tentativi di comunicazione tra componenti non ancora pronte o allocate.
 				}
 				\cm{0.3}
-			\item \`E opportuno scegliere un ordine di avvio tra le componenti e separare la fase di inizializzazione delle componenti e l'avvio della simulazione.
+			\item \`E opportuno scegliere un ordine di avvio tra le componenti e separare la fase di inizializzazione delle componenti dall'avvio della simulazione.
 		}
 		
 	}
@@ -562,7 +559,7 @@
 		\cm{0.5}
 		\myitemize {
 			\item La progettazione di un sistema concorrente e distribuito è un'operazione complessa.
-			\item Molto importante l'analisi iniziale e il confronto fra diverse architetture di sistema e soluzioni a problemi di concorrenza.
+			\item Molto importante l'analisi iniziale e il confronto tra diverse architetture di sistema e tra diverse soluzioni a problemi di concorrenza.
 			\item Errori comuni:
 				\myitemize {
 					\item dare per scontato problematiche di distribuzione;
