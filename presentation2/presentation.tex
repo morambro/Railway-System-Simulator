@@ -153,6 +153,7 @@
 \section{Introduzione}\label{intro}
 
 	\newframe{\nameref{intro}}{}{}{}{
+		
 		\myitemize {
 			\item La progettazione di un sistema concorrente e distribuito si compone di:
 				\cm{0.2}
@@ -160,7 +161,7 @@
 					\item Analisi del problema.
 						\cm{0.2}
 						\myitemize {
-							\item Definizione della specifica.
+							\item Definizione dei requisiti del sistema.
 							\item Analisi degli aspetti legati alla distribuzione.
 							\item Analisi degli aspetti legati alla concorrenza.
 						}
@@ -191,6 +192,7 @@
 								- Piattaforma\\ \cm{0.1}
 								- Biglietteria\\ \cm{0.1}
 								- Pannello Informativo
+							\item Controllo Centrale
 						}
 				}
 			\item Identificazione e definizione dei requisiti di massima del sistema.
@@ -259,36 +261,6 @@
 				
 		}
 	}
-	
-%	\newframe{\nameref{analisis}}{Distribuzione}{}{4}{
-%		\myitemize {
-%			\item Prima modellazione ad alto livello delle componenti distribuite del sistema.
-%			\item Scelta di alcuni aspetti legati alla distribuzione
-%				\myitemize{
-%					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
-%					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
-%					\item definizione di possibili interfacce.		
-%				}
-%			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
-%			\item Individuazione delle problematiche specifiche del problema.
-%				\myitemize {
-%					\item Ad es. effetti sul realismo della simulazione.
-%				}
-%			
-%		}
-%	}
-%	
-%	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{1}{
-%		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità principali vengono distribuite.}		
-%	}
-%	
-%	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{2}{
-%		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e Visualizzazione sono distribuite.}
-%	}
-%	
-%	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{3}{
-%		\newfigure{imgs/solution}{0.24}{Architettura di alto livello con distribuzione a livello di \ii{Regioni}.}
-%	}
 
 %############################### CONCURRENCY	
 
@@ -352,7 +324,7 @@
 
 	\newframe{\nameref{sol}}{Distribuzione}{}{2} {
 		\myitemize {
-			\item Scelta di una possibile architettura
+			\item Scelta di una architettura per la soluzione.
 			\item Possibile introduzione di nuove entità nel problema
 				\myitemize {
 					\item ad es.: utilizzo di Regioni.
@@ -383,7 +355,7 @@
 				\myitemize {
 					\item creazione/distruzione?
 					\item replicazione?
-					\item \ii{possibile soluzione:} Disaccoppiamento tra entità e thread che ne esegue le operazioni: utilizzo di un thread pool e di descrittori di entità, quest'ultimi replicati su ciascun nodo e aggiornati al trasferimento.
+					\item \ii{possibile soluzione:} Disaccoppiamento tra entità e thread che ne esegue le operazioni (\ii{Train\_Executor} o \ii{Traveler\_Executor}): utilizzo di thread pool e di descrittori di entità (\ii{Train\_Descriptor} o \ii{Traveler\_Descriptor}), quest'ultimi replicati su ciascun nodo e aggiornati al trasferimento.
 				}
 		}
 	}
@@ -444,7 +416,7 @@
 				}
 			\item La natura delle entità dipende dalle scelte a livello di protocollo di distribuzione.
 				\myitemize {
-					\item ad es. {\em Entità attive} sono gli executor appartenenti ai pool per descrittori di Treni e Viaggiatori.
+					\item ad es. Train\_Executor e Traveler\_Executor sono {\em entità attive}, mentre Train\_Descriptor e Traveler\_Descriptor sono strutture dati semplici (ad es. record).
 				}
 			\item Scelta di un modello di concorrenza adatto alle caratteristiche del problema.
 				\myitemize{
@@ -476,21 +448,21 @@
 	}
 	
 	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{1}{
+		\cm{-0.1}
 		\footnotesize
 		\myitemize {
-			\item Accesso ad un Segmento $S$ da parte di un Treno $T$, dall'estremo $D_T$, $D_T=$\ttt{ First\_End}.
+			\item Accesso ad un Segmento $S$ da parte di un Train\_Executor $T$ che esegue per uno specifico Treno, dall'estremo $D_T$, $D_T=$\ttt{ First\_End}.
 				\myitemize {
-					\item \footnotesize Rischio starvation dei Treni in attesa.
+					\item \footnotesize Rischio starvation di Train\_Executor in attesa di accedere.
 				}
-			\item Segmento realizzato come risorsa protetta con agente di controllo \ii{monitor}.
-			\item $T$ accede solo se:
+			\item Segmento realizzato come risorsa protetta con agente di controllo \ii{monitor}. $T$ accede ad $S$ sse:
 				\myitemize{
 					\item \footnotesize $S$ è libero
-					\item $S$ non è libero ma i Treni in transito hanno avuto accesso da $D_T$ e il numero di accessi massimo non è stato raggiunto.
-					\item $S$ non è libero ma i Treni in transito hanno avuto accesso da $D_T$, il numero di accessi massimo è stato raggiunto, ma all'estremo opposto non vi sono Treni in attesa.
+					\item $S$ non è libero ma i Train\_Executor ``in transito'' hanno avuto accesso da $D_T$ e il numero di accessi massimo non è stato raggiunto.
+					\item $S$ non è libero ma i Train\_Executor ``in transito'' hanno avuto accesso da $D_T$, il numero di accessi massimo è stato raggiunto, ma all'estremo opposto non vi sono altri Train\_Executor in attesa.
 				}
 			\item In tutti gli altri casi $T$ deve attendere presso l'estremo di accesso.
-			\item All'uscita da $S$ l'ultimo Treno risveglia i Treni in attesa presso l'estremo opposto.
+			\item L'ultimo Train\_Executor che esce da $S$ risveglia i Train\_Executor in attesa presso l'estremo opposto.
 		}	
 	}
 	
@@ -533,9 +505,9 @@
 	\column{0.4\textwidth}
 		\footnotesize
 		\myitemize{
-			\item Procedura che regola l'accesso ad un Segmento da parte di un Treno;
+			\item Procedura che regola l'accesso ad un Segmento da parte di un Train\_Executor;
 			\item Accesso multiplo al Segmento, con numero massimo $MAX$ di ingressi consecutivi per estremo.
-			\item \ttt{Current\_Direction} mantiene la direzione dei Treni in transito.
+			\item \ttt{Current\_Direction} mantiene la direzione dei Train\_Executor ``in transito''.
 		}
 	\end{columns}
 	\end{frame}
@@ -566,7 +538,7 @@
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$=0$ \\
-			Perché sia verificata la Precondizione, almeno $MAX$ Treni provenienti dallo stesso estremo hanno avuto accesso al Segmento (Caso 1 + Caso 2). In questo caso, $T$ non incrementare il contatore di accessi \ttt{Access\_Number}, ed esegue le operazioni previste dopo l'accesso.
+			Perché sia verificata la Precondizione, almeno $MAX$ Train\_Executor provenienti dallo stesso estremo hanno avuto accesso al Segmento (Caso 1 + Caso 2). In questo caso, $T$ non incrementare il contatore di accessi \ttt{Access\_Number}, ed esegue le operazioni previste dopo l'accesso.
 		}
 	}
 	
@@ -577,14 +549,14 @@
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$\ne D_T$\\
-			Perché la pre-condizione sia verificata, almeno un Treno proveniente dall'estremo opposto rispetto a $T$ ha eseguito nel Caso 1. Il thread corrente incrementa il contatore dei Treni in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \\\ttt{Can\_Enter\_First\_End}. 
+			Perché la pre-condizione sia verificata, almeno un Train\_Executor proveniente dall'estremo opposto rispetto a $T$ ha eseguito nel Caso 1. Il thread corrente incrementa il contatore dei Train\_Executor in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \\\ttt{Can\_Enter\_First\_End}. 
 			
 		}
 		\describe{\footnotesize Caso 5: Accesso non consentito}{
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$>0$\\
-			Perché la pre-condizione sia verificata, almeno un Treno proveniente dall'estremo opposto rispetto a $T$ ha eseguito all'interno di \ttt{Access\_Segment\_Monitor} nel Caso 4 (relativamente alla propria direzione). Il thread corrente incrementa il contatore dei Treni in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \ttt{Can\_Enter\_First\_End}. 
+			Perché la pre-condizione sia verificata, almeno un Train\_Executor proveniente dall'estremo opposto rispetto a $T$ ha eseguito all'interno di\\ \ttt{Access\_Segment\_Monitor} nel Caso 4 (relativamente alla propria direzione). Il thread corrente incrementa il contatore dei Train\_Executor in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \ttt{Can\_Enter\_First\_End}. 
 			
 		}
 	}
