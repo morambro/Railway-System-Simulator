@@ -194,9 +194,6 @@
 						}
 				}
 			\item Identificazione e definizione dei requisiti di massima del sistema.
-				\myitemize{
-					\item Operazione sottovalutata ma importante.
-				}
 		}
 	}
 	
@@ -205,7 +202,8 @@
 		\myitemize {
 			\item Primo aspetto da valutare
 				\myitemize {
-					\item Fornisce una visione di alto livello dell'architettura di sistema.
+%					\item Fornisce una visione di alto livello dell'architettura di sistema.
+					\item \`E importante identificare le componenti distribuite e i protocolli di interazione tra di esse. 
 					\item Le scelte di distribuzione influenzano\\
 						 - la rappresentazione delle entità;\\
 						 - le modalità di interazione tra di esse.
@@ -262,56 +260,49 @@
 		}
 	}
 	
-	\newframe{\nameref{analisis}}{Distribuzione}{}{4}{
-		\myitemize {
-			\item Prima modellazione ad alto livello delle componenti distribuite del sistema.
-			\item Scelta di alcuni aspetti legati alla distribuzione
-				\myitemize{
-					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
-					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
-					\item definizione di possibili interfacce.		
-				}
-			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
-			\item Individuazione delle problematiche specifiche del problema.
-				\myitemize {
-					\item Ad es. effetti sul realismo della simulazione.
-				}
-			
-		}
-	}
-	
-	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{1}{
-		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità principali vengono distribuite.}		
-	}
-	
-	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{2}{
-		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e Visualizzazione sono distribuite.}
-	}
-	
-	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{3}{
-		\newfigure{imgs/solution}{0.24}{Architettura di alto livello con distribuzione a livello di \ii{Regioni}.}
-	}
+%	\newframe{\nameref{analisis}}{Distribuzione}{}{4}{
+%		\myitemize {
+%			\item Prima modellazione ad alto livello delle componenti distribuite del sistema.
+%			\item Scelta di alcuni aspetti legati alla distribuzione
+%				\myitemize{
+%					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
+%					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
+%					\item definizione di possibili interfacce.		
+%				}
+%			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
+%			\item Individuazione delle problematiche specifiche del problema.
+%				\myitemize {
+%					\item Ad es. effetti sul realismo della simulazione.
+%				}
+%			
+%		}
+%	}
+%	
+%	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{1}{
+%		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità principali vengono distribuite.}		
+%	}
+%	
+%	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{2}{
+%		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e Visualizzazione sono distribuite.}
+%	}
+%	
+%	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{3}{
+%		\newfigure{imgs/solution}{0.24}{Architettura di alto livello con distribuzione a livello di \ii{Regioni}.}
+%	}
 
 %############################### CONCURRENCY	
 
 	
 	\newframe{\nameref{analisis}}{Concorrenza}{}{}{
-		
+		\cm{0.5}
 		\myitemize {
-			\item Prima definizione dei protocolli logici di interazione concorrente tra le entità.
+			\item Prima definizione dei protocolli logici di interazione concorrente tra le entità del problema.
+				\cm{0.4}
 				\myitemize {
-					\item Il più possibile indipendente dalla scelta di un modello di concorrenza specifico.
-					\item Identificazione dei punti critici in cui il problema è concorrente.
+					\item Indipendente dalla scelta di un modello di concorrenza specifico.
+					\cm{0.3}
+					\item Identificazione dei punti critici in cui il problema esprime concorrenza.
 				}
-			\item Definizione delle caratteristiche specifiche per ciascuna entità.
-				\myitemize {
-					\item ad es.: Segmento come entità reattiva con agente di controllo, a molteplicità $N\ge1$.
-					\item ad es.: Stazione come una entità passiva, che mantiene al suo interno
-						\myitemize {
-							\item un numero $M\ge1$ di Piattaforme (entità reattive con agente di controllo, a molteplicità $1$),	....
-						}
-				}
-				
 		}
 		
 	}
@@ -329,14 +320,44 @@
 	
 \section{Costruzione di una soluzione}\label{sol}
 
-	\newframe{\nameref{sol}}{Distribuzione}{}{} {
+	\newframe{\nameref{sol}}{Distribuzione}{}{1}{
 		\myitemize {
-			\item Scelta di un'architettura di distribuzione.
-			\item Possibile introduzione di nuove entità
+			\item Prima modellazione ad alto livello delle componenti distribuite del sistema.
+			\item Scelte architetturali di distribuzione
+				\myitemize{
+					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
+					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
+					\item definizione di possibili interfacce.		
+				}
+			\item Valutazione delle implicazioni nell'adozione di gradi di distribuzione diversi sul sistema.
+			\item Individuazione delle problematiche specifiche del problema.
+				\myitemize {
+					\item Ad es. effetti sul realismo della simulazione.
+				}
+			
+		}
+	}
+	
+	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{1}{
+		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità principali vengono distribuite.}		
+	}
+	
+	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{2}{
+		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e Visualizzazione sono distribuite.}
+	}
+	
+	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{3}{
+		\newfigure{imgs/solution}{0.24}{Architettura di alto livello con distribuzione a livello di \ii{Regioni}.}
+	}
+
+	\newframe{\nameref{sol}}{Distribuzione}{}{2} {
+		\myitemize {
+			\item Scelta di una possibile architettura
+			\item Possibile introduzione di nuove entità nel problema
 				\myitemize {
 					\item ad es.: utilizzo di Regioni.
 				}
-			\item Definizione architetturale a grana più fine
+			\item Scelte architetturali a grana più fine
 				\myitemize {
 					\item ad es.: introduzione di una gerarchia di Biglietterie per distribuire conoscenza e oneri di calcolo.
 						\myitemize {
@@ -345,9 +366,10 @@
 							\item Interna alle Stazioni
 						}
 				}
-			\item Scelta del modello di comunicazione tra le componenti.
-			\item Identificazione delle problematiche conseguenti alle scelte architetturali.
-				
+			\item Definizione del protocollo di distribuzione che realizza l'interazione tra le componenti.
+				\myitemize {
+					\item Scelta del modello di comunicazione tra le componenti.	
+				}
 		}
 	}
 
@@ -361,23 +383,7 @@
 				\myitemize {
 					\item creazione/distruzione?
 					\item replicazione?
-					\item Scelte di distribuzione condizionano la realizzazione delle entità per facilitare il trasferimento remoto!
-					\item \ii{possibile soluzione:} Disaccoppiamento tra entità e thread che ne esegue le operazioni: utilizzo di un thread pool e di descrittori di entità.
-				}
-		}
-	}
-	
-	\newframe{\nameref{sol}}{Distribuzione}{Valutazione}{}{
-		\myitemize {
-			\item Valutazione della soluzione progettata, sulla base delle caratteristiche desiderabili individuate in fase di analisi. \\
-				 Ad es. nella soluzione adottata:
-				\myitemize {
-					\itemB{Trasparenza:}{
-						La  
-					}{0cm}
-					\itemB{Openess:}{}{0cm}
-					\itemB{Scalabilità:}{}{0cm}
-					\itemB{Fault Tolerance:}{}{0cm}
+					\item \ii{possibile soluzione:} Disaccoppiamento tra entità e thread che ne esegue le operazioni: utilizzo di un thread pool e di descrittori di entità, quest'ultimi replicati su ciascun nodo e aggiornati al trasferimento.
 				}
 		}
 	}
@@ -411,27 +417,60 @@
 		}
 	}
 	
-	
-	\newframe{\nameref{sol}}{Concorrenza}{}{}{
-		\justifying
+	\newframe{\nameref{sol}}{Distribuzione}{Valutazione}{}{
 		\myitemize {
-			\item Scelta di un modello di concorrenza adatto alle caratteristiche del problema.
-			\item Valutazione di modelli differenti
-				\myitemize{
-					\item ad es. modello ad \ii{Attori} o a \ii{monitor}.
+			\item L'architettura e protocolli di distribuzione vanno valutati sulla base delle caratteristiche desiderabili di un sistema distribuito.
+			\item Ad. es:
+				\myitemize {
+					\item Il sistema è scalabile in dimensione relativamente al numero di Regioni.\\
+						- La suddivisione dei compiti delle Biglietterie su livelli favorisce scalabilità.
+					\item La natura distribuita del sistema è trasparente alla componente di visualizzazione.
+					\item La componente di Controllo Centrale e Server dei Nomi sono fattori di centralizzazione per il sistema \\
+						- Single Points of Failure.\\
+						- Potenziali colli di bottiglia.\\
 				}
+%			\item Valutazione dell'impatto delle scelte a livello di protocollo di distribuzione su definizione e interazione tra le entità concorrenti.
+		}
+	}
+	
+	
+	\newframe{\nameref{sol}}{Concorrenza}{}{1}{
+		\justifying
+		\cm{0.4}
+		\myitemize {
+			\item Definizione delle entità concorrenti relative ai singoli nodi di simulazione (Regioni)
+			\myitemize{
+					\item ad es. Segmento {\em entità reattiva} con agente di controllo, a molteplicità $1\le n\le N$.
+				}
+			\item La natura delle entità dipende dalle scelte a livello di protocollo di distribuzione.
+				\myitemize {
+					\item ad es. {\em Entità attive} sono gli executor appartenenti ai pool per descrittori di Treni e Viaggiatori.
+				}
+			\item Scelta di un modello di concorrenza adatto alle caratteristiche del problema.
+				\myitemize{
+					\item Valutazione di modelli differenti, ad es. modello ad \ii{Attori} o a \ii{monitor}.
+				}	
+		}
+	}
+	
+	
+	\newframe{\nameref{sol}}{Concorrenza}{}{2}{
+		\justifying
+		\cm{0.5}
+		\myitemize {
 			\item Modellazione delle entità di simulazione e della loro interazione con strumenti di modello.
+				\cm{0.2}
 				\myitemize {
 					\item Scomposizione delle interazioni in sottoproblemi semplici.
 				}
+				\cm{0.2}
 			\item Evitare scelte di progettazione che utilizzano operazioni specifiche offerte dalle tecnologie
+				\cm{0.2}
 				\myitemize {
 					\item Nessuna assunzione a priori sul linguaggio che verrà utilizzato.
+					\cm{0.2}
 					\item Nessuna assunzione sulle politiche di scheduling adottate dalla macchina sottostante.
 				}
-			\item Attenzione a \ii{deadlock} e \ii{starvation}.
-%			\item Validare ciascuna soluzione, partendo dai pre-requisiti.
-				
 		}
 		
 	}
@@ -554,7 +593,7 @@
 	
 	\newframe{\nameref{tec}}{}{}{}{
 		\myitemize {
-			\item Utilizzo di linguaggi di programmazione e strumenti che meglio si adattano alle scelte di progetto (e non viceversa).
+			\item Utilizzo di linguaggi di programmazione e strumenti che meglio si adattano alle scelte di progetto .
 			\item Interessante l'utilizzo di tecnologie eterogenee
 				\myitemize {
 					\item \`E difficile pensare ad un sistema distribuito realizzato con tecnologia uniforme.
