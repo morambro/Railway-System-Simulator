@@ -183,7 +183,7 @@
 		\myitemize {
 			\item Individuazione e prima definizione delle entità del sistema.
 				\myitemize {
-					\item ad es. nel progetto di un sistema ferroviario:
+					\item ad es. il progetto di un simulatore per un sistema ferroviario comprende:
 						\myitemize{
 							\item Treno
 							\item Viaggiatore
@@ -195,7 +195,7 @@
 							\item Controllo Centrale
 						}
 				}
-			\item Identificazione e definizione dei requisiti di massima del sistema.
+			\item Identificazione e definizione dei requisiti del sistema.
 		}
 	}
 	
@@ -205,7 +205,7 @@
 			\cm{0.2}
 			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
 			\cm{0.2}
-			\item Valutazione di come scelte di distribuzione possano influire sul realismo della simulazione. 
+			\item Valutazione di come scelte di distribuzione possano influire sul funzionamento del sistema.
 			\cm{0.2}
 			\item Caratteristiche desiderabili
 				\myitemize {
@@ -288,15 +288,16 @@
 
 	\newframe{\nameref{sol}}{Distribuzione}{}{1}{
 		\myitemize {
-			\item \`E importante identificare per prima cosa le componenti da distribuire e i protocolli di interazione tra di esse. 
+			\item \`E importante identificare per prima cosa le componenti da distribuire e i protocolli per la loro interazione. 
 			\item Le scelte di distribuzione influenzano\\
 				\myitemize {
-					\item la rappresentazione delle entità;\\
+					\item la definizione delle entità;\\
 				 	\item le modalità di interazione tra di esse.
 				}
 			
-			\item Scelte architetturali di distribuzione
+			\item Scelte a livello di architettura di distribuzione
 				\myitemize{
+					\item cosa distribuire;
 					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
 					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
 					\item definizione di possibili interfacce.		
@@ -306,19 +307,18 @@
 
 
 	\newframe{\nameref{sol}}{Distribuzione}{}{2}{
-		\cm{0.4}
+
 		\myitemize {
 			\item Prima modellazione ad alto livello delle componenti distribuite.
 			\cm{0.2}
-			\item Opportuno valutare possibili architetture di distribuzione di alto livello che modellano il problema
-				\cm{0.2}
+			\item Opportuno valutare diverse possibili soluzioni al problema
 				\myitemize {
 					\item Possibile introduzione di nuove entità nel problema
 					\myitemize {
-						\item ad es.: utilizzo di Regioni.
+						\item ad es.: introduzione dell'entità Regione, raggruppamento di Stazioni, Segmenti di collegamento, Treni e Viaggiatori su un singolo nodo di calcolo.
 					}
-					\item Analisi delle implicazioni sul sistema conseguenti all'adozione di gradi di distribuzione diversi.
-					\item Individuazione delle problematiche specifiche del problema.\\
+					\item Analisi delle conseguenza nell'adottare gradi diversi di distribuzione.
+					\item Individuazione delle conseguenze sul sistema, relativamente al problema da risolvere
 					\myitemize {
 						\item ad es. effetti sul realismo della simulazione e sulla consistenza temporale.
 					}
@@ -330,11 +330,11 @@
 
 
 	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{1}{
-		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità principali vengono distribuite.}		
+		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità di simulazione principali sono distribuite.}		
 	}
 	
 	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{2}{
-		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e Visualizzazione sono distribuite.}
+		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e componente di Visualizzazione sono distribuite.}
 	}
 	
 	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{3}{
@@ -357,7 +357,7 @@
 							\item Interna alle Stazioni
 						}
 				}
-			\item Definizione del protocollo di distribuzione che realizza l'interazione tra le componenti, in base all'architettura e ai requisiti del problema.
+			\item Definizione del protocollo di distribuzione che realizza l'interazione tra le componenti, in base all'architettura scelta, e ai requisiti del problema.
 		}
 	}
 
@@ -367,7 +367,7 @@
 				\myitemize {
 					\item \ii{possibile soluzione:} Utilizzare Stazioni speciali (di ``gateway'') per permettere l'uscita di un Treno da una Regione; trasferimento diretto di un Viaggiatore.
 				}
-			\item Come si traduce il trasferimento remoto di una entità?
+			\item Come realizzare il trasferimento remoto di una entità?
 				\myitemize {
 					\item creazione/distruzione?
 					\item replicazione?
@@ -386,7 +386,7 @@
 					\item Devono essere evitati tentativi di comunicazione tra componenti non ancora pronte o allocate.
 				}
 				\cm{0.3}
-			\item \`E opportuno scegliere un ordine di avvio tra le componenti e separare la fase di inizializzazione delle componenti dall'avvio della simulazione.
+			\item \`E opportuno scegliere un ordine di avvio tra le componenti e separare la fase di inizializzazione delle componenti dall'avvio del sistema.
 		}
 		
 	}
@@ -408,12 +408,12 @@
 	\newframe{\nameref{sol}}{Distribuzione}{Valutazione}{}{
 		\myitemize {
 			\item Architettura e protocollo di distribuzione vanno valutati sulla base delle caratteristiche desiderabili di un sistema distribuito
-			\item ad es. La soluzione che ho adottato ha le seguenti caratteristiche:
+			\item ad es. alcune caratteristiche della soluzione con distribuzione a livello di Regioni sono:
 				\myitemize {
 					\item il sistema è scalabile in dimensione relativamente al numero di Regioni\\
-						- La suddivisione dei compiti delle Biglietterie su livelli favorisce scalabilità;
-					\item la natura distribuita del sistema è trasparente alla componente di visualizzazione;
-					\item la componente di Controllo Centrale e Server dei Nomi sono fattori di centralizzazione per il sistema \\
+						- La suddivisione dei compiti su livelli di Biglietterie favorisce scalabilità;
+					\item la natura distribuita del sistema è nascosta alla componente di Visualizzazione;
+					\item Controllo Centrale e Server dei Nomi sono fattori di centralizzazione per il sistema \\
 						- Single Points of Failure.\\
 						- Potenziali colli di bottiglia.\\
 				}
@@ -426,18 +426,15 @@
 		\justifying
 		\cm{0.4}
 		\myitemize {
-			\item Definizione delle entità concorrenti relative ai singoli nodi di simulazione (Regioni)
+			\item Definizione delle entità concorrenti che risiedono sui singoli nodi del sistema (ad es. all'interno delle Regioni)
 			\myitemize{
 					\item ad es. Segmento {\em entità reattiva} con agente di controllo, a molteplicità $1\le n\le N$.
 				}
-			\item La natura delle entità dipende dalle scelte a livello di protocollo di distribuzione.
+			\item La natura delle entità e la loro interazione dipende dalle scelte fatte a livello di protocollo di distribuzione.
 				\myitemize {
-					\item ad es. Train\_Executor e Traveler\_Executor sono {\em entità attive}, mentre Train\_Descriptor e Traveler\_Descriptor sono strutture dati semplici (ad es. record).
-				}
-			\item Scelta di un modello di concorrenza adatto alle caratteristiche del problema.
-				\myitemize{
-					\item Valutazione di modelli differenti, ad es. modello ad \ii{Attori} o a \ii{monitor}.
+					\item ad es. Train\_Executor e Traveler\_Executor sono {\em entità attive}, mentre Train\_Descriptor e Traveler\_Descriptor sono strutture dati semplici (ad es. record);
 				}	
+			\item Le interazioni concorrenti tra le entità  modificano lo stato locale di ciascun nodo, e di conseguenza contribuiscono a far avanzare lo stato dell'intero sistema.
 		}
 	}
 	
@@ -446,17 +443,17 @@
 		\justifying
 		\cm{0.5}
 		\myitemize {
-			\item Modellazione delle entità di simulazione e della loro interazione con strumenti di modello.
-				\cm{0.2}
+			\item Scelta di un modello di concorrenza adatto alle caratteristiche del problema.
+				\myitemize{
+					\item Valutazione di modelli differenti, ad es. modello ad \ii{Attori} o a \ii{monitor}.
+				}
+			\item Modellazione delle entità di sistema e della loro interazione con strumenti di modello.
 				\myitemize {
 					\item Scomposizione delle interazioni in sottoproblemi semplici.
 				}
-				\cm{0.2}
 			\item Evitare scelte di progettazione che utilizzano operazioni specifiche offerte dalle tecnologie
-				\cm{0.2}
 				\myitemize {
 					\item Nessuna assunzione a priori sul linguaggio che verrà utilizzato.
-					\cm{0.2}
 					\item Nessuna assunzione sulle politiche di scheduling adottate dalla macchina sottostante.
 				}
 		}
@@ -467,7 +464,7 @@
 		\cm{-0.1}
 		\footnotesize
 		\myitemize {
-			\item Accesso ad un Segmento $S$ da parte di un Train\_Executor $T$ che esegue per uno specifico Treno, dall'estremo $D_T$, $D_T=$\ttt{ First\_End}.
+			\item Accesso ad un Segmento $S$ da parte di un Train\_Executor $T$, che esegue per uno specifico Treno, dall'estremo $D_T$, $D_T=$\ttt{ First\_End}.
 				\myitemize {
 					\item \footnotesize Rischio starvation di Train\_Executor in attesa di accedere.
 				}
@@ -548,24 +545,23 @@
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ \\and $1<$\ttt{Access\_Number}$<$\ttt{MAX} \\
-			Perché sia verificata la Precondizione, almeno un altro Treno proveniente dallo stesso estremo deve aver avuto accesso al Segmento (Caso 1). In questo caso, $T$ si limita a incrementare di $1$ il contatore di accessi per estremo \ttt{Access\_Number}, e ad eseguire le operazioni previste dopo l'accesso.
+			Perché sia verificata la Precondizione, almeno un altro Train\_Executor proveniente dallo stesso estremo deve aver avuto accesso ad $S$ (Caso 1). In questo caso, $T$ si limita a incrementare di $1$ il contatore di accessi per estremo \ttt{Access\_Number}, e ad eseguire le operazioni previste dopo l'accesso.
 		}
 		\describe{\footnotesize Caso 3: Accesso Consentito}{
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$= D_T$ and \\\ttt{Access\_Number}$=$\ttt{MAX} and \ttt{Second\_End\_Count}$=0$ \\
-			Perché sia verificata la Precondizione, almeno $MAX$ Train\_Executor provenienti dallo stesso estremo hanno avuto accesso al Segmento (Caso 1 + Caso 2). In questo caso, $T$ non incrementare il contatore di accessi \ttt{Access\_Number}, ed esegue le operazioni previste dopo l'accesso.
+			Perché sia verificata la Precondizione, almeno $MAX$ Train\_Executor provenienti dallo stesso estremo hanno avuto accesso ad $S$ (Caso 1 + Caso 2). In questo caso, $T$ non incrementare il contatore di accessi \ttt{Access\_Number}, ed esegue le operazioni previste dopo l'accesso.
 		}
 	}
 	
 	
 	\newframe{\nameref{sol}}{Concorrenza}{Esempio}{5}{
-		
 		\describe{\footnotesize Caso 4: Accesso non consentito}{
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$\ne D_T$\\
-			Perché la pre-condizione sia verificata, almeno un Train\_Executor proveniente dall'estremo opposto rispetto a $T$ ha eseguito nel Caso 1. Il thread corrente incrementa il contatore dei Train\_Executor in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \\\ttt{Can\_Enter\_First\_End}. 
+			Perché la pre-condizione sia verificata, almeno un Train\_Executor proveniente dall'estremo opposto rispetto a $T$ ha eseguito all'interno di  \ttt{Access\_Segment\_Monitor} nel Caso 1. Il thread corrente incrementa il contatore dei Train\_Executor in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \ttt{Can\_Enter\_First\_End}. 
 			
 		}
 		\describe{\footnotesize Caso 5: Accesso non consentito}{
@@ -600,8 +596,8 @@
 	\newframe{\nameref{conclusions}}{}{}{}{
 		\cm{0.5}
 		\myitemize {
-			\item La progettazione di un sistema concorrente e distribuito è un'operazione complessa.
-			\item Molto importante l'analisi iniziale e il confronto tra diverse architetture di sistema e tra diverse soluzioni a problemi di concorrenza.
+			\item La progettazione di un sistema concorrente e distribuito è un processo complesso.
+			\item Molto importante l'analisi iniziale, il confronto tra diverse possibili architetture di distribuzione e la validazione delle soluzioni adottate.
 			\item Errori comuni:
 				\myitemize {
 					\item dare per scontato problematiche di distribuzione;
