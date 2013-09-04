@@ -96,7 +96,7 @@
 	\fi
 	\ifx&#3&%
 	\else
-  		\normalsize- #3
+  		\small- #3
 	\fi
 	\ifx&#4&%
 	\else
@@ -197,7 +197,8 @@
 	}
 	
 	
-		\newframe{\nameref{analisis}}{Distribuzione}{}{1}{
+	\newframe{\nameref{analisis}}{Distribuzione}{}{1}{
+		\cm{0.4}
 		\myitemize {
 			\item Primo aspetto da valutare.
 				\myitemize{
@@ -207,15 +208,51 @@
 					 	\item le modalità di interazione tra di esse.
 					}
 				}
-			\item Prima modellazione ad alto livello delle componenti distribuite
+			\cm{0.2}
 			\item Scelte architetturali:
 				\myitemize{
-					\item cosa distribuire;
+					\item prima modellazione delle componenti (cosa distribuire);
 					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
 					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
 					\item definizione di possibili interfacce.		
 				}
 		}
+	}
+
+	\newframe{\nameref{analisis}}{Distribuzione}{Caratteristiche desiderabili}{1}{
+		\myitemize {
+			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
+			\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
+			\itemB{Openess:}{\justifying
+				\myitemize {
+					\item Il sistema dovrà garantire portabilità e interoperabilità.
+					\item Il sistema dovrà essere fruibile mediante regole standard (interfacce).
+					\item \justifying Organizzazione del sistema in componenti di dimensione ridotta, e facilmente sostituibili.
+					\item Separazione tra \ii{politiche} e \ii{meccanismi}.
+				}
+			}{0.1cm}
+		}
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{Caratteristiche desiderabili}{2}{
+			\cm{-0.2}
+			\myitemize {
+				\itemB{Scalabilità:}{\justifying
+					\myitemize {
+						\item Rispetto alla cardinalità del sistema (ad es. nel progetto di un sistema ferroviario, è desiderabile poter aumentare la popolazione di Stazioni e Segmenti di collegamento).
+						\item Rispetto alla distribuzione spaziale delle componenti.
+						\item Rispetto alle problematiche locali di gestione (che non devono affliggere l'intero sistema).
+					}
+				}{0cm}
+				\itemB{ Fault Tolerance:}{
+					\myitemize{
+						\item Il sistema deve essere progettato in modo tale da ridurre l'impatto causato da \ii{partial failures}.
+						\item Il sistema dovrà gestire errori di comunicazione tra i nodi.
+					}
+				}{0cm}
+				\itemB{Avvio ordinato}{}{0cm}
+				\itemB{Terminazione in uno stato consistente}{}{0cm}
+			}
 	}
 
 
@@ -224,7 +261,7 @@
 		\myitemize {
 			
 			\cm{0.5}
-			\item Opportuno valutare diverse possibili architetture di sistema.
+			\item Valutazione di diverse possibili architetture di sistema.
 				\cm{0.2}
 				\myitemize {
 					\item Possibile introduzione di nuove entità nel problema
@@ -235,69 +272,14 @@
 					\item Analisi di come gradi diversi di distribuzione influenzano il sistema.%\\Ad es.:
 					\myitemize {
 						\item come influiscono sul possibile protocollo di distribuzione.
-						\item quali sono le problematiche che comportano, come ad es. realismo della simulazione e consistenza temporale.
+						\item quali sono le problematiche che comportano, come ad es., realismo della simulazione e consistenza temporale.
 					}
 				}
 			
 			
 		}
 	}
-	
-	
-	\newframe{\nameref{analisis}}{Distribuzione}{}{3}{
-		\myitemize {
-			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
-%			\cm{0.2}
-%			\item Valutazione di come scelte di distribuzione possano influire sul funzionamento del sistema.
-			\item Caratteristiche desiderabili
-				\myitemize {
-					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
-					\itemB{Openess:}{\justifying
-						\myitemize {
-							\item Il sistema dovrà garantire portabilità e interoperabilità.
-							\item Il sistema dovrà essere fruibile mediante regole standard (interfacce).
-							\item \justifying Organizzazione del sistema in componenti di dimensione ridotta, e facilmente sostituibili.
-							\item Separazione tra \ii{politiche} e \ii{meccanismi}.
-						}
-					}{0.1cm}
-				}
-		}
-	}
-	
-	\newframe{\nameref{analisis}}{Distribuzione}{}{4}{
-		\myitemize {
-			\item[]
-				\myitemize {
-					\itemB{Scalabilità:}{\justifying
-						\myitemize {
-							\item Rispetto alla cardinalità del sistema (ad es. nel progetto di un sistema ferroviario, è desiderabile poter aumentare la popolazione di Stazioni e Segmenti di collegamento).
-							\item Rispetto alla distribuzione spaziale delle componenti.
-							\item Rispetto alle problematiche locali di gestione (che non devono affliggere l'intero sistema).
-						}
-					}{0cm}
-					\itemB{Fault Tolerance:}{
-						\myitemize{
-							\item Il sistema deve essere progettato in modo tale da ridurre l'impatto causato da \ii{partial failures}.
-							\item Il sistema dovrà gestire errori di comunicazione tra i nodi.
-						}
-					}{0cm}
-					\itemB{Avvio ordinato}{}{0cm}
-					\itemB{Terminazione in uno stato consistente}{}{0cm}
-				}
-		}
-	}
-%	
-%	\newframe{\nameref{analisis}}{Distribuzione}{}{3}{
-%		\cm{0.5}
-%		\myitemize {
-%			\item[]
-%				\myitemize {
-%					
-%				}
-%				
-%		}
-%	}
-	
+
 	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{1}{
 		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità di simulazione principali sono distribuite.}		
 	}
@@ -446,7 +428,7 @@
 	
 	\newframe{\nameref{sol}}{Concorrenza}{}{1}{
 		\justifying
-		\cm{0.4}
+		\cm{0.3}
 		\myitemize {
 			\item Definizione delle entità concorrenti che risiedono sui singoli nodi del sistema (ad es. all'interno delle Regioni)
 			\myitemize{
