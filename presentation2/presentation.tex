@@ -159,20 +159,17 @@
 				\cm{0.2}
 				\myitemize {
 					\item Analisi del problema.
-						\cm{0.2}
 						\myitemize {
 							\item Definizione dei requisiti del sistema.
 							\item Analisi degli aspetti legati alla distribuzione.
 							\item Analisi degli aspetti legati alla concorrenza.
 						}
-					\cm{0.2}
 					\item Costruzione di una soluzione.
-					\cm{0.2}	
 						\myitemize {
-							\item Definizione di una architettura di distribuzione.
-							\item Risoluzione delle problematiche di concorrenza.
+							\item Definizione di architettura di distribuzione delle componenti.
+							\item Definizione del protocollo di distribuzione.
+							\item Risoluzione delle problematiche di concorrenza locali alle componenti del sistema.
 						}
-					\cm{0.2}
 					\item Scelta del supporto tecnologico da utilizzare per l'implementazione.
 				}
 		}
@@ -199,25 +196,62 @@
 		}
 	}
 	
-	\newframe{\nameref{analisis}}{Distribuzione}{}{1}{
-		\cm{0.3}
+	
+		\newframe{\nameref{analisis}}{Distribuzione}{}{1}{
 		\myitemize {
-			\cm{0.2}
-			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
-			\cm{0.2}
-			\item Valutazione di come scelte di distribuzione possano influire sul funzionamento del sistema.
-			\cm{0.2}
-			\item Caratteristiche desiderabili
-				\myitemize {
-					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
+			\item Primo aspetto da valutare.
+				\myitemize{
+					\item Le scelte a livello di distribuzione influenzano
+					\myitemize {
+						\item la natura delle entità;\\
+					 	\item le modalità di interazione tra di esse.
+					}
+				}
+			\item Prima modellazione ad alto livello delle componenti distribuite
+			\item Scelte architetturali:
+				\myitemize{
+					\item cosa distribuire;
+					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
+					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
+					\item definizione di possibili interfacce.		
 				}
 		}
 	}
-	
+
+
 	\newframe{\nameref{analisis}}{Distribuzione}{}{2}{
+
 		\myitemize {
-			\item[]
+			
+			\cm{0.5}
+			\item Opportuno valutare diverse possibili architetture di sistema.
+				\cm{0.2}
 				\myitemize {
+					\item Possibile introduzione di nuove entità nel problema
+					\myitemize {
+						\item ad es.: introduzione dell'entità Regione, raggruppamento di Stazioni, Segmenti di collegamento, Treni e Viaggiatori su un singolo nodo di calcolo.
+					}
+					\cm{0.2}
+					\item Analisi di come gradi diversi di distribuzione influenzano il sistema.%\\Ad es.:
+					\myitemize {
+						\item come influiscono sul possibile protocollo di distribuzione.
+						\item quali sono le problematiche che comportano, come ad es. realismo della simulazione e consistenza temporale.
+					}
+				}
+			
+			
+		}
+	}
+	
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{}{3}{
+		\myitemize {
+			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
+%			\cm{0.2}
+%			\item Valutazione di come scelte di distribuzione possano influire sul funzionamento del sistema.
+			\item Caratteristiche desiderabili
+				\myitemize {
+					\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
 					\itemB{Openess:}{\justifying
 						\myitemize {
 							\item Il sistema dovrà garantire portabilità e interoperabilità.
@@ -226,36 +260,56 @@
 							\item Separazione tra \ii{politiche} e \ii{meccanismi}.
 						}
 					}{0.1cm}
+				}
+		}
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{}{4}{
+		\myitemize {
+			\item[]
+				\myitemize {
 					\itemB{Scalabilità:}{\justifying
 						\myitemize {
 							\item Rispetto alla cardinalità del sistema (ad es. nel progetto di un sistema ferroviario, è desiderabile poter aumentare la popolazione di Stazioni e Segmenti di collegamento).
 							\item Rispetto alla distribuzione spaziale delle componenti.
 							\item Rispetto alle problematiche locali di gestione (che non devono affliggere l'intero sistema).
 						}
-					}{0.1cm}
-				}
-		}
-	}
-	
-	\newframe{\nameref{analisis}}{Distribuzione}{}{3}{
-		\cm{0.5}
-		\myitemize {
-			\item[]
-				\myitemize {
+					}{0cm}
 					\itemB{Fault Tolerance:}{
 						\myitemize{
 							\item Il sistema deve essere progettato in modo tale da ridurre l'impatto causato da \ii{partial failures}.
 							\item Il sistema dovrà gestire errori di comunicazione tra i nodi.
 						}
-					}{0.1cm}
-					
-					\itemB{Avvio ordinato:}{\justifying Il sistema dovrà essere avviato in modo tale da permettere a tutte le componenti di comunicare senza errori.}{0.1cm}
-					\itemB{Terminazione in stato Consistente}{\justifying Il sistema deve poter essere terminato in uno stato consistente; nessun entità dovrà rimanere attiva dopo la procedura di terminazione.}{0.1cm}
+					}{0cm}
+					\itemB{Avvio ordinato}{}{0cm}
+					\itemB{Terminazione in uno stato consistente}{}{0cm}
 				}
-				
 		}
 	}
-
+%	
+%	\newframe{\nameref{analisis}}{Distribuzione}{}{3}{
+%		\cm{0.5}
+%		\myitemize {
+%			\item[]
+%				\myitemize {
+%					
+%				}
+%				
+%		}
+%	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{1}{
+		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità di simulazione principali sono distribuite.}		
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{2}{
+		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e componente di Visualizzazione sono distribuite.}
+	}
+	
+	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{3}{
+		\newfigure{imgs/solution}{0.24}{Architettura di alto livello con distribuzione a livello di \ii{Regioni}. Soluzione adottata nel progetto didattico.}
+	}
+	
 %############################### CONCURRENCY	
 
 	
@@ -286,67 +340,13 @@
 	
 \section{Costruzione di una soluzione}\label{sol}
 
-	\newframe{\nameref{sol}}{Distribuzione}{}{1}{
+	\newframe{\nameref{sol}}{Distribuzione}{}{} {
+%		\cm{0.4}
 		\myitemize {
-			\item \`E importante identificare per prima cosa le componenti da distribuire e i protocolli per la loro interazione. 
-			\item Le scelte di distribuzione influenzano\\
+			\item Scelta dell'architettura di distribuzione da utilizzare, che meglio si adatta ai requisiti del problema.
 				\myitemize {
-					\item la definizione delle entità;\\
-				 	\item le modalità di interazione tra di esse.
+					\item ad es. Distribuzione a livello di Regioni permette di contenere il grado di distribuzione e garantisce alcune delle caratteristiche desiderabili.
 				}
-			
-			\item Scelte a livello di architettura di distribuzione
-				\myitemize{
-					\item cosa distribuire;
-					\item dove adottare distribuzione \ii{verticale} o \ii{orizzontale};
-					\item modalità di comunicazione tra le componenti (\ii{sincrona} o \ii{asincrona});
-					\item definizione di possibili interfacce.		
-				}
-		}
-	}
-
-
-	\newframe{\nameref{sol}}{Distribuzione}{}{2}{
-
-		\myitemize {
-			\item Prima modellazione ad alto livello delle componenti distribuite.
-			\cm{0.2}
-			\item Opportuno valutare diverse possibili soluzioni al problema
-				\myitemize {
-					\item Possibile introduzione di nuove entità nel problema
-					\myitemize {
-						\item ad es.: introduzione dell'entità Regione, raggruppamento di Stazioni, Segmenti di collegamento, Treni e Viaggiatori su un singolo nodo di calcolo.
-					}
-					\item Analisi delle conseguenza nell'adottare gradi diversi di distribuzione.
-					\item Individuazione delle conseguenze sul sistema, relativamente al problema da risolvere
-					\myitemize {
-						\item ad es. effetti sul realismo della simulazione e sulla consistenza temporale.
-					}
-				}
-			
-			
-		}
-	}
-
-
-	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{1}{
-		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità di simulazione principali sono distribuite.}		
-	}
-	
-	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{2}{
-		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e componente di Visualizzazione sono distribuite.}
-	}
-	
-	\newframe{\nameref{sol}}{Distribuzione}{Esempio}{3}{
-		\newfigure{imgs/solution}{0.24}{Architettura di alto livello con distribuzione a livello di \ii{Regioni}.}
-	}
-
-
-
-	\newframe{\nameref{sol}}{Distribuzione}{}{3} {
-		\cm{0.4}
-		\myitemize {
-			\item Scelta dell'architettura di distribuzione da adottare.
 			
 			\item Definizione architetturale a grana più fine
 				\myitemize {
@@ -380,7 +380,7 @@
 		\cm{0.5}
 		\justifying
 		\myitemize{
-			\item L'avvio deve essere coordinato tra le entità.
+			\item L'avvio deve essere coordinato tra le componenti distribuite.
 				\cm{0.3}
 				\myitemize {
 					\item Devono essere evitati tentativi di comunicazione tra componenti non ancora pronte o allocate.
@@ -402,22 +402,44 @@
 				}
 			\item \`E conveniente adattare algoritmi distribuiti noti (ad es. \ii{distributed snapshot}).
 			\item Nessun thread in esecuzione sui nodi di calcolo dopo la procedura.
+%				\myitemize {
+%					\item ad es. è necessario prevedere la terminazione dei thread  
+%				}
 		}
 	}
 	
-	\newframe{\nameref{sol}}{Distribuzione}{Valutazione}{}{
+	\newframe{\nameref{sol}}{Distribuzione}{Valutazione}{1}{
 		\myitemize {
-			\item Architettura e protocollo di distribuzione vanno valutati sulla base delle caratteristiche desiderabili di un sistema distribuito
-			\item ad es. alcune caratteristiche della soluzione con distribuzione a livello di Regioni sono:
+			\item Architettura e protocollo di distribuzione vanno valutati sulla base delle caratteristiche desiderabili di un sistema distribuito, individuando criticità e punti di forza del sistema.
+			\item ad es. alcune caratteristiche della soluzione adottata:\\
+%				\textit{PRO:}
 				\myitemize {
-					\item il sistema è scalabile in dimensione relativamente al numero di Regioni\\
-						- La suddivisione dei compiti su livelli di Biglietterie favorisce scalabilità;
-					\item la natura distribuita del sistema è nascosta alla componente di Visualizzazione;
-					\item Controllo Centrale e Server dei Nomi sono fattori di centralizzazione per il sistema \\
-						- Single Points of Failure.\\
-						- Potenziali colli di bottiglia.\\
+					\item Il sistema è scalabile in dimensione in relazione al numero di Regioni\\
+						\myitemize {
+							\item La scalabilità del sistema è favorita dalla suddivisione a livelli delle Biglietterie e dal trasferimento di descrittori per il passaggio di Regione di Treni e Viaggiatori.
+							\item I pool di thread Train\_Executor e Traveler\_Executor di ciascun nodo devono essere dimensionati in modo opportuno per poter permettere scalabilità del sistema.
+						}
 				}
 %			\item Valutazione dell'impatto delle scelte a livello di protocollo di distribuzione su definizione e interazione tra le entità concorrenti.
+		}
+	}
+	
+	\newframe{\nameref{sol}}{Distribuzione}{Valutazione}{2}{
+		\myitemize {
+			\item[] %\ii{CONTRO:}
+				\myitemize {
+						\item La natura distribuita del sistema è nascosta alla componente di Visualizzazione.
+						\item Fallimenti a livello di singole Regioni possono essere tollerati dal sistema.
+						\item Controllo Centrale e Server dei Nomi sono fattori di centralizzazione per il sistema \\
+							\myitemize {
+								\item Protocolli di avvio e terminazione semplici, ma
+								\item Single Points of Failure.
+								\item Potenziali colli di bottiglia.
+							}
+						
+						\item In assenza di riferimento temporale assoluto, c'è la possibilità di inconsistenze temporali che devono essere risolte o contenute.
+						
+				}
 		}
 	}
 	
@@ -430,11 +452,11 @@
 			\myitemize{
 					\item ad es. Segmento {\em entità reattiva} con agente di controllo, a molteplicità $1\le n\le N$.
 				}
-			\item La natura delle entità e la loro interazione dipende dalle scelte fatte a livello di protocollo di distribuzione.
+			\item Il protocollo di interazione tra le componenti distribuite influenza la natura delle entità concorrenti.
 				\myitemize {
 					\item ad es. Train\_Executor e Traveler\_Executor sono {\em entità attive}, mentre Train\_Descriptor e Traveler\_Descriptor sono strutture dati semplici (ad es. record);
 				}	
-			\item Le interazioni concorrenti tra le entità  modificano lo stato locale di ciascun nodo, e di conseguenza contribuiscono a far avanzare lo stato dell'intero sistema.
+			\item \justifying Le interazioni tra le entità concorrenti modificano lo stato locale di ciascun nodo, e di conseguenza contribuiscono a far avanzare lo stato dell'intero sistema secondo il protocollo di distribuzione.
 		}
 	}
 	
