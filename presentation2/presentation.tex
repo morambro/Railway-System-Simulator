@@ -222,7 +222,11 @@
 	\newframe{\nameref{analisis}}{Distribuzione}{Caratteristiche desiderabili}{1}{
 		\myitemize {
 			\item Il sistema dovrà apparire agli utenti come unitario e coerente. 
-			\itemB{Trasparenza:}{Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)}{0.1cm}
+			\itemB{Trasparenza:}{
+				\myitemize {
+					\item Il sistema dovrà il più possibile rendere trasparenti all'utente le caratteristiche legate alla distribuzione (Accesso, Collocazione, Migrazione, Spostamento, Replicazione, Malfunzionamento, Persistenza)
+				}
+			}{0.1cm}
 			\itemB{Openess:}{\justifying
 				\myitemize {
 					\item Il sistema dovrà garantire portabilità e interoperabilità.
@@ -271,7 +275,7 @@
 					\cm{0.2}
 					\item Analisi di come gradi diversi di distribuzione influenzano il sistema.%\\Ad es.:
 					\myitemize {
-						\item come influiscono sul possibile protocollo di distribuzione.
+						\item come influiscono sulla definizione del protocollo di distribuzione;
 						\item quali sono le problematiche che comportano, come ad es., realismo della simulazione e consistenza temporale.
 					}
 				}
@@ -419,7 +423,7 @@
 								\item Potenziali colli di bottiglia.
 							}
 						
-						\item In assenza di riferimento temporale assoluto, c'è la possibilità di inconsistenze temporali che devono essere risolte o contenute.
+						\item In assenza di riferimento temporale assoluto, c'è la possibilità di inconsistenze temporali che devono essere evitate o contenute.
 						
 				}
 		}
