@@ -36,7 +36,7 @@
 	\vspace{5pt}
 	\small Corso di laurea Magistrale in Informatica
 }
-\date{Agosto 2013}
+\date{Settembre 2013}
 
 \newcommand{\itemB}[3]{
 	\item \textbf{#1} #2 \vspace{#3}
@@ -273,10 +273,10 @@
 						\item ad es.: introduzione dell'entità Regione, raggruppamento di Stazioni, Segmenti di collegamento, Treni e Viaggiatori su un singolo nodo di calcolo.
 					}
 					\cm{0.2}
-					\item Analisi di come gradi diversi di distribuzione influenzano il sistema.%\\Ad es.:
+					\item Adozione di gradi di distribuzione diversi
 					\myitemize {
 						\item come influiscono sulla definizione del protocollo di distribuzione;
-						\item quali sono le problematiche che comportano, come ad es., realismo della simulazione e consistenza temporale.
+						\item quali sono le conseguenze sul sistema (ad es., su realismo della simulazione e consistenza temporale).
 					}
 				}
 			
@@ -285,15 +285,16 @@
 	}
 
 	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{1}{
-		\newfigure{imgs/All_distributed}{0.22}{Architettura di alto livello in cui tutte le entità di simulazione principali sono distribuite.}		
+		\cm{-0.5}
+		\newfigure{imgs/All_distributed}{0.21}{\justifying Architettura di alto livello in cui tutte le entità di simulazione principali sono distribuite. Per semplicità, interfaccia remota e comunicazione da e verso entità presenti con molteplicità maggiore di $1$, sono indicate per una singola istanza.}		
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{2}{
-		\newfigure{imgs/nothing_distributed}{0.25}{Architettura di alto livello in cui solo Controller Centrale e componente di Visualizzazione sono distribuite.}
+		\newfigure{imgs/nothing_distributed}{0.24}{\justifying Architettura di alto livello in cui solo Controller Centrale e componente di Visualizzazione sono distribuite. Per semplicità, interfaccia remota e comunicazione da e verso entità  presenti con molteplicità maggiore di $1$, sono indicate per una singola istanza.}
 	}
 	
 	\newframe{\nameref{analisis}}{Distribuzione}{Esempio}{3}{
-		\newfigure{imgs/solution}{0.24}{Architettura di alto livello con distribuzione a livello di \ii{Regioni}. Soluzione adottata nel progetto didattico.}
+		\newfigure{imgs/solution}{0.24}{\justifying Architettura di alto livello con distribuzione a livello di \ii{Regioni}. Soluzione adottata nel progetto didattico. Per semplicità, interfaccia remota e comunicazione da e verso entità  presenti con molteplicità maggiore di $1$, sono indicate per una singola istanza.}
 	}
 	
 %############################### CONCURRENCY	
@@ -396,23 +397,21 @@
 	
 	\newframe{\nameref{sol}}{Distribuzione}{Valutazione}{1}{
 		\myitemize {
-			\item Architettura e protocollo di distribuzione vanno valutati sulla base delle caratteristiche desiderabili di un sistema distribuito, individuando criticità e punti di forza del sistema.
+			\item Architettura e protocollo di distribuzione vanno valutati sulla base delle caratteristiche desiderabili per un sistema distribuito, individuando criticità e punti di forza della soluzione.
 			\item ad es. alcune caratteristiche della soluzione adottata:\\
-%				\textit{PRO:}
 				\myitemize {
 					\item Il sistema è scalabile in dimensione in relazione al numero di Regioni\\
 						\myitemize {
-							\item La scalabilità del sistema è favorita dalla suddivisione a livelli delle Biglietterie e dal trasferimento di descrittori per il passaggio di Regione di Treni e Viaggiatori.
-							\item I pool di thread Train\_Executor e Traveler\_Executor di ciascun nodo devono essere dimensionati in modo opportuno per poter permettere scalabilità del sistema.
+							\item La scalabilità del sistema è favorita dalla suddivisione a livelli delle Biglietterie e dal trasferimento di descrittori per il passaggio tra Regioni di Treni e Viaggiatori.
+							\item I pool di Train\_Executor e Traveler\_Executor di ciascun nodo devono essere dimensionati in modo opportuno per poter permettere scalabilità del sistema.
 						}
 				}
-%			\item Valutazione dell'impatto delle scelte a livello di protocollo di distribuzione su definizione e interazione tra le entità concorrenti.
 		}
 	}
 	
 	\newframe{\nameref{sol}}{Distribuzione}{Valutazione}{2}{
 		\myitemize {
-			\item[] %\ii{CONTRO:}
+			\item[] 
 				\myitemize {
 						\item La natura distribuita del sistema è nascosta alla componente di Visualizzazione.
 						\item Fallimenti a livello di singole Regioni possono essere tollerati dal sistema.
@@ -423,7 +422,7 @@
 								\item Potenziali colli di bottiglia.
 							}
 						
-						\item In assenza di riferimento temporale assoluto, c'è la possibilità di inconsistenze temporali che devono essere evitate o contenute.
+						\item In assenza di riferimento temporale assoluto, c'è la possibilità di inconsistenze temporali che devono essere corrette o evitate.
 						
 				}
 		}
@@ -434,30 +433,29 @@
 		\justifying
 		\cm{0.3}
 		\myitemize {
-			\item Definizione delle entità concorrenti che risiedono sui singoli nodi del sistema (ad es. all'interno delle Regioni)
+			\item Risoluzione delle problematiche di concorrenza locali a ciascuna componente.
+			\cm{0.2}
+			\item Definizione e classificazione delle entità concorrenti
 			\myitemize{
 					\item ad es. Segmento {\em entità reattiva} con agente di controllo, a molteplicità $1\le n\le N$.
-				}
-			\item Il protocollo di interazione tra le componenti distribuite influenza la natura delle entità concorrenti.
-				\myitemize {
-					\item ad es. Train\_Executor e Traveler\_Executor sono {\em entità attive}, mentre Train\_Descriptor e Traveler\_Descriptor sono strutture dati semplici (ad es. record);
+					\item ad es. Train\_Executor e Traveler\_Executor sono {\em entità attive}, mentre Train\_Descriptor e Traveler\_Descriptor sono strutture dati semplici (ad es. record);\\[0.2cm]
+					$\Rightarrow$ La natura delle entità concorrenti dipende dal protocollo di interazione tra le componenti distribuite.
 				}	
-			\item \justifying Le interazioni tra le entità concorrenti modificano lo stato locale di ciascun nodo, e di conseguenza contribuiscono a far avanzare lo stato dell'intero sistema secondo il protocollo di distribuzione.
 		}
 	}
 	
 	
 	\newframe{\nameref{sol}}{Concorrenza}{}{2}{
 		\justifying
-		\cm{0.5}
+		\cm{0.3}
 		\myitemize {
 			\item Scelta di un modello di concorrenza adatto alle caratteristiche del problema.
 				\myitemize{
-					\item Valutazione di modelli differenti, ad es. modello ad \ii{Attori} o a \ii{monitor}.
+					\item Valutazione di modelli differenti, ad es. modello ad {\em attori} o a {\em monitor}.
 				}
-			\item Modellazione delle entità di sistema e della loro interazione con strumenti di modello.
+			\item Modellazione delle entità concorrenti e della loro interazione, con strumenti di modello.
 				\myitemize {
-					\item Scomposizione delle interazioni in sottoproblemi semplici.
+					\item Scomposizione in sottoproblemi semplici.
 				}
 			\item Evitare scelte di progettazione che utilizzano operazioni specifiche offerte dalle tecnologie
 				\myitemize {
@@ -569,7 +567,7 @@
 			\footnotesize
 			\justifying
 			\ii{Precondizione:} \ttt{Free=False} and \ttt{Current\_Direction}$\ne D_T$\\
-			Perché la pre-condizione sia verificata, almeno un Train\_Executor proveniente dall'estremo opposto rispetto a $T$ ha eseguito all'interno di  \ttt{Access\_Segment\_Monitor} nel Caso 1. Il thread corrente incrementa il contatore dei Train\_Executor in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \ttt{Can\_Enter\_First\_End}. 
+			Perché la pre-condizione sia verificata, almeno un Train\_Executor proveniente dall'estremo opposto rispetto a $T$ ha eseguito all'interno di  \\\ttt{Access\_Segment\_Monitor} nel Caso 1. Il thread corrente incrementa il contatore dei Train\_Executor in attesa per l'estremo corrente \ttt{First\_End\_Count}, e si pone in attesa su variabile di condizione \ttt{Can\_Enter\_First\_End}. 
 			
 		}
 		\describe{\footnotesize Caso 5: Accesso non consentito}{
